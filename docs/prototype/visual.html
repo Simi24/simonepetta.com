@@ -41,7 +41,8 @@ ul, ol { list-style: none; margin: 0; padding: 0; }
 @font-face { font-family: "STIX Two Math"; src: url("fonts/stixtwo-math.otf") format("opentype"); font-display: swap; }
 @font-face { font-family: "Libertinus Math"; src: url("fonts/libertinus-math.otf") format("opentype"); font-display: swap; }
 @font-face { font-family: "Fira Math"; src: url("fonts/fira-math.otf") format("opentype"); font-display: swap; }
-:root { --mathfont: "Latin Modern Math"; }
+:root { --mathfont: "Fira Math"; }
+:root[data-mf="lm"] { --mathfont: "Latin Modern Math"; }
 :root[data-mf="stix"] { --mathfont: "STIX Two Math"; }
 :root[data-mf="lib"] { --mathfont: "Libertinus Math"; }
 :root[data-mf="fira"] { --mathfont: "Fira Math"; }
@@ -474,8 +475,8 @@ blockquote p { margin: 0; }
   renderAppunti();
 
   var PAGES = ["home", "letture", "post", "appunti", "corso"];
-  var state = { p: "home", mf: "lm" };
-  try { var saved = JSON.parse(localStorage.getItem("sp-proto-2") || "{}"); if (PAGES.indexOf(saved.p) >= 0) state.p = saved.p; if (saved.mf) state.mf = saved.mf; } catch (e) {}
+  var state = { p: "home", mf: "fira" };
+  try { var saved = JSON.parse(localStorage.getItem("sp-proto-3") || "{}"); if (PAGES.indexOf(saved.p) >= 0) state.p = saved.p; if (saved.mf) state.mf = saved.mf; } catch (e) {}
   var m = /^#(home|letture|post|appunti|corso)$/.exec(location.hash); if (m) state.p = m[1];
 
   function apply() {
@@ -488,7 +489,7 @@ blockquote p { margin: 0; }
     root.setAttribute("data-mf", state.mf);
     document.querySelectorAll("#g-mf button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-mf") === state.mf)); });
     document.querySelectorAll("#g-p button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-p") === state.p)); });
-    try { localStorage.setItem("sp-proto-2", JSON.stringify(state)); } catch (e) {}
+    try { localStorage.setItem("sp-proto-3", JSON.stringify(state)); } catch (e) {}
     try { history.replaceState(null, "", "#" + state.p); } catch (e) {}
   }
 
