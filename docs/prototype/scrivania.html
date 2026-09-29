@@ -169,7 +169,14 @@ p { margin: 0 0 1em; text-wrap: pretty; }
   <!-- ============ DESK: scrivere ============ -->
   <section id="v-desk" hidden>
     <div class="desk-head">
-      <div class="t"><h1 id="dk-title"></h1><p id="dk-by"></p></div>
+      <div class="t"><h1 id="dk-title"></h1><p id="dk-by"></p>
+        <div class="form" id="dk-meta" hidden style="margin-top:1rem">
+          <div class="field span2"><label for="em-t">Titolo</label><input id="em-t"></div>
+          <div class="field"><label for="em-a">Autore</label><input id="em-a"></div>
+          <div class="field"><label for="em-y">Anno</label><input id="em-y" inputmode="numeric"></div>
+          <div class="field span4" id="em-note-wrap" hidden><label for="em-n">Nota sull'abbandono</label><input id="em-n"></div>
+        </div>
+      </div>
       <div class="v">
         <div class="muted" style="font-size:.9rem">Voto</div>
         <div class="votes" id="votes"></div>
@@ -244,6 +251,7 @@ p { margin: 0 0 1em; text-wrap: pretty; }
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
   function fmtDate(iso) { if (!iso) return ""; var d = iso.split("-"); return (+d[2]) + " " + MESI[+d[1] - 1] + " " + d[0]; }
   function fmtVote(v) { return v == null ? "" : (v % 1 ? Math.floor(v) + ",5" : String(v)); }
+  function slugOf(b) { if (!b.slug) b.slug = slug(b.t); return b.slug; }
   function slug(t) { return t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/['’]/g, "-").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
   function show(view) {
     ["home", "desk", "preview", "saved"].forEach(function (v) { $("v-" + v).hidden = v !== view; });
@@ -282,18 +290,21 @@ p { margin: 0 0 1em; text-wrap: pretty; }
     function btn(label, cls, fn) { var x = el("button", "btn " + (cls || ""), label); x.type = "button"; x.addEventListener("click", fn); act.appendChild(x); }
     if (b.s === "corso") {
       btn("L'ho finito, scrivo", "solid", function () { openDesk(i, true); });
+      btn("Modifica", "quiet", function () { openDesk(i, false, true); });
       btn("L'ho finito, senza testo", "", function () { b.end = TODAY; b.s = "letto"; openDesk(i, false); });
       btn("L'ho lasciato a metà", "quiet", function () { $("panel-drop").hidden = false; $("df-d").value = TODAY; $("df-n").focus(); });
     } else if (b.s === "letto") {
-      btn(b.text ? "Riapri il testo" : "Scrivi il testo", "solid", function () { openDesk(i, true); });
+      btn(b.text ? "Modifica" : "Scrivi il testo", "solid", function () { openDesk(i, true, !!b.text); });
+      if (!b.text) btn("Modifica voto e dati", "quiet", function () { openDesk(i, false, true); });
     } else {
+      btn("Modifica", "", function () { openDesk(i, false, true); });
       btn("Ricomincialo", "", function () { b.s = "corso"; b.start = TODAY; delete b.end; delete b.note; pick(i); });
     }
   }
   $("new-form").addEventListener("submit", function (e) {
     e.preventDefault();
     books.unshift({ t: $("nf-t").value.trim(), a: $("nf-a").value.trim(), y: +$("nf-y").value || null, p: +$("nf-p").value || 250, s: "corso", start: $("nf-s").value || TODAY });
-    e.target.reset(); savedView(0, "Sul comodino.");
+    slugOf(books[0]); e.target.reset(); savedView(0, "Sul comodino.");
   });
   $("drop-form").addEventListener("submit", function (e) {
     e.preventDefault(); var b = books[sel];
@@ -302,16 +313,19 @@ p { margin: 0 0 1em; text-wrap: pretty; }
   });
 
   /* ---------- desk ---------- */
-  function openDesk(i, writing) {
-    cur = i; var b = books[i];
-    if (!b.end) b.end = TODAY;
-    if (!writing) { b.s = "letto"; }
+  var editing = false;
+  function openDesk(i, writing, edit) {
+    cur = i; var b = books[i]; editing = !!edit;
+    if (!edit) { if (!b.end) b.end = TODAY; if (!writing) b.s = "letto"; }
+    $("dk-meta").hidden = !edit; $("em-t").value = b.t; $("em-a").value = b.a; $("em-y").value = b.y || "";
+    $("em-note-wrap").hidden = b.s !== "abbandonato"; $("em-n").value = b.note || "";
+    document.querySelector(".side > div").hidden = !!edit;
     $("dk-title").textContent = b.t; $("dk-by").textContent = b.a + (b.y ? ", " + b.y : "");
     $("dk-start").value = b.start || ""; $("dk-end").value = b.end || TODAY;
     renderVotes(b.v);
     $("dk-text").value = b.text || ""; countWords();
     resetClock();
-    $("bar-note").textContent = writing ? "Il testo è opzionale: anche solo il voto va bene." : "Senza testo: scegli il voto e salva.";
+    $("bar-note").textContent = edit ? "Modifica: il timer serve solo alla prima passata. L'indirizzo della pagina non cambia." : writing ? "Il testo è opzionale: anche solo il voto va bene." : "Senza testo: scegli il voto e salva.";
     $("dk-text").closest(".desk").hidden = !writing;
     show("desk");
     if (writing) $("dk-text").focus();
@@ -336,7 +350,7 @@ p { margin: 0 0 1em; text-wrap: pretty; }
   }
   $("dk-text").addEventListener("input", function () {
     countWords(); books[cur].text = this.value;
-    if (!started) { started = true; $("clock-note").textContent = "Una passata sola, senza tornare indietro."; timer = setInterval(tick, 1000); }
+    if (!started && !editing) { started = true; $("clock-note").textContent = "Una passata sola, senza tornare indietro."; timer = setInterval(tick, 1000); }
   });
   PROMPTS.forEach(function (q) {
     var li = el("li"), b = el("button", null, q); b.type = "button";
@@ -352,7 +366,7 @@ p { margin: 0 0 1em; text-wrap: pretty; }
   /* ---------- preview ---------- */
   function renderPreview() {
     var b = books[cur], pv = $("pv"); pv.textContent = "";
-    $("pv-slug").textContent = slug(b.t);
+    $("pv-slug").textContent = slugOf(b);
     pv.appendChild(el("h1", "pv-title", b.t));
     pv.appendChild(el("p", "pv-by", b.a + (b.y ? ", " + b.y : "")));
     var dl = el("dl", "pv-facts");
@@ -386,10 +400,17 @@ p { margin: 0 0 1em; text-wrap: pretty; }
   }
   function savedView(i, head) {
     var b = books[i]; clearInterval(timer);
-    $("sv-head").textContent = head; $("sv-path").textContent = "src/content/letture/" + slug(b.t) + ".md";
+    $("sv-head").textContent = head; $("sv-path").textContent = "src/content/letture/" + slugOf(b) + ".md";
     $("sv-file").textContent = mdFor(b); sel = -1; show("saved");
   }
-  $("b-save").addEventListener("click", function () { var b = books[cur]; b.s = "letto"; savedView(cur, "Salvato."); });
+  $("b-save").addEventListener("click", function () {
+    var b = books[cur];
+    if (editing) {
+      b.t = $("em-t").value.trim() || b.t; b.a = $("em-a").value.trim() || b.a; b.y = +$("em-y").value || b.y;
+      if (b.s === "abbandonato") b.note = $("em-n").value.trim();
+      savedView(cur, "Modificato.");
+    } else { b.s = "letto"; savedView(cur, "Salvato."); }
+  });
   $("sv-back").addEventListener("click", function () { renderShelf(); $("panel-book").hidden = true; $("panel-new").hidden = true; $("panel-drop").hidden = true; show("home"); });
 
   /* ---------- theme ---------- */
@@ -400,6 +421,7 @@ p { margin: 0 0 1em; text-wrap: pretty; }
     this.textContent = "Tema: " + labels[th];
   });
 
+  books.forEach(slugOf);
   renderShelf(); pick(0);
 })();
 </script>
