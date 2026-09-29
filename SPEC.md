@@ -2,7 +2,7 @@
 
 This document describes, end to end, how simonepetta.com is built: principles, releases, stack, content models, pipelines, hosting, quality gates and the build plan for all three releases.
 
-**No decision in this document is new.** Every section summarizes and links the ticket that made the decision. Tickets are GitHub issues in this repository, written in Italian; the wayfinding map that indexes them is [issue #1](https://github.com/Simi24/simonepetta.com/issues/1). When this document and a ticket disagree, the ticket wins and this document has a bug. Conflicts found while writing it are listed in [§15.2 Reconciliations](#152-reconciliations) for the author's review.
+**No decision in this document is new.** Every section summarizes and links the ticket that made the decision. Tickets are GitHub issues in this repository, written in Italian; the wayfinding map that indexes them is [issue #1](https://github.com/Simi24/simonepetta.com/issues/1). **For implementation, this document is authoritative**: an implementer never needs to open a ticket. If a conflict with a ticket is found, open an issue and fix this document; do not guess. Conflicts found while writing it, and the defaults that close gaps found by the cold read, are listed in [§15.2 Reconciliations](#152-reconciliations).
 
 Visual contracts are clickable prototypes, not prose. They live in [`docs/prototype/`](https://github.com/Simi24/simonepetta.com/tree/docs/prototype-visual/docs/prototype) (branch `docs/prototype-visual`, copied to `main` in slice S0).
 
@@ -23,7 +23,7 @@ The root answer, from the grilling of 2026-09-23 ([map notes](https://github.com
 ### 1.2 Standing constraints
 1. **Static by default, a single dynamic endpoint** in the whole site (`POST /api/chat`, v2). Sections do not share their fate: if the chat exhausts its budget, readings and notes stay up.
 2. **Heavy ingestion stays out of the build.** Conversion artifacts are produced separately and committed; a change to readings never depends on a broken `\input` in a 2022 course.
-3. **The author writes, never an LLM.** Reading reactions and personal texts are written by the author. Agents build scaffolding, never content, and quote the author's words verbatim.
+3. **The author writes, never an LLM.** Reading reactions and personal texts are written by the author. Agents build scaffolding, never content, and quote the author's words verbatim. **Interface copy rule**: functional copy that explains the interface (labels, captions, empty states, error messages, e.g. "Spine height follows page count") may be written by agents; anything in the author's voice or in first person (section ledes, bio, "about" texts) is a visible placeholder until the author writes it. The ledes in the prototypes are placeholders, not approved copy.
 4. **Site and private wiki are independent systems** ([#8](https://github.com/Simi24/simonepetta.com/issues/8)). No export, no sync, no wiki content on the site. The build never reads the private repo `Simi24/llm-wiki`.
 5. **Language follows each section's audience**: readings and notes in Italian; projects/OSS in English; the about page exists in both languages as two separate pages (`/` and `/en/`), never mixed.
 6. **"Done well" means both qualities**: the visible result (typography, performance, accessibility, care) and the project underneath (structure, maintainability, no shortcuts).
@@ -42,7 +42,7 @@ Three sequential releases of **the same site**: same repository, same origin, sa
 | Release | Contents | Size |
 |---|---|---|
 | **v0** | Shell, readings, about (IT + EN) with colophon, the local writing desk, RSS, analytics, quality gates. Replaces `minimal-portfolio`. | days |
-| **v1** | Notes: all ~25 courses + 2 theses published as PDF, notes index, course pages, Pagefind search, conversion pipeline, first HTML conversions (incremental afterwards). | weeks, mostly ingestion |
+| **v1** | Notes: all 30+ courses + 2 theses published as PDF, notes index, course pages, Pagefind search, conversion pipeline, first HTML conversions (incremental afterwards). | weeks, mostly ingestion |
 | **v2** | Per-course chat agent on converted courses, with spend caps, eval and in-page trace. | weeks |
 
 **Non-goals**: writing the content (author); restructuring the private wiki; comments, newsletter, accounts; an online CMS (writing happens locally, [#16](https://github.com/Simi24/simonepetta.com/issues/16)); a cross-course chat ([#11](https://github.com/Simi24/simonepetta.com/issues/11)); a separate theses section ([#9](https://github.com/Simi24/simonepetta.com/issues/9)).
@@ -57,16 +57,22 @@ One origin, no subdomains ([#7](https://github.com/Simi24/simonepetta.com/issues
 /                                  home + about (IT), colophon at the bottom
 /en/                               about (EN)
 /letture/                          readings index: shelf + grouped list
-/letture/<slug>/                   one book (post page, text optional)
+/letture/<slug>/                   one book's post page, generated only for books with a text
 /letture/rss.xml                   feed of readings with a text
 /appunti/                          notes index: bound theses + notebook piles + full list
 /appunti/<slug>/                   course (or thesis) page, in every state
 /appunti/<slug>/<chapter>/         one chapter (converted courses only)
 /appunti/<slug>/<slug>.pdf         the PDF
 /appunti/<slug>/chat/              chat page (v2, static page with a Preact island)
+/appunti/valutazione/              chat eval report (v2, static)
+/cerca/                            search page (v1, Pagefind UI loads only here)
 /api/chat                          the only dynamic endpoint (v2, separate Worker)
+/404.html, /robots.txt, /sitemap.xml
 /scrivi                            writing desk, exists only under `npm run dev`
 ```
+
+- **Trailing slashes** on all page URLs (`trailingSlash: 'always'`).
+- **`/api/chat` is the single dynamic endpoint** and also bootstraps the session: a first request carrying a Turnstile token returns a signed session token; later requests carry that token. There is no separate session endpoint.
 
 - **No Astro route is dynamic.** The chat page is static; the dynamic part is `/api/*` on a separate Worker ([#6](https://github.com/Simi24/simonepetta.com/issues/6), superseding the `prerender = false` note in [#7](https://github.com/Simi24/simonepetta.com/issues/7)).
 - **Slugs are fixed at creation**: editing a title later changes neither the file name nor the URL ([#16](https://github.com/Simi24/simonepetta.com/issues/16)).
@@ -82,7 +88,7 @@ One origin, no subdomains ([#7](https://github.com/Simi24/simonepetta.com/issues
 - **Plain CSS + Astro scoped `<style>`**, design tokens as custom properties. **No Tailwind** (deliberate deviation from the author's global default).
 - **TypeScript strict** for config, components and Workers. **Python 3.12+** for the v2 Lambda.
 - **npm + Node LTS**, lockfile committed.
-- **Allowed dependencies**: `astro`; `pagefind` (v1, [#10](https://github.com/Simi24/simonepetta.com/issues/10)); `@astrojs/preact` + `preact` (v2). Dev-only: `wrangler`, accessibility tooling (pa11y-ci or Playwright + axe, [#18](https://github.com/Simi24/simonepetta.com/issues/18)). **Any other dependency must be justified in this document first.**
+- **Allowed dependencies**: `astro`; `pagefind` (v1, [#10](https://github.com/Simi24/simonepetta.com/issues/10)); `@astrojs/preact` + `preact` (v2). Dev-only: `wrangler`; `@astrojs/check` + `typescript` (for `astro check`); `@playwright/test` + `@axe-core/playwright` (accessibility gate in both color schemes, [#18](https://github.com/Simi24/simonepetta.com/issues/18)). **Tests** use Node's built-in `node:test` (no dependency) plus build-based fixture tests. Python (v2): `boto3`, and the test runner `pytest`. **Any other dependency must be justified in this document first.**
 
 ### 4.2 Repository layout
 ```
@@ -123,9 +129,12 @@ Direction **"Tipografico"** ([#9](https://github.com/Simi24/simonepetta.com/issu
 | secondary text | `#646462` | `#9a9a97` |
 | rules | `#cfcfcc` | `#2e2e2d` |
 | surface | `#e2e2df` | `#1f1f1e` |
-| spine / notebook tints | `#161616 #4a4a48 #2c2c2b #9a9a97 #d2d2cf` | `#ebebe8 #b5b5b2 #d0d0cd #6e6e6c #3a3a39` |
+| spine / notebook tints (background → text) | `#161616→#ededeb` `#4a4a48→#ededeb` `#2c2c2b→#ededeb` `#9a9a97→#161616` `#d2d2cf→#161616` | `#ebebe8→#151515` `#b5b5b2→#151515` `#d0d0cd→#151515` `#626260→#ebebe8` `#3a3a39→#ebebe8` |
 
-**No accent color.** Links are always underlined. **Theme** follows the system, both themes are designed, plus a manual toggle ([#9](https://github.com/Simi24/simonepetta.com/issues/9); budget note in [§15.2](#152-reconciliations)).
+- Contrast fix after the cold read: the dark mid-grey tint is `#626260` (the prototype had `#6e6e6c`, 4.28:1), and spine/notebook text has **no opacity** (the prototype dimmed the author's surname to 75%, down to 3.17:1). Every tint pair must pass WCAG AA for its text size; the axe gate checks it.
+- **No accent color.** Links in running text are always underlined. Navigational objects (nav items, brand, spines, notebooks, thesis cards) are recognizable as links by form and have no underline; they get a visible focus style.
+- **Theme** follows the system, both themes are designed, plus a three-state manual toggle (system / light / dark) remembered in `localStorage` ([#9](https://github.com/Simi24/simonepetta.com/issues/9)). It needs one inline script of at most 1 KB that sets `data-theme` before paint (budget exception, [§12.2](#122-performance-budget-blocking-checked-on-dist)).
+- **Tint assignment** is stable: derived from a hash of the slug, not from list position, so colors do not reshuffle when a book is added.
 
 ### 5.2 Typography and layout
 - **Host Grotesk** for everything, self-hosted woff2 with a Latin subset (OFL).
@@ -153,14 +162,21 @@ One file per book, `src/content/letture/<slug>.md`, frontmatter validated by the
 
 | Field | Rule |
 |---|---|
-| `titolo`, `autore`, `anno_opera` | required (`anno_opera` optional if unknown) |
+| `titolo`, `autore` | required |
+| `anno_opera` | optional integer |
 | `stato` | `in-corso` \| `letto` \| `abbandonato` |
-| `iniziato`, `finito` | dates; `finito` absent while `in-corso` |
-| `voto` | optional, 1 to 5 in steps of 0.5; no modifiers like "3,5+" |
-| `pagine` | optional integer, drives spine height (see [§15.2](#152-reconciliations)) |
-| `nota` | optional one-liner, used for abandoned books (see [§15.2](#152-reconciliations)) |
+| `iniziato` | optional date |
+| `finito` | date; **required** for `letto`, optional for `abbandonato` (the day it was dropped), **forbidden** for `in-corso` |
+| `voto` | optional, 1 to 5 in steps of 0.5, **forbidden** for `in-corso`; no modifiers like "3,5+" |
+| `pagine` | optional integer, drives spine height; default 250, clamped to 80..1000 for display |
+| `nota` | optional one-liner, used for abandoned books |
 
-The body is the author's text and is **optional**. Italian.
+The schema is **strict** (unknown keys fail) and lives in its own module, so the writing desk validates with the same code. The body is the author's text and is **optional**. Italian.
+
+- **Slugs**: kebab-case of the title, fixed at creation. On a collision, append the author's surname.
+- **Re-reads** are out of scope: one file per book; a re-read updates the dates.
+- **Ordering**: shelf and index show *in corso* first, then *letti* by `finito` descending, then *abbandonati*. The home shows the three most recently finished books.
+- **Empty state**: with no books the shelf shows an empty plank and a one-line functional caption. Test fixtures never enter the production collection.
 
 ### 6.2 What appears
 **All books**, including the one being read and abandoned ones. The index is the shelf plus a list grouped as *Sto leggendo / Letti / Abbandonati*, grades as large numerals. A book with a text links to its post; a book without a text still appears with grade and dates.
@@ -185,7 +201,10 @@ Contract: [`docs/prototype/scrivania.html`](https://github.com/Simi24/simonepett
 ## 7. Notes
 
 ### 7.1 Corpus and publication policy ([#5](https://github.com/Simi24/simonepetta.com/issues/5), [#14](https://github.com/Simi24/simonepetta.com/issues/14))
-~25 courses (22 on Overleaf, 3 on GitHub with built PDFs, 1 local, 1 scanned) **plus 2 theses**. **All published as PDF at launch; HTML is converted one course at a time afterwards, starting with the courses the author wants to chat with.** No curation by quality: elementary is not wrong, and the year label gives context. The **only allowed exclusion is rights** (notes that copy lecturer slides or reproduce textbook figures), checked course by course before publishing.
+**All sources are already off Overleaf** (export of 2026-09-29) in the private archive repo [`Simi24/appunti-sorgenti`](https://github.com/Simi24/appunti-sorgenti): **30 course projects (13 magistrale, 17 triennale) + 2 theses** (`tesi-magistrale`, `tesi` for the triennale), with Overleaf-compiled PDFs for 29 of them. Also: `GPUcomputing` and `Social_Mining` on GitHub (built PDFs); `LinguaggiTraduttori` on GitHub is the complete version of an Overleaf stub; `Elaborazione Segnali` exists both on Overleaf and as a scan. Six Overleaf projects are barely started (3 to 5 pages); publishing them is the author's call per course in S6.
+- **All published as PDF at launch; HTML is converted one course at a time afterwards, starting with the courses the author wants to chat with.** No curation by quality: elementary is not wrong, and the year label gives context. The **only allowed exclusion is rights** (notes that copy lecturer slides or reproduce textbook figures), checked course by course before publishing.
+- **PDFs are built locally** with TeX Live in Docker, the same toolchain as the pipeline: Overleaf's free plan times out on the large projects. Overleaf is not used anymore.
+- The archive repo stays the complete copy; a course's `.tex` enters this repo (`appunti/<slug>/src/`) only when it is converted.
 
 ### 7.2 Manifest ([#10](https://github.com/Simi24/simonepetta.com/issues/10))
 `appunti/<slug>/corso.yaml`, validated by an Astro schema:
@@ -195,29 +214,29 @@ Contract: [`docs/prototype/scrivania.html`](https://github.com/Simi24/simonepett
 | `titolo` | required |
 | `tipo` | `corso` \| `tesi` |
 | `livello` | `triennale` \| `magistrale` |
-| `anno` | 1 to 3 (triennale), 1 to 2 (magistrale) |
-| `aa` | academic year, e.g. `"2019/20"` |
-| `fonte` | `overleaf` \| `github` \| `locale` \| `scansione` |
+| `anno` | 1 to 3 (triennale), 1 to 2 (magistrale); optional for `tesi` |
+| `aa` | academic year, e.g. `"2019/20"` (for a thesis: the year of the defense) |
+| `fonte` | `overleaf` \| `github` \| `locale` \| `scansione` (where the source came from) |
 | `pubblicato` | boolean |
 | `motivo` | required when `pubblicato: false` |
 
-**State is derived, never declared**: `scansione` if `fonte: scansione`; `html` if a valid `build/` exists; otherwise `pdf`. **Page counts** come from the pipeline, never typed by hand. Site-wide config holds the **university and degree programme** names, used in titles for SEO ([#18](https://github.com/Simi24/simonepetta.com/issues/18)).
+**State is derived, never declared**: `scansione` if `fonte: scansione`; `html` if a valid `build/` exists; otherwise `pdf`. **Page counts** live in `appunti/<slug>/meta.json` at the course root, produced by a lightweight pipeline step for every course (page count from the PDF), never typed by hand; `build/` stays conversion-only. Theses are not in the piles, only on top. Site-wide config holds the **university and degree programme names per level** (`triennale`, `magistrale`, which may differ), used in titles for SEO ([#18](https://github.com/Simi24/simonepetta.com/issues/18)). PDFs must stay under Cloudflare's 25 MiB per file (the largest today is ~13 MB).
 
 ### 7.3 Pages
 - **Index** `/appunti/`: bound theses on top, notebook piles by year, a full list below, the student-notes notice.
 - **Course page** `/appunti/<slug>/` exists in **every** state, so neither state looks like a leftover: metadata, the PDF, and for converted courses the chapter list (and in v2 the chat link).
-- **Chapters** `/appunti/<slug>/<chapter>/`: one page per chapter, sticky TOC, LaTeX conventions (§5.4).
+- **Chapters** `/appunti/<slug>/<chapter>/`: one page per chapter, sticky TOC, LaTeX conventions (§5.4). **Chapter slugs** are `<number>-<kebab-title>` (e.g. `3-variabili-aleatorie-continue`), computed at the first conversion and recorded in `build/meta.json`; later conversions reuse them, so URLs never change. LaTeXML output is post-processed by the pipeline into HTML fragments (body only), which Astro wraps in the site layout.
 - **Excluded** courses (`pubblicato: false`) are skipped entirely: no page, no PDF in the assets.
 - **Scanned** courses stay PDF forever.
-- **Search**: Pagefind, run after `astro build`, indexing readings and notes pages (not PDF contents).
+- **Search**: Pagefind, run after `astro build`, indexing readings and notes pages (not PDF contents). The UI lives on its own page, `/cerca/`, linked from the nav from v1; no search JS loads on any other page.
 
 ### 7.4 Conversion pipeline ([#4](https://github.com/Simi24/simonepetta.com/issues/4), [#10](https://github.com/Simi24/simonepetta.com/issues/10))
 - **LaTeXML via BookML**, in Docker, **outside the site build**: `make appunti CORSO=<slug>` (or equivalent). Output is committed into `build/`. The site build has no LaTeX and no Docker.
 - **HTML directly, no intermediate Markdown**: Markdown has no numbered theorems and every extra stage is a loss point. Fixes go into the `.tex`.
 - **MathML native**, zero JS. Caveat: MathML Core does not cover numbered equations; LaTeXML's output handles numbering.
-- **TikZ** via `standalone[dvisvgm]` → DVI → dvisvgm. The pipeline rewrites black in SVGs to `currentColor`, so figures follow both themes. **Alt text stays manual**, written at conversion time; the detector flags figures without a description.
+- **TikZ** via `standalone[dvisvgm]` → DVI → dvisvgm. The pipeline rewrites black in SVGs to `currentColor`, so figures follow both themes. **Alt text stays manual**, written at conversion time; a figure without a description **fails** the detector.
 - **pandoc is rejected**: it loses silently (drops TikZ, ignores `\NewDocumentCommand`, overrides custom macros with builtins).
-- **Canonical source**: when a course is converted, its Overleaf project is exported as a zip once; from then on the `.tex` in `src/` is canonical and Overleaf is archived.
+- **Canonical source**: when a course is converted, its sources are copied from `Simi24/appunti-sorgenti` into `src/`; from then on the `.tex` in `src/` is canonical.
 - **Expected cost**: weeks; roughly 1 course in 4 needs real manual intervention. The cost scales with courses, not with the pipeline.
 
 ### 7.5 Leak detector
@@ -229,7 +248,8 @@ Conversion fails silently, so verification cannot be the human eye. The detector
 
 Structure prototyped in [#9](https://github.com/Simi24/simonepetta.com/issues/9); **texts are written by the author** (out of scope for agents).
 - `/`: name, one-line lede, bio paragraphs, **Percorso** (timeline), **Open source** (e.g. `dynantic`), latest readings, **Colophon**.
-- `/en/`: the English about page. `hreflang` links the two.
+- `/en/`: the English about page, with English navigation and labels and no Italian content blocks (no latest readings). `hreflang` links the two.
+- Open Graph images are designed by an agent from the visual contract (typographic, no photos); the author provides the LinkedIn URL for `sameAs`.
 - **Colophon**, six lines: typeface (Host Grotesk), math (MathML drawn by the browser without JavaScript), notes (LaTeX converted with LaTeXML outside the build), build (Astro, static pages), hosting (Cloudflare Workers), writing (Markdown from a local desk, texts written by hand without language models).
 - **SEO priority high** ([#18](https://github.com/Simi24/simonepetta.com/issues/18)): JSON-LD `Person` with `sameAs` (GitHub, LinkedIn), curated Open Graph image.
 
@@ -250,7 +270,9 @@ Preact island (static page /appunti/<slug>/chat/)
         → DynamoDB (session, monthly spend counter)
 ```
 
-The Worker sits **in front of** the Lambda (same origin, no CORS). Responses stream through the Worker, as recommended by the [platform research](https://github.com/Simi24/simonepetta.com/blob/docs/research-agentic-platform/docs/research/agentic-platform.md).
+The Worker sits **in front of** the Lambda (same origin, no CORS).
+- **No token streaming in v2.** Lambda response streaming is native only for Node.js and custom runtimes, not Python. The Worker returns the complete answer; the island shows progress states while waiting. Streaming via Lambda Web Adapter is a possible later improvement, not part of v2.
+- **Worker → Lambda authentication**: Lambda Function URL with auth `NONE`, protected by an HMAC shared secret header that the Lambda verifies. The secret is generated by Terraform, stored in SSM Parameter Store for the Lambda, and set as a Worker secret by the `api` workflow. No long-lived AWS keys in the Worker.
 
 ### 9.2 Tools and answer rules
 - `search_course(query)`: semantic search over the course's chunks, returns candidate sections with a snippet.
@@ -274,11 +296,11 @@ Bedrock-hosted open models were not chosen because AI Gateway spend limits are n
 
 ### 9.4 Spend and abuse protection
 Budget: **5 EUR/month** ([#11](https://github.com/Simi24/simonepetta.com/issues/11)).
-1. **AI Gateway spend limits** (hard `429`): **$3.50/month** on the primary, then fallback; **$4.50/month** total ([#17](https://github.com/Simi24/simonepetta.com/issues/17)). With the 5% credits fee that is about $4.73 charged.
+1. **AI Gateway spend limits** (hard `429`), production gateway: **$3.00/month** on the primary, then fallback; **$4.00/month** total. Eval gateway: **$0.50/month**. Total ceiling $4.50 + 5% credits fee ≈ $4.73, within 5 EUR ([#17](https://github.com/Simi24/simonepetta.com/issues/17) proposed $3.50/$4.50 for production alone; split here so evals fit the same budget).
 2. **Monthly spend counter in DynamoDB**, atomic conditional update, `429` before calling the model.
 3. **`max_steps`** per message.
-4. **Rate limit by session, not by IP**: invisible **Turnstile** when the chat opens, then the Worker issues a **signed session token**; the rate limiting binding keys on it (order of magnitude: 10 messages per 10 minutes).
-5. **Budget exhausted**: the chat shows "paused until the first of the month" and points to the course index and Pagefind, which are static and stay up.
+4. **Rate limit by session, not by IP**: invisible **Turnstile** on the first `/api/chat` request, which returns a **signed session token**. Two layers: the Workers rate limiting binding keyed on the session (bursts: 3 requests per 10 seconds, the binding only supports 10 s or 60 s periods) and a per-session quota in DynamoDB (20 messages per day).
+5. **Budget exhausted**: the chat shows "paused until the first of the month" and points to the course index and `/cerca/`, which are static and stay up.
 
 ### 9.5 Evaluation
 Golden set of **~30 questions per course**, with expected sections and some "not in the notes" questions. **Drafted by an agent, reviewed by the author.** Metrics: recall of cited sections, citation correctness, correct refusals. Runs in CI with **a separate gateway and spend cap** so evals never consume production budget. The report is published as a static page. The first report on primary and fallback is the go/no-go input for the v2 launch, decided by the author.
@@ -300,17 +322,19 @@ Region **eu-south-1** (Milan). Lambda (Python, hand-written loop, not AgentCore 
 ### 10.3 Ownership ([#13](https://github.com/Simi24/simonepetta.com/issues/13))
 | Resource | Owner |
 |---|---|
-| Site Worker code, its Custom Domain | `wrangler.jsonc` + `site` workflow |
-| Chat Worker, route `/api/*`, rate limit binding | `workers/api/wrangler.jsonc` + `api` workflow |
+| Site Worker code, its Custom Domain (which creates the apex DNS record itself) | `wrangler.jsonc` + `site` workflow |
+| Chat Worker, route `/api/*`, rate limit binding, Worker secrets (Turnstile secret, session signing key, Lambda HMAC secret) | `workers/api/wrangler.jsonc` + `api` workflow (secrets come from GitHub secrets) |
 | Lambda code | `agent` workflow; Terraform has `ignore_changes` on the code |
-| AI Gateway + spend limits + Dynamic Route, Turnstile widget, Web Analytics site, `www` redirect, DNS records | Terraform (Cloudflare provider) |
-| Lambda configuration, DynamoDB, S3 Vectors, S3 buckets, IAM, OIDC role, state bucket | Terraform (AWS provider) |
-| Workers AI Unified Billing credits | **manual purchase**, the only unavoidable step outside Terraform |
+| AI Gateways (production and eval) + spend limits + Dynamic Route, Turnstile widget, Web Analytics site, `www` record + redirect rule, Search Console TXT | Terraform (Cloudflare provider); **never the apex record** |
+| Lambda configuration, DynamoDB, S3 Vectors, S3 buckets, IAM, OIDC role, SSM parameters | Terraform (AWS provider) |
+| Terraform state bucket (versioned, encrypted, S3 native lockfile) | a separate `infra/bootstrap` config, applied once |
 
 Terraform is applied **by hand from the author's Mac**, with remote state on S3 so it works from several machines. Terraform never owns code that changes often, or every deploy becomes drift.
 
+**One-time manual steps** (the only configuration outside code): create a scoped Cloudflare API token and store it with the account ID as GitHub secrets; start Search Console verification to get the TXT value; enable the opt-in region eu-south-1 and, for v2, Bedrock access to Cohere Embed v4; buy Workers AI Unified Billing credits (v2); confirm that the zone has no conflicting apex/`www` records. These are **S0/S10 prerequisites** the author provides.
+
 ### 10.4 Costs
-v0 + v1: **$0**, and cannot become anything else ([#3](https://github.com/Simi24/simonepetta.com/issues/3)). v2: ~$0.5/month AWS infrastructure, ~$2 to 3/month model, hard cap $4.50 + fee; ~$1.2 one-off embeddings.
+v0 + v1: **$0 on Cloudflare** ([#3](https://github.com/Simi24/simonepetta.com/issues/3)); the only AWS resource before v2 is the Terraform state bucket (cents per month). v2: ~$0.5/month AWS infrastructure, ~$2 to 3/month model, hard cap $4.50 + fee; ~$1.2 one-off embeddings.
 
 ---
 
@@ -320,13 +344,14 @@ v0 + v1: **$0**, and cannot become anything else ([#3](https://github.com/Simi24
 
 | Workflow | Trigger | Steps |
 |---|---|---|
-| `site` | push to `main`, PRs | `npm ci` → `astro check` → `astro build` → `pagefind --site dist` → quality gates (§12) → on `main`: `wrangler deploy`; on PRs: `wrangler versions upload` + comment with the preview URL |
-| `appunti` | PRs and pushes touching `appunti/**/src/**`, `appunti/**/build/**`, `pipeline/**` | conversion in Docker + leak detector; required check on PRs touching those paths; **the deploy never depends on it** |
+| `site` | push to `main`, PRs | checkout with full history (`fetch-depth: 0`, for sitemap `lastmod`) → `npm ci` → tests → `astro check` → `astro build` → `pagefind --site dist` (from S7) → quality gates (§12) → on `main`: `wrangler deploy`; on PRs: `wrangler versions upload` + comment with the preview URL |
+| `appunti` | every PR and push; exits early when nothing under `appunti/**` or `pipeline/**` changed (so as a required check it never hangs) | checks that each course's `meta.json` matches its PDF; for converted courses runs the leak detector on the committed `build/`; a manual `workflow_dispatch` re-converts from `src/` in Docker and diffs against `build/`; **the deploy never depends on it** |
 | `api` (v2) | changes to `workers/api/**` | tests → `wrangler deploy` of the chat Worker |
 | `agent` (v2) | changes to `agent/**` | Python tests → on `main`: Lambda code deploy via OIDC (no long-lived AWS keys) |
 | `eval` (v2) | PRs on `agent/**`, manual | golden set against the model with a separate gateway/cap → static report |
 
-- **Posts**: the author commits and pushes to `main`; the deploy is automatic. If checks fail, the previous version stays online.
+- **Posts**: the author commits and pushes to `main`; the deploy is automatic. If checks fail, the previous version stays online. `main` has no branch protection that would block the author's direct pushes; the checks inside the `site` workflow are the gate.
+- **Previews and pre-launch**: preview versions and the site before the v0 launch (S5) send `noindex` and do not load the analytics beacon.
 - **Code**: agents open PRs (the author's global hooks block agents from pushing to `main`); each PR gets a preview URL.
 - **Other machines**: the repo is the only source; pull, write, push. From a phone, GitHub's web editor.
 - **Rollback**: `wrangler rollback` to the previous version, no rebuild.
@@ -344,11 +369,11 @@ v0 + v1: **$0**, and cannot become anything else ([#3](https://github.com/Simi24
 ### 12.2 Performance budget (blocking, checked on `dist`)
 | Resource | Cap (gzip) |
 |---|---|
-| JS on normal pages | only the Web Analytics beacon (plus the theme script, see [§15.2](#152-reconciliations)) |
-| Declared JS exceptions | Pagefind (loaded only when searching), Preact chat island |
+| JS on normal pages | the Web Analytics beacon + one inline theme script ≤ 1 KB |
+| Declared JS exceptions | Pagefind on `/cerca/` only, Preact island on chat pages only |
 | HTML per page | 50 KB; 150 KB for notes chapters |
-| CSS total | 20 KB |
-| Fonts | Host Grotesk Latin subset; Fira Math only on math pages |
+| CSS per page | 20 KB |
+| Fonts | Host Grotesk Latin subset (roman + italic); Fira Math only on math pages |
 
 Raising a cap requires an explicit commit to the budget config.
 
@@ -405,14 +430,14 @@ Dev-only integration (§6.4): shelf menu, add / finish / abandon / edit flows, t
 *AC*: the feed validates and contains only posts with a text; sitemap lists all pages; the beacon is the only JS on normal pages (plus the theme script).
 
 **S5 v0 launch**
-Redirect `minimal-portfolio` (Vercel) to simonepetta.com, then shut it down; Search Console verified.
-*AC*: the old URL redirects; the site is indexed.
+Replace `minimal-portfolio` on Vercel with a redirect-only deployment (its old content removed, the project kept alive so the `*.vercel.app` URL keeps redirecting); drop `noindex`; Search Console verified.
+*AC*: the old URL redirects to simonepetta.com; the site is indexable and submitted.
 
 ### v1: notes
 
 **S6 Notes as PDF**
 `appunti/` folders, manifest schema (§7.2), derived state, `meta.json` page counts from the pipeline, PDFs copied to the output, course pages, `/appunti/` index (theses, piles, list), notice, university config, notes SEO (§12.3). Per-course rights check before adding each course (build task).
-*AC*: all published courses and both theses are reachable; excluded courses leave no page and no PDF; pile thickness follows page counts; scanned courses show the dashed outline.
+*AC*: all published courses and both theses are reachable (the author decides per course whether to publish the six barely started ones); excluded courses leave no page and no PDF; pile thickness follows page counts; scanned courses show the dashed outline.
 
 **S7 Search**
 Pagefind after `astro build`, indexing readings and notes pages, UI loaded only when searching.
@@ -477,10 +502,32 @@ Chat links on converted course pages.
 | [#18 Soglie di qualità, feed, SEO e analytics](https://github.com/Simi24/simonepetta.com/issues/18) | WCAG 2.2 AA with axe in CI; byte budget; RSS for readings; Web Analytics; SEO on notes and about. |
 
 ### 15.2 Reconciliations
-Found while writing this document. Each is the smallest change that makes two decided tickets consistent; **the author should confirm or override them in review**.
+Found while writing this document and by the cold read (an agent with no context planning S0 and S1 from this file alone). Each item is the smallest change that makes decided tickets consistent or closes a gap with a conventional default. **All are applied in the sections above**; the author may override any of them.
 
-1. **Theme toggle vs JS budget.** [#9](https://github.com/Simi24/simonepetta.com/issues/9) decided a manual theme toggle; [#18](https://github.com/Simi24/simonepetta.com/issues/18) allows only the analytics beacon on normal pages. A toggle needs a small inline script (read the stored choice, set `data-theme` before paint). **Proposed**: allow one inline theme script of at most 1 KB as a declared budget exception.
-2. **Readings schema vs shelf and desk.** The shelf's spine height needs page counts ([#9](https://github.com/Simi24/simonepetta.com/issues/9)) and the desk records a one-line note for abandoned books ([#16](https://github.com/Simi24/simonepetta.com/issues/16)), but the schema in [#8](https://github.com/Simi24/simonepetta.com/issues/8) has neither. **Proposed**: optional `pagine` (integer) and `nota` (string) in the frontmatter; spines without `pagine` get a default height.
-3. **Page counts for PDF-only courses.** [#10](https://github.com/Simi24/simonepetta.com/issues/10) puts page counts in `build/meta.json`, but PDF-only courses have no `build/`. **Proposed**: `appunti/<slug>/meta.json` at the course root, produced by a lightweight pipeline step for every course (page count from the PDF); `build/` stays conversion-only and still drives the derived state.
-4. **Where the prototypes live.** The visual and desk contracts are on branch `docs/prototype-visual`. **Proposed**: copy `docs/prototype/` to `main` in S0 so the contract sits next to the code.
-5. **When Pagefind ships.** [#10](https://github.com/Simi24/simonepetta.com/issues/10) decided "Pagefind from the start" inside the notes ticket. **Proposed**: it ships with v1 (S7) and indexes readings too; v0 has no search.
+**Confirmed by the author (2026-09-29)**
+1. **Spine contrast**: dark mid-grey tint `#626260`, no opacity on spine text (§5.1). The prototype failed WCAG AA, which the blocking axe gate would have caught.
+2. **Interface copy rule**: agents may write functional copy; first-person and author-voice copy stays a placeholder (§1.2 point 3).
+3. **Sources off Overleaf now**, not at conversion time: archive repo `Simi24/appunti-sorgenti`; PDFs built locally in Docker (§7.1). Amends [#10](https://github.com/Simi24/simonepetta.com/issues/10).
+
+**Applied by default**
+4. **Theme toggle vs JS budget**: one inline theme script ≤ 1 KB is a declared budget exception (§5.1, §12.2).
+5. **Readings schema**: `pagine` and `nota` added; field rules per state made explicit (§6.1).
+6. **Book pages** exist only for books with a text (§3, §6.2).
+7. **Page counts** in `appunti/<slug>/meta.json` for every course, not in `build/` (§7.2).
+8. **Search** has its own page `/cerca/`, v1 (§3, §7.3); v0 has no search.
+9. **Single endpoint**: `/api/chat` also bootstraps the session (§3).
+10. **Rate limit**: the binding supports only 10 s / 60 s periods, so bursts use the binding and daily quotas use DynamoDB (§9.4).
+11. **No streaming in v2**: Python Lambdas lack native response streaming (§9.1).
+12. **Worker → Lambda auth**: HMAC shared secret, no AWS keys in the Worker (§9.1).
+13. **Budget split**: production gateway $3.00 primary / $4.00 total, eval gateway $0.50, all within 5 EUR (§9.4).
+14. **DNS**: the apex belongs to the wrangler Custom Domain; Terraform owns the other records (§10.3). Manual one-time steps are listed explicitly (§10.3).
+15. **Links**: underlined in running text; navigational objects are exempt (§5.1).
+16. **Dependencies**: dev tooling for `astro check` and the axe gate added; tests with `node:test` (§4.1).
+17. **`appunti` workflow** always runs and exits early, so a required check never hangs (§11).
+18. **Previews and pre-launch** are `noindex` and load no analytics (§11).
+19. **Vercel**: redirect-only deployment instead of deleting the project (S5).
+20. **This document is authoritative** for implementation; conflicts become issues (header).
+21. **Prototypes** are copied to `docs/prototype/` in S0 (§14).
+
+### 15.3 S0 prerequisites from the author
+Cloudflare account ID and a scoped API token (as GitHub secrets); AWS account/profile with eu-south-1 enabled; the Search Console TXT value; confirmation that the zone's apex and `www` records can be replaced; the LinkedIn URL. Texts for the about pages and section ledes are needed before the v0 launch (S5), not before S0.
