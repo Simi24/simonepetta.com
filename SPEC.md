@@ -119,7 +119,7 @@ docs/research/, docs/prototype/
 
 ## 5. Visual contract
 
-Direction **"Tipografico"** ([#9](https://github.com/Simi24/simonepetta.com/issues/9)). The contract is the prototype: [`docs/prototype/visual.html`](https://github.com/Simi24/simonepetta.com/blob/docs/prototype-visual/docs/prototype/visual.html) (v5). Build from it, not from this summary.
+Direction **"Tipografico"** ([#9](https://github.com/Simi24/simonepetta.com/issues/9)). The contract is the prototype: [`docs/prototype/visual.html`](https://github.com/Simi24/simonepetta.com/blob/docs/prototype-visual/docs/prototype/visual.html) (v5). Build from it, not from this summary; where §5.1 explicitly changes the prototype (contrast fix, tint hash, links), §5.1 wins.
 
 ### 5.1 Tokens
 | Token | Light | Dark |
@@ -134,6 +134,8 @@ Direction **"Tipografico"** ([#9](https://github.com/Simi24/simonepetta.com/issu
 - Contrast fix after the cold read: the dark mid-grey tint is `#626260` (the prototype had `#6e6e6c`, 4.28:1), and spine/notebook text has **no opacity** (the prototype dimmed the author's surname to 75%, down to 3.17:1). Every tint pair must pass WCAG AA for its text size; the axe gate checks it.
 - **No accent color.** Links in running text are always underlined. Navigational objects (nav items, brand, spines, notebooks, thesis cards) are recognizable as links by form and have no underline; they get a visible focus style.
 - **Theme** follows the system, both themes are designed, plus a three-state manual toggle (system / light / dark) remembered in `localStorage` ([#9](https://github.com/Simi24/simonepetta.com/issues/9)). It needs one inline script of at most 1 KB that sets `data-theme` before paint (budget exception, [§12.2](#122-performance-budget-blocking-checked-on-dist)).
+- **Theme toggle placement**: a text button in the nav (as in the desk prototype, "Tema: sistema"), handled by the same inline script.
+- **Nav links** appear only when their target exists ("Appunti" from S6, "EN" from S3), so the shell never links to a 404.
 - **Tint assignment** is stable: derived from a hash of the slug, not from list position, so colors do not reshuffle when a book is added.
 
 ### 5.2 Typography and layout
@@ -175,7 +177,7 @@ The schema is **strict** (unknown keys fail) and lives in its own module, so the
 
 - **Slugs**: kebab-case of the title, fixed at creation. On a collision, append the author's surname.
 - **Re-reads** are out of scope: one file per book; a re-read updates the dates.
-- **Ordering**: shelf and index show *in corso* first, then *letti* by `finito` descending, then *abbandonati*. The home shows the three most recently finished books.
+- **Ordering**: shelf and index show *in corso* (by `iniziato` descending), then *letti* (by `finito` descending), then *abbandonati* (by `finito` descending). The home shows the three most recently finished books.
 - **Empty state**: with no books the shelf shows an empty plank and a one-line functional caption. Test fixtures never enter the production collection.
 
 ### 6.2 What appears
@@ -351,7 +353,7 @@ v0 + v1: **$0 on Cloudflare** ([#3](https://github.com/Simi24/simonepetta.com/is
 | `eval` (v2) | PRs on `agent/**`, manual | golden set against the model with a separate gateway/cap → static report |
 
 - **Posts**: the author commits and pushes to `main`; the deploy is automatic. If checks fail, the previous version stays online. `main` has no branch protection that would block the author's direct pushes; the checks inside the `site` workflow are the gate.
-- **Previews and pre-launch**: preview versions and the site before the v0 launch (S5) send `noindex` and do not load the analytics beacon.
+- **Previews and pre-launch**: preview versions and the site before the v0 launch (S5) send `noindex` (a meta tag driven by a build flag) and do not load the analytics beacon. Preview URLs are enabled in `wrangler.jsonc`; the production `workers.dev` hostname stays disabled so the site is never indexed twice. `www` is a proxied `AAAA 100::` record with a path-preserving redirect rule to the apex.
 - **Code**: agents open PRs (the author's global hooks block agents from pushing to `main`); each PR gets a preview URL.
 - **Other machines**: the repo is the only source; pull, write, push. From a phone, GitHub's web editor.
 - **Rollback**: `wrangler rollback` to the previous version, no rebuild.
@@ -440,8 +442,8 @@ Replace `minimal-portfolio` on Vercel with a redirect-only deployment (its old c
 *AC*: all published courses and both theses are reachable (the author decides per course whether to publish the six barely started ones); excluded courses leave no page and no PDF; pile thickness follows page counts; scanned courses show the dashed outline.
 
 **S7 Search**
-Pagefind after `astro build`, indexing readings and notes pages, UI loaded only when searching.
-*AC*: search finds a reading and a course page; no Pagefind JS on pages until the search is used.
+Pagefind after `astro build`, indexing readings and notes pages, UI on `/cerca/` only.
+*AC*: search on `/cerca/` finds a reading and a course page; no Pagefind JS on any other page.
 
 **S8 Conversion pipeline**
 Docker (LaTeXML via BookML), `make appunti CORSO=<slug>`, chapter pages with TOC and LaTeX conventions, Fira Math, TikZ with `currentColor`, alt text, leak detector, `appunti` workflow. First course: `GPUcomputing` (the hardest of the measured samples).
@@ -466,7 +468,7 @@ Lambda with the three tools, `max_steps`, citation enforcement, "not in your not
 *AC*: invoked directly, the agent answers with valid citations, refuses correctly on absent topics, and stops at `max_steps`.
 
 **S13 Chat Worker and page**
-`workers/api`: Turnstile, signed session token, rate limiting binding, streaming proxy to the Lambda; Preact island on the static chat page; collapsed trace; budget-exhausted state; `api` and `agent` workflows.
+`workers/api`: Turnstile, signed session token, rate limiting binding, proxy to the Lambda (no streaming, §9.1); Preact island on the static chat page; collapsed trace; budget-exhausted state; `api` and `agent` workflows.
 *AC*: end-to-end chat on a converted course; rate limit triggers; with the budget exhausted the page shows the paused state and the rest of the site is unaffected.
 
 **S14 Evaluation**
@@ -486,7 +488,7 @@ Chat links on converted course pages.
 | [#2 Capire l'architettura a isole](https://github.com/Simi24/simonepetta.com/issues/2) | Islands move the default: JS without `client:*` is removed at build. Astro is the only serious candidate; the chat island can be Preact. |
 | [#3 Vincoli reali di Cloudflare Pages + Workers](https://github.com/Simi24/simonepetta.com/issues/3) | Workers Static Assets, not Pages; no account hard cap; AI Gateway spend limits; v0 + v1 cost $0. |
 | [#4 Pipeline LaTeX -> web e rendering della matematica](https://github.com/Simi24/simonepetta.com/issues/4) | pandoc rejected; LaTeXML via BookML; native MathML; HTML without intermediate Markdown; weeks of cost. |
-| [#5 Elenco dei corsi + un corso campione](https://github.com/Simi24/simonepetta.com/issues/5) | ~25 courses + 2 theses; each course fits in context; theses are the most valuable items. |
+| [#5 Elenco dei corsi + un corso campione](https://github.com/Simi24/simonepetta.com/issues/5) | ~25 courses + 2 theses at the time (the Overleaf export later counted 30, §7.1); each course fits in context; theses are the most valuable items. |
 | [#6 Scegliere lo stack del sito](https://github.com/Simi24/simonepetta.com/issues/6) | Astro static without adapter, plain `.md`, plain CSS, npm; the chat endpoint is a separate Worker. |
 | [#7 Un'origin sola o sotto-domini separati](https://github.com/Simi24/simonepetta.com/issues/7) | One origin; URL structure. |
 | [#8 Dove vive e come si scrive un post di lettura](https://github.com/Simi24/simonepetta.com/issues/8) | Site and wiki independent; one `.md` per book; all books shown; half-point grades; local desk. |
@@ -530,4 +532,4 @@ Found while writing this document and by the cold read (an agent with no context
 21. **Prototypes** are copied to `docs/prototype/` in S0 (§14).
 
 ### 15.3 S0 prerequisites from the author
-Cloudflare account ID and a scoped API token (as GitHub secrets); AWS account/profile with eu-south-1 enabled; the Search Console TXT value; confirmation that the zone's apex and `www` records can be replaced; the LinkedIn URL. Texts for the about pages and section ledes are needed before the v0 launch (S5), not before S0.
+Cloudflare account ID and two scoped API tokens: one for CI Worker deploys (GitHub secret), one local-only for Terraform (DNS, rulesets, Web Analytics, AI Gateway, Turnstile); AWS account/profile with eu-south-1 enabled; the Search Console TXT value; confirmation that the zone's apex and `www` records can be replaced; the LinkedIn URL. Texts for the about pages and section ledes are needed before the v0 launch (S5), not before S0.
