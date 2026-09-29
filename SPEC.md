@@ -251,7 +251,7 @@ Conversion fails silently, so verification cannot be the human eye. The detector
 Structure prototyped in [#9](https://github.com/Simi24/simonepetta.com/issues/9); **texts are written by the author** (out of scope for agents).
 - `/`: name, one-line lede, bio paragraphs, **Percorso** (timeline), **Open source** (e.g. `dynantic`), latest readings, **Colophon**.
 - `/en/`: the English about page, with English navigation and labels and no Italian content blocks (no latest readings). `hreflang` links the two.
-- Open Graph images are designed by an agent from the visual contract (typographic, no photos); the author provides the LinkedIn URL for `sameAs`.
+- Open Graph images are designed by an agent from the visual contract (typographic, no photos). `sameAs`: GitHub `https://github.com/Simi24`, LinkedIn `https://www.linkedin.com/in/simone-paolo-petta/`.
 - **Colophon**, six lines: typeface (Host Grotesk), math (MathML drawn by the browser without JavaScript), notes (LaTeX converted with LaTeXML outside the build), build (Astro, static pages), hosting (Cloudflare Workers), writing (Markdown from a local desk, texts written by hand without language models).
 - **SEO priority high** ([#18](https://github.com/Simi24/simonepetta.com/issues/18)): JSON-LD `Person` with `sameAs` (GitHub, LinkedIn), curated Open Graph image.
 
@@ -329,9 +329,9 @@ Region **eu-south-1** (Milan). Lambda (Python, hand-written loop, not AgentCore 
 | Lambda code | `agent` workflow; Terraform has `ignore_changes` on the code |
 | AI Gateways (production and eval) + spend limits + Dynamic Route, Turnstile widget, Web Analytics site, `www` record + redirect rule, Search Console TXT | Terraform (Cloudflare provider); **never the apex record** |
 | Lambda configuration, DynamoDB, S3 Vectors, S3 buckets, IAM, OIDC role, SSM parameters | Terraform (AWS provider) |
-| Terraform state bucket (versioned, encrypted, S3 native lockfile) | a separate `infra/bootstrap` config, applied once |
+| Terraform state bucket (versioned, encrypted, S3 native lockfile) and an **AWS Budget** of $5/month with email alerts at 50%, 80% and 100% (actual) and 100% (forecast) | a separate `infra/bootstrap` config, applied once |
 
-Terraform is applied **by hand from the author's Mac**, with remote state on S3 so it works from several machines. Terraform never owns code that changes often, or every deploy becomes drift.
+Terraform is applied **by hand from the author's Mac**, with remote state on S3 so it works from several machines. **AWS account: the author's personal one, CLI profile `personale`** (account `209556027092`). The AWS provider pins `profile = "personale"` and `allowed_account_ids = ["209556027092"]`: the machine's `default` profile is a different account and must never be touched. An AWS Budget only alerts, it never stops spending; the hard cap on model spend stays at the AI Gateway (§9.4). Terraform never owns code that changes often, or every deploy becomes drift.
 
 **One-time manual steps** (the only configuration outside code): create a scoped Cloudflare API token and store it with the account ID as GitHub secrets; start Search Console verification to get the TXT value; enable the opt-in region eu-south-1 and, for v2, Bedrock access to Cohere Embed v4; buy Workers AI Unified Billing credits (v2); confirm that the zone has no conflicting apex/`www` records. These are **S0/S10 prerequisites** the author provides.
 
@@ -532,4 +532,9 @@ Found while writing this document and by the cold read (an agent with no context
 21. **Prototypes** are copied to `docs/prototype/` in S0 (§14).
 
 ### 15.3 S0 prerequisites from the author
-Cloudflare account ID and two scoped API tokens: one for CI Worker deploys (GitHub secret), one local-only for Terraform (DNS, rulesets, Web Analytics, AI Gateway, Turnstile); AWS account/profile with eu-south-1 enabled; the Search Console TXT value; confirmation that the zone's apex and `www` records can be replaced; the LinkedIn URL. Texts for the about pages and section ledes are needed before the v0 launch (S5), not before S0.
+Checked on 2026-09-29:
+- **Cloudflare**: the zone `simonepetta.com` is active in the author's account; it has only `vault.` and `tripla.` records (no apex, no `www`, so no conflicts; Terraform must never manage those two). The existing local `CLOUDFLARE_API_TOKEN` is zone-scoped: it reads Workers scripts and DNS but not Custom Domains, rulesets, AI Gateway, Turnstile or Web Analytics. **Needed from the author**: one token for CI from the dashboard template "Edit Cloudflare Workers", restricted to this account and zone, stored as a GitHub secret; one local-only token for Terraform with, in addition, Account: AI Gateway Edit, Turnstile Edit, Web Analytics Edit, Workers AI Read; Zone (`simonepetta.com`): DNS Edit, Single Redirect (Dynamic URL Redirects) Edit.
+- **AWS**: profile `personale`, eu-south-1 already enabled, current spend $0, no budget yet (created in S0).
+- **Search Console**: the TXT value is needed only for S5 (launch), not for S0.
+- **LinkedIn**: given (§8).
+Texts for the about pages and section ledes are needed before the v0 launch (S5), not before S0.
