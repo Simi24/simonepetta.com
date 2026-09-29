@@ -130,10 +130,6 @@ h2 { font-weight: 700; font-size: 1.5rem; letter-spacing: -.02em; margin: 2em 0 
 .courses li:first-child { border-top: 1px solid var(--rule); }
 .courses .cn { font-weight: 600; }
 .courses .cf, .courses .cp { color: var(--muted); font-variant-numeric: tabular-nums; }
-.courses .bc { display: none; }
-.with-bc .courses li { grid-template-columns: minmax(0, 1fr) 10rem 11rem 5rem; }
-.with-bc .courses .bc { display: flex; height: .85rem; gap: 1px; }
-.bc i { display: block; background: var(--ink); }
 
 /* ---------- post ---------- */
 .back, .crumbs { grid-column: 1 / -1 !important; font-weight: 500; margin-bottom: 1.5rem; display: block; }
@@ -172,9 +168,8 @@ blockquote p { margin: 0; }
   .books-group h2 { margin-bottom: .6rem; }
   .piles { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 2rem; }
   .theses { grid-template-columns: minmax(0, 1fr); }
-  .courses li, .with-bc .courses li { grid-template-columns: minmax(0, 1fr) auto; }
+  .courses li { grid-template-columns: minmax(0, 1fr) auto; }
   .courses .cf { grid-column: 1; grid-row: 2; }
-  .courses .bc { grid-column: 1 / -1; }
   .colophon { grid-template-columns: minmax(0, 1fr); }
   .colophon dd { margin-bottom: .5rem; }
 }
@@ -371,7 +366,6 @@ blockquote p { margin: 0; }
       <button id="p-home" data-p="home">Chi sono</button><button id="p-letture" data-p="letture">Letture</button><button id="p-post" data-p="post">Post</button><button id="p-appunti" data-p="appunti">Appunti</button><button id="p-corso" data-p="corso">Corso</button>
     </div>
     <div class="proto-group"><span>Tema</span><button id="theme-btn">Sistema</button></div>
-    <div class="proto-group"><span>Idea extra</span><button id="bc-btn" aria-pressed="false">Codice a barre dei corsi</button></div>
   </div>
 </div>
 
@@ -455,15 +449,6 @@ blockquote p { margin: 0; }
         var li = el("li");
         var name = el(c[2] === "html" ? "a" : "span", "cn", c[0]); if (c[0] === "Probabilità e statistica") go(name, "corso");
         li.appendChild(name);
-        var bc = el("span", "bc"); bc.setAttribute("aria-hidden", "true");
-        var h = hash(c[0]), chapters = 5 + (h % 5);
-        for (var k = 0; k < chapters; k++) {
-          var r = hash(c[0] + k), bar = el("i");
-          bar.style.flexGrow = String(2 + (r % 7));
-          bar.style.opacity = String(0.12 + ((r >>> 4) % 88) / 100);
-          bc.appendChild(bar);
-        }
-        li.appendChild(bc);
         li.appendChild(el("span", "cf", yr.y + " " + yr.d));
         li.appendChild(el("span", "cp", c[1] + " pag."));
         list.appendChild(li);
@@ -478,8 +463,8 @@ blockquote p { margin: 0; }
   renderAppunti();
 
   var PAGES = ["home", "letture", "post", "appunti", "corso"];
-  var state = { p: "home", bc: false };
-  try { var saved = JSON.parse(localStorage.getItem("sp-proto-2") || "{}"); if (PAGES.indexOf(saved.p) >= 0) state.p = saved.p; state.bc = !!saved.bc; } catch (e) {}
+  var state = { p: "home" };
+  try { var saved = JSON.parse(localStorage.getItem("sp-proto-2") || "{}"); if (PAGES.indexOf(saved.p) >= 0) state.p = saved.p; } catch (e) {}
   var m = /^#(home|letture|post|appunti|corso)$/.exec(location.hash); if (m) state.p = m[1];
 
   function apply() {
@@ -490,17 +475,14 @@ blockquote p { margin: 0; }
       if (cur) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     document.querySelectorAll("#g-p button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-p") === state.p)); });
-    document.getElementById("bc-btn").setAttribute("aria-pressed", String(state.bc));
-    document.body.classList.toggle("with-bc", state.bc);
     try { localStorage.setItem("sp-proto-2", JSON.stringify(state)); } catch (e) {}
     try { history.replaceState(null, "", "#" + state.p); } catch (e) {}
   }
 
   document.addEventListener("click", function (e) {
-    var t = e.target.closest("[data-go], #g-p button, #bc-btn");
+    var t = e.target.closest("[data-go], #g-p button");
     if (!t) return;
-    if (t.id === "bc-btn") { state.bc = !state.bc; }
-    else { e.preventDefault(); state.p = t.getAttribute("data-go") || t.getAttribute("data-p"); window.scrollTo(0, 0); }
+    e.preventDefault(); state.p = t.getAttribute("data-go") || t.getAttribute("data-p"); window.scrollTo(0, 0);
     apply();
   });
   document.addEventListener("keydown", function (e) {
