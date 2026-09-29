@@ -1,0 +1,405 @@
+<title>La scrivania</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&display=swap">
+<style>
+:root {
+  --bg:#ededeb; --ink:#161616; --muted:#646462; --rule:#cfcfcc; --surface:#e2e2df; --paper:#f6f6f4;
+  --sp1:#161616; --sp1t:#ededeb; --sp2:#4a4a48; --sp2t:#ededeb; --sp3:#9a9a97; --sp3t:#161616;
+  --sp4:#d2d2cf; --sp4t:#161616; --sp5:#2c2c2b; --sp5t:#ededeb;
+  --font:"Host Grotesk", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:#151515; --ink:#ebebe8; --muted:#9a9a97; --rule:#2e2e2d; --surface:#1f1f1e; --paper:#1b1b1a;
+    --sp1:#ebebe8; --sp1t:#151515; --sp2:#b5b5b2; --sp2t:#151515; --sp3:#6e6e6c; --sp3t:#ebebe8;
+    --sp4:#3a3a39; --sp4t:#ebebe8; --sp5:#d0d0cd; --sp5t:#151515;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#151515; --ink:#ebebe8; --muted:#9a9a97; --rule:#2e2e2d; --surface:#1f1f1e; --paper:#1b1b1a;
+  --sp1:#ebebe8; --sp1t:#151515; --sp2:#b5b5b2; --sp2t:#151515; --sp3:#6e6e6c; --sp3t:#ebebe8;
+  --sp4:#3a3a39; --sp4t:#ebebe8; --sp5:#d0d0cd; --sp5t:#151515;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 84rem; margin-inline: auto; padding-inline: 20px; padding-block: 24px 120px; font-size: 1.1rem; line-height: 1.5; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+h1 { font-weight: 700; font-size: clamp(2.4rem, 6vw, 4.6rem); line-height: .95; letter-spacing: -.04em; margin: 0 0 .3em; text-wrap: balance; }
+h2 { font-weight: 700; font-size: 1.05rem; margin: 0 0 .8rem; }
+p { margin: 0 0 1em; text-wrap: pretty; }
+.muted { color: var(--muted); }
+.top { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.5rem; font-weight: 500; }
+.top .dev { color: var(--muted); font-weight: 400; font-size: .9rem; }
+.btn { border: 1.5px solid var(--ink); background: transparent; padding: .55rem 1rem; border-radius: 999px; font-weight: 500; white-space: nowrap; transition: translate .15s; }
+.btn:active { translate: 0 1px; }
+.btn.solid { background: var(--ink); color: var(--bg); }
+.btn.quiet { border-color: var(--rule); color: var(--muted); }
+.link { background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: .2em; text-decoration-thickness: 1.5px; }
+.section { border-top: 2px solid var(--ink); padding-top: .8rem; margin-top: 2.5rem; }
+
+/* ---------- shelf ---------- */
+.shelf-wrap { overflow-x: auto; }
+.shelf { display: flex; align-items: flex-end; gap: 4px; padding: 1.6rem .4rem 0; min-width: min-content; border-bottom: 6px solid var(--ink); }
+.spine { writing-mode: vertical-rl; transform: rotate(180deg); display: flex; justify-content: space-between; align-items: center;
+  padding: .7rem 0; border: 0; border-radius: 1px; font-size: .8rem; line-height: 1.1; font-weight: 600; position: relative;
+  transition: translate .25s cubic-bezier(.2,.8,.2,1); }
+.spine > span { overflow: hidden; max-height: 100%; }
+.spine .sa { font-weight: 400; opacity: .75; }
+.spine:hover, .spine:focus-visible, .spine[aria-pressed="true"] { translate: 0 -10px; }
+.spine.abbandonato { transform: rotate(172deg); margin-inline: 1.2rem; }
+.spine.corso::after { content: ""; position: absolute; bottom: -1.1rem; left: 42%; width: .5rem; height: 1.6rem; background: var(--ink); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%); }
+.spine.add { background: transparent; outline: 1.5px dashed var(--muted); outline-offset: -1.5px; color: var(--muted); height: 9rem; width: 2.4rem; justify-content: center; }
+.caption { color: var(--muted); font-size: .9rem; margin-top: .7rem; }
+
+.actions { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 1.5rem; align-items: start; }
+.actions .who { grid-column: 1 / span 5; }
+.actions .who b { display: block; font-size: 1.6rem; letter-spacing: -.02em; line-height: 1.1; }
+.actions .do { grid-column: 6 / -1; display: flex; flex-wrap: wrap; gap: .6rem; }
+.form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; max-width: 56rem; }
+.field { display: grid; gap: .3rem; }
+.field label { font-size: .9rem; color: var(--muted); }
+.field input, .field textarea { background: var(--paper); border: 1.5px solid var(--rule); border-radius: 6px; padding: .55rem .7rem; }
+.field input:focus, .field textarea:focus { border-color: var(--ink); outline: none; }
+.span2 { grid-column: span 2; } .span4 { grid-column: 1 / -1; }
+
+/* ---------- desk (writing) ---------- */
+.desk-head { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 1.5rem; align-items: end; margin-bottom: 1.2rem; }
+.desk-head .t { grid-column: 1 / span 8; }
+.desk-head .t h1 { margin: 0; }
+.desk-head .t p { margin: .4rem 0 0; font-size: 1.25rem; font-weight: 500; }
+.desk-head .v { grid-column: 9 / -1; }
+.votes { display: flex; gap: .15rem; flex-wrap: wrap; }
+.votes button { border: 0; background: none; font-size: 1.9rem; font-weight: 300; letter-spacing: -.04em; line-height: 1; padding: .15rem .3rem; color: var(--muted); border-radius: 4px; font-variant-numeric: tabular-nums; }
+.votes button[aria-pressed="true"] { color: var(--bg); background: var(--ink); }
+.votes button.half { font-size: 1.1rem; }
+.dates { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: .6rem; font-size: .9rem; }
+.dates input { background: transparent; border: 0; border-bottom: 1.5px solid var(--rule); padding: .1rem 0; font-variant-numeric: tabular-nums; }
+.desk { display: grid; grid-template-columns: minmax(0, 1fr) 17rem; gap: 1.5rem; align-items: start; }
+.paper { background: var(--paper); border-radius: 4px; min-height: 60vh; padding: 2rem clamp(1rem, 4vw, 3rem); }
+.paper textarea { width: 100%; min-height: 55vh; border: 0; background: transparent; resize: none; font-size: 1.2rem; line-height: 1.6; outline: none; }
+.paper textarea::placeholder { color: var(--muted); }
+.side { position: sticky; top: 1rem; display: grid; gap: 1.5rem; font-size: .95rem; }
+.clock { font-size: 3.4rem; font-weight: 300; letter-spacing: -.04em; line-height: .9; font-variant-numeric: tabular-nums; }
+.clock-note { color: var(--muted); margin-top: .4rem; }
+.words b { font-size: 1.6rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.prompts li { margin-bottom: .35rem; }
+.prompts button { text-align: left; background: none; border: 0; padding: 0; color: var(--muted); }
+.prompts button:hover { color: var(--ink); text-decoration: underline; text-underline-offset: .2em; }
+.bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; padding: .7rem 20px calc(.7rem + env(safe-area-inset-bottom, 0px));
+  background: color-mix(in srgb, var(--bg) 92%, var(--ink)); border-top: 1px solid var(--rule); }
+.bar-in { max-width: 84rem; margin-inline: auto; display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+.bar-in .grow { flex: 1; color: var(--muted); font-size: .9rem; }
+
+/* ---------- preview (same rules as the site post) ---------- */
+.pv { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 1.5rem; }
+.pv > * { grid-column: 5 / span 7; }
+.pv .pv-title { grid-column: 1 / -1; font-weight: 700; font-size: clamp(2.6rem, 6.5vw, 5.6rem); line-height: .94; letter-spacing: -.04em; margin: 0 0 .35em; }
+.pv .pv-by { font-size: 1.4rem; font-weight: 500; margin: 0 0 2rem; }
+.pv .pv-facts { grid-column: 1 / span 4; grid-row: 2 / span 3; display: flex; flex-direction: column; gap: .5rem; margin: 0; }
+.pv .pv-facts dt { color: var(--muted); } .pv .pv-facts dd { margin: 0; }
+.pv .vote-big { font-size: 4.2rem; line-height: .9; font-weight: 300; letter-spacing: -.04em; }
+.pv h2 { font-size: 1.5rem; letter-spacing: -.02em; margin: 2em 0 .5em; }
+.pv .empty { color: var(--muted); font-style: italic; }
+
+/* ---------- saved ---------- */
+.file { background: var(--paper); border-radius: 4px; padding: 1rem 1.2rem; overflow-x: auto; font: .9rem/1.55 ui-monospace, "SF Mono", Menlo, monospace; white-space: pre; }
+.path { font: .95rem ui-monospace, "SF Mono", Menlo, monospace; }
+.steps { display: grid; gap: .3rem; margin-top: 1rem; }
+.steps code { font: .9rem ui-monospace, "SF Mono", Menlo, monospace; background: var(--surface); padding: .1rem .4rem; border-radius: 4px; }
+
+@media (max-width: 860px) {
+  .actions, .desk-head, .pv { grid-template-columns: minmax(0, 1fr); }
+  .actions > *, .desk-head > *, .pv > * { grid-column: 1 !important; grid-row: auto !important; }
+  .actions .do { margin-top: 1rem; }
+  .desk { grid-template-columns: minmax(0, 1fr); }
+  .side { position: static; order: -1; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pv .pv-facts { flex-direction: row; flex-wrap: wrap; gap: .5rem 1.5rem; margin: 0 0 1.5rem; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span>Scrivania <span class="dev">solo in locale, npm run dev</span></span>
+    <button class="link" id="theme-btn" type="button">Tema: sistema</button>
+  </header>
+
+  <!-- ============ HOME: la mensola ============ -->
+  <section id="v-home">
+    <h1>Cosa hai sul comodino?</h1>
+    <div class="shelf-wrap"><div class="shelf" id="shelf" role="group" aria-label="Libri"></div></div>
+    <p class="caption">Scegli un dorso per aggiornarlo. Quello tratteggiato aggiunge un libro.</p>
+
+    <div class="section" id="panel-book" hidden>
+      <div class="actions">
+        <div class="who"><b id="pb-title"></b><span class="muted" id="pb-meta"></span></div>
+        <div class="do" id="pb-actions"></div>
+      </div>
+    </div>
+
+    <div class="section" id="panel-new" hidden>
+      <h2>Nuovo libro sul comodino</h2>
+      <form class="form" id="new-form">
+        <div class="field span2"><label for="nf-t">Titolo</label><input id="nf-t" required></div>
+        <div class="field span2"><label for="nf-a">Autore</label><input id="nf-a" required></div>
+        <div class="field"><label for="nf-y">Anno dell'opera</label><input id="nf-y" inputmode="numeric"></div>
+        <div class="field"><label for="nf-p">Pagine</label><input id="nf-p" inputmode="numeric"></div>
+        <div class="field span2"><label for="nf-s">Iniziato il</label><input id="nf-s" type="date"></div>
+        <div class="span4"><button class="btn solid" type="submit">Inizia a leggerlo</button></div>
+      </form>
+    </div>
+
+    <div class="section" id="panel-drop" hidden>
+      <h2>Lasciato a metà</h2>
+      <form class="form" id="drop-form">
+        <div class="field span2"><label for="df-n">Dove l'hai lasciato, e perché (una riga basta)</label><input id="df-n" placeholder="Per esempio: a pagina 60, non mi prendeva"></div>
+        <div class="field"><label for="df-d">Il</label><input id="df-d" type="date"></div>
+        <div class="span4"><button class="btn solid" type="submit">Mettilo di traverso</button></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ DESK: scrivere ============ -->
+  <section id="v-desk" hidden>
+    <div class="desk-head">
+      <div class="t"><h1 id="dk-title"></h1><p id="dk-by"></p></div>
+      <div class="v">
+        <div class="muted" style="font-size:.9rem">Voto</div>
+        <div class="votes" id="votes"></div>
+        <div class="dates">
+          <label>Iniziato <input type="date" id="dk-start"></label>
+          <label>Finito <input type="date" id="dk-end"></label>
+        </div>
+      </div>
+    </div>
+    <div class="desk">
+      <div class="paper"><textarea id="dk-text" aria-label="La tua reazione" placeholder="Scrivi come se nessuno leggesse. Una passata, poi salvi."></textarea></div>
+      <aside class="side">
+        <div><div class="clock" id="clock">20:00</div><div class="clock-note" id="clock-note">Parte quando inizi a scrivere.</div></div>
+        <div class="words"><b id="words">0</b> <span class="muted">parole, intorno a 250</span></div>
+        <div>
+          <h2>Se ti serve una traccia</h2>
+          <ol class="prompts" id="prompts"></ol>
+          <p class="muted" style="font-size:.85rem">Clic per usarla come titolo. Non sei obbligato.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ PREVIEW ============ -->
+  <section id="v-preview" hidden>
+    <p class="muted" style="margin-bottom:1.5rem">Anteprima: così appare su simonepetta.com/letture/<span id="pv-slug"></span>/</p>
+    <article class="pv" id="pv"></article>
+  </section>
+
+  <!-- ============ SAVED ============ -->
+  <section id="v-saved" hidden>
+    <h1 id="sv-head">Salvato.</h1>
+    <p>Il file è sul disco, nel repo del sito:</p>
+    <p class="path" id="sv-path"></p>
+    <div class="file" id="sv-file"></div>
+    <div class="steps">
+      <p style="margin:0">Per pubblicarlo, dal terminale: <code>git commit -am "letture: …"</code> e poi push. Il deploy parte da solo.</p>
+      <p class="muted" style="margin:0">In questo prototipo il file non viene scritto: la scrivania vera lo salva attraverso il server di sviluppo.</p>
+    </div>
+    <p style="margin-top:1.5rem"><button class="btn" id="sv-back" type="button">Torna alla mensola</button></p>
+  </section>
+</div>
+
+<div class="bar" id="bar" hidden>
+  <div class="bar-in">
+    <span class="grow" id="bar-note"></span>
+    <button class="btn quiet" id="b-back" type="button">Mensola</button>
+    <button class="btn" id="b-preview" type="button">Anteprima</button>
+    <button class="btn" id="b-edit" type="button" hidden>Torna a scrivere</button>
+    <button class="btn solid" id="b-save" type="button">Salva</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var TODAY = "2026-09-29";
+  var books = [
+    { t: "Lo Zen e l'arte della manutenzione della motocicletta", a: "Robert M. Pirsig", y: 1974, p: 400, s: "corso", start: "2026-09-14" },
+    { t: "I promessi sposi", a: "Alessandro Manzoni", y: 1840, p: 720, s: "letto", start: "2026-09-02", end: "2026-09-21", v: 4, text: "" },
+    { t: "Il sistema periodico", a: "Primo Levi", y: 1975, p: 240, s: "letto", start: "2026-08-10", end: "2026-08-30", v: 4.5, text: "" },
+    { t: "Il deserto dei Tartari", a: "Dino Buzzati", y: 1940, p: 270, s: "letto", start: "2026-07-15", end: "2026-08-02", v: 3.5 },
+    { t: "Lessico famigliare", a: "Natalia Ginzburg", y: 1963, p: 220, s: "letto", start: "2026-06-25", end: "2026-07-12", v: 3 },
+    { t: "Finzioni", a: "Jorge Luis Borges", y: 1944, p: 180, s: "abbandonato", start: "2026-05-20", end: "2026-06-02", note: "a pagina 60" }
+  ];
+  var PROMPTS = ["Cosa ci ho trovato che non mi aspettavo", "A cosa si collega", "Cosa non ha funzionato", "Voto, e a chi lo darei"];
+  var TINTS = ["1", "2", "5", "3", "4"];
+  var MESI = ["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"];
+  var sel = -1, cur = null, timer = null, left = 20 * 60, started = false;
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function fmtDate(iso) { if (!iso) return ""; var d = iso.split("-"); return (+d[2]) + " " + MESI[+d[1] - 1] + " " + d[0]; }
+  function fmtVote(v) { return v == null ? "" : (v % 1 ? Math.floor(v) + ",5" : String(v)); }
+  function slug(t) { return t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/['’]/g, "-").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+  function show(view) {
+    ["home", "desk", "preview", "saved"].forEach(function (v) { $("v-" + v).hidden = v !== view; });
+    $("bar").hidden = !(view === "desk" || view === "preview");
+    $("b-preview").hidden = view !== "desk"; $("b-edit").hidden = view !== "preview";
+    window.scrollTo(0, 0);
+  }
+
+  /* ---------- shelf ---------- */
+  function renderShelf() {
+    var sh = $("shelf"); sh.textContent = "";
+    books.forEach(function (b, i) {
+      var s = el("button", "spine " + b.s); s.type = "button";
+      var t = TINTS[i % TINTS.length];
+      s.style.background = "var(--sp" + t + ")"; s.style.color = "var(--sp" + t + "t)";
+      s.style.height = (8 + (b.p || 250) / 80) + "rem"; s.style.width = (2.1 + (b.p || 250) / 400) + "rem";
+      s.appendChild(el("span", null, b.t.length > 34 ? b.t.slice(0, 32) + "…" : b.t));
+      s.appendChild(el("span", "sa", b.a.split(" ").slice(-1)[0]));
+      s.setAttribute("aria-label", b.t + ", " + b.a); s.setAttribute("aria-pressed", String(i === sel));
+      s.addEventListener("click", function () { pick(i); });
+      sh.appendChild(s);
+    });
+    var add = el("button", "spine add", "+ aggiungi"); add.type = "button";
+    add.setAttribute("aria-pressed", String(sel === "new"));
+    add.addEventListener("click", function () { pick("new"); });
+    sh.appendChild(add);
+  }
+  function pick(i) {
+    sel = i; renderShelf();
+    $("panel-new").hidden = i !== "new"; $("panel-drop").hidden = true; $("panel-book").hidden = i === "new";
+    if (i === "new") { $("nf-s").value = TODAY; $("nf-t").focus(); return; }
+    var b = books[i]; $("pb-title").textContent = b.t;
+    var meta = b.a + ", " + (b.s === "corso" ? "in corso dal " + fmtDate(b.start) : b.s === "abbandonato" ? "lasciato " + (b.note || "") : "finito il " + fmtDate(b.end) + (b.v != null ? ", voto " + fmtVote(b.v) : ""));
+    $("pb-meta").textContent = meta;
+    var act = $("pb-actions"); act.textContent = "";
+    function btn(label, cls, fn) { var x = el("button", "btn " + (cls || ""), label); x.type = "button"; x.addEventListener("click", fn); act.appendChild(x); }
+    if (b.s === "corso") {
+      btn("L'ho finito, scrivo", "solid", function () { openDesk(i, true); });
+      btn("L'ho finito, senza testo", "", function () { b.end = TODAY; b.s = "letto"; openDesk(i, false); });
+      btn("L'ho lasciato a metà", "quiet", function () { $("panel-drop").hidden = false; $("df-d").value = TODAY; $("df-n").focus(); });
+    } else if (b.s === "letto") {
+      btn(b.text ? "Riapri il testo" : "Scrivi il testo", "solid", function () { openDesk(i, true); });
+    } else {
+      btn("Ricomincialo", "", function () { b.s = "corso"; b.start = TODAY; delete b.end; delete b.note; pick(i); });
+    }
+  }
+  $("new-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    books.unshift({ t: $("nf-t").value.trim(), a: $("nf-a").value.trim(), y: +$("nf-y").value || null, p: +$("nf-p").value || 250, s: "corso", start: $("nf-s").value || TODAY });
+    e.target.reset(); savedView(0, "Sul comodino.");
+  });
+  $("drop-form").addEventListener("submit", function (e) {
+    e.preventDefault(); var b = books[sel];
+    b.s = "abbandonato"; b.end = $("df-d").value || TODAY; b.note = $("df-n").value.trim(); e.target.reset();
+    savedView(sel, "Messo di traverso.");
+  });
+
+  /* ---------- desk ---------- */
+  function openDesk(i, writing) {
+    cur = i; var b = books[i];
+    if (!b.end) b.end = TODAY;
+    if (!writing) { b.s = "letto"; }
+    $("dk-title").textContent = b.t; $("dk-by").textContent = b.a + (b.y ? ", " + b.y : "");
+    $("dk-start").value = b.start || ""; $("dk-end").value = b.end || TODAY;
+    renderVotes(b.v);
+    $("dk-text").value = b.text || ""; countWords();
+    resetClock();
+    $("bar-note").textContent = writing ? "Il testo è opzionale: anche solo il voto va bene." : "Senza testo: scegli il voto e salva.";
+    $("dk-text").closest(".desk").hidden = !writing;
+    show("desk");
+    if (writing) $("dk-text").focus();
+  }
+  function renderVotes(v) {
+    var box = $("votes"); box.textContent = "";
+    for (var n = 1; n <= 5; n += 0.5) {
+      (function (val) {
+        var x = el("button", val % 1 ? "half" : "", val % 1 ? "½" : String(val)); x.type = "button";
+        x.setAttribute("aria-label", "Voto " + fmtVote(val)); x.setAttribute("aria-pressed", String(v === val));
+        x.addEventListener("click", function () { books[cur].v = books[cur].v === val ? null : val; renderVotes(books[cur].v); });
+        box.appendChild(x);
+      })(n);
+    }
+  }
+  function countWords() { var w = $("dk-text").value.trim().split(/\s+/).filter(Boolean).length; $("words").textContent = w; }
+  function resetClock() { clearInterval(timer); timer = null; left = 20 * 60; started = false; $("clock").textContent = "20:00"; $("clock-note").textContent = "Parte quando inizi a scrivere."; }
+  function tick() {
+    left = Math.max(0, left - 1);
+    $("clock").textContent = String(Math.floor(left / 60)).padStart(2, "0") + ":" + String(left % 60).padStart(2, "0");
+    if (left === 0) { clearInterval(timer); $("clock-note").textContent = "Venti minuti. Se hai detto quello che volevi, salva così com'è."; }
+  }
+  $("dk-text").addEventListener("input", function () {
+    countWords(); books[cur].text = this.value;
+    if (!started) { started = true; $("clock-note").textContent = "Una passata sola, senza tornare indietro."; timer = setInterval(tick, 1000); }
+  });
+  PROMPTS.forEach(function (q) {
+    var li = el("li"), b = el("button", null, q); b.type = "button";
+    b.addEventListener("click", function () {
+      var ta = $("dk-text"), pre = ta.value && !ta.value.endsWith("\n\n") ? (ta.value.endsWith("\n") ? "\n" : "\n\n") : "";
+      ta.value += pre + "## " + q + "\n\n"; ta.focus(); ta.dispatchEvent(new Event("input"));
+    });
+    li.appendChild(b); $("prompts").appendChild(li);
+  });
+  $("dk-start").addEventListener("change", function () { books[cur].start = this.value; });
+  $("dk-end").addEventListener("change", function () { books[cur].end = this.value; });
+
+  /* ---------- preview ---------- */
+  function renderPreview() {
+    var b = books[cur], pv = $("pv"); pv.textContent = "";
+    $("pv-slug").textContent = slug(b.t);
+    pv.appendChild(el("h1", "pv-title", b.t));
+    pv.appendChild(el("p", "pv-by", b.a + (b.y ? ", " + b.y : "")));
+    var dl = el("dl", "pv-facts");
+    [["Iniziato", fmtDate(b.start)], ["Finito", fmtDate(b.end)], ["Voto", fmtVote(b.v)]].forEach(function (f, k) {
+      if (!f[1]) return; var d = el("div"); d.appendChild(el("dt", null, f[0])); d.appendChild(el("dd", k === 2 ? "vote-big" : null, f[1])); dl.appendChild(d);
+    });
+    pv.appendChild(dl);
+    var txt = (b.text || "").trim();
+    if (!txt) { pv.appendChild(el("p", "empty", "Nessun testo: sul sito il libro compare nell'elenco con voto e date.")); return; }
+    txt.split(/\n{2,}/).forEach(function (blk) {
+      blk = blk.trim(); if (!blk) return;
+      if (blk.indexOf("## ") === 0) pv.appendChild(el("h2", null, blk.slice(3)));
+      else pv.appendChild(el("p", null, blk.replace(/\n/g, " ")));
+    });
+  }
+  $("b-preview").addEventListener("click", function () { renderPreview(); show("preview"); });
+  $("b-edit").addEventListener("click", function () { show("desk"); });
+  $("b-back").addEventListener("click", function () { clearInterval(timer); sel = -1; renderShelf(); $("panel-book").hidden = true; show("home"); });
+
+  /* ---------- save ---------- */
+  function mdFor(b) {
+    var fm = ["---", "titolo: \"" + b.t.replace(/"/g, '\\"') + "\"", "autore: \"" + b.a + "\""];
+    if (b.y) fm.push("anno_opera: " + b.y);
+    fm.push("stato: " + (b.s === "corso" ? "in-corso" : b.s));
+    if (b.start) fm.push("iniziato: " + b.start);
+    if (b.end && b.s !== "corso") fm.push("finito: " + b.end);
+    if (b.v != null) fm.push("voto: " + b.v);
+    if (b.note) fm.push("nota: \"" + b.note + "\"");
+    fm.push("---");
+    return fm.join("\n") + "\n" + (b.text ? "\n" + b.text.trim() + "\n" : "");
+  }
+  function savedView(i, head) {
+    var b = books[i]; clearInterval(timer);
+    $("sv-head").textContent = head; $("sv-path").textContent = "src/content/letture/" + slug(b.t) + ".md";
+    $("sv-file").textContent = mdFor(b); sel = -1; show("saved");
+  }
+  $("b-save").addEventListener("click", function () { var b = books[cur]; b.s = "letto"; savedView(cur, "Salvato."); });
+  $("sv-back").addEventListener("click", function () { renderShelf(); $("panel-book").hidden = true; $("panel-new").hidden = true; $("panel-drop").hidden = true; show("home"); });
+
+  /* ---------- theme ---------- */
+  var themes = [null, "light", "dark"], labels = { null: "sistema", light: "chiaro", dark: "scuro" }, ti = 0;
+  $("theme-btn").addEventListener("click", function () {
+    ti = (ti + 1) % 3; var th = themes[ti];
+    if (th) root.setAttribute("data-theme", th); else root.removeAttribute("data-theme");
+    this.textContent = "Tema: " + labels[th];
+  });
+
+  renderShelf(); pick(0);
+})();
+</script>
