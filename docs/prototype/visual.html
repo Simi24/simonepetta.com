@@ -37,7 +37,15 @@ h1, h2, h3 { text-wrap: balance; }
 p { text-wrap: pretty; margin: 0 0 1em; }
 ul, ol { list-style: none; margin: 0; padding: 0; }
 .ph { color: var(--muted); font-style: italic; }
-math { font-family: "STIX Two Math", "Cambria Math", math; }
+@font-face { font-family: "Latin Modern Math"; src: url("fonts/latinmodern-math.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "STIX Two Math"; src: url("fonts/stixtwo-math.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "Libertinus Math"; src: url("fonts/libertinus-math.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "Fira Math"; src: url("fonts/fira-math.otf") format("opentype"); font-display: swap; }
+:root { --mathfont: "Latin Modern Math"; }
+:root[data-mf="stix"] { --mathfont: "STIX Two Math"; }
+:root[data-mf="lib"] { --mathfont: "Libertinus Math"; }
+:root[data-mf="fira"] { --mathfont: "Fira Math"; }
+math { font-family: var(--mathfont), "Cambria Math", math; font-size: 1.08em; }
 .eq { overflow-x: auto; overflow-y: hidden; padding-block: .35em; }
 math mtd:nth-child(1) { text-align: right; }
 math mtd:nth-child(2) { text-align: left; }
@@ -366,6 +374,9 @@ blockquote p { margin: 0; }
       <button id="p-home" data-p="home">Chi sono</button><button id="p-letture" data-p="letture">Letture</button><button id="p-post" data-p="post">Post</button><button id="p-appunti" data-p="appunti">Appunti</button><button id="p-corso" data-p="corso">Corso</button>
     </div>
     <div class="proto-group"><span>Tema</span><button id="theme-btn">Sistema</button></div>
+    <div class="proto-group" id="g-mf"><span>Matematica</span>
+      <button data-mf="lm">Latin Modern</button><button data-mf="stix">STIX Two</button><button data-mf="lib">Libertinus</button><button data-mf="fira">Fira Math</button>
+    </div>
   </div>
 </div>
 
@@ -463,8 +474,8 @@ blockquote p { margin: 0; }
   renderAppunti();
 
   var PAGES = ["home", "letture", "post", "appunti", "corso"];
-  var state = { p: "home" };
-  try { var saved = JSON.parse(localStorage.getItem("sp-proto-2") || "{}"); if (PAGES.indexOf(saved.p) >= 0) state.p = saved.p; } catch (e) {}
+  var state = { p: "home", mf: "lm" };
+  try { var saved = JSON.parse(localStorage.getItem("sp-proto-2") || "{}"); if (PAGES.indexOf(saved.p) >= 0) state.p = saved.p; if (saved.mf) state.mf = saved.mf; } catch (e) {}
   var m = /^#(home|letture|post|appunti|corso)$/.exec(location.hash); if (m) state.p = m[1];
 
   function apply() {
@@ -474,12 +485,16 @@ blockquote p { margin: 0; }
       var cur = n === state.p || (state.p === "post" && n === "letture") || (state.p === "corso" && n === "appunti");
       if (cur) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
+    root.setAttribute("data-mf", state.mf);
+    document.querySelectorAll("#g-mf button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-mf") === state.mf)); });
     document.querySelectorAll("#g-p button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-p") === state.p)); });
     try { localStorage.setItem("sp-proto-2", JSON.stringify(state)); } catch (e) {}
     try { history.replaceState(null, "", "#" + state.p); } catch (e) {}
   }
 
   document.addEventListener("click", function (e) {
+    var mfb = e.target.closest("#g-mf button");
+    if (mfb) { state.mf = mfb.getAttribute("data-mf"); if (state.p !== "corso") { state.p = "corso"; window.scrollTo(0, 0); } apply(); return; }
     var t = e.target.closest("[data-go], #g-p button");
     if (!t) return;
     e.preventDefault(); state.p = t.getAttribute("data-go") || t.getAttribute("data-p"); window.scrollTo(0, 0);
