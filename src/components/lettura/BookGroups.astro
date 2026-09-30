@@ -1,6 +1,9 @@
 ---
-import type { GroupedLetture, LetturaEntry } from '../../lib/letture-order.ts';
-import { formatDataIt, formatVoto } from '../../lib/letture-view.ts';
+import type { CollectionEntry } from 'astro:content';
+import type { GroupedLetture } from '../../lib/letture-order.ts';
+import { formatDataIt, formatVoto } from '../../lib/lettura-format-it.ts';
+import { STATO_PRESENTATION } from '../../lib/lettura-presentation.ts';
+import { STATI_LETTURA } from '../../schemas/lettura.ts';
 
 interface Props {
   grouped: GroupedLetture;
@@ -8,27 +11,23 @@ interface Props {
 
 const { grouped } = Astro.props;
 
-const GROUPS: { key: keyof GroupedLetture; label: string }[] = [
-  { key: 'corso', label: 'Sto leggendo' },
-  { key: 'letti', label: 'Letti' },
-  { key: 'abbandonati', label: 'Abbandonati' },
-];
-
-function metaLine(entry: LetturaEntry): string {
-  const { stato, iniziato, finito, nota } = entry.data;
-  if (stato === 'in-corso') return iniziato ? `iniziato il ${formatDataIt(iniziato)}` : '';
-  if (stato === 'abbandonato') return nota ?? (finito ? `lasciato il ${formatDataIt(finito)}` : '');
-  return finito ? `finito il ${formatDataIt(finito)}` : '';
+/** A book's date line, plus its abandonment note when there is one (SPEC.md §6.2). */
+function metaLine(entry: CollectionEntry<'letture'>): string {
+  const { dateField, dateVerb } = STATO_PRESENTATION[entry.data.stato];
+  const date = entry.data[dateField];
+  const parts = [date ? `${dateVerb} ${formatDataIt(date)}` : ''];
+  if (entry.data.stato === 'abbandonato' && entry.data.nota) parts.push(entry.data.nota);
+  return parts.filter(Boolean).join(', ');
 }
 ---
 
 {
-  GROUPS.map(({ key, label }) => {
-    const entries = grouped[key];
+  STATI_LETTURA.map((stato) => {
+    const entries = grouped[stato];
     if (entries.length === 0) return null;
     return (
       <section class="books-group">
-        <h2>{label}</h2>
+        <h2>{STATO_PRESENTATION[stato].groupLabel}</h2>
         <ul class="books">
           {entries.map((entry) => {
             const meta = metaLine(entry);
@@ -50,18 +49,24 @@ function metaLine(entry: LetturaEntry): string {
 }
 
 <style>
+  /* A 12-column grid per section: label in columns 1-4, content from column 5 (SPEC.md §5.2). */
   .books-group {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 1.5rem;
     border-top: 2px solid var(--ink);
     padding-top: 0.8rem;
     margin-top: 2.5rem;
   }
 
   .books-group h2 {
-    margin: 0 0 1rem;
+    grid-column: 1 / span 4;
+    margin: 0;
     font-size: 1.05rem;
   }
 
   .books {
+    grid-column: 5 / -1;
     display: grid;
     gap: 1rem;
   }
@@ -92,5 +97,12 @@ function metaLine(entry: LetturaEntry): string {
   .books__meta {
     grid-column: 2;
     color: var(--muted);
+  }
+
+  @media (max-width: 860px) {
+    .books-group h2,
+    .books {
+      grid-column: 1 / -1;
+    }
   }
 </style>

@@ -1,21 +1,18 @@
 ---
-import type { LetturaEntry } from '../../lib/letture-order.ts';
-import { spinePagine, tintForSlug } from '../../lib/letture-view.ts';
+import type { CollectionEntry } from 'astro:content';
+import { STATO_PRESENTATION } from '../../lib/lettura-presentation.ts';
+import { spineHeightRem, spineWidthRem, tintForSlug, truncateTitle } from '../../lib/lettura-spine.ts';
 
 interface Props {
-  entries: readonly LetturaEntry[];
+  entries: readonly CollectionEntry<'letture'>[];
 }
 
 const { entries } = Astro.props;
 
-function heightRem(pagine: number | undefined): string {
-  return `${8 + spinePagine(pagine) / 80}rem`;
-}
-
-function stateClass(stato: LetturaEntry['data']['stato']): string {
-  if (stato === 'in-corso') return 'spine--in-corso';
-  if (stato === 'abbandonato') return 'spine--abbandonato';
-  return '';
+/** The prototype's spine label: the title, then the author's surname (docs/prototype/visual.html:440). */
+function authorSurname(autore: string): string {
+  const words = autore.trim().split(/\s+/);
+  return words[words.length - 1] ?? autore;
 }
 ---
 
@@ -24,12 +21,13 @@ function stateClass(stato: LetturaEntry['data']['stato']): string {
     {
       entries.map((entry) => (
         <span
-          class={`spine spine--tint-${tintForSlug(entry.id)} ${stateClass(entry.data.stato)}`}
+          class={`spine spine--tint-${tintForSlug(entry.id)} ${STATO_PRESENTATION[entry.data.stato].spineClass}`}
           role="listitem"
-          style={`height:${heightRem(entry.data.pagine)};`}
+          style={`height:${spineHeightRem(entry.data.pagine)}rem;width:${spineWidthRem(entry.data.pagine)}rem;`}
           title={`${entry.data.titolo}, ${entry.data.autore}`}
         >
-          <span>{entry.data.titolo}</span>
+          <span>{truncateTitle(entry.data.titolo)}</span>
+          <span class="spine__author">{authorSurname(entry.data.autore)}</span>
         </span>
       ))
     }
@@ -62,20 +60,23 @@ function stateClass(stato: LetturaEntry['data']['stato']): string {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    width: 2.4rem;
     padding: 0.7rem 0;
     border-radius: 1px;
     font-size: 0.8rem;
     font-weight: 600;
     line-height: 1.1;
     position: relative;
-    text-decoration: none;
   }
 
   .spine > span {
     overflow: hidden;
     max-height: 100%;
+  }
+
+  .spine__author {
+    font-weight: 400;
   }
 
   .spine--in-corso::after {
