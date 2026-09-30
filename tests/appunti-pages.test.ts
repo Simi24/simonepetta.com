@@ -43,10 +43,12 @@ test('a course with fonti shows its sources and the removal contact', () => {
   assert.match(html, /class="removal-contact"/);
 });
 
-test('a course with no fonti shows no sources section at all', () => {
+test('a course with no fonti lists none, but still shows the removal contact (SPEC.md §7.1)', () => {
   const dist = buildSite(FIXTURES_APPUNTI);
   const html = read(dist, 'appunti/quaderno-scansionato/index.html');
-  assert.doesNotMatch(html, /<h2[^>]*>Fonti<\/h2>/);
+  assert.doesNotMatch(html, /<li[\s>]/, 'no fonti were declared, so no <li> should render');
+  assert.match(html, /class="removal-contact"/);
+  assert.match(html, /Contatto per la rimozione: lo aggiunge l'autore\./);
 });
 
 test('a removal contact set via config replaces the placeholder', () => {

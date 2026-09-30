@@ -66,25 +66,27 @@ const fonti = corso.fonti ?? [];
       {pdfLinkText}
     </a>
   </div>
-  {
-    fonti.length > 0 && (
-      <section class="fonti">
-        <h2>Fonti</h2>
+  <section class="fonti">
+    <h2>Fonti</h2>
+    {
+      fonti.length > 0 ? (
         <ul>
           {fonti.map((fonte) => (
             <li>{fonte}</li>
           ))}
         </ul>
-        <p class="removal-contact">
-          {site.appunti.removalContact ? (
-            `Per richieste di rimozione: ${site.appunti.removalContact}`
-          ) : (
-            <span class="placeholder">Contatto per la rimozione: lo aggiunge l'autore.</span>
-          )}
-        </p>
-      </section>
-    )
-  }
+      ) : (
+        <p class="placeholder">Nessuna fonte terza indicata per questo corso.</p>
+      )
+    }
+    <p class="removal-contact">
+      {site.appunti.removalContact ? (
+        `Per richieste di rimozione: ${site.appunti.removalContact}`
+      ) : (
+        <span class="placeholder">Contatto per la rimozione: lo aggiunge l'autore.</span>
+      )}
+    </p>
+  </section>
 </div>
 
 <style>
