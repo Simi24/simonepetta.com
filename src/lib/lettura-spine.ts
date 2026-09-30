@@ -40,3 +40,9 @@ export function tintForSlug(slug: string): number {
 export function truncateTitle(titolo: string): string {
   return titolo.length > TITLE_TRUNCATE_AT ? `${titolo.slice(0, TITLE_TRUNCATE_TO)}…` : titolo;
 }
+
+/** The prototype's spine label: the title, then the author's surname (docs/prototype/visual.html:440). */
+export function authorSurname(autore: string): string {
+  const words = autore.trim().split(/\s+/);
+  return words[words.length - 1] ?? autore;
+}
