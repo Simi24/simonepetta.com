@@ -7,9 +7,9 @@ import { escapeXml } from '../lib/xml-escape.ts';
 /** `/sitemap.xml`: every page with a git-derived `lastmod`, no dependency (SPEC.md §12.3). */
 export const GET: APIRoute = async ({ site: base }) => {
   const origin = base ?? new URL('https://simonepetta.com/');
-  const collection = await getCollection('letture');
+  const [letture, appunti] = await Promise.all([getCollection('letture'), getCollection('appunti')]);
 
-  const urlsXml = sitemapPages(collection)
+  const urlsXml = sitemapPages(letture, appunti)
     .map(
       ({ path, files }) => `
   <url>

@@ -31,6 +31,7 @@ interface OgImage {
 const IMAGES: readonly OgImage[] = [
   { file: 'about.png', title: 'Simone Petta', domain: 'simonepetta.com' },
   { file: 'letture.png', title: 'Letture', domain: 'simonepetta.com' },
+  { file: 'appunti.png', title: 'Appunti', domain: 'simonepetta.com' },
 ];
 
 function template(image: OgImage, fontDataUri: string): string {

@@ -31,3 +31,11 @@ test('the readings section image is built into dist, alongside the about image',
   assert.ok(existsSync(join(dist, 'og/letture.png')), 'og/letture.png was not built');
   assert.ok(existsSync(join(dist, 'og/about.png')), 'og/about.png was not built');
 });
+
+test('a course page carries the appunti section Open Graph image, as og:type article', () => {
+  const dist = buildSite({ APPUNTI_CONTENT_DIR: 'tests/fixtures/appunti' });
+  const html = read(dist, 'appunti/pdf-corso/index.html');
+  assert.match(html, /<meta property="og:image" content="https:\/\/simonepetta\.com\/og\/appunti\.png"\s*\/?>/);
+  assert.match(html, /<meta property="og:type" content="article"\s*\/?>/);
+  assert.ok(existsSync(join(dist, 'og/appunti.png')), 'og/appunti.png was not built');
+});
