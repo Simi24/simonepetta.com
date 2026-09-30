@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Cerca" description="Cerca tra le letture e gli appunti del sito.">
+  <div class="page">
+    <h1 class="page__full">Cerca</h1>
+    <div id="search" class="search"></div>
+    <noscript><p>La ricerca richiede JavaScript.</p></noscript>
+  </div>
+  <!-- Pagefind's UI loads here and on no other page (SPEC.md §3, §12.2). -->
+  <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+  <script is:inline src="/pagefind/pagefind-ui.js"></script>
+  <script is:inline src="/scripts/cerca.js" defer></script>
+</Base>
+
+<style>
+  /* Pagefind's UI takes its look from the site tokens, so both themes follow (SPEC.md §5.1). */
+  .search {
+    --pagefind-ui-scale: 1.1;
+    --pagefind-ui-primary: var(--ink);
+    --pagefind-ui-text: var(--ink);
+    --pagefind-ui-background: var(--bg);
+    --pagefind-ui-border: var(--rule);
+    --pagefind-ui-tag: var(--surface);
+    --pagefind-ui-border-width: 2px;
+    --pagefind-ui-border-radius: 0;
+    --pagefind-ui-font: var(--font);
+  }
+
+  /* No accent color (AGENTS.md): matches and focus use the ink, not Pagefind's yellow and blue. */
+  .search :global(mark) {
+    background: var(--surface);
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+  .search :global(.pagefind-ui__search-input:focus) {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+</style>

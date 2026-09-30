@@ -12,4 +12,5 @@ export interface Section {
 export const sections: readonly Section[] = [
   { href: '/letture/', label: 'Letture', labelEn: 'Readings' },
   { href: '/appunti/', label: 'Appunti', labelEn: 'Notes' },
+  { href: '/cerca/', label: 'Cerca', labelEn: 'Search' },
 ];

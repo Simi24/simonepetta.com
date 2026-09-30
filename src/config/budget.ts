@@ -26,9 +26,19 @@ export const NON_JS_SCRIPT_TYPES = ['application/ld+json', 'speculationrules'] a
 export const isNotesChapterPage = (pagePath: string): boolean =>
   /^appunti\/[^/]+\/(?!chat\/)[^/]+\/index\.html$/.test(pagePath);
 
-/** Pages exempt from `JS_CAP_BYTES` by a declared exception (SPEC.md §3, §12.2). */
+/**
+ * The search page, and the only page that may load Pagefind (SPEC.md §3, §12.2). Its exception
+ * is per asset, not per page: only scripts under `PAGEFIND_ASSET_PREFIX` are exempt from
+ * `JS_CAP_BYTES`, so any other JS on `/cerca/` (like its inline init) is still measured.
+ */
+export const SEARCH_PAGE = 'cerca/index.html';
+export const PAGEFIND_ASSET_PREFIX = '/pagefind/';
+
+export const isPagefindAsset = (pagePath: string, src: string): boolean =>
+  pagePath === SEARCH_PAGE && src.startsWith(PAGEFIND_ASSET_PREFIX);
+
+/** Pages exempt from `JS_CAP_BYTES` as a whole by a declared exception (SPEC.md §3, §12.2). */
 export const JS_CAP_EXCEPTIONS: readonly { pattern: RegExp; reason: string }[] = [
-  { pattern: /^cerca\/index\.html$/, reason: 'Pagefind UI and search index (v1)' },
   { pattern: /^appunti\/[^/]+\/chat\/index\.html$/, reason: 'the Preact chat island (v2)' },
 ];
 

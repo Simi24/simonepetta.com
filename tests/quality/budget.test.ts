@@ -101,3 +101,32 @@ test('with the reuse flag, an existing `dist` is trusted; a missing one still bu
   assert.equal(shouldBuildFreshDist({ reuseDist: true, distExists: true }), false);
   assert.equal(shouldBuildFreshDist({ reuseDist: true, distExists: false }), true);
 });
+
+const PAGEFIND_UI = '<script src="/pagefind/pagefind-ui.js"></script>';
+const bigJs = (): string => `window.x="${randomBytes(4000).toString('hex')}"`;
+
+test('on /cerca/, Pagefind assets are exempt from the JS budget', () => {
+  const dist = fixtureDist({
+    'cerca/index.html': `<!doctype html><html><head>${PAGEFIND_UI}</head><body></body></html>`,
+    'pagefind/pagefind-ui.js': bigJs(),
+  });
+  assert.deepEqual(checkBudget(dist), []);
+});
+
+test('on /cerca/, JS that is not a Pagefind asset still counts against the JS budget', () => {
+  const dist = fixtureDist({
+    'cerca/index.html': `<!doctype html><html><head>${PAGEFIND_UI}<script>${bigJs()}</script></head><body></body></html>`,
+    'pagefind/pagefind-ui.js': bigJs(),
+  });
+  const violations = checkBudget(dist);
+  assert.ok(violations.some((v) => v.page === 'cerca/index.html' && /JS is \d+ B gzip, over/.test(v.message)));
+});
+
+test('on any other page, Pagefind assets are not exempt from the JS budget', () => {
+  const dist = fixtureDist({
+    'letture/index.html': `<!doctype html><html><head>${PAGEFIND_UI}</head><body></body></html>`,
+    'pagefind/pagefind-ui.js': bigJs(),
+  });
+  const violations = checkBudget(dist);
+  assert.ok(violations.some((v) => v.page === 'letture/index.html' && /JS is \d+ B gzip, over/.test(v.message)));
+});

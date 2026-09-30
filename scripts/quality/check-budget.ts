@@ -11,6 +11,7 @@ import {
   NON_JS_SCRIPT_TYPES,
   NOTES_CHAPTER_HTML_CAP_BYTES,
   isJsExceptionPage,
+  isPagefindAsset,
   isMathPage,
   isNotesChapterPage,
 } from '../../src/config/budget.ts';
@@ -79,6 +80,8 @@ function collectPageAssets(dist: string, page: string): PageAssets & { undeclare
         undeclaredExternalScripts.push(src);
         continue;
       }
+      // Pagefind's own files on /cerca/ are the declared exception, asset by asset (SPEC.md §12.2).
+      if (isPagefindAsset(page, src)) continue;
       js += read(dist, src.replace(/^\//, ''));
     } else {
       js += body;
