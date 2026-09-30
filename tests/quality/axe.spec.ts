@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { buildSite, filesWithExtension } from '../support/built-site.ts';
+import { QUALITY_BUILDS } from '../support/quality-builds.ts';
 import { serveStatic, type StaticServer } from '../support/static-server.ts';
 
 const COLOR_SCHEMES = ['light', 'dark'] as const;
@@ -12,23 +13,22 @@ const BODY_BACKGROUND: Record<(typeof COLOR_SCHEMES)[number], string> = {
   dark: 'rgb(21, 21, 21)',
 };
 
-// The production build (today: an empty /letture/) and a build with the letture fixtures
-// (books), so a populated shelf is axe-checked even though nothing is published yet.
-const BUILDS: readonly { label: string; env: Record<string, string> }[] = [
-  { label: 'production', env: {} },
-  { label: 'letture fixtures', env: { LETTURE_CONTENT_DIR: 'tests/fixtures/letture' } },
-];
+// Rules that matter here but live under axe's "best-practice" tag, not a WCAG tag, so the
+// WCAG-tag run below misses them (that's exactly how the shelf's `role="listitem"` on a
+// link slipped through: `aria-allowed-role` is `best-practice`, see `axe-broken-role`).
+const EXTRA_RULES = ['aria-allowed-role'];
 
 const urlFor = (server: StaticServer, page: string): string => `${server.url}/${page.replace(/index\.html$/, '')}`;
 
 async function axeViolations(page: Page) {
-  const results = await new AxeBuilder({ page })
+  const wcag = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
     .analyze();
-  return results.violations;
+  const extra = await new AxeBuilder({ page }).withRules(EXTRA_RULES).analyze();
+  return [...wcag.violations, ...extra.violations];
 }
 
-for (const { label, env } of BUILDS) {
+for (const { label, env } of QUALITY_BUILDS) {
   test(`every page of the ${label} build passes axe (WCAG 2.2 AA) in light and dark`, async ({ page }) => {
     const dist = buildSite(env);
     const pages = filesWithExtension(dist, '.html');
@@ -69,6 +69,17 @@ test('axe catches an invalid autocomplete value (deliberately broken fixture)', 
     await page.goto(server.url);
     const violations = await axeViolations(page);
     expect(violations.some((violation) => violation.id === 'autocomplete-valid')).toBe(true);
+  } finally {
+    await server.close();
+  }
+});
+
+test('axe catches a link with a disallowed ARIA role (deliberately broken fixture)', async ({ page }) => {
+  const server = await serveStatic('tests/fixtures/axe-broken-role');
+  try {
+    await page.goto(server.url);
+    const violations = await axeViolations(page);
+    expect(violations.some((violation) => violation.id === 'aria-allowed-role')).toBe(true);
   } finally {
     await server.close();
   }

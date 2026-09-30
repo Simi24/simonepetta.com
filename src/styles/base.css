@@ -50,6 +50,25 @@ h1 {
   letter-spacing: -0.04em;
 }
 
+h2 {
+  margin: 2em 0 0.5em;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+blockquote {
+  margin: 1.4em 0;
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+}
+
+blockquote p {
+  margin: 0;
+}
+
 /* 12-column grid: content from column 5, single column under 860px (SPEC.md §5.2). */
 .page {
   display: grid;
