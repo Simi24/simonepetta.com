@@ -71,6 +71,7 @@ h1 {
 }
 
 .lede {
+  grid-column: 5 / span 6;
   font-size: 1.55rem;
   line-height: 1.3;
   letter-spacing: -0.01em;

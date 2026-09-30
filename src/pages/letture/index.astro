@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 import BookGroups from '../../components/lettura/BookGroups.astro';
 import Shelf from '../../components/lettura/Shelf.astro';
 import Base from '../../layouts/Base.astro';
-import { orderLetture, shelfOrder } from '../../lib/letture-order.ts';
+import { orderLetture, shelfOrder } from '../../lib/lettura-order.ts';
 
 const collection = await getCollection('letture');
 const grouped = orderLetture(collection);
@@ -14,7 +14,7 @@ const shelf = shelfOrder(grouped);
   <div class="page">
     <h1 class="page__full">Letture</h1>
     <!-- Author-voice copy stays a visible placeholder until the author writes it (SPEC.md §1.2). -->
-    <p class="lede placeholder page__full">Presentazione della sezione: la scrive l'autore.</p>
+    <p class="lede placeholder">Presentazione della sezione: la scrive l'autore.</p>
     <div class="page__full">
       <Shelf entries={shelf} />
     </div>
