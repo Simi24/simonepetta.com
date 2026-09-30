@@ -22,7 +22,7 @@ export const site = {
      * committed, the same pattern as the analytics token above.
      */
     removalContact: process.env['APPUNTI_REMOVAL_CONTACT'] ?? '',
-    // University and degree programme names, flagged for the author to confirm (issue #32).
+    // University and degree programme names (SPEC.md §7.2).
     university: 'Università degli Studi di Milano',
     degreeProgrammes: {
       triennale: 'Corso di Laurea in Informatica per la comunicazione digitale',
