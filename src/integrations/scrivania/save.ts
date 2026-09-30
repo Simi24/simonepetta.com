@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { LetturaSchemaError, parseLettura, type Lettura } from '../../schemas/lettura.ts';
+import { fileVersion } from './version.ts';
 
 const KEBAB_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -74,6 +75,13 @@ export interface SaveParams {
    * exactly — the sheet never sends this field for those saves.
    */
   testo?: string | undefined;
+  /**
+   * The `fileVersion` of the file as the sheet's page loaded it. Checked only alongside `testo`:
+   * a metadata-only edit doesn't touch the body a stale version would protect. When the file's
+   * current version no longer matches, the save is rejected as a conflict and nothing is written,
+   * rather than silently overwriting a change made since the page was generated.
+   */
+  expectedVersion?: string | undefined;
 }
 
 export interface SaveResult {
@@ -95,7 +103,7 @@ function formatTesto(testo: string): string {
  * never touch the body that follows the frontmatter; the writing sheet's edits (`testo` given)
  * replace it outright, without needing to read — or recognize — whatever body was there before.
  */
-export function saveLettura({ contentDir, slug, input, testo }: SaveParams): SaveResult {
+export function saveLettura({ contentDir, slug, input, testo, expectedVersion }: SaveParams): SaveResult {
   const lettura = parseLettura(input);
   mkdirSync(contentDir, { recursive: true });
 
@@ -121,6 +129,9 @@ export function saveLettura({ contentDir, slug, input, testo }: SaveParams): Sav
   const path = join(contentDir, `${slug}.md`);
   if (!existsSync(path)) {
     throw new LetturaSchemaError([`il campo "slug": nessun libro con lo slug "${slug}"`]);
+  }
+  if (testo !== undefined && expectedVersion !== undefined && fileVersion(readFileSync(path)) !== expectedVersion) {
+    throw new LetturaSchemaError(['il file è cambiato nel frattempo: ricarica la pagina e riprova']);
   }
   const body = testo !== undefined ? formatTesto(testo) : readBody(path);
   writeFileSync(path, serializeLettura(lettura, body));

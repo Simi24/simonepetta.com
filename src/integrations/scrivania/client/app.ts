@@ -26,6 +26,19 @@ export function initScrivania(): void {
 
   let selection: Selection | null = null;
   let activity: Activity | null = null;
+  // Set only while the writing sheet (SPEC.md §6.4) is open, so every way of navigating away from
+  // it — the shelf, "+ aggiungi", or the sheet's own "Indietro" — goes through the same guard.
+  let openSheet: { hasUnsavedText: () => boolean; teardown: () => void } | null = null;
+
+  /** Runs `action` unless the open sheet has unsaved text and the author cancels leaving it. */
+  function attemptNavigate(action: () => void): void {
+    if (openSheet) {
+      if (openSheet.hasUnsavedText() && !window.confirm('Hai del testo non salvato. Uscire comunque?')) return;
+      openSheet.teardown();
+      openSheet = null;
+    }
+    action();
+  }
 
   function select(next: Selection | null): void {
     selection = next;
@@ -59,14 +72,14 @@ export function initScrivania(): void {
       button.appendChild(el('span', 'spine__author', authorSurname(book.autore)));
       button.setAttribute('aria-label', `${book.titolo}, ${book.autore}`);
       button.setAttribute('aria-pressed', String(isSelected));
-      button.addEventListener('click', () => select(isSelected ? null : { type: 'book', slug: book.slug }));
+      button.addEventListener('click', () => attemptNavigate(() => select(isSelected ? null : { type: 'book', slug: book.slug })));
       shelfEl!.appendChild(button);
     }
     const isAdding = selection?.type === 'new';
     const add = el('button', 'spine spine--add', '+ aggiungi');
     add.type = 'button';
     add.setAttribute('aria-pressed', String(isAdding));
-    add.addEventListener('click', () => select(isAdding ? null : { type: 'new' }));
+    add.addEventListener('click', () => attemptNavigate(() => select(isAdding ? null : { type: 'new' })));
     shelfEl!.appendChild(add);
   }
 
@@ -284,8 +297,11 @@ export function initScrivania(): void {
     if (activity === 'edit') panelEl!.appendChild(buildEditForm(book));
     else if (activity === 'finish') panelEl!.appendChild(buildFinishForm(book));
     else if (activity === 'drop') panelEl!.appendChild(buildDropForm(book));
-    else if (activity === 'write') panelEl!.appendChild(buildSheet(book, () => setActivity(null)));
-    else panelEl!.appendChild(buildActions(book));
+    else if (activity === 'write') {
+      const sheet = buildSheet(book, () => attemptNavigate(() => setActivity(null)));
+      openSheet = sheet;
+      panelEl!.appendChild(sheet.element);
+    } else panelEl!.appendChild(buildActions(book));
   }
 
   renderShelf();

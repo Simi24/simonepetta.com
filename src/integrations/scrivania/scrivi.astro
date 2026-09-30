@@ -1,11 +1,24 @@
 ---
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { getCollection } from 'astro:content';
+import { LETTURA_CONTENT_DIR } from '../../config/lettura-content-dir.ts';
 import Base from '../../layouts/Base.astro';
 import { orderLetture, shelfOrder } from '../../lib/lettura-order.ts';
+import { fileVersion } from './version.ts';
 import type { DeskBook } from './client/book.ts';
 
 const collection = await getCollection('letture');
 const shelf = shelfOrder(orderLetture(collection));
+
+/** The file's current `fileVersion`, or `null` when it can't be read — the sheet then skips the stale-overwrite check rather than blocking a legitimate save on it. */
+function versionOf(slug: string): string | null {
+  try {
+    return fileVersion(readFileSync(join(LETTURA_CONTENT_DIR, `${slug}.md`)));
+  } catch {
+    return null;
+  }
+}
 
 const books: DeskBook[] = shelf.map((entry) => ({
   slug: entry.id,
@@ -19,6 +32,7 @@ const books: DeskBook[] = shelf.map((entry) => ({
   pagine: entry.data.pagine ?? null,
   nota: entry.data.nota ?? null,
   testo: (entry.body ?? '').trim() || null,
+  version: versionOf(entry.id),
 }));
 
 // Escaped so a title containing "</script>" can't break out of the data island.

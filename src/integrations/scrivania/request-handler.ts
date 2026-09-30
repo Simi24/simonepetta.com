@@ -7,6 +7,7 @@ interface SavePayload {
   slug?: string;
   data?: unknown;
   testo?: string;
+  expectedVersion?: string;
 }
 
 export interface SaveHandlerOptions {
@@ -27,8 +28,8 @@ export function createSaveHandler({ contentDir, onSaved }: SaveHandlerOptions) {
     }
     let result;
     try {
-      const { slug, data, testo } = await readJsonBody<SavePayload>(req);
-      result = saveLettura({ contentDir, slug, input: data, testo });
+      const { slug, data, testo, expectedVersion } = await readJsonBody<SavePayload>(req);
+      result = saveLettura({ contentDir, slug, input: data, testo, expectedVersion });
     } catch (error) {
       if (error instanceof LetturaSchemaError) {
         respondJson(res, 400, { issues: error.issues });

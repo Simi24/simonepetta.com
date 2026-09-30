@@ -1,6 +1,8 @@
 export interface SaveOk {
   ok: true;
   slug: string;
+  /** Set when the file was written but refreshing the content collection failed (SPEC.md §6.4): not an error, but not silently droppable either. */
+  warning?: string | undefined;
 }
 
 export interface SaveErr {
@@ -13,7 +15,7 @@ export type SaveResponse = SaveOk | SaveErr;
 /** Posts a book's frontmatter (and, from the writing sheet, its body) to the dev-server save handler (SPEC.md §6.4). */
 export async function postSave(
   savePath: string,
-  payload: { slug?: string | undefined; data: Record<string, unknown>; testo?: string | undefined },
+  payload: { slug?: string | undefined; data: Record<string, unknown>; testo?: string | undefined; expectedVersion?: string | undefined },
 ): Promise<SaveResponse> {
   let res: Response;
   try {
@@ -25,8 +27,8 @@ export async function postSave(
   } catch {
     return { ok: false, issues: ['il server di sviluppo non risponde'] };
   }
-  const body = (await res.json().catch(() => ({}))) as { slug?: string; issues?: string[] };
-  if (res.ok && body.slug) return { ok: true, slug: body.slug };
+  const body = (await res.json().catch(() => ({}))) as { slug?: string; issues?: string[]; warning?: string };
+  if (res.ok && body.slug) return { ok: true, slug: body.slug, warning: body.warning };
   return { ok: false, issues: body.issues ?? [`errore HTTP ${res.status}`] };
 }
 

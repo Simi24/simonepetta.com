@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readdirSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -73,4 +73,6 @@ test('a save with testo writes it as the book’s body', async () => {
   const json = (await res.json()) as { slug?: string };
   assert.equal(res.status, 200);
   assert.equal(json.slug, 'con-testo');
+  const written = readFileSync(join(contentDir, 'con-testo.md'), 'utf8');
+  assert.ok(written.includes('La mia reazione al libro.'), `body missing from the written file:\n${written}`);
 });

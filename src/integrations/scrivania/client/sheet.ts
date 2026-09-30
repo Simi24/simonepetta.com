@@ -12,11 +12,24 @@ function countWords(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
+export interface SheetHandle {
+  element: HTMLElement;
+  /** True while the textarea differs from the text the sheet opened with (SPEC.md: never lose typed text). */
+  hasUnsavedText: () => boolean;
+  /** Stops the timer and drops the `beforeunload` listener. The caller runs this once it's safe to leave. */
+  teardown: () => void;
+}
+
 /**
  * The writing sheet (SPEC.md §6.4): a book already has a text when this opens for "Modifica" — the
  * 20-minute timer only ever runs on a fresh text, never on an edit of one that already exists.
+ *
+ * Leaving the sheet is entirely the caller's call: `onBack` runs unconditionally on "Indietro", and
+ * `hasUnsavedText`/`teardown` are returned so every OTHER way to navigate away (the shelf, "+
+ * aggiungi") can be routed through the same guard — the sheet itself has no way to stop the shelf
+ * from being clicked out from under it.
  */
-export function buildSheet(book: DeskBook, onBack: () => void): HTMLElement {
+export function buildSheet(book: DeskBook, onBack: () => void): SheetHandle {
   const isEditingText = Boolean(book.testo);
   const initialTesto = book.testo ?? '';
 
@@ -51,11 +64,15 @@ export function buildSheet(book: DeskBook, onBack: () => void): HTMLElement {
   const iniziatoLabel = el('label', undefined, 'Iniziato ');
   const iniziatoInput = document.createElement('input');
   iniziatoInput.type = 'date';
-  iniziatoInput.value = book.iniziato ?? today();
+  iniziatoInput.id = 'dk-start';
+  // The prototype only defaults `finito` to today; `iniziato` stays empty rather than inventing a
+  // date the author never set (e.g. a `letto` book whose file never carried one).
+  iniziatoInput.value = book.iniziato ?? '';
   iniziatoLabel.appendChild(iniziatoInput);
   const finitoLabel = el('label', undefined, 'Finito ');
   const finitoInput = document.createElement('input');
   finitoInput.type = 'date';
+  finitoInput.id = 'dk-end';
   finitoInput.value = book.finito ?? today();
   finitoLabel.appendChild(finitoInput);
   datesBox.append(iniziatoLabel, finitoLabel);
@@ -160,11 +177,9 @@ export function buildSheet(book: DeskBook, onBack: () => void): HTMLElement {
     window.removeEventListener('beforeunload', onBeforeUnload);
   }
 
-  backButton.addEventListener('click', () => {
-    if (hasUnsavedText() && !window.confirm('Hai del testo non salvato. Uscire comunque?')) return;
-    teardown();
-    onBack();
-  });
+  // `onBack` is the caller's own guarded navigation (it decides whether to confirm and to call
+  // `teardown` — see `SheetHandle`): "Indietro" just asks for it, like any other way out.
+  backButton.addEventListener('click', onBack);
 
   function collectData(): Record<string, unknown> {
     return {
@@ -180,6 +195,9 @@ export function buildSheet(book: DeskBook, onBack: () => void): HTMLElement {
       iniziato: iniziatoInput.value || undefined,
       finito: finitoInput.value || undefined,
       voto: getVoto() ?? undefined,
+      // Not edited here, but must survive a sheet save all the same (SPEC.md: never lose data the
+      // author didn't touch).
+      nota: book.nota ?? undefined,
     };
   }
 
@@ -207,8 +225,11 @@ export function buildSheet(book: DeskBook, onBack: () => void): HTMLElement {
   });
 
   saveButton.addEventListener('click', () => {
-    void submitLettura(book.slug, collectData(), errors, textarea.value, teardown);
+    saveButton.disabled = true;
+    void submitLettura(book.slug, collectData(), errors, textarea.value, teardown, book.version ?? undefined).finally(() => {
+      saveButton.disabled = false; // harmless on success too: the page navigates away right after
+    });
   });
 
-  return wrap;
+  return { element: wrap, hasUnsavedText, teardown };
 }
