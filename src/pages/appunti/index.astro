@@ -1,0 +1,57 @@
+---
+import { getCollection } from 'astro:content';
+import CourseList from '../../components/appunti/CourseList.astro';
+import Piles from '../../components/appunti/Piles.astro';
+import Theses from '../../components/appunti/Theses.astro';
+import Base from '../../layouts/Base.astro';
+import { APPUNTI_CONTENT_DIR } from '../../config/appunti-content-dir.ts';
+import { groupByYear, type IndexCourse } from '../../lib/appunti-index.ts';
+import { readCorsoMeta } from '../../lib/corso-meta.ts';
+import { isPublished } from '../../lib/corso-published.ts';
+import { deriveStato, hasValidBuild } from '../../lib/corso-stato.ts';
+
+const published = (await getCollection('appunti')).filter(isPublished);
+const theses = published.filter((entry) => entry.data.tipo === 'tesi');
+
+// `anno` is required for a `corso` by the schema; the guard only narrows its optional type.
+const courses: IndexCourse[] = published.flatMap((entry) =>
+  entry.data.tipo === 'corso' && entry.data.anno !== undefined
+    ? [
+        {
+          id: entry.id,
+          titolo: entry.data.titolo,
+          livello: entry.data.livello,
+          anno: entry.data.anno,
+          stato: deriveStato({ fonte: entry.data.fonte, hasValidBuild: hasValidBuild(APPUNTI_CONTENT_DIR, entry.id) }),
+          pagine: readCorsoMeta(APPUNTI_CONTENT_DIR, entry.id)?.pagine,
+        },
+      ]
+    : [],
+);
+const piles = groupByYear(courses);
+const description = 'Gli appunti dei corsi universitari: PDF di ogni corso, e le pagine web di quelli convertiti.';
+---
+
+<Base title="Appunti" description={description} og={{ image: '/og/appunti.png', description }}>
+  <div class="page">
+    <h1 class="page__full">Appunti</h1>
+    <!-- Author-voice copy stays a visible placeholder until the author writes it (SPEC.md §1.2). -->
+    <p class="lede placeholder">Presentazione della sezione: la scrive l'autore.</p>
+    <div class="page__full">
+      <Theses theses={theses} />
+      <Piles piles={piles} />
+      <CourseList piles={piles} />
+    </div>
+    <p class="notice page__full">Appunti di uno studente, non materiale ufficiale dei corsi. Possono contenere errori.</p>
+  </div>
+</Base>
+
+<style>
+  .notice {
+    margin-top: 3rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+</style>

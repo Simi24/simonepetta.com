@@ -1,0 +1,105 @@
+---
+import { pileLabel, type Pile } from '../../lib/appunti-index.ts';
+
+interface Props {
+  piles: readonly Pile[];
+}
+
+const { piles } = Astro.props;
+const courses = piles.flatMap((pile) => pile.courses.map((course) => ({ course, label: pileLabel(pile) })));
+---
+
+{
+  courses.length > 0 && (
+    <section class="courses-group" id="elenco">
+      <h2>Tutti i corsi</h2>
+      <ul class="courses">
+        {courses.map(({ course, label }) => (
+          <li>
+            <a class="courses__name" href={`/appunti/${course.id}/`}>
+              {course.titolo}
+            </a>
+            <span class="courses__level">{`${label.year} ${label.level}`}</span>
+            <span class="courses__pages">{course.pagine === undefined ? '' : `${course.pagine} pag.`}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style>
+  /* Same 12-column section as the readings list: label in columns 1-4, content from column 5 (SPEC.md §5.2). */
+  .courses-group {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 1.5rem;
+    border-top: 2px solid var(--ink);
+    padding-top: 0.8rem;
+    margin-top: 3rem;
+  }
+
+  .courses-group h2 {
+    grid-column: 1 / span 4;
+    margin: 0;
+    font-size: 1.05rem;
+  }
+
+  .courses {
+    grid-column: 5 / -1;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .courses li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 11rem 5rem;
+    gap: 1rem;
+    align-items: center;
+    padding-block: 0.3rem;
+    border-bottom: 1px solid var(--rule);
+    font-size: 0.95rem;
+  }
+
+  .courses li:first-child {
+    border-top: 1px solid var(--rule);
+  }
+
+  .courses__name {
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .courses__level {
+    white-space: nowrap;
+  }
+
+  .courses__pages {
+    text-align: right;
+  }
+
+  @media (max-width: 860px) {
+    .courses-group {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .courses-group h2,
+    .courses {
+      grid-column: 1;
+    }
+
+    .courses li {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .courses__level {
+      grid-column: 1;
+    }
+
+    .courses__pages {
+      grid-row: 1 / span 2;
+      grid-column: 2;
+    }
+  }
+</style>

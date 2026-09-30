@@ -9,4 +9,7 @@ export interface Section {
  * so the shell never links to a 404 (SPEC.md §5.1). `labelEn` is the label shown
  * on `/en/`, whose own nav must carry no Italian labels (SPEC.md §8).
  */
-export const sections: readonly Section[] = [{ href: '/letture/', label: 'Letture', labelEn: 'Readings' }];
+export const sections: readonly Section[] = [
+  { href: '/letture/', label: 'Letture', labelEn: 'Readings' },
+  { href: '/appunti/', label: 'Appunti', labelEn: 'Notes' },
+];
