@@ -1,9 +1,26 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { coursesWithPdf, parsePdfinfoPages, writeCorsoMeta } from '../pipeline/appunti-meta.ts';
+
+/**
+ * Whether `pdfinfo` (poppler) is on `PATH`. The `site` workflow does not install it (only the
+ * `appunti` workflow of #38 will); locally it's at `/opt/homebrew/bin/pdfinfo` on this machine.
+ * Tests that shell out to the real binary are skipped, not failed, when it's missing.
+ */
+function hasPdfinfo(): boolean {
+  try {
+    execFileSync('pdfinfo', ['-v'], { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const PDFINFO_SKIP = hasPdfinfo() ? false : 'pdfinfo (poppler) is not installed on PATH';
 
 // A real `pdfinfo` excerpt (poppler), independent of the parser: the expected value is read
 // off this literal, not recomputed the way the parser does.
@@ -29,7 +46,7 @@ function fixtureContentDir(): string {
   return dir;
 }
 
-test('writes meta.json with the PDF’s real page count (a one-page fixture)', () => {
+test('writes meta.json with the PDF’s real page count (a one-page fixture)', { skip: PDFINFO_SKIP }, () => {
   const dir = fixtureContentDir();
   const meta = writeCorsoMeta(dir, 'una-pagina');
   assert.equal(meta.pagine, 1);
@@ -37,7 +54,7 @@ test('writes meta.json with the PDF’s real page count (a one-page fixture)', (
   assert.deepEqual(written, { pagine: 1 });
 });
 
-test('writes meta.json matching a three-page fixture', () => {
+test('writes meta.json matching a three-page fixture', { skip: PDFINFO_SKIP }, () => {
   const dir = fixtureContentDir();
   const meta = writeCorsoMeta(dir, 'tre-pagine');
   assert.equal(meta.pagine, 3);
