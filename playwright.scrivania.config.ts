@@ -11,6 +11,9 @@ export default defineConfig({
   testDir: 'tests/browser-dev',
   forbidOnly: !!process.env['CI'],
   reporter: process.env['CI'] ? 'github' : 'list',
+  // All specs share one real dev server and one real content directory (never test fixtures):
+  // parallel workers would race each other's saves and content-collection refreshes.
+  workers: 1,
   use: { baseURL: `http://localhost:${port}` },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {

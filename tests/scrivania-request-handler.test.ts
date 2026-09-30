@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readdirSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -61,4 +61,18 @@ test('an invalid payload still responds 400 and writes nothing', async () => {
   const res = await post({ data: { titolo: 'Senza autore', stato: 'in-corso' } });
   assert.equal(res.status, 400);
   assert.equal(readdirSync(contentDir).length, before_);
+});
+
+test('a save with testo writes it as the book’s body', async () => {
+  await post({ data: { titolo: 'Con Testo', autore: 'Autore', stato: 'in-corso', iniziato: '2026-09-14' } });
+  const res = await post({
+    slug: 'con-testo',
+    data: { titolo: 'Con Testo', autore: 'Autore', stato: 'letto', finito: '2026-09-20' },
+    testo: 'La mia reazione al libro.',
+  });
+  const json = (await res.json()) as { slug?: string };
+  assert.equal(res.status, 200);
+  assert.equal(json.slug, 'con-testo');
+  const written = readFileSync(join(contentDir, 'con-testo.md'), 'utf8');
+  assert.ok(written.includes('La mia reazione al libro.'), `body missing from the written file:\n${written}`);
 });

@@ -1,11 +1,24 @@
 ---
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { getCollection } from 'astro:content';
+import { LETTURA_CONTENT_DIR } from '../../config/lettura-content-dir.ts';
 import Base from '../../layouts/Base.astro';
 import { orderLetture, shelfOrder } from '../../lib/lettura-order.ts';
+import { fileVersion } from './version.ts';
 import type { DeskBook } from './client/book.ts';
 
 const collection = await getCollection('letture');
 const shelf = shelfOrder(orderLetture(collection));
+
+/** The file's current `fileVersion`, or `null` when it can't be read — the sheet then skips the stale-overwrite check rather than blocking a legitimate save on it. */
+function versionOf(slug: string): string | null {
+  try {
+    return fileVersion(readFileSync(join(LETTURA_CONTENT_DIR, `${slug}.md`)));
+  } catch {
+    return null;
+  }
+}
 
 const books: DeskBook[] = shelf.map((entry) => ({
   slug: entry.id,
@@ -18,6 +31,8 @@ const books: DeskBook[] = shelf.map((entry) => ({
   voto: entry.data.voto ?? null,
   pagine: entry.data.pagine ?? null,
   nota: entry.data.nota ?? null,
+  testo: (entry.body ?? '').trim() || null,
+  version: versionOf(entry.id),
 }));
 
 // Escaped so a title containing "</script>" can't break out of the data island.
@@ -258,6 +273,157 @@ const deskJson = JSON.stringify({ books }).replace(/</g, '\\u003c');
     font-weight: 500;
   }
 
+  /* ---------- writing sheet (SPEC.md §6.4) ---------- */
+  .sheet {
+    padding-bottom: 6rem;
+  }
+
+  .desk-head {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 1.5rem;
+    align-items: end;
+    margin: 1.2rem 0;
+  }
+
+  .desk-head .t {
+    grid-column: 1 / span 8;
+  }
+
+  .desk-head .t h1 {
+    margin: 0;
+  }
+
+  .desk-head .t p {
+    margin: 0.4rem 0 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+
+  .desk-head .v {
+    grid-column: 9 / -1;
+  }
+
+  .dates {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .dates input {
+    background: transparent;
+    border: 0;
+    border-bottom: 1.5px solid var(--rule);
+    padding: 0.1rem 0;
+    font: inherit;
+    color: inherit;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .desk {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 17rem;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .paper {
+    background: var(--paper);
+    border-radius: 4px;
+    min-height: 60vh;
+    padding: 2rem clamp(1rem, 4vw, 3rem);
+  }
+
+  .paper textarea {
+    width: 100%;
+    min-height: 55vh;
+    border: 0;
+    background: transparent;
+    resize: none;
+    font: inherit;
+    color: inherit;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    outline: none;
+  }
+
+  .paper textarea::placeholder {
+    color: var(--muted);
+  }
+
+  .side {
+    position: sticky;
+    top: 1rem;
+    display: grid;
+    gap: 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .clock {
+    font-size: 3.4rem;
+    font-weight: 300;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .clock-note {
+    color: var(--muted);
+    margin-top: 0.4rem;
+  }
+
+  .words b {
+    font-size: 1.6rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .prompts {
+    margin: 0;
+    padding-left: 1.2rem;
+  }
+
+  .prompts li {
+    margin-bottom: 0.35rem;
+  }
+
+  .prompts button {
+    text-align: left;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: var(--muted);
+  }
+
+  .prompts button:hover {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
+    padding: 0.7rem 20px calc(0.7rem + env(safe-area-inset-bottom, 0px));
+    background: color-mix(in srgb, var(--bg) 92%, var(--ink));
+    border-top: 1px solid var(--rule);
+  }
+
+  .bar-in {
+    max-width: 84rem;
+    margin-inline: auto;
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
   @media (max-width: 860px) {
     .actions {
       grid-template-columns: minmax(0, 1fr);
@@ -273,6 +439,25 @@ const deskJson = JSON.stringify({ books }).replace(/</g, '\\u003c');
     }
 
     .form {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .desk-head {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .desk-head .t,
+    .desk-head .v {
+      grid-column: 1;
+    }
+
+    .desk {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .side {
+      position: static;
+      order: -1;
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }

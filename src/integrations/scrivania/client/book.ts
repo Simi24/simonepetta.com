@@ -12,6 +12,10 @@ export interface DeskBook {
   voto: number | null;
   pagine: number | null;
   nota: string | null;
+  /** The book's post text, trimmed; `null` when it has none yet (SPEC.md §6.4). */
+  testo: string | null;
+  /** The file's `fileVersion` as this page was generated; sent back on a sheet save to catch a stale overwrite. `null` when the file couldn't be read (skips the conflict check). */
+  version: string | null;
 }
 
 export interface DeskData {
