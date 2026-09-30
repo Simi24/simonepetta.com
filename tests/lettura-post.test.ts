@@ -82,3 +82,48 @@ test('with no finished books the home has no recent-readings section', () => {
   const html = read(buildSite(FIXTURES_EMPTY), 'index.html');
   assert.doesNotMatch(html, /Ultime letture/);
 });
+
+test('a shelf spine link does not carry the listitem role itself: it sits on a wrapping span', () => {
+  const html = read(buildSite(FIXTURES_POST), 'letture/index.html');
+  assert.doesNotMatch(html, /<a[^>]*role="listitem"/);
+  assert.match(html, /<span role="listitem"[^>]*><a class="spine[^"]*"/);
+});
+
+test('an abandoned book’s post labels the drop date "Abbandonato", never "Finito"', () => {
+  const html = read(buildSite(FIXTURES_POST), 'letture/abbandonato-con-testo/index.html');
+  assert.match(html, /<dt[^>]*>Abbandonato<\/dt><dd class="num"[^>]*>1 mag 2026<\/dd>/);
+  assert.doesNotMatch(html, /<dt[^>]*>Finito<\/dt>/);
+});
+
+test('the post text sits at column 5/span 7, single column under 860px', () => {
+  const html = read(buildSite(FIXTURES_POST), 'letture/il-piu-recente/index.html');
+  assert.match(html, /\.prose\[[^\]]+\]\{[^}]*grid-column:5\/span 7/);
+  assert.match(html, /@media \(width<=860px\)\{[\s\S]*?\.prose\[[^\]]+\]\{grid-column:1\}/);
+});
+
+test('the post title uses the prototype’s post size, not the global h1 size', () => {
+  const html = read(buildSite(FIXTURES_POST), 'letture/il-piu-recente/index.html');
+  assert.match(html, /\.post-head\[[^\]]+\] h1\[[^\]]+\]\{[^}]*font-size:clamp\(2\.6rem,6\.5vw,5\.6rem\)/);
+});
+
+test('the post owns its own 12-column grid, independent of .page', () => {
+  const html = read(buildSite(FIXTURES_POST), 'letture/il-piu-recente/index.html');
+  assert.match(html, /\.post\[[^\]]+\]\{[^}]*grid-template-columns:repeat\(12,minmax\(0,1fr\)\)/);
+  assert.doesNotMatch(html, /class="[^"]*page__full[^"]*"/);
+});
+
+test('the home’s "Ultime letture" is a block at column 5/span 7, not full width', () => {
+  const html = read(buildSite(FIXTURES_POST), 'index.html');
+  assert.match(html, /\.recent\[[^\]]+\]\{[^}]*grid-template-columns:repeat\(7,minmax\(0,1fr\)\)/);
+  assert.doesNotMatch(html, /<div class="page__full"><section class="recent"/);
+});
+
+test('".num" gives dates tabular figures, as in the prototype', () => {
+  const html = read(buildSite(FIXTURES_POST), 'letture/il-piu-recente/index.html');
+  assert.match(html, /\.num\[[^\]]+\]\{font-variant-numeric:tabular-nums\}/);
+});
+
+test('a book whose body is only whitespace gets no post page', () => {
+  const dist = buildSite(FIXTURES_POST);
+  assert.ok(!existsSync(join(dist, 'letture/il-corpo-vuoto/index.html')));
+});

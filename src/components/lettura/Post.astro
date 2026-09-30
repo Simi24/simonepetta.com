@@ -1,54 +1,67 @@
 ---
 import { formatDataIt, formatVoto } from '../../lib/lettura-format-it.ts';
+import type { Lettura } from '../../schemas/lettura.ts';
 
 interface Props {
-  titolo: string;
-  autore: string;
-  anno_opera?: number | undefined;
-  iniziato?: string | undefined;
-  finito?: string | undefined;
-  voto?: number | undefined;
+  data: Lettura;
 }
 
-const { titolo, autore, anno_opera, iniziato, finito, voto } = Astro.props;
+const { data } = Astro.props;
+const { titolo, autore, anno_opera, stato, iniziato, finito, voto } = data;
+
+/** The drop date reads "Abbandonato", never "Finito" (SPEC.md §6.1: `finito` is the day it was dropped). */
+const finitoLabel = stato === 'abbandonato' ? 'Abbandonato' : 'Finito';
 ---
 
-<header class="post-head page__full">
-  <h1><cite>{titolo}</cite></h1>
-  <p class="byline">{anno_opera !== undefined ? `${autore}, ${anno_opera}` : autore}</p>
-  <dl class="facts">
-    {
-      iniziato && (
-        <div>
-          <dt>Iniziato</dt>
-          <dd class="num">{formatDataIt(iniziato)}</dd>
-        </div>
-      )
-    }
-    {
-      finito && (
-        <div>
-          <dt>Finito</dt>
-          <dd class="num">{formatDataIt(finito)}</dd>
-        </div>
-      )
-    }
-    {
-      voto !== undefined && (
-        <div>
-          <dt>Voto</dt>
-          <dd class="vote-big">{formatVoto(voto)}</dd>
-        </div>
-      )
-    }
-  </dl>
-</header>
-<div class="prose page__full">
-  <slot />
+<!--
+  Self-contained 12-column grid: Post owns its full layout and does not depend on
+  being rendered inside `.page`, so the writing desk preview (#28) can drop it anywhere.
+-->
+<div class="post">
+  <header class="post-head">
+    <h1><cite>{titolo}</cite></h1>
+    <p class="byline">{anno_opera !== undefined ? `${autore}, ${anno_opera}` : autore}</p>
+    <dl class="facts">
+      {
+        iniziato && (
+          <div>
+            <dt>Iniziato</dt>
+            <dd class="num">{formatDataIt(iniziato)}</dd>
+          </div>
+        )
+      }
+      {
+        finito && (
+          <div>
+            <dt>{finitoLabel}</dt>
+            <dd class="num">{formatDataIt(finito)}</dd>
+          </div>
+        )
+      }
+      {
+        voto !== undefined && (
+          <div>
+            <dt>Voto</dt>
+            <dd class="vote-big">{formatVoto(voto)}</dd>
+          </div>
+        )
+      }
+    </dl>
+  </header>
+  <div class="prose">
+    <slot />
+  </div>
 </div>
 
 <style>
+  .post {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 1.5rem;
+  }
+
   .post-head {
+    grid-column: 1 / -1;
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     column-gap: 1.5rem;
@@ -57,6 +70,7 @@ const { titolo, autore, anno_opera, iniziato, finito, voto } = Astro.props;
 
   .post-head h1 {
     grid-column: 1 / -1;
+    font-size: clamp(2.6rem, 6.5vw, 5.6rem);
   }
 
   .post-head h1 cite {
@@ -87,6 +101,10 @@ const { titolo, autore, anno_opera, iniziato, finito, voto } = Astro.props;
     margin: 0;
   }
 
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
   .vote-big {
     font-size: 4.2rem;
     font-weight: 300;
@@ -94,19 +112,25 @@ const { titolo, autore, anno_opera, iniziato, finito, voto } = Astro.props;
     letter-spacing: -0.04em;
   }
 
+  .prose {
+    grid-column: 5 / span 7;
+  }
+
   @media (max-width: 860px) {
+    .post,
     .post-head {
       grid-template-columns: minmax(0, 1fr);
     }
 
     .post-head h1,
     .byline,
-    .facts {
+    .prose {
       grid-column: 1;
-      grid-row: auto;
     }
 
     .facts {
+      grid-column: 1;
+      grid-row: auto;
       flex-direction: row;
       flex-wrap: wrap;
       gap: 0.5rem 1.5rem;

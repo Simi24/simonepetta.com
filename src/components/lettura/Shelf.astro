@@ -24,16 +24,19 @@ function spineClasses(entry: CollectionEntry<'letture'>): string {
         const href = postHref(entry);
         const Tag = href ? 'a' : 'span';
         return (
-          <Tag
-            class={spineClasses(entry)}
-            role="listitem"
-            href={href}
-            style={`height:${spineHeightRem(entry.data.pagine)}rem;width:${spineWidthRem(entry.data.pagine)}rem;`}
-            title={`${entry.data.titolo}, ${entry.data.autore}`}
-          >
-            <span>{truncateTitle(entry.data.titolo)}</span>
-            <span class="spine__author">{authorSurname(entry.data.autore)}</span>
-          </Tag>
+          // ARIA in HTML forbids `role="listitem"` on `a[href]` (it replaces the link role),
+          // so list semantics sit on this wrapper, not on the link itself (SPEC.md §12.1).
+          <span role="listitem">
+            <Tag
+              class={spineClasses(entry)}
+              href={href}
+              style={`height:${spineHeightRem(entry.data.pagine)}rem;width:${spineWidthRem(entry.data.pagine)}rem;`}
+              title={`${entry.data.titolo}, ${entry.data.autore}`}
+            >
+              <span>{truncateTitle(entry.data.titolo)}</span>
+              <span class="spine__author">{authorSurname(entry.data.autore)}</span>
+            </Tag>
+          </span>
         );
       })
     }

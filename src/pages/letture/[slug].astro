@@ -18,19 +18,10 @@ const { Content } = await render(entry);
 ---
 
 <Base title={entry.data.titolo}>
-  <article class="page">
-    <a class="page__full back" href="/letture/">Letture</a>
-    <Post
-      titolo={entry.data.titolo}
-      autore={entry.data.autore}
-      anno_opera={entry.data.anno_opera}
-      iniziato={entry.data.iniziato}
-      finito={entry.data.finito}
-      voto={entry.data.voto}
-    >
-      <Content />
-    </Post>
-  </article>
+  <a class="back" href="/letture/">Letture</a>
+  <Post data={entry.data}>
+    <Content />
+  </Post>
 </Base>
 
 <style>

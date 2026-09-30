@@ -13,7 +13,8 @@ import {
   isMathPage,
   isNotesChapterPage,
 } from '../../src/config/budget.ts';
-import { filesWithExtension, read } from '../../tests/support/built-site.ts';
+import { buildSite, filesWithExtension, read } from '../../tests/support/built-site.ts';
+import { QUALITY_BUILDS } from '../../tests/support/quality-builds.ts';
 
 export interface Violation {
   page: string;
@@ -134,21 +135,55 @@ export const shouldBuildFreshDist = ({
   distExists: boolean;
 }): boolean => !reuseDist || !distExists;
 
-function main(): void {
-  const dist = process.argv[2] ?? 'dist';
-  const reuseDist = process.env['QUALITY_GATE_REUSE_DIST'] === '1';
-  if (shouldBuildFreshDist({ reuseDist, distExists: existsSync(dist) })) {
-    execFileSync('npx', ['astro', 'build', '--outDir', dist], { stdio: 'inherit' });
-  }
+/** Every violation across several builds, each labeled so a report can tell them apart. */
+function checkBudgets(builds: readonly { label: string; dist: string }[]): Violation[] {
+  return builds.flatMap(({ label, dist }) => checkBudget(dist).map((v) => ({ ...v, page: `[${label}] ${v.page}` })));
+}
 
-  const violations = checkBudget(dist);
+function report(builds: readonly { label: string; dist: string }[]): void {
+  const violations = checkBudgets(builds);
   if (violations.length > 0) {
     console.error(`Byte budget (SPEC.md §12.2): ${violations.length} violation(s)\n`);
     for (const { page, message } of violations) console.error(`  ${page}: ${message}`);
     process.exitCode = 1;
     return;
   }
-  console.log(`Byte budget (SPEC.md §12.2): OK (${filesWithExtension(dist, '.html').length} page(s) checked)`);
+  const pageCount = builds.reduce((sum, { dist }) => sum + filesWithExtension(dist, '.html').length, 0);
+  console.log(`Byte budget (SPEC.md §12.2): OK (${pageCount} page(s) checked across ${builds.length} build(s))`);
+}
+
+/**
+ * With an explicit `dist` argument, checks only that directory (building it first unless
+ * reused). Without one — the normal `npm run gate:budget` case — it checks the same builds
+ * the axe gate does: production (reusing the `dist` a prior `npm run build` staged, when
+ * `QUALITY_GATE_REUSE_DIST=1`) plus the fixture-populated builds, so a page type like the
+ * post page is budget-checked even before any real content ships.
+ */
+function main(): void {
+  const distArg = process.argv[2];
+  const reuseDist = process.env['QUALITY_GATE_REUSE_DIST'] === '1';
+
+  if (distArg) {
+    if (shouldBuildFreshDist({ reuseDist, distExists: existsSync(distArg) })) {
+      execFileSync('npx', ['astro', 'build', '--outDir', distArg], { stdio: 'inherit' });
+    }
+    report([{ label: distArg, dist: distArg }]);
+    return;
+  }
+
+  const productionDist = 'dist';
+  if (shouldBuildFreshDist({ reuseDist, distExists: existsSync(productionDist) })) {
+    execFileSync('npx', ['astro', 'build', '--outDir', productionDist], { stdio: 'inherit' });
+  }
+
+  const builds = [
+    { label: 'production', dist: productionDist },
+    ...QUALITY_BUILDS.filter((build) => build.label !== 'production').map((build) => ({
+      label: build.label,
+      dist: buildSite(build.env),
+    })),
+  ];
+  report(builds);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();
