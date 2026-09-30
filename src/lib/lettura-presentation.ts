@@ -5,32 +5,29 @@ interface StatoPresentation {
   groupLabel: string;
   /** Extra class on the spine: the bookmark for in-corso, the lean for abbandonato. */
   spineClass: string;
-  /** Which date this state is tracked by, and how the list phrases it. */
-  dateField: 'iniziato' | 'finito';
+  /** How the list phrases this state's ordering date (SPEC.md §6.1: `finito` is the drop day, not a finish day, for abbandonato). */
   dateVerb: string;
 }
 
 /**
- * The one place per-`stato` presentation is decided, so the shelf, the list and the ordering
- * all read it instead of each running their own switch over `StatoLettura`.
+ * The one place per-`stato` presentation is decided, so the shelf and the list read it instead
+ * of each running their own switch over `StatoLettura`. Which date each state orders by is a
+ * domain rule, not presentation: see `ORDERING_DATE` in `lettura-order.ts`.
  */
 export const STATO_PRESENTATION: Record<StatoLettura, StatoPresentation> = {
   'in-corso': {
     groupLabel: 'Sto leggendo',
     spineClass: 'spine--in-corso',
-    dateField: 'iniziato',
     dateVerb: 'iniziato il',
   },
   letto: {
     groupLabel: 'Letti',
     spineClass: '',
-    dateField: 'finito',
     dateVerb: 'finito il',
   },
   abbandonato: {
     groupLabel: 'Abbandonati',
     spineClass: 'spine--abbandonato',
-    dateField: 'finito',
-    dateVerb: 'finito il',
+    dateVerb: 'abbandonato il',
   },
 };

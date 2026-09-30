@@ -1,7 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import type { GroupedLetture } from '../../lib/letture-order.ts';
 import { formatDataIt, formatVoto } from '../../lib/lettura-format-it.ts';
+import { ORDERING_DATE, type GroupedLetture } from '../../lib/lettura-order.ts';
 import { STATO_PRESENTATION } from '../../lib/lettura-presentation.ts';
 import { STATI_LETTURA } from '../../schemas/lettura.ts';
 
@@ -13,9 +13,8 @@ const { grouped } = Astro.props;
 
 /** A book's date line, plus its abandonment note when there is one (SPEC.md §6.2). */
 function metaLine(entry: CollectionEntry<'letture'>): string {
-  const { dateField, dateVerb } = STATO_PRESENTATION[entry.data.stato];
-  const date = entry.data[dateField];
-  const parts = [date ? `${dateVerb} ${formatDataIt(date)}` : ''];
+  const date = entry.data[ORDERING_DATE[entry.data.stato]];
+  const parts = [date ? `${STATO_PRESENTATION[entry.data.stato].dateVerb} ${formatDataIt(date)}` : ''];
   if (entry.data.stato === 'abbandonato' && entry.data.nota) parts.push(entry.data.nota);
   return parts.filter(Boolean).join(', ');
 }

@@ -1,8 +1,14 @@
 import type { CollectionEntry } from 'astro:content';
-import { STATO_PRESENTATION } from './lettura-presentation.ts';
 import { STATI_LETTURA, type StatoLettura } from '../schemas/lettura.ts';
 
 export type GroupedLetture = Record<StatoLettura, CollectionEntry<'letture'>[]>;
+
+/** Which date each state is ordered by (SPEC.md §6.1: in corso by iniziato, letti/abbandonati by finito). A domain rule, not presentation. */
+export const ORDERING_DATE: Record<StatoLettura, 'iniziato' | 'finito'> = {
+  'in-corso': 'iniziato',
+  letto: 'finito',
+  abbandonato: 'finito',
+};
 
 function byDateDesc(field: 'iniziato' | 'finito') {
   return (a: CollectionEntry<'letture'>, b: CollectionEntry<'letture'>): number => {
@@ -22,7 +28,7 @@ export function orderLetture(entries: readonly CollectionEntry<'letture'>[]): Gr
     grouped[entry.data.stato].push(entry);
   }
   for (const stato of STATI_LETTURA) {
-    grouped[stato].sort(byDateDesc(STATO_PRESENTATION[stato].dateField));
+    grouped[stato].sort(byDateDesc(ORDERING_DATE[stato]));
   }
   return grouped;
 }
