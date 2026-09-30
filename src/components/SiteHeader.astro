@@ -2,27 +2,33 @@
 import ThemeToggle from './ThemeToggle.astro';
 import { site } from '../config/site.ts';
 import { sections } from '../config/nav.ts';
+
+interface Props {
+  lang?: 'it' | 'en';
+}
+
+const { lang = 'it' } = Astro.props;
+const isEn = lang === 'en';
+
+// The EN page exists (this issue), so the reciprocal language link is safe to nav-link
+// (SPEC.md §5.1): "EN" from any Italian page, "IT" back from `/en/`.
+const langSwitch = isEn ? { href: '/', label: 'IT', targetLang: 'it' } : { href: '/en/', label: 'EN', targetLang: 'en' };
 ---
 
 <header class="site-header">
   <a class="brand" href="/">{site.author}</a>
   <div class="site-header__end">
-    {
-      sections.length > 0 && (
-        <nav aria-label="Sezioni">
-          {sections.map((section) => (
-            <a
-              href={section.href}
-              lang={section.lang}
-              aria-current={Astro.url.pathname === section.href ? 'page' : undefined}
-            >
-              {section.label}
-            </a>
-          ))}
-        </nav>
-      )
-    }
-    <ThemeToggle />
+    <nav aria-label={isEn ? 'Sections' : 'Sezioni'}>
+      {sections.map((section) => (
+        <a href={section.href} aria-current={Astro.url.pathname === section.href ? 'page' : undefined}>
+          {isEn ? section.labelEn : section.label}
+        </a>
+      ))}
+      <a href={langSwitch.href} lang={langSwitch.targetLang}>
+        {langSwitch.label}
+      </a>
+    </nav>
+    <ThemeToggle lang={lang} />
   </div>
 </header>
 

@@ -1,0 +1,24 @@
+---
+import { colophon } from '../../lib/colophon.ts';
+
+interface Props {
+  lang?: 'it' | 'en';
+}
+
+const { lang = 'it' } = Astro.props;
+const lines = colophon[lang];
+---
+
+<section class="block">
+  <h2>Colophon</h2>
+  <dl class="colophon">
+    {
+      lines.map((line) => (
+        <>
+          <dt>{line.term}</dt>
+          <dd>{line.detail}</dd>
+        </>
+      ))
+    }
+  </dl>
+</section>

@@ -1,0 +1,25 @@
+---
+import { projects } from '../../config/projects.ts';
+
+interface Props {
+  lang?: 'it' | 'en';
+}
+
+const { lang = 'it' } = Astro.props;
+// The project name and link are facts; the description is author-voice and stays a
+// placeholder until the author writes it (SPEC.md §1.2).
+const placeholder = lang === 'en' ? 'Description: written by the author.' : "Descrizione: la scrive l'autore.";
+---
+
+<section class="block">
+  <h2>Open source</h2>
+  <ul class="projects">
+    {
+      projects.map((project) => (
+        <li>
+          <a href={project.href}>{project.name}</a> <span class="placeholder">{placeholder}</span>
+        </li>
+      ))
+    }
+  </ul>
+</section>

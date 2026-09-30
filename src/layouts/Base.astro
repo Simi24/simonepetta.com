@@ -7,26 +7,60 @@ import '../styles/fonts.css';
 import '../styles/tokens.css';
 import '../styles/base.css';
 
-interface Props {
-  title: string;
+interface Hreflang {
+  lang: string;
+  href: string;
 }
 
-const { title } = Astro.props;
+interface OpenGraph {
+  image: string;
+  description: string;
+}
+
+interface Props {
+  title: string;
+  lang?: 'it' | 'en';
+  description?: string;
+  canonical?: boolean;
+  hreflang?: readonly Hreflang[];
+  og?: OpenGraph;
+  jsonLd?: object;
+}
+
+const { title, lang = site.lang, description, canonical = false, hreflang, og, jsonLd } = Astro.props;
+
+const canonicalUrl = canonical && Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
+const ogImageUrl = og && Astro.site ? new URL(og.image, Astro.site).toString() : undefined;
 ---
 
 <!doctype html>
-<html lang={site.lang}>
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script is:inline set:html={themeScript} />
     {!SITE_INDEXABLE && <meta name="robots" content="noindex" />}
     <title>{title}</title>
+    {description && <meta name="description" content={description} />}
     <link rel="preload" href="/fonts/host-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    {hreflang?.map((alt) => <link rel="alternate" hreflang={alt.lang} href={alt.href} />)}
+    {
+      og && (
+        <>
+          <meta property="og:title" content={title} />
+          <meta property="og:description" content={og.description} />
+          <meta property="og:image" content={ogImageUrl} />
+          <meta property="og:url" content={canonicalUrl} />
+          <meta name="twitter:card" content="summary_large_image" />
+        </>
+      )
+    }
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
   </head>
   <body>
     <div class="site">
-      <SiteHeader />
+      <SiteHeader lang={lang} />
       <main>
         <slot />
       </main>

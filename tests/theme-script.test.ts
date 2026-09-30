@@ -1,11 +1,17 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { gzipSync } from 'node:zlib';
+import { NON_JS_SCRIPT_TYPES } from '../src/config/budget.ts';
 import { builtPages } from './support/built-site.ts';
 
-/** Inline scripts only: external ones are the byte budget's concern (SPEC.md §12.2). */
+/** Inline scripts only, and only ones that run as JS: external and JSON-LD scripts are not this gate's concern. */
 const inlineScripts = (html: string): RegExpMatchArray[] =>
-  [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].filter((match) => !/\bsrc=/.test(match[1] ?? ''));
+  [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)].filter((match) => {
+    const attrs = match[1] ?? '';
+    if (/\bsrc=/.test(attrs)) return false;
+    const type = /\btype="([^"]*)"/.exec(attrs)?.[1];
+    return !type || !(NON_JS_SCRIPT_TYPES as readonly string[]).includes(type);
+  });
 
 test('every page has one inline theme script in the head, at most 1 KB gzip', () => {
   for (const { page, html } of builtPages()) {

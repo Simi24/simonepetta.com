@@ -1,0 +1,16 @@
+---
+// Author-voice copy stays a visible placeholder until the author writes it (SPEC.md §1.2).
+interface Props {
+  lang?: 'it' | 'en';
+}
+
+const { lang = 'it' } = Astro.props;
+const paragraphs =
+  lang === 'en'
+    ? ['Bio, first paragraph: written by the author.', 'Bio, second paragraph: written by the author.']
+    : ["Bio, primo paragrafo: lo scrive l'autore.", "Bio, secondo paragrafo: lo scrive l'autore."];
+---
+
+<div class="page__full">
+  {paragraphs.map((paragraph) => <p class="placeholder">{paragraph}</p>)}
+</div>

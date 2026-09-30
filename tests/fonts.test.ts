@@ -27,10 +27,25 @@ test('Host Grotesk is self-hosted in roman and italic', () => {
   }
 });
 
+// `<link rel="canonical">` and `<link rel="alternate" hreflang>` are metadata for crawlers,
+// required as absolute URLs (SPEC.md §8, §12.3); unlike a stylesheet or script, the browser
+// never fetches them, so they don't belong to "loads" here.
+const NON_LOADING_LINK_RELS = ['canonical', 'alternate'];
+
+const externalResourceTags = (html: string): RegExpMatchArray[] =>
+  [...html.matchAll(/<(link|script)\b[^>]*>/g)].filter((match) => {
+    const tag = match[0];
+    if (!/(href|src)="(https?:)?\/\//.test(tag)) return false;
+    if (match[1] !== 'link') return true;
+    const rel = /\brel="([^"]*)"/.exec(tag)?.[1]?.split(/\s+/) ?? [];
+    return !rel.some((value) => NON_LOADING_LINK_RELS.includes(value));
+  });
+
 test('no page loads anything from another origin', () => {
   const dist = buildSite();
   for (const { page, html } of builtPages()) {
-    assert.doesNotMatch(html, /<(link|script)[^>]+(href|src)="(https?:)?\/\//, `${page} loads an external resource`);
+    const tags = externalResourceTags(html);
+    assert.equal(tags.length, 0, `${page} loads an external resource: ${tags.map((t) => t[0]).join(', ')}`);
   }
   assert.doesNotMatch(allCss(dist), /url\(["']?(https?:)?\/\//, 'CSS loads an external resource');
 });

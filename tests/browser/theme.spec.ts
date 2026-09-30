@@ -8,7 +8,7 @@ const LIGHT_BG = 'rgb(237, 237, 235)';
 const DARK_BG = 'rgb(21, 21, 21)';
 
 const background = (page: Page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-const toggle = (page: Page) => page.getByRole('button', { name: /^Tema:/ });
+const toggle = (page: Page) => page.getByRole('button', { name: /^(Tema|Theme):/ });
 
 test('a stored dark theme is applied before the body is parsed', async ({ page }) => {
   await page.addInitScript(() => {
@@ -47,6 +47,15 @@ test('the toggle cycles system, light, dark and survives a reload', async ({ pag
   await expect(toggle(page)).toHaveText('Tema: sistema');
   await page.reload();
   await expect(toggle(page)).toHaveText('Tema: sistema');
+});
+
+test('the toggle shows English labels on /en/ and cycles independently of the IT wording', async ({ page }) => {
+  await page.goto('/en/');
+  await expect(toggle(page)).toHaveText('Theme: system');
+  await toggle(page).click();
+  await expect(toggle(page)).toHaveText('Theme: light');
+  await toggle(page).click();
+  await expect(toggle(page)).toHaveText('Theme: dark');
 });
 
 test('with storage blocked the page follows the system and the toggle still works', async ({ page }) => {
