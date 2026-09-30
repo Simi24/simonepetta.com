@@ -3,8 +3,14 @@ import { test } from 'node:test';
 import { buildSite, read } from './support/built-site.ts';
 
 const FIXTURES = { LETTURE_CONTENT_DIR: 'tests/fixtures/letture' };
+const FIXTURES_EMPTY = { LETTURE_CONTENT_DIR: 'tests/fixtures/letture-empty' };
 const FIXTURES_SUBSET = { LETTURE_CONTENT_DIR: 'tests/fixtures/letture-subset' };
 const FIXTURES_INVALID = { LETTURE_CONTENT_DIR: 'tests/fixtures/letture-invalid' };
+
+// Present only in tests/fixtures/letture/zz-fixture-sentinel.md, never a real book: a marker the
+// isolation test can look for without depending on what the author has (or hasn't) published to
+// src/content/letture/ yet.
+const FIXTURE_MARKER = '■FIXTURE-ONLY■';
 
 const lettureHtml = (env: Record<string, string> = {}) => read(buildSite(env), 'letture/index.html');
 
@@ -27,16 +33,27 @@ test('the lede is a placeholder, not the prototype’s copy', () => {
   assert.doesNotMatch(html, /Tutto quello che leggo/);
 });
 
-test('with no books the shelf shows an empty plank and a one-line caption', () => {
+test('the lede sits at grid-column 5/span 6, per the prototype', () => {
   const html = lettureHtml();
+  assert.match(html, /\.lede\{[^}]*grid-column:5\/span 6/);
+});
+
+test('the shelf does not shrink its spines: it scrolls instead', () => {
+  const html = lettureHtml(FIXTURES);
+  assert.match(html, /\.shelf\[[^\]]+\]\{[^}]*min-width:min-content/);
+});
+
+test('with no books the shelf shows an empty plank and a one-line caption', () => {
+  const html = lettureHtml(FIXTURES_EMPTY);
   assert.match(html, /<div class="shelf" role="list"[^>]*><\/div>/);
   assert.match(html, /<p class="caption"[^>]*>Lo scaffale è vuoto\.<\/p>/);
 });
 
 test('fixture books never enter the production collection', () => {
+  // Builds the real src/content/letture/, not a fixture override: whatever the author has
+  // published there (possibly nothing yet) must never contain a fixture's marker.
   const html = lettureHtml();
-  assert.doesNotMatch(html, /Il nome della rosa/);
-  assert.doesNotMatch(html, /Sto leggendo/);
+  assert.doesNotMatch(html, new RegExp(FIXTURE_MARKER));
 });
 
 test('adding a book makes it appear on the shelf and in the list', () => {
@@ -68,6 +85,12 @@ test('the spine carries the author’s surname at full opacity', () => {
   const spine = spineFor(html, 'Il nome della rosa');
   assert.match(spine, /<span class="spine__author"[^>]*>Eco<\/span>/);
   assert.doesNotMatch(html, /\.spine__author\[[^\]]+\]\{[^}]*opacity/);
+});
+
+test('a letto spine has no trailing space in its class attribute', () => {
+  const html = lettureHtml(FIXTURES);
+  assert.match(html, /class="spine spine--tint-\d"/);
+  assert.doesNotMatch(html, /class="spine spine--tint-\d "/);
 });
 
 test('a reading-now book gets the bookmark and an abandoned book leans', () => {
@@ -122,9 +145,20 @@ test('abbandonati are ordered by finito descending', () => {
   assert.ok(order[0]! < order[1]!, 'abbandonati are not ordered by finito descending');
 });
 
-test('an abandoned book shows its finito date, as well as its nota', () => {
+test('an abandoned book shows a dropped-on date, not a "finito il", as well as its nota', () => {
   const html = lettureHtml(FIXTURES);
-  assert.match(html, /Jorge Luis Borges, finito il 15 giu 2026, lasciato a pagina 60/);
+  assert.match(html, /Jorge Luis Borges, abbandonato il 15 giu 2026, lasciato a pagina 60/);
+  assert.match(html, /Primo Levi, abbandonato il 1 mag 2026/); // no nota on this one
+});
+
+test('"finito il" appears only for letti, never for abbandonati', () => {
+  const html = lettureHtml(FIXTURES);
+  const abbandonatiSection = /<h2[^>]*>Abbandonati<\/h2>[\s\S]*?<\/section>/.exec(html)?.[0];
+  assert.ok(abbandonatiSection);
+  assert.doesNotMatch(abbandonatiSection, /finito il/);
+  const lettiSection = /<h2[^>]*>Letti<\/h2>[\s\S]*?<\/section>/.exec(html)?.[0];
+  assert.ok(lettiSection);
+  assert.match(lettiSection, /finito il/);
 });
 
 test('the list follows the grid: label in columns 1-4, content from column 5, one column under 860px', () => {
@@ -135,6 +169,14 @@ test('the list follows the grid: label in columns 1-4, content from column 5, on
   assert.match(html, /@media \(width<=860px\)\{[^}]*grid-column:1\/-1/);
 });
 
-test('invalid frontmatter fails the build', () => {
-  assert.throws(() => buildSite(FIXTURES_INVALID));
+test('invalid frontmatter fails the build with the schema error, not just any failure', () => {
+  // The fixture is missing "autore" (SPEC.md §6.1): the build must fail with exactly that
+  // schema error, naming the field, not merely fail for some other reason.
+  assert.throws(
+    () => buildSite(FIXTURES_INVALID),
+    (error: unknown) => {
+      const output = String((error as { stderr?: Buffer }).stderr ?? '');
+      return /InvalidContentEntryDataError/.test(output) && /il campo "autore"/.test(output);
+    },
+  );
 });
