@@ -7,4 +7,7 @@ export const QUALITY_BUILDS: readonly { label: string; env: Record<string, strin
   { label: 'production', env: {} },
   { label: 'letture fixtures', env: { LETTURE_CONTENT_DIR: 'tests/fixtures/letture' } },
   { label: 'letture post fixtures', env: { LETTURE_CONTENT_DIR: 'tests/fixtures/letture-post' } },
+  // A real token, indexable (SPEC.md §12.4): the only build where the beacon actually renders,
+  // so the gates cover it too, not just the (always-off) production default.
+  { label: 'analytics beacon', env: { CLOUDFLARE_BEACON_TOKEN: 'quality-gate-token', SITE_INDEXABLE: 'true' } },
 ];

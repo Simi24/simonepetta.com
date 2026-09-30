@@ -10,6 +10,15 @@ export const JS_CAP_BYTES = 1024;
 
 export const ALLOWED_FONT_FAMILIES = ['Host Grotesk', 'Fira Math'] as const;
 
+/**
+ * The one external script any page may load: the Cloudflare Web Analytics beacon (SPEC.md
+ * §12.4), gated behind a configured token and `SITE_INDEXABLE`. Its weight is an accepted
+ * cost, not measured against `JS_CAP_BYTES` — but it, and only it, gets that exemption: any
+ * other external script is a budget violation (`scripts/quality/check-budget.ts`) and, on the
+ * external-origin build gate (`tests/fonts.test.ts`), a failure.
+ */
+export const CLOUDFLARE_BEACON_SCRIPT_SRC = 'https://static.cloudflareinsights.com/beacon.min.js';
+
 /** `<script type>` values that never run as JS, so they don't count toward `JS_CAP_BYTES` (SPEC.md §12.3). */
 export const NON_JS_SCRIPT_TYPES = ['application/ld+json', 'speculationrules'] as const;
 

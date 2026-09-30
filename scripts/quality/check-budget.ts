@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import {
   ALLOWED_FONT_FAMILIES,
+  CLOUDFLARE_BEACON_SCRIPT_SRC,
   CSS_CAP_BYTES,
   HTML_CAP_BYTES,
   JS_CAP_BYTES,
@@ -56,7 +57,7 @@ function scriptTags(html: string): { body: string; src: string | undefined; type
 }
 
 /** Inline and locally-linked CSS/JS for one built page, the way a browser would load it. */
-function collectPageAssets(dist: string, page: string): PageAssets {
+function collectPageAssets(dist: string, page: string): PageAssets & { undeclaredExternalScripts: string[] } {
   const html = read(dist, page);
 
   let css = '';
@@ -67,17 +68,24 @@ function collectPageAssets(dist: string, page: string): PageAssets {
   }
 
   let js = '';
+  const undeclaredExternalScripts: string[] = [];
   for (const { body, src, type } of scriptTags(html)) {
     if (type && (NON_JS_SCRIPT_TYPES as readonly string[]).includes(type)) continue;
     if (src) {
-      if (isExternal(src)) continue;
+      // The Web Analytics beacon is an accepted cost, not measured (SPEC.md §12.4): any OTHER
+      // external script is undeclared and fails the budget, rather than silently passing free.
+      if (src === CLOUDFLARE_BEACON_SCRIPT_SRC) continue;
+      if (isExternal(src)) {
+        undeclaredExternalScripts.push(src);
+        continue;
+      }
       js += read(dist, src.replace(/^\//, ''));
     } else {
       js += body;
     }
   }
 
-  return { html, css, js };
+  return { html, css, js, undeclaredExternalScripts };
 }
 
 const fontFamiliesIn = (css: string): string[] =>
@@ -92,7 +100,11 @@ export function checkBudget(dist: string): Violation[] {
     return violations;
   }
   for (const page of pages) {
-    const { html, css, js } = collectPageAssets(dist, page);
+    const { html, css, js, undeclaredExternalScripts } = collectPageAssets(dist, page);
+
+    for (const src of undeclaredExternalScripts) {
+      violations.push({ page, message: `loads an undeclared external script: ${src}` });
+    }
 
     const htmlBytes = gzipSync(html).length;
     const htmlCap = isNotesChapterPage(page) ? NOTES_CHAPTER_HTML_CAP_BYTES : HTML_CAP_BYTES;

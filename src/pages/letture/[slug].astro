@@ -3,6 +3,7 @@ import { getCollection, render, type CollectionEntry } from 'astro:content';
 import Post from '../../components/lettura/Post.astro';
 import Base from '../../layouts/Base.astro';
 import { hasPost } from '../../lib/lettura-post.ts';
+import { postDescription } from '../../lib/lettura-meta.ts';
 
 export async function getStaticPaths() {
   const collection = await getCollection('letture');
@@ -15,8 +16,7 @@ interface Props {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
-// Title and author are facts, not author voice: a functional description (SPEC.md §1.2 point 3).
-const description = `${entry.data.titolo}, di ${entry.data.autore} — dalle letture di Simone Petta.`;
+const description = postDescription(entry);
 ---
 
 <Base
