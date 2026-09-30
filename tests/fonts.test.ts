@@ -38,8 +38,19 @@ const externalResourceTags = (html: string): RegExpMatchArray[] =>
     if (!/(href|src)="(https?:)?\/\//.test(tag)) return false;
     if (match[1] !== 'link') return true;
     const rel = /\brel="([^"]*)"/.exec(tag)?.[1]?.split(/\s+/) ?? [];
-    return !rel.some((value) => NON_LOADING_LINK_RELS.includes(value));
+    // Non-loading only when EVERY rel token is on the allowlist (so `alternate stylesheet`,
+    // which the browser does fetch, is not exempted just because `alternate` is present),
+    // and `alternate` alone is non-loading only paired with `hreflang` (not a bare feed link).
+    if (rel.length === 0) return true;
+    if (!rel.every((value) => NON_LOADING_LINK_RELS.includes(value))) return true;
+    if (rel.includes('alternate') && !/\bhreflang="/.test(tag)) return true;
+    return false;
   });
+
+test('an external "alternate stylesheet" link is still caught (pins the relaxed gate)', () => {
+  const html = '<link rel="alternate stylesheet" href="https://cdn.example.com/a.css">';
+  assert.equal(externalResourceTags(html).length, 1, 'an alternate stylesheet load must not be exempted');
+});
 
 test('no page loads anything from another origin', () => {
   const dist = buildSite();
