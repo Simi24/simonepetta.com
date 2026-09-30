@@ -1,6 +1,7 @@
 ---
 import { SITE_INDEXABLE } from 'astro:env/server';
 import SiteHeader from '../components/SiteHeader.astro';
+import { CLOUDFLARE_BEACON_SCRIPT_SRC } from '../config/budget.ts';
 import { site } from '../config/site.ts';
 import { serializeJsonLd } from '../lib/json-ld-script.ts';
 import type { PersonJsonLd } from '../lib/person-json-ld.ts';
@@ -24,19 +25,25 @@ interface Props {
   title: string;
   lang?: 'it' | 'en';
   description?: string;
+  /** False only for `/404`: it carries no real URL of its own (SPEC.md §3), so no canonical. */
   canonical?: boolean;
   hreflang?: readonly Hreflang[];
   og?: OpenGraph;
   jsonLd?: PersonJsonLd;
 }
 
-const { title, lang = site.lang, description, canonical = false, hreflang, og, jsonLd } = Astro.props;
+const { title, lang = site.lang, description, canonical = true, hreflang, og, jsonLd } = Astro.props;
 
 const pageUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
 const canonicalUrl = canonical ? pageUrl : undefined;
 const ogImageUrl = og && Astro.site ? new URL(og.image, Astro.site).toString() : undefined;
 const ogLocale = lang === 'en' ? 'en_US' : 'it_IT';
 const jsonLdScript = jsonLd ? serializeJsonLd(jsonLd) : undefined;
+
+const beaconToken = site.analytics.cloudflareBeaconToken;
+// Never on a preview or before launch, and only once the author has committed a real token (SPEC.md §11, §12.4).
+const showBeacon = SITE_INDEXABLE && beaconToken.length > 0;
+const beaconData = JSON.stringify({ token: beaconToken });
 ---
 
 <!doctype html>
@@ -45,6 +52,7 @@ const jsonLdScript = jsonLd ? serializeJsonLd(jsonLd) : undefined;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script is:inline set:html={themeScript} />
+    {showBeacon && <script defer src={CLOUDFLARE_BEACON_SCRIPT_SRC} data-cf-beacon={beaconData}></script>}
     {!SITE_INDEXABLE && <meta name="robots" content="noindex" />}
     <title>{title}</title>
     {description && <meta name="description" content={description} />}

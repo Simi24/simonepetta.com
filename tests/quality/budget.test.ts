@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { checkBudget, shouldBuildFreshDist } from '../../scripts/quality/check-budget.ts';
+import { CLOUDFLARE_BEACON_SCRIPT_SRC } from '../../src/config/budget.ts';
 import { buildSite } from '../support/built-site.ts';
 
 /** A minimal fixture "dist" with the given files, for exercising the checker without an Astro build. */
@@ -72,6 +73,23 @@ test('a JSON-LD script block does not count toward the JS budget', () => {
     'index.html': `<!doctype html><html><head><script type="application/ld+json">${jsonLd}</script></head><body></body></html>`,
   });
   assert.deepEqual(checkBudget(dist), []);
+});
+
+test('the Cloudflare beacon script is an accepted cost, not measured against the JS budget', () => {
+  const dist = fixtureDist({
+    'index.html': `<!doctype html><html><head><script defer src="${CLOUDFLARE_BEACON_SCRIPT_SRC}" data-cf-beacon='{"token":"x"}'></script></head><body></body></html>`,
+  });
+  assert.deepEqual(checkBudget(dist), []);
+});
+
+test('an external script other than the beacon is an undeclared-script violation, not silently free', () => {
+  const dist = fixtureDist({
+    'index.html': '<!doctype html><html><head><script src="https://example.com/analytics.js"></script></head><body></body></html>',
+  });
+  const violations = checkBudget(dist);
+  assert.ok(
+    violations.some((v) => v.page === 'index.html' && /undeclared external script: https:\/\/example\.com\/analytics\.js/.test(v.message)),
+  );
 });
 
 test('without an explicit reuse flag, a standalone run always rebuilds `dist`', () => {

@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { CLOUDFLARE_BEACON_SCRIPT_SRC } from '../src/config/budget.ts';
 import { buildSite, builtPages, filesWithExtension, read } from './support/built-site.ts';
+import { escapeRegExp } from './support/regex-escape.ts';
 
 /** All CSS the browser sees: stylesheets plus inline <style> blocks. */
 const allCss = (dist: string): string => {
@@ -35,6 +37,9 @@ const NON_LOADING_LINK_RELS = ['canonical', 'alternate'];
 const externalResourceTags = (html: string): RegExpMatchArray[] =>
   [...html.matchAll(/<(link|script)\b[^>]*>/g)].filter((match) => {
     const tag = match[0];
+    // The Web Analytics beacon is the one declared exception (SPEC.md §12.4): its exact script
+    // URL, and only that, is allowed — a lookalike on another host or path is still caught below.
+    if (match[1] === 'script' && /\bsrc="([^"]*)"/.exec(tag)?.[1] === CLOUDFLARE_BEACON_SCRIPT_SRC) return false;
     if (!/(href|src)="(https?:)?\/\//.test(tag)) return false;
     if (match[1] !== 'link') return true;
     const rel = /\brel="([^"]*)"/.exec(tag)?.[1]?.split(/\s+/) ?? [];
@@ -52,6 +57,13 @@ test('an external "alternate stylesheet" link is still caught (pins the relaxed 
   assert.equal(externalResourceTags(html).length, 1, 'an alternate stylesheet load must not be exempted');
 });
 
+test('a lookalike script is still caught: same host wrong path, and right path wrong host', () => {
+  const wrongPath = '<script src="https://static.cloudflareinsights.com/other.js"></script>';
+  const wrongHost = '<script src="https://static.cloudflareinsights.com.evil.example/beacon.min.js"></script>';
+  assert.equal(externalResourceTags(wrongPath).length, 1, 'a different script on the beacon host must not be exempted');
+  assert.equal(externalResourceTags(wrongHost).length, 1, 'a lookalike host must not be exempted');
+});
+
 test('no page loads anything from another origin', () => {
   const dist = buildSite();
   for (const { page, html } of builtPages()) {
@@ -59,4 +71,13 @@ test('no page loads anything from another origin', () => {
     assert.equal(tags.length, 0, `${page} loads an external resource: ${tags.map((t) => t[0]).join(', ')}`);
   }
   assert.doesNotMatch(allCss(dist), /url\(["']?(https?:)?\/\//, 'CSS loads an external resource');
+});
+
+test('with the beacon enabled, its exact script URL is the only external load allowed', () => {
+  const env = { CLOUDFLARE_BEACON_TOKEN: 'test-token', SITE_INDEXABLE: 'true' };
+  for (const { page, html } of builtPages(env)) {
+    const tags = externalResourceTags(html);
+    assert.equal(tags.length, 0, `${page} loads an unexpected external resource: ${tags.map((t) => t[0]).join(', ')}`);
+    assert.match(html, new RegExp(`src="${escapeRegExp(CLOUDFLARE_BEACON_SCRIPT_SRC)}"`));
+  }
 });
