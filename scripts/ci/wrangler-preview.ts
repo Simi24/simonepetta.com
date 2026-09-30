@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 
-type WranglerEntry = { type?: string; error?: { message?: string } } & Record<string, unknown>;
+type WranglerEntry = { type?: string; message?: string; error?: { message?: string } } & Record<string, unknown>;
 
 type UploadResult = {
   status: 'uploaded' | 'worker-missing' | 'failed';
@@ -29,9 +29,12 @@ function findUrl(entry: WranglerEntry): string {
 
 // SPEC.md §11 / the site workflow: `wrangler versions upload` fails the
 // first time, before `main` has ever run `wrangler deploy` to create the
-// Worker. Cloudflare reports that as error 10007 ("Worker ... not found").
+// Worker (observed with wrangler 4.145.0: "You cannot upload a new version
+// of a Worker that does not yet exist. Please run the `deploy` command
+// first."). Match on the stable part of that message, not the whole string.
 function isMissingWorker(entry: WranglerEntry): boolean {
-  return JSON.stringify(entry).includes('10007');
+  const message = entry.message ?? entry.error?.message ?? '';
+  return message.includes('does not yet exist');
 }
 
 /**
@@ -51,7 +54,7 @@ export function interpretUpload(ndjson: string): UploadResult {
   }
 
   const message = failure
-    ? (failure.error?.message ?? JSON.stringify(failure))
+    ? (failure.message ?? failure.error?.message ?? JSON.stringify(failure))
     : 'wrangler produced no version-upload or command-failed entry';
   return { status: 'failed', previewUrl: '', message };
 }

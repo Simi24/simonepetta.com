@@ -19,10 +19,14 @@ test('extracts the preview URL from a successful version-upload entry', () => {
   assert.equal(result.previewUrl, 'https://v1-abc-simonepetta-com.example.workers.dev');
 });
 
-test('treats error 10007 (Worker not found) as worker-missing, the expected first-PR case', () => {
+test('treats "Worker does not yet exist" as worker-missing, the expected first-PR case', () => {
+  // The exact wrangler 4.145.0 command-failed entry observed on this repo's
+  // own first PR (no `error` object: `message` sits at the top level).
   const ndjson = JSON.stringify({
     type: 'command-failed',
-    error: { code: 10007, message: 'Worker or workers.dev subdomain not found.' },
+    version: 1,
+    message:
+      'You cannot upload a new version of a Worker that does not yet exist. Please run the `deploy` command first.',
     timestamp: 't',
   });
 
@@ -35,7 +39,8 @@ test('treats error 10007 (Worker not found) as worker-missing, the expected firs
 test('a real upload failure is reported, not swallowed as worker-missing', () => {
   const ndjson = JSON.stringify({
     type: 'command-failed',
-    error: { code: 10000, message: 'Authentication error' },
+    version: 1,
+    message: 'Authentication error',
     timestamp: 't',
   });
 
