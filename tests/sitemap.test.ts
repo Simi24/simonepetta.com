@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { buildSite, filesWithExtension, read } from './support/built-site.ts';
 
 const FIXTURES_POST = { LETTURE_CONTENT_DIR: 'tests/fixtures/letture-post' };
+const FIXTURES_APPUNTI = { APPUNTI_CONTENT_DIR: 'tests/fixtures/appunti' };
 
 const sitemapXml = (env: Record<string, string> = {}) => read(buildSite(env), 'sitemap.xml');
 
@@ -12,7 +13,7 @@ function htmlPathToPagePath(file: string): string {
 }
 
 test('lists exactly the built pages, minus 404.html', () => {
-  const dist = buildSite(FIXTURES_POST);
+  const dist = buildSite({ ...FIXTURES_POST, ...FIXTURES_APPUNTI });
   const expectedPaths = new Set(
     filesWithExtension(dist, '.html')
       .filter((file) => file !== '404.html')
@@ -36,4 +37,10 @@ test('lists a book’s post page only when it has one', () => {
   const xml = sitemapXml(FIXTURES_POST);
   assert.match(xml, /<loc>https:\/\/simonepetta\.com\/letture\/il-piu-recente\/<\/loc>/);
   assert.doesNotMatch(xml, /\/letture\/il-senza-testo\//, 'a book with no post page must not be listed');
+});
+
+test('lists a published course page, and never an unpublished one', () => {
+  const xml = sitemapXml(FIXTURES_APPUNTI);
+  assert.match(xml, /<loc>https:\/\/simonepetta\.com\/appunti\/pdf-corso\/<\/loc>/);
+  assert.doesNotMatch(xml, /\/appunti\/corso-escluso\//, 'an unpublished course must not be listed');
 });

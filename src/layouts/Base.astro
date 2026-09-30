@@ -3,6 +3,7 @@ import { SITE_INDEXABLE } from 'astro:env/server';
 import SiteHeader from '../components/SiteHeader.astro';
 import { CLOUDFLARE_BEACON_SCRIPT_SRC } from '../config/budget.ts';
 import { site } from '../config/site.ts';
+import type { LearningResourceJsonLd } from '../lib/corso-json-ld.ts';
 import { serializeJsonLd } from '../lib/json-ld-script.ts';
 import type { PersonJsonLd } from '../lib/person-json-ld.ts';
 import themeScript from '../scripts/theme.js?raw';
@@ -29,7 +30,7 @@ interface Props {
   canonical?: boolean;
   hreflang?: readonly Hreflang[];
   og?: OpenGraph;
-  jsonLd?: PersonJsonLd;
+  jsonLd?: PersonJsonLd | LearningResourceJsonLd;
 }
 
 const { title, lang = site.lang, description, canonical = true, hreflang, og, jsonLd } = Astro.props;

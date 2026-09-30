@@ -1,0 +1,180 @@
+---
+import { site } from '../../config/site.ts';
+import type { CorsoMeta } from '../../lib/corso-meta.ts';
+import { corsoNotice, degreeProgramme } from '../../lib/corso-presentation.ts';
+import type { StatoCorso } from '../../lib/corso-stato.ts';
+import type { Corso } from '../../schemas/corso.ts';
+
+interface Props {
+  corso: Corso;
+  stato: StatoCorso;
+  meta?: CorsoMeta | undefined;
+  pdfHref: string;
+}
+
+const { corso, stato, meta, pdfHref } = Astro.props;
+const annoLabel = corso.tipo === 'tesi' ? 'Anno di discussione' : 'Anno accademico';
+const pdfLinkText = meta ? `Scarica il PDF (${meta.pagine} pagine)` : 'Scarica il PDF';
+const fonti = corso.fonti ?? [];
+---
+
+<!--
+  Self-contained 12-column grid, same approach as Post.astro: this state (metadata, PDF
+  download, sources) is not the prototype's mocked "corso" page, which only shows a
+  converted course's chapter content (SPEC.md §5.4). It follows the prototype's
+  `.appunti-head` rule (h1 full width, everything else at column 5/span 7) throughout,
+  since no PDF-state layout was mocked.
+-->
+<div class="corso">
+  <header class="corso-head">
+    <h1>{corso.titolo}</h1>
+    <p class="notice">{corsoNotice(corso)}</p>
+  </header>
+  <dl class="facts">
+    <div>
+      <dt>Livello</dt>
+      <dd>{degreeProgramme(corso.livello)}</dd>
+    </div>
+    <div>
+      <dt>Università</dt>
+      <dd>{site.appunti.university}</dd>
+    </div>
+    {
+      corso.anno !== undefined && (
+        <div>
+          <dt>Anno</dt>
+          <dd class="num">{corso.anno}</dd>
+        </div>
+      )
+    }
+    <div>
+      <dt>{annoLabel}</dt>
+      <dd class="num">{corso.aa}</dd>
+    </div>
+    {
+      meta && (
+        <div>
+          <dt>Pagine</dt>
+          <dd class="num">{meta.pagine}</dd>
+        </div>
+      )
+    }
+  </dl>
+  {stato === 'scansione' && <p class="stato-nota">Scansione di un quaderno.</p>}
+  <div class="download">
+    <a href={pdfHref} rel="alternate" type="application/pdf">
+      {pdfLinkText}
+    </a>
+  </div>
+  {
+    fonti.length > 0 && (
+      <section class="fonti">
+        <h2>Fonti</h2>
+        <ul>
+          {fonti.map((fonte) => (
+            <li>{fonte}</li>
+          ))}
+        </ul>
+        <p class="removal-contact">
+          {site.appunti.removalContact ? (
+            `Per richieste di rimozione: ${site.appunti.removalContact}`
+          ) : (
+            <span class="placeholder">Contatto per la rimozione: lo aggiunge l'autore.</span>
+          )}
+        </p>
+      </section>
+    )
+  }
+</div>
+
+<style>
+  .corso {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 1.5rem;
+  }
+
+  .corso > * {
+    grid-column: 5 / span 7;
+  }
+
+  .corso-head {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .corso-head h1 {
+    grid-column: 1 / -1;
+    font-size: clamp(2.6rem, 6.5vw, 5.6rem);
+  }
+
+  .corso-head .notice {
+    grid-column: 5 / span 7;
+    color: var(--muted);
+    font-size: 0.95rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 0.6rem;
+  }
+
+  .facts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0 0 1.5rem;
+  }
+
+  .facts dt {
+    color: var(--muted);
+  }
+
+  .facts dd {
+    margin: 0;
+  }
+
+  .stato-nota {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .download a {
+    font-weight: 600;
+  }
+
+  .fonti {
+    border-top: 2px solid var(--ink);
+    padding-top: 0.8rem;
+    margin-top: 1rem;
+  }
+
+  .fonti h2 {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+  }
+
+  .fonti ul {
+    margin: 0 0 1rem;
+    padding-left: 1.2rem;
+    list-style: disc;
+  }
+
+  .removal-contact {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 860px) {
+    .corso,
+    .corso-head {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .corso > *,
+    .corso-head > * {
+      grid-column: 1;
+    }
+  }
+</style>

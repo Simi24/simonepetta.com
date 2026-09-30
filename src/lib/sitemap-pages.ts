@@ -1,5 +1,8 @@
+import { join } from 'node:path';
 import type { CollectionEntry } from 'astro:content';
+import { APPUNTI_CONTENT_DIR } from '../config/appunti-content-dir.ts';
 import { LETTURA_CONTENT_DIR } from '../config/lettura-content-dir.ts';
+import { isPublished } from './corso-published.ts';
 import { hasPost } from './lettura-post.ts';
 
 export interface SitemapPage {
@@ -15,9 +18,14 @@ export interface SitemapPage {
  * collection (the home's latest three, the index's full shelf), so their `lastmod` follows
  * either their own template or that content changing, whichever is later; `/en/` renders no
  * readings, so its template is the only input. A book's post page is listed only when it has
- * one, and follows its own content file alone, not the shared template.
+ * one, and follows its own content file alone, not the shared template. A course page is
+ * listed only when published (SPEC.md §7.3: an excluded course gets no page at all), and
+ * follows its whole course directory (manifest, PDF, `meta.json`), not just the shared template.
  */
-export function sitemapPages(letture: readonly CollectionEntry<'letture'>[]): SitemapPage[] {
+export function sitemapPages(
+  letture: readonly CollectionEntry<'letture'>[],
+  appunti: readonly CollectionEntry<'appunti'>[] = [],
+): SitemapPage[] {
   return [
     { path: '/', files: ['src/pages/index.astro', LETTURA_CONTENT_DIR] },
     { path: '/en/', files: ['src/pages/en/index.astro'] },
@@ -28,5 +36,9 @@ export function sitemapPages(letture: readonly CollectionEntry<'letture'>[]): Si
       }
       return { path: `/letture/${entry.id}/`, files: [entry.filePath] };
     }),
+    ...appunti.filter(isPublished).map((entry) => ({
+      path: `/appunti/${entry.id}/`,
+      files: ['src/pages/appunti/[slug]/index.astro', join(APPUNTI_CONTENT_DIR, entry.id)],
+    })),
   ];
 }

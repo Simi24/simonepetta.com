@@ -14,4 +14,19 @@ export const site = {
      */
     cloudflareBeaconToken: process.env['CLOUDFLARE_BEACON_TOKEN'] ?? '',
   },
+  appunti: {
+    /**
+     * Removal contact for third-party course material (SPEC.md §7.1, §7.2): empty until the
+     * author provides one, shown on course pages as a placeholder meanwhile. Overridable by
+     * env only so build-based tests can exercise the "contact set" case without a real one
+     * committed, the same pattern as the analytics token above.
+     */
+    removalContact: process.env['APPUNTI_REMOVAL_CONTACT'] ?? '',
+    // University and degree programme names, flagged for the author to confirm (issue #32).
+    university: 'Università degli Studi di Milano',
+    degreeProgrammes: {
+      triennale: 'Corso di Laurea in Informatica per la comunicazione digitale',
+      magistrale: 'Corso di Laurea Magistrale in Informatica',
+    },
+  },
 } as const;

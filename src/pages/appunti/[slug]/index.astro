@@ -1,0 +1,37 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import CoursePage from '../../../components/corso/CoursePage.astro';
+import Base from '../../../layouts/Base.astro';
+import { APPUNTI_CONTENT_DIR } from '../../../config/appunti-content-dir.ts';
+import { corsoJsonLd } from '../../../lib/corso-json-ld.ts';
+import { readCorsoMeta } from '../../../lib/corso-meta.ts';
+import { isPublished } from '../../../lib/corso-published.ts';
+import { corsoDescription, corsoTitle } from '../../../lib/corso-presentation.ts';
+import { deriveStato, hasValidBuild } from '../../../lib/corso-stato.ts';
+
+export async function getStaticPaths() {
+  const collection = await getCollection('appunti');
+  return collection.filter(isPublished).map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+interface Props {
+  entry: CollectionEntry<'appunti'>;
+}
+
+const { entry } = Astro.props;
+const corso = entry.data;
+const stato = deriveStato({ fonte: corso.fonte, hasValidBuild: hasValidBuild(APPUNTI_CONTENT_DIR, entry.id) });
+const meta = readCorsoMeta(APPUNTI_CONTENT_DIR, entry.id);
+const pdfHref = `/appunti/${entry.id}/${entry.id}.pdf`;
+const pageUrl = new URL(`/appunti/${entry.id}/`, Astro.site).toString();
+const description = corsoDescription(corso);
+---
+
+<Base
+  title={corsoTitle(corso)}
+  description={description}
+  og={{ image: '/og/appunti.png', description, type: 'article' }}
+  jsonLd={corsoJsonLd(corso, pageUrl)}
+>
+  <CoursePage corso={corso} stato={stato} meta={meta} pdfHref={pdfHref} />
+</Base>
