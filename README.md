@@ -11,6 +11,7 @@ npm ci
 npm run dev            # http://localhost:4321
 npm test               # build-based and unit tests (node:test)
 npm run test:browser   # Playwright, first run: npx playwright install chromium
+npm run test:quality   # axe (WCAG 2.2 AA) + the byte budget on `dist` (SPEC.md §12)
 npm run check          # astro check
 npm run build
 ```
