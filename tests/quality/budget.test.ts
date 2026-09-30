@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { checkBudget, shouldBuildFreshDist } from '../../scripts/quality/check-budget.ts';
-import { CLOUDFLARE_BEACON_SCRIPT_SRC } from '../../src/config/budget.ts';
+import { CLOUDFLARE_BEACON_SCRIPT_SRC, isPagefindAsset } from '../../src/config/budget.ts';
 import { buildSite } from '../support/built-site.ts';
 
 /** A minimal fixture "dist" with the given files, for exercising the checker without an Astro build. */
@@ -129,4 +129,28 @@ test('on any other page, Pagefind assets are not exempt from the JS budget', () 
   });
   const violations = checkBudget(dist);
   assert.ok(violations.some((v) => v.page === 'letture/index.html' && /JS is \d+ B gzip, over/.test(v.message)));
+});
+
+test('the Pagefind exception accepts only plain Pagefind file paths on /cerca/', () => {
+  assert.equal(isPagefindAsset('cerca/index.html', '/pagefind/pagefind-ui.js'), true);
+  for (const src of [
+    '/pagefind/../big.js',
+    '/pagefind/%2e%2e/big.js',
+    '/pagefind/sub/dir.js',
+    '/pagefind/pagefind-ui.js?x=1',
+    '/pagefind/pagefind-ui.js#x',
+    '/pagefind/',
+    '/pagefindx/pagefind-ui.js',
+  ]) {
+    assert.equal(isPagefindAsset('cerca/index.html', src), false, src);
+  }
+});
+
+test('a path-traversal script on /cerca/ is not exempt from the JS budget', () => {
+  const dist = fixtureDist({
+    'cerca/index.html': '<!doctype html><html><head><script src="/pagefind/../big.js"></script></head><body></body></html>',
+    'big.js': bigJs(),
+  });
+  const violations = checkBudget(dist);
+  assert.ok(violations.some((v) => v.page === 'cerca/index.html' && /JS is \d+ B gzip, over/.test(v.message)));
 });

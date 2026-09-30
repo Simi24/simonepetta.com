@@ -28,14 +28,16 @@ export const isNotesChapterPage = (pagePath: string): boolean =>
 
 /**
  * The search page, and the only page that may load Pagefind (SPEC.md §3, §12.2). Its exception
- * is per asset, not per page: only scripts under `PAGEFIND_ASSET_PREFIX` are exempt from
+ * is per asset, not per page: only scripts directly under `/pagefind/` are exempt from
  * `JS_CAP_BYTES`, so any other JS on `/cerca/` (like its inline init) is still measured.
  */
 export const SEARCH_PAGE = 'cerca/index.html';
-export const PAGEFIND_ASSET_PREFIX = '/pagefind/';
+
+/** A file directly under `/pagefind/`: no subpath, `..` segment, query string or fragment. */
+const PAGEFIND_FILE = /^\/pagefind\/[A-Za-z0-9_-][A-Za-z0-9_.-]*$/;
 
 export const isPagefindAsset = (pagePath: string, src: string): boolean =>
-  pagePath === SEARCH_PAGE && src.startsWith(PAGEFIND_ASSET_PREFIX);
+  pagePath === SEARCH_PAGE && PAGEFIND_FILE.test(src);
 
 /** Pages exempt from `JS_CAP_BYTES` as a whole by a declared exception (SPEC.md §3, §12.2). */
 export const JS_CAP_EXCEPTIONS: readonly { pattern: RegExp; reason: string }[] = [
