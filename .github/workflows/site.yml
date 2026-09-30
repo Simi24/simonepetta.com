@@ -32,6 +32,12 @@ jobs:
       - name: Install Playwright's Chromium
         run: npx playwright install --with-deps chromium
       - run: npm run test:browser
+      - name: Quality gates (axe, byte budget)
+        # The byte-budget gate checks the `dist` this job just built (the artifact staged for
+        # deploy/preview), rather than rebuilding a second time.
+        env:
+          QUALITY_GATE_REUSE_DIST: '1'
+        run: npm run test:quality
 
   deploy:
     needs: build

@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <title>Fixture: autocomplete non valido</title>
+  </head>
+  <body>
+    <form>
+      <label for="e">Email</label>
+      <!-- "valore-inventato" is not a valid autocomplete token: deliberately broken (WCAG 2.1 AA 1.3.5). -->
+      <input id="e" type="text" autocomplete="valore-inventato" />
+    </form>
+  </body>
+</html>

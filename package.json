@@ -11,13 +11,17 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "node --test --test-concurrency=1 \"tests/**/*.test.ts\"",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "gate:budget": "node scripts/quality/check-budget.ts",
+    "gate:axe": "playwright test --config playwright.quality.config.ts",
+    "test:quality": "npm run gate:budget && npm run gate:axe"
   },
   "dependencies": {
     "astro": "^7.3.5"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.63.0",
     "@types/node": "^24.19.0",
     "typescript": "^6.0.3",
