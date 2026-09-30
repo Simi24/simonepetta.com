@@ -95,7 +95,7 @@ test('accepts a valid pagine and anno_opera', () => {
   assert.equal(lettura.anno_opera, 1980);
 });
 
-test('rejects an invalid calendar date', () => {
+test('a quoted impossible date is rejected', () => {
   assert.throws(() => parseLettura({ ...valid(), finito: '2026-02-30' }), LetturaSchemaError);
 });
 
@@ -104,8 +104,21 @@ test('accepts a date parsed by YAML as a Date object', () => {
   assert.equal(lettura.finito, '2026-05-01');
 });
 
+// Known limitation (SPEC.md §6.1): YAML rolls an impossible *unquoted* date forward, so it never
+// reaches this schema as the invalid string above — it arrives already valid, as this Date does.
+// Quoting the date, as the writing desk always does, avoids the rollover entirely.
+test('an unquoted impossible date is not caught here: YAML has already rolled it forward', () => {
+  const lettura = parseLettura({ ...valid(), finito: new Date('2026-03-02T00:00:00.000Z') }); // was 2026-02-30
+  assert.equal(lettura.finito, '2026-03-02');
+});
+
 test('rejects a non-integer anno_opera', () => {
   assert.throws(() => parseLettura({ ...valid(), anno_opera: 1980.5 }), LetturaSchemaError);
+});
+
+test('accepts a negative anno_opera, for works older than year 0', () => {
+  const lettura = parseLettura({ ...valid(), anno_opera: -380 }); // Plato's Repubblica, c. 380 BC
+  assert.equal(lettura.anno_opera, -380);
 });
 
 test('rejects a grade below 1', () => {
@@ -121,4 +134,15 @@ test('rejects an invalid iniziato date', () => {
 
 test('rejects a non-string nota', () => {
   assert.throws(() => parseLettura({ ...valid(), nota: 42 }), LetturaSchemaError);
+});
+
+test('error messages name the field, in Italian', () => {
+  assert.throws(
+    () => parseLettura({ titolo: 'T', autore: 'A', stato: 'in-corso', voto: 4 }),
+    (error: unknown) => error instanceof LetturaSchemaError && error.issues.some((i) => i.includes('"voto"')),
+  );
+  assert.throws(
+    () => parseLettura({ ...valid(), rating: 5 }),
+    (error: unknown) => error instanceof LetturaSchemaError && error.issues.some((i) => i.includes('"rating"')),
+  );
 });

@@ -15,7 +15,8 @@ const letturaShape = z
     titolo: z.string().min(1),
     autore: z.string().min(1),
     stato: z.enum(STATI_LETTURA),
-    anno_opera: z.number().int().positive().optional(),
+    // Just "optional integer" per SPEC.md §6.1: ancient works can predate year 0.
+    anno_opera: z.number().int().optional(),
     iniziato: isoDate.optional(),
     finito: isoDate.optional(),
     voto: z.number().min(1).max(5).multipleOf(0.5).optional(),
@@ -31,13 +32,13 @@ const letturaShape = z
  */
 export const letturaSchema = letturaShape.superRefine((data, ctx) => {
   if (data.stato === 'letto' && data.finito === undefined) {
-    ctx.addIssue({ code: 'custom', path: ['finito'], message: '"finito" è obbligatorio per stato "letto"' });
+    ctx.addIssue({ code: 'custom', path: ['finito'], message: 'obbligatorio per lo stato "letto"' });
   }
   if (data.stato === 'in-corso' && data.finito !== undefined) {
-    ctx.addIssue({ code: 'custom', path: ['finito'], message: '"finito" non è ammesso per stato "in-corso"' });
+    ctx.addIssue({ code: 'custom', path: ['finito'], message: 'non ammesso per lo stato "in-corso"' });
   }
   if (data.stato === 'in-corso' && data.voto !== undefined) {
-    ctx.addIssue({ code: 'custom', path: ['voto'], message: '"voto" non è ammesso per stato "in-corso"' });
+    ctx.addIssue({ code: 'custom', path: ['voto'], message: 'non ammesso per lo stato "in-corso"' });
   }
 });
 
@@ -58,7 +59,15 @@ export class LetturaSchemaError extends Error {
 export function parseLettura(input: unknown): Lettura {
   const result = letturaSchema.safeParse(input);
   if (!result.success) {
-    throw new LetturaSchemaError(result.error.issues.map((issue) => issue.message));
+    throw new LetturaSchemaError(
+      result.error.issues.map((issue) =>
+        issue.code === 'unrecognized_keys'
+          ? `campo sconosciuto: "${issue.keys.join('", "')}"`
+          : issue.path.length > 0
+            ? `il campo "${issue.path.join('.')}": ${issue.message}`
+            : issue.message,
+      ),
+    );
   }
   return result.data;
 }
