@@ -103,3 +103,22 @@ test('accepts a date parsed by YAML as a Date object', () => {
   const lettura = parseLettura({ ...valid(), finito: new Date('2026-05-01T00:00:00.000Z') });
   assert.equal(lettura.finito, '2026-05-01');
 });
+
+test('rejects a non-integer anno_opera', () => {
+  assert.throws(() => parseLettura({ ...valid(), anno_opera: 1980.5 }), LetturaSchemaError);
+});
+
+test('rejects a grade below 1', () => {
+  assert.throws(() => parseLettura({ ...valid(), voto: 0.5 }), LetturaSchemaError);
+});
+
+test('rejects an invalid iniziato date', () => {
+  assert.throws(
+    () => parseLettura({ titolo: 'T', autore: 'A', stato: 'in-corso', iniziato: '2026-13-01' }),
+    LetturaSchemaError,
+  );
+});
+
+test('rejects a non-string nota', () => {
+  assert.throws(() => parseLettura({ ...valid(), nota: 42 }), LetturaSchemaError);
+});
