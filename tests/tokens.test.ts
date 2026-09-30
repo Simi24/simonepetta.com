@@ -17,13 +17,15 @@ const tokens = (): Record<Theme, Map<string, string>> => {
 };
 
 const AA_TEXT = 4.5;
-const TEXT_PAIRS = [
+type Pair = readonly [foreground: string, background: string];
+
+const TEXT_PAIRS: Pair[] = [
   ['ink', 'bg'],
   ['muted', 'bg'],
   ['ink', 'surface'],
   ['muted', 'surface'],
 ];
-const TINT_PAIRS = [1, 2, 3, 4, 5].map((n) => [`tint-${n}-ink`, `tint-${n}`]);
+const TINT_PAIRS: Pair[] = [1, 2, 3, 4, 5].map((n) => [`tint-${n}-ink`, `tint-${n}`]);
 
 test('the contrast helper matches WCAG worked examples', () => {
   assert.equal(contrast('#000000', '#ffffff'), 21);
@@ -34,7 +36,7 @@ test('the contrast helper matches WCAG worked examples', () => {
 for (const theme of ['light', 'dark'] as const) {
   test(`every text and tint pair passes WCAG AA in the ${theme} theme`, () => {
     const colors = tokens()[theme];
-    for (const [fg = '', bg = ''] of [...TEXT_PAIRS, ...TINT_PAIRS]) {
+    for (const [fg, bg] of [...TEXT_PAIRS, ...TINT_PAIRS]) {
       const [a, b] = [colors.get(fg), colors.get(bg)];
       if (!a || !b) return assert.fail(`missing token --${fg} or --${bg}`);
       const ratio = contrast(a, b);

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { buildSite, filesWithExtension, read } from './support/built-site.ts';
+import { buildSite, builtPages, read } from './support/built-site.ts';
 
 const internalHrefs = (html: string): string[] =>
   [...html.matchAll(/\bhref="(\/[^"#?]*)/g)].map((match) => match[1] ?? '');
@@ -17,8 +17,8 @@ test('the header brand links to the home', () => {
 
 test('no internal link points to a missing page', () => {
   const dist = buildSite();
-  for (const page of filesWithExtension(dist, '.html')) {
-    for (const href of internalHrefs(read(dist, page))) {
+  for (const { page, html } of builtPages()) {
+    for (const href of internalHrefs(html)) {
       assert.ok(resolves(dist, href), `${page} links to missing ${href}`);
     }
   }

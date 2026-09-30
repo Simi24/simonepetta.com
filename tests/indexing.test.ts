@@ -1,21 +1,19 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { buildSite, filesWithExtension, read } from './support/built-site.ts';
+import { builtPages } from './support/built-site.ts';
 
 const NOINDEX = /<meta name="robots" content="noindex"\s*\/?>/;
 
 test('a default build marks every page noindex', () => {
-  const dist = buildSite();
-  const pages = filesWithExtension(dist, '.html');
+  const pages = builtPages();
   assert.ok(pages.length > 0, 'the build produced no pages');
-  for (const page of pages) {
-    assert.match(read(dist, page), NOINDEX, `${page} is indexable`);
+  for (const { page, html } of pages) {
+    assert.match(html, NOINDEX, `${page} is indexable`);
   }
 });
 
 test('an indexable build carries no noindex', () => {
-  const dist = buildSite({ SITE_INDEXABLE: 'true' });
-  for (const page of filesWithExtension(dist, '.html')) {
-    assert.doesNotMatch(read(dist, page), NOINDEX, `${page} is still noindex`);
+  for (const { page, html } of builtPages({ SITE_INDEXABLE: 'true' })) {
+    assert.doesNotMatch(html, NOINDEX, `${page} is still noindex`);
   }
 });

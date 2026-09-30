@@ -1,7 +1,7 @@
 export interface Section {
   href: string;
   label: string;
-  lang?: string;
+  lang?: 'it' | 'en';
 }
 
 /**

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { buildSite, filesWithExtension, read } from './support/built-site.ts';
+import { buildSite, builtPages, filesWithExtension, read } from './support/built-site.ts';
 
 /** All CSS the browser sees: stylesheets plus inline <style> blocks. */
 const allCss = (dist: string): string => {
@@ -29,8 +29,7 @@ test('Host Grotesk is self-hosted in roman and italic', () => {
 
 test('no page loads anything from another origin', () => {
   const dist = buildSite();
-  for (const page of filesWithExtension(dist, '.html')) {
-    const html = read(dist, page);
+  for (const { page, html } of builtPages()) {
     assert.doesNotMatch(html, /<(link|script)[^>]+(href|src)="(https?:)?\/\//, `${page} loads an external resource`);
   }
   assert.doesNotMatch(allCss(dist), /url\(["']?(https?:)?\/\//, 'CSS loads an external resource');

@@ -92,13 +92,15 @@ One origin, no subdomains ([#7](https://github.com/Simi24/simonepetta.com/issues
 
 ### 4.2 Repository layout
 ```
-SPEC.md, README.md, AGENTS.md
-astro.config.mjs, tsconfig.json, package.json, wrangler.jsonc (site Worker)
+SPEC.md, README.md, AGENTS.md, .ralph-gh.config, .nvmrc
+astro.config.mjs, tsconfig.json, package.json, playwright.config.ts, wrangler.jsonc (site Worker)
 src/
+  config/                   site-wide settings, nav sections
+  scripts/theme.js          the inline theme script (plain JS, inlined in <head>)
   content.config.ts         content collections: letture, appunti (manifests)
   content/letture/<slug>.md one file per book
   pages/ layouts/ components/
-  styles/tokens.css         the visual contract as custom properties
+  styles/tokens.css         the visual contract as custom properties (light-dark() pairs)
   integrations/scrivania/   dev-only writing desk (see §6.4)
 public/fonts/               Host Grotesk + Fira Math, woff2, self-hosted
 appunti/<slug>/
@@ -112,6 +114,7 @@ workers/api/                v2: the chat Worker
 agent/                      v2: the Python Lambda
 infra/                      Terraform (Cloudflare + AWS providers)
 .github/workflows/          site, appunti, api (v2), agent (v2), eval (v2)
+tests/                      node:test files (build-based and unit), tests/browser/ for Playwright
 docs/research/, docs/prototype/
 ```
 

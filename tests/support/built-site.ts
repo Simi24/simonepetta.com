@@ -26,6 +26,12 @@ export function filesWithExtension(dir: string, extension: string): string[] {
     .map((file) => relative(dir, join(dir, file)));
 }
 
+/** The built HTML pages for an environment, with their contents. */
+export function builtPages(env: Record<string, string> = {}): { page: string; html: string }[] {
+  const dist = buildSite(env);
+  return filesWithExtension(dist, '.html').map((page) => ({ page, html: read(dist, page) }));
+}
+
 export function read(dir: string, file: string): string {
   return readFileSync(join(dir, file), 'utf8');
 }

@@ -1,5 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 
+interface ProbeWindow {
+  themeAtBody?: string | undefined;
+}
+
 const LIGHT_BG = 'rgb(237, 237, 235)';
 const DARK_BG = 'rgb(21, 21, 21)';
 
@@ -11,12 +15,12 @@ test('a stored dark theme is applied before the body is parsed', async ({ page }
     localStorage.setItem('tema', 'dark');
     new MutationObserver((_, observer) => {
       if (!document.body) return;
-      (window as unknown as { themeAtBody: string | undefined }).themeAtBody = document.documentElement.dataset['theme'];
+      (window as ProbeWindow).themeAtBody = document.documentElement.dataset['theme'];
       observer.disconnect();
     }).observe(document, { childList: true, subtree: true });
   });
   await page.goto('/');
-  expect(await page.evaluate(() => (window as unknown as { themeAtBody: string | undefined }).themeAtBody)).toBe('dark');
+  expect(await page.evaluate(() => (window as ProbeWindow).themeAtBody)).toBe('dark');
   expect(await background(page)).toBe(DARK_BG);
   await expect(toggle(page)).toHaveText('Tema: scuro');
 });
