@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { CLOUDFLARE_BEACON_SCRIPT_SRC } from '../src/config/budget.ts';
 import { buildSite, builtPages, filesWithExtension, read } from './support/built-site.ts';
+import { escapeRegExp } from './support/regex-escape.ts';
 
 /** All CSS the browser sees: stylesheets plus inline <style> blocks. */
 const allCss = (dist: string): string => {
@@ -77,6 +78,6 @@ test('with the beacon enabled, its exact script URL is the only external load al
   for (const { page, html } of builtPages(env)) {
     const tags = externalResourceTags(html);
     assert.equal(tags.length, 0, `${page} loads an unexpected external resource: ${tags.map((t) => t[0]).join(', ')}`);
-    assert.match(html, new RegExp(`src="${CLOUDFLARE_BEACON_SCRIPT_SRC.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
+    assert.match(html, new RegExp(`src="${escapeRegExp(CLOUDFLARE_BEACON_SCRIPT_SRC)}"`));
   }
 });

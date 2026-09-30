@@ -25,14 +25,17 @@ interface Props {
   title: string;
   lang?: 'it' | 'en';
   description?: string;
+  /** False only for `/404`: it carries no real URL of its own (SPEC.md §3), so no canonical. */
+  canonical?: boolean;
   hreflang?: readonly Hreflang[];
   og?: OpenGraph;
   jsonLd?: PersonJsonLd;
 }
 
-const { title, lang = site.lang, description, hreflang, og, jsonLd } = Astro.props;
+const { title, lang = site.lang, description, canonical = true, hreflang, og, jsonLd } = Astro.props;
 
 const pageUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
+const canonicalUrl = canonical ? pageUrl : undefined;
 const ogImageUrl = og && Astro.site ? new URL(og.image, Astro.site).toString() : undefined;
 const ogLocale = lang === 'en' ? 'en_US' : 'it_IT';
 const jsonLdScript = jsonLd ? serializeJsonLd(jsonLd) : undefined;
@@ -54,7 +57,7 @@ const beaconData = JSON.stringify({ token: beaconToken });
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
     <link rel="preload" href="/fonts/host-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
-    {pageUrl && <link rel="canonical" href={pageUrl} />}
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
     {hreflang?.map((alt) => <link rel="alternate" hreflang={alt.lang} href={alt.href} />)}
     {
       og && (

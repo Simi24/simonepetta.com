@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { builtPages } from './support/built-site.ts';
 
-test('every built page has exactly one absolute canonical URL', () => {
-  const pages = builtPages();
+test('every real page has exactly one absolute canonical URL', () => {
+  const pages = builtPages().filter(({ page }) => page !== '404.html');
   assert.ok(pages.length > 0, 'the build produced no pages');
   for (const { page, html } of pages) {
     const matches = [...html.matchAll(/<link rel="canonical" href="([^"]+)"/g)];
@@ -11,6 +11,11 @@ test('every built page has exactly one absolute canonical URL', () => {
     const href = matches[0]?.[1];
     assert.match(href ?? '', /^https:\/\/simonepetta\.com\//, `${page}: canonical "${href}" is not absolute`);
   }
+});
+
+test('404.html has no canonical: it is not a real page (SPEC.md §3), and its URL does not exist', () => {
+  const html = builtPages().find(({ page }) => page === '404.html')?.html ?? '';
+  assert.doesNotMatch(html, /<link rel="canonical"/);
 });
 
 test('the home and the readings index carry their own canonical, not each other’s', () => {

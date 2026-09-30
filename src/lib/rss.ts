@@ -4,7 +4,8 @@ export interface RssItem {
   title: string;
   link: string;
   guid: string;
-  pubDate: string;
+  /** RFC 822, or `undefined` when the item has no date to pin it to: `pubDate` is optional in RSS 2.0, so it is then omitted entirely, never emitted invalid (SPEC.md §6.5). */
+  pubDate: string | undefined;
   description: string;
 }
 
@@ -25,8 +26,7 @@ export function buildRssXml(channel: RssChannel): string {
     <item>
       <title>${escapeXml(item.title)}</title>
       <link>${escapeXml(item.link)}</link>
-      <guid isPermaLink="true">${escapeXml(item.guid)}</guid>
-      <pubDate>${item.pubDate}</pubDate>
+      <guid isPermaLink="true">${escapeXml(item.guid)}</guid>${item.pubDate ? `\n      <pubDate>${item.pubDate}</pubDate>` : ''}
       <description>${escapeXml(item.description)}</description>
     </item>`,
     )

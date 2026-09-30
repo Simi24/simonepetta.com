@@ -15,7 +15,7 @@ export function metaLine(entry: CollectionEntry<'letture'>): string {
 
 /** Functional, not author-voice, description shared by a post page's OG tags and its feed item (SPEC.md §1.2 point 3). */
 export function postDescription(entry: CollectionEntry<'letture'>): string {
-  return `${entry.data.titolo}, di ${entry.data.autore} — dalle letture di ${site.author}.`;
+  return `${entry.data.titolo}, di ${entry.data.autore}, dalle letture di ${site.author}.`;
 }
 
 /** The readings section's functional description, shared by `/letture/`'s OG tags and the feed's channel (SPEC.md §6.5). */

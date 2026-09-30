@@ -11,10 +11,10 @@ export const GET: APIRoute = async ({ site: base }) => {
 
   const urlsXml = sitemapPages(collection)
     .map(
-      ({ path, file }) => `
+      ({ path, files }) => `
   <url>
     <loc>${escapeXml(new URL(path, origin).toString())}</loc>
-    <lastmod>${gitLastmod(file)}</lastmod>
+    <lastmod>${gitLastmod(files)}</lastmod>
   </url>`,
     )
     .join('');

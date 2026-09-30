@@ -47,3 +47,11 @@ test('an empty item list still produces a valid channel, not an empty document',
   assert.match(xml, /<channel>[\s\S]*<\/channel>/);
   assert.doesNotMatch(xml, /<item>/);
 });
+
+test('an item with no pubDate omits the element entirely, never "Invalid Date" (pubDate is optional in RSS 2.0)', () => {
+  const xml = buildRssXml({ ...CHANNEL, items: [{ ...CHANNEL.items[0]!, pubDate: undefined }] });
+  assert.doesNotMatch(xml, /<pubDate>/);
+  assert.doesNotMatch(xml, /Invalid Date/);
+  // The rest of the item still renders normally.
+  assert.match(xml, /<title>Guerra &amp; Pace<\/title>/);
+});

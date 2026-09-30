@@ -1,7 +1,7 @@
 import { getCollection } from 'astro:content';
 import type { APIRoute } from 'astro';
 import { site } from '../../config/site.ts';
-import { feedEntries } from '../../lib/lettura-feed.ts';
+import { feedDate, feedEntries } from '../../lib/lettura-feed.ts';
 import { LETTURE_SECTION_DESCRIPTION, postDescription } from '../../lib/lettura-meta.ts';
 import { toRfc822 } from '../../lib/rss-date.ts';
 import { buildRssXml } from '../../lib/rss.ts';
@@ -13,11 +13,12 @@ export const GET: APIRoute = async ({ site: base }) => {
 
   const items = feedEntries(collection).map((entry) => {
     const link = new URL(`/letture/${entry.id}/`, origin).toString();
+    const date = feedDate(entry);
     return {
       title: entry.data.titolo,
       link,
       guid: link,
-      pubDate: toRfc822(entry.data.finito ?? entry.data.iniziato ?? ''),
+      pubDate: date ? toRfc822(date) : undefined,
       description: postDescription(entry),
     };
   });
