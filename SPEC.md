@@ -357,7 +357,7 @@ v0 + v1: **$0 on Cloudflare** ([#3](https://github.com/Simi24/simonepetta.com/is
 
 | Workflow | Trigger | Steps |
 |---|---|---|
-| `site` | push to `main`, PRs | checkout with full history (`fetch-depth: 0`, for sitemap `lastmod`) → `npm ci` → tests → `astro check` → `astro build` → `pagefind --site dist` (from S7) → quality gates (§12) → on `main`: `wrangler deploy`; on PRs: `wrangler versions upload` + comment with the preview URL |
+| `site` | push to `main`, PRs | checkout with full history (`fetch-depth: 0`, for sitemap `lastmod`) → `npm ci` → tests → `astro check` → `astro build` (which runs Pagefind over `dist` as an Astro integration, from S7, so every build carries the index) → quality gates (§12) → on `main`: `wrangler deploy`; on PRs: `wrangler versions upload` + comment with the preview URL |
 | `appunti` | every PR and push; exits early when nothing under `appunti/**` or `pipeline/**` changed (so as a required check it never hangs) | checks that each course's `meta.json` matches its PDF; for converted courses runs the leak detector on the committed `build/`; a manual `workflow_dispatch` re-converts from `src/` in Docker and diffs against `build/`; **the deploy never depends on it** |
 | `api` (v2) | changes to `workers/api/**` | tests → `wrangler deploy` of the chat Worker |
 | `agent` (v2) | changes to `agent/**` | Python tests → on `main`: Lambda code deploy via OIDC (no long-lived AWS keys) |
@@ -383,7 +383,7 @@ v0 + v1: **$0 on Cloudflare** ([#3](https://github.com/Simi24/simonepetta.com/is
 | Resource | Cap (gzip) |
 |---|---|
 | JS on normal pages | the Web Analytics beacon + one inline theme script ≤ 1 KB |
-| Declared JS exceptions | Pagefind on `/cerca/` only, Preact island on chat pages only |
+| Declared JS exceptions | Pagefind's own files (`/pagefind/*`) on `/cerca/` only, asset by asset: any other JS on that page, like its init script, still counts against the cap. Preact island on chat pages only |
 | HTML per page | 50 KB; 150 KB for notes chapters |
 | CSS per page | 20 KB |
 | Fonts | Host Grotesk Latin subset (roman + italic); Fira Math only on math pages |

@@ -19,7 +19,8 @@
     "test:quality": "npm run gate:budget && npm run gate:axe"
   },
   "dependencies": {
-    "astro": "^7.3.5"
+    "astro": "^7.3.5",
+    "pagefind": "^1.5.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

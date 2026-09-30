@@ -17,7 +17,7 @@ const finitoLabel = stato === 'abbandonato' ? 'Abbandonato' : 'Finito';
   Self-contained 12-column grid: Post owns its full layout and does not depend on
   being rendered inside `.page`, so the writing desk preview (#28) can drop it anywhere.
 -->
-<div class="post">
+<div class="post" data-pagefind-body>
   <header class="post-head">
     <h1><cite>{titolo}</cite></h1>
     <p class="byline">{anno_opera !== undefined ? `${autore}, ${anno_opera}` : autore}</p>

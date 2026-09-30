@@ -4,6 +4,8 @@ const port = 4322;
 
 export default defineConfig({
   testDir: 'tests/browser',
+  // Specs that build fixture sites (appunti-layout, cerca) must not race on Astro's shared cache.
+  workers: 1,
   forbidOnly: !!process.env['CI'],
   reporter: process.env['CI'] ? 'github' : 'list',
   use: { baseURL: `http://localhost:${port}` },
