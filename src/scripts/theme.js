@@ -4,7 +4,9 @@
   const root = document.documentElement;
   const key = 'tema';
   const themes = ['', 'light', 'dark'];
-  const labels = { '': 'sistema', light: 'chiaro', dark: 'scuro' };
+  const en = root.lang === 'en';
+  const prefix = en ? 'Theme' : 'Tema';
+  const labels = en ? { '': 'system', light: 'light', dark: 'dark' } : { '': 'sistema', light: 'chiaro', dark: 'scuro' };
 
   let theme = '';
   try {
@@ -16,7 +18,7 @@
     if (theme) root.dataset.theme = theme;
     else delete root.dataset.theme;
     for (const button of document.querySelectorAll('[data-theme-toggle]')) {
-      button.textContent = `Tema: ${labels[theme]}`;
+      button.textContent = `${prefix}: ${labels[theme]}`;
     }
   };
 

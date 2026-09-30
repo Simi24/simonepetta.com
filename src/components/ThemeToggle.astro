@@ -1,8 +1,14 @@
 ---
 // The label is kept in sync by the inline theme script; without JavaScript the button stays invisible.
+interface Props {
+  lang?: 'it' | 'en';
+}
+
+const { lang = 'it' } = Astro.props;
+const initialLabel = lang === 'en' ? 'Theme: system' : 'Tema: sistema';
 ---
 
-<button type="button" class="theme-toggle" data-theme-toggle>Tema: sistema</button>
+<button type="button" class="theme-toggle" data-theme-toggle>{initialLabel}</button>
 
 <style>
   .theme-toggle {

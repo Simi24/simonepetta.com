@@ -96,9 +96,83 @@ blockquote p {
   letter-spacing: -0.01em;
 }
 
+/* A section with a 2px top rule and a label on the left (SPEC.md §5.2). */
+.block {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  column-gap: 1.5rem;
+  border-top: 2px solid var(--ink);
+  padding-top: 0.8rem;
+  margin-top: 3rem;
+}
+
+.block > h2 {
+  grid-column: 1 / -1;
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+}
+
+.block > :not(h2) {
+  grid-column: 1 / -1;
+}
+
+.colophon {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 0.45rem 1.2rem;
+  margin: 0;
+}
+
+.colophon dt {
+  font-weight: 500;
+}
+
+.colophon dd {
+  margin: 0;
+  color: var(--muted);
+}
+
+.timeline li {
+  display: grid;
+  grid-template-columns: 6rem 1fr;
+  gap: 1rem;
+  padding-block: 0.2rem;
+}
+
+.when {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.projects li a {
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+.projects span {
+  display: block;
+}
+
 @media (max-width: 860px) {
   .page > *,
   .page > .page__full {
     grid-column: 1 / -1;
+  }
+
+  .block {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .block > * {
+    grid-column: 1 !important;
+  }
+
+  .colophon {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .colophon dd {
+    margin-bottom: 0.5rem;
   }
 }
