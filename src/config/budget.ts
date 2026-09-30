@@ -10,6 +10,9 @@ export const JS_CAP_BYTES = 1024;
 
 export const ALLOWED_FONT_FAMILIES = ['Host Grotesk', 'Fira Math'] as const;
 
+/** `<script type>` values that never run as JS, so they don't count toward `JS_CAP_BYTES` (SPEC.md §12.3). */
+export const NON_JS_SCRIPT_TYPES = ['application/ld+json', 'speculationrules'] as const;
+
 /** A notes chapter page (`/appunti/<slug>/<chapter>/`), never the course page or its chat page. */
 export const isNotesChapterPage = (pagePath: string): boolean =>
   /^appunti\/[^/]+\/(?!chat\/)[^/]+\/index\.html$/.test(pagePath);

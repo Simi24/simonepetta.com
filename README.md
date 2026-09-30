@@ -12,6 +12,10 @@ npm run dev            # http://localhost:4321
 npm test               # build-based and unit tests (node:test)
 npm run test:browser   # Playwright, first run: npx playwright install chromium
 npm run test:quality   # axe (WCAG 2.2 AA) + the byte budget on `dist` (SPEC.md §12)
+                        # standalone, this always rebuilds `dist` first, so it never
+                        # checks stale output; set QUALITY_GATE_REUSE_DIST=1 to check
+                        # an already-fresh `dist` (used in CI and in the verify commands,
+                        # right after their own `npm run build`)
 npm run check          # astro check
 npm run build
 ```
