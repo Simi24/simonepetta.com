@@ -88,7 +88,7 @@ One origin, no subdomains ([#7](https://github.com/Simi24/simonepetta.com/issues
 - **Plain CSS + Astro scoped `<style>`**, design tokens as custom properties. **No Tailwind** (deliberate deviation from the author's global default).
 - **TypeScript strict** for config, components and Workers. **Python 3.12+** for the v2 Lambda.
 - **npm + Node LTS**, lockfile committed.
-- **Allowed dependencies**: `astro`; `pagefind` (v1, [#10](https://github.com/Simi24/simonepetta.com/issues/10)); `@astrojs/preact` + `preact` (v2). Dev-only: `wrangler`; `@astrojs/check` + `typescript` (for `astro check`); `@playwright/test` + `@axe-core/playwright` (accessibility gate in both color schemes, [#18](https://github.com/Simi24/simonepetta.com/issues/18)). **Tests** use Node's built-in `node:test` (no dependency) plus build-based fixture tests. Python (v2): `boto3`, and the test runner `pytest`. **Any other dependency must be justified in this document first.**
+- **Allowed dependencies**: `astro`; `pagefind` (v1, [#10](https://github.com/Simi24/simonepetta.com/issues/10)); `@astrojs/preact` + `preact` (v2). Dev-only: `wrangler`; `@astrojs/check` + `typescript` (for `astro check`), `@types/node` (so tests and tool configs are type-checked too); `@playwright/test` + `@axe-core/playwright` (accessibility gate in both color schemes, [#18](https://github.com/Simi24/simonepetta.com/issues/18)). **Tests** use Node's built-in `node:test` (no dependency) plus build-based fixture tests. Python (v2): `boto3`, and the test runner `pytest`. **Any other dependency must be justified in this document first.**
 
 ### 4.2 Repository layout
 ```
