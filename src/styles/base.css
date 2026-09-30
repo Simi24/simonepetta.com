@@ -133,6 +133,18 @@ blockquote p {
   color: var(--muted);
 }
 
+.timeline li {
+  display: grid;
+  grid-template-columns: 6rem 1fr;
+  gap: 1rem;
+  padding-block: 0.2rem;
+}
+
+.when {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
 .projects li a {
   font-weight: 700;
   font-size: 1.3rem;

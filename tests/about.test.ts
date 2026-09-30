@@ -41,6 +41,15 @@ test('every EN author-voice block (lede, bio, path, project description) is a pl
   assert.match(openSource, /class="placeholder"/);
 });
 
+test('Percorso is a timeline (an ol with a when column), not a plain paragraph (SPEC.md §8)', () => {
+  const html = read(buildSite(), 'index.html');
+  const percorso = html.match(/<h2>Percorso<\/h2>([\s\S]*?)<\/section>/)?.[1] ?? '';
+  assert.match(percorso, /<ol class="timeline">/);
+  const row = percorso.match(/<li>([\s\S]*?)<\/li>/)?.[1] ?? '';
+  assert.match(row, /<span class="when placeholder">[^<]+<\/span>/);
+  assert.match(row, /<span class="placeholder">[^<]+<\/span>/);
+});
+
 test('the home page colophon has six IT lines matching the SPEC.md §8 facts', () => {
   const html = read(buildSite(), 'index.html');
   const colophon = html.match(/<h2>Colophon<\/h2>([\s\S]*?)<\/section>/)?.[1] ?? '';

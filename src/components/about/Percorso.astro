@@ -1,15 +1,23 @@
 ---
 // Author-voice copy stays a visible placeholder until the author writes it (SPEC.md §1.2).
+// SPEC.md §8 calls this a timeline: one placeholder row (a `when` and its content), so the
+// author fills in rows rather than restructuring the markup later.
 interface Props {
   lang?: 'it' | 'en';
 }
 
 const { lang = 'it' } = Astro.props;
 const heading = lang === 'en' ? 'Path' : 'Percorso';
-const placeholder = lang === 'en' ? "Path: written by the author." : "Percorso: lo scrive l'autore.";
+const when = lang === 'en' ? 'Year' : 'Anno';
+const entry = lang === 'en' ? 'Path: written by the author.' : "Percorso: lo scrive l'autore.";
 ---
 
 <section class="block">
   <h2>{heading}</h2>
-  <p class="placeholder">{placeholder}</p>
+  <ol class="timeline">
+    <li>
+      <span class="when placeholder">{when}</span>
+      <span class="placeholder">{entry}</span>
+    </li>
+  </ol>
 </section>
