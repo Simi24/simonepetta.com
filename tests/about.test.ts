@@ -146,14 +146,16 @@ test("the EN page's meta and OG descriptions don't advertise readings, which it 
 
 test('both about pages carry Open Graph meta tags with a shared, built image', () => {
   const dist = buildSite();
-  for (const [page, url] of [
-    ['index.html', 'https://simonepetta.com/'],
-    ['en/index.html', 'https://simonepetta.com/en/'],
+  for (const [page, url, locale] of [
+    ['index.html', 'https://simonepetta.com/', 'it_IT'],
+    ['en/index.html', 'https://simonepetta.com/en/', 'en_US'],
   ] as const) {
     const html = read(dist, page);
     assert.match(html, /<meta property="og:title" content="Simone Petta"\s*\/?>/);
     assert.match(html, /<meta property="og:image" content="https:\/\/simonepetta\.com\/og\/about\.png"\s*\/?>/);
     assert.match(html, new RegExp(`<meta property="og:url" content="${url.replace(/\//g, '\\/')}"\\s*/?>`));
+    assert.match(html, /<meta property="og:type" content="website"\s*\/?>/);
+    assert.match(html, new RegExp(`<meta property="og:locale" content="${locale}"\\s*/?>`));
     assert.match(html, /<meta name="twitter:card" content="summary_large_image"\s*\/?>/);
     assert.match(html, /<meta property="og:description" content="[^"]+"\s*\/?>/);
   }

@@ -15,9 +15,14 @@ interface Props {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
+// Title and author are facts, not author voice: a functional description (SPEC.md §1.2 point 3).
+const description = `${entry.data.titolo}, di ${entry.data.autore} — dalle letture di Simone Petta.`;
 ---
 
-<Base title={entry.data.titolo}>
+<Base
+  title={entry.data.titolo}
+  og={{ image: '/og/letture.png', description, type: 'article' }}
+>
   <a class="back" href="/letture/">Letture</a>
   <Post data={entry.data}>
     <Content />

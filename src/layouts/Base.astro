@@ -17,6 +17,7 @@ interface Hreflang {
 interface OpenGraph {
   image: string;
   description: string;
+  type?: 'website' | 'article';
 }
 
 interface Props {
@@ -31,8 +32,10 @@ interface Props {
 
 const { title, lang = site.lang, description, canonical = false, hreflang, og, jsonLd } = Astro.props;
 
-const canonicalUrl = canonical && Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
+const pageUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
+const canonicalUrl = canonical ? pageUrl : undefined;
 const ogImageUrl = og && Astro.site ? new URL(og.image, Astro.site).toString() : undefined;
+const ogLocale = lang === 'en' ? 'en_US' : 'it_IT';
 const jsonLdScript = jsonLd ? serializeJsonLd(jsonLd) : undefined;
 ---
 
@@ -54,7 +57,9 @@ const jsonLdScript = jsonLd ? serializeJsonLd(jsonLd) : undefined;
           <meta property="og:title" content={title} />
           <meta property="og:description" content={og.description} />
           <meta property="og:image" content={ogImageUrl} />
-          <meta property="og:url" content={canonicalUrl} />
+          <meta property="og:url" content={pageUrl} />
+          <meta property="og:type" content={og.type ?? 'website'} />
+          <meta property="og:locale" content={ogLocale} />
           <meta name="twitter:card" content="summary_large_image" />
         </>
       )

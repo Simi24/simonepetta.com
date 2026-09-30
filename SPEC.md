@@ -393,7 +393,7 @@ Raising a cap requires an explicit commit to the budget config.
 ### 12.3 SEO
 - **Notes (high)**: titles and descriptions with course, level and university; JSON-LD `LearningResource` (`inLanguage: it`, `educationalLevel`, `about`); PDFs at stable URLs with descriptive link text and `rel="alternate" type="application/pdf"` from the course page; HTML chapters are indexable text and MathML.
 - **About (high)**: see §8.
-- **Readings (low)**: title, description, canonical, sitemap only.
+- **Readings (low)**: title, description, canonical, sitemap only; still gets the "Everywhere" line's single Open Graph image and meta tags, shared by `/letture/` and every post page.
 - **Everywhere**: sitemap with `lastmod` from git, canonical URLs, one static Open Graph image per section (no per-post generation). Search Console verified via DNS TXT in Terraform; Bing Webmaster Tools is already verified.
 
 ### 12.4 Analytics

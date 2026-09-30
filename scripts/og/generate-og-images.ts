@@ -23,8 +23,15 @@ interface OgImage {
   domain: string;
 }
 
-/** One image per site section (SPEC.md §12.3: "no per-post generation"). The about section for now. */
-const IMAGES: readonly OgImage[] = [{ file: 'about.png', title: 'Simone Petta', domain: 'simonepetta.com' }];
+/**
+ * One image per site section (SPEC.md §12.3: "no per-post generation"). Readings shares this
+ * one section image across `/letture/` and every post page, same as the about pages share
+ * `about.png` across `/` and `/en/`.
+ */
+const IMAGES: readonly OgImage[] = [
+  { file: 'about.png', title: 'Simone Petta', domain: 'simonepetta.com' },
+  { file: 'letture.png', title: 'Letture', domain: 'simonepetta.com' },
+];
 
 function template(image: OgImage, fontDataUri: string): string {
   return `<!doctype html>
