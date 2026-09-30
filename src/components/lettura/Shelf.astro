@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { postHref } from '../../lib/lettura-post.ts';
 import { STATO_PRESENTATION } from '../../lib/lettura-presentation.ts';
 import { authorSurname, spineHeightRem, spineWidthRem, tintForSlug, truncateTitle } from '../../lib/lettura-spine.ts';
 
@@ -19,17 +20,22 @@ function spineClasses(entry: CollectionEntry<'letture'>): string {
 <div class="shelf-wrap">
   <div class="shelf" role="list">
     {
-      entries.map((entry) => (
-        <span
-          class={spineClasses(entry)}
-          role="listitem"
-          style={`height:${spineHeightRem(entry.data.pagine)}rem;width:${spineWidthRem(entry.data.pagine)}rem;`}
-          title={`${entry.data.titolo}, ${entry.data.autore}`}
-        >
-          <span>{truncateTitle(entry.data.titolo)}</span>
-          <span class="spine__author">{authorSurname(entry.data.autore)}</span>
-        </span>
-      ))
+      entries.map((entry) => {
+        const href = postHref(entry);
+        const Tag = href ? 'a' : 'span';
+        return (
+          <Tag
+            class={spineClasses(entry)}
+            role="listitem"
+            href={href}
+            style={`height:${spineHeightRem(entry.data.pagine)}rem;width:${spineWidthRem(entry.data.pagine)}rem;`}
+            title={`${entry.data.titolo}, ${entry.data.autore}`}
+          >
+            <span>{truncateTitle(entry.data.titolo)}</span>
+            <span class="spine__author">{authorSurname(entry.data.autore)}</span>
+          </Tag>
+        );
+      })
     }
   </div>
   <p class="caption">
@@ -68,7 +74,13 @@ function spineClasses(entry: CollectionEntry<'letture'>): string {
     font-size: 0.8rem;
     font-weight: 600;
     line-height: 1.1;
+    text-decoration: none;
     position: relative;
+  }
+
+  .spine[href]:hover,
+  .spine[href]:focus-visible {
+    translate: 0 -8px;
   }
 
   .spine > span {

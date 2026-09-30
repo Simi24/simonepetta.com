@@ -1,0 +1,116 @@
+---
+import { formatDataIt, formatVoto } from '../../lib/lettura-format-it.ts';
+
+interface Props {
+  titolo: string;
+  autore: string;
+  anno_opera?: number | undefined;
+  iniziato?: string | undefined;
+  finito?: string | undefined;
+  voto?: number | undefined;
+}
+
+const { titolo, autore, anno_opera, iniziato, finito, voto } = Astro.props;
+---
+
+<header class="post-head page__full">
+  <h1><cite>{titolo}</cite></h1>
+  <p class="byline">{anno_opera !== undefined ? `${autore}, ${anno_opera}` : autore}</p>
+  <dl class="facts">
+    {
+      iniziato && (
+        <div>
+          <dt>Iniziato</dt>
+          <dd class="num">{formatDataIt(iniziato)}</dd>
+        </div>
+      )
+    }
+    {
+      finito && (
+        <div>
+          <dt>Finito</dt>
+          <dd class="num">{formatDataIt(finito)}</dd>
+        </div>
+      )
+    }
+    {
+      voto !== undefined && (
+        <div>
+          <dt>Voto</dt>
+          <dd class="vote-big">{formatVoto(voto)}</dd>
+        </div>
+      )
+    }
+  </dl>
+</header>
+<div class="prose page__full">
+  <slot />
+</div>
+
+<style>
+  .post-head {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .post-head h1 {
+    grid-column: 1 / -1;
+  }
+
+  .post-head h1 cite {
+    font-style: normal;
+  }
+
+  .byline {
+    grid-column: 5 / span 5;
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 500;
+  }
+
+  .facts {
+    grid-column: 1 / span 4;
+    grid-row: 2 / span 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+  }
+
+  .facts dt {
+    color: var(--muted);
+  }
+
+  .facts dd {
+    margin: 0;
+  }
+
+  .vote-big {
+    font-size: 4.2rem;
+    font-weight: 300;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+  }
+
+  @media (max-width: 860px) {
+    .post-head {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .post-head h1,
+    .byline,
+    .facts {
+      grid-column: 1;
+      grid-row: auto;
+    }
+
+    .facts {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.5rem;
+      margin-top: 1rem;
+    }
+  }
+</style>

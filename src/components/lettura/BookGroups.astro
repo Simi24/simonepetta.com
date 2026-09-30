@@ -1,7 +1,8 @@
 ---
-import type { CollectionEntry } from 'astro:content';
-import { formatDataIt, formatVoto } from '../../lib/lettura-format-it.ts';
-import { ORDERING_DATE, type GroupedLetture } from '../../lib/lettura-order.ts';
+import { formatVoto } from '../../lib/lettura-format-it.ts';
+import { metaLine } from '../../lib/lettura-meta.ts';
+import type { GroupedLetture } from '../../lib/lettura-order.ts';
+import { postHref } from '../../lib/lettura-post.ts';
 import { STATO_PRESENTATION } from '../../lib/lettura-presentation.ts';
 import { STATI_LETTURA } from '../../schemas/lettura.ts';
 
@@ -10,14 +11,6 @@ interface Props {
 }
 
 const { grouped } = Astro.props;
-
-/** A book's date line, plus its abandonment note when there is one (SPEC.md §6.2). */
-function metaLine(entry: CollectionEntry<'letture'>): string {
-  const date = entry.data[ORDERING_DATE[entry.data.stato]];
-  const parts = [date ? `${STATO_PRESENTATION[entry.data.stato].dateVerb} ${formatDataIt(date)}` : ''];
-  if (entry.data.stato === 'abbandonato' && entry.data.nota) parts.push(entry.data.nota);
-  return parts.filter(Boolean).join(', ');
-}
 ---
 
 {
@@ -29,15 +22,13 @@ function metaLine(entry: CollectionEntry<'letture'>): string {
         <h2>{STATO_PRESENTATION[stato].groupLabel}</h2>
         <ul class="books">
           {entries.map((entry) => {
-            const meta = metaLine(entry);
+            const href = postHref(entry);
+            const Title = href ? 'a' : 'span';
             return (
               <li>
                 <span class="books__vote">{entry.data.voto !== undefined ? formatVoto(entry.data.voto) : ''}</span>
-                <span class="books__title">{entry.data.titolo}</span>
-                <span class="books__meta">
-                  {entry.data.autore}
-                  {meta ? `, ${meta}` : ''}
-                </span>
+                <Title class="books__title" href={href}>{entry.data.titolo}</Title>
+                <span class="books__meta">{metaLine(entry)}</span>
               </li>
             );
           })}
@@ -91,6 +82,7 @@ function metaLine(entry: CollectionEntry<'letture'>): string {
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.15;
+    text-decoration: none;
   }
 
   .books__meta {

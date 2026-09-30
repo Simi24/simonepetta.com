@@ -1,6 +1,12 @@
 ---
+import { getCollection } from 'astro:content';
+import RecentLetture from '../components/lettura/RecentLetture.astro';
 import Base from '../layouts/Base.astro';
 import { site } from '../config/site.ts';
+import { orderLetture } from '../lib/lettura-order.ts';
+
+const collection = await getCollection('letture');
+const recent = orderLetture(collection).letto.slice(0, 3);
 ---
 
 <Base title={site.author}>
@@ -8,5 +14,8 @@ import { site } from '../config/site.ts';
     <h1 class="page__full">{site.author}</h1>
     <!-- Author-voice copy stays a visible placeholder until the author writes it (SPEC.md §1.2). -->
     <p class="placeholder">Presentazione: la scrive l'autore.</p>
+    <div class="page__full">
+      <RecentLetture entries={recent} />
+    </div>
   </div>
 </Base>

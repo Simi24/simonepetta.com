@@ -1,0 +1,43 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Post from '../../components/lettura/Post.astro';
+import Base from '../../layouts/Base.astro';
+import { hasPost } from '../../lib/lettura-post.ts';
+
+export async function getStaticPaths() {
+  const collection = await getCollection('letture');
+  return collection.filter(hasPost).map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+interface Props {
+  entry: CollectionEntry<'letture'>;
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<Base title={entry.data.titolo}>
+  <article class="page">
+    <a class="page__full back" href="/letture/">Letture</a>
+    <Post
+      titolo={entry.data.titolo}
+      autore={entry.data.autore}
+      anno_opera={entry.data.anno_opera}
+      iniziato={entry.data.iniziato}
+      finito={entry.data.finito}
+      voto={entry.data.voto}
+    >
+      <Content />
+    </Post>
+  </article>
+</Base>
+
+<style>
+  .back {
+    display: block;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+</style>

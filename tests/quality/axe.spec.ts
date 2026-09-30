@@ -12,11 +12,13 @@ const BODY_BACKGROUND: Record<(typeof COLOR_SCHEMES)[number], string> = {
   dark: 'rgb(21, 21, 21)',
 };
 
-// The production build (today: an empty /letture/) and a build with the letture fixtures
-// (books), so a populated shelf is axe-checked even though nothing is published yet.
+// The production build (today: an empty /letture/), a build with the letture fixtures
+// (books), and a build with the letture-post fixtures (books with and without a post,
+// so the post page and the home's "Ultime letture" are axe-checked too).
 const BUILDS: readonly { label: string; env: Record<string, string> }[] = [
   { label: 'production', env: {} },
   { label: 'letture fixtures', env: { LETTURE_CONTENT_DIR: 'tests/fixtures/letture' } },
+  { label: 'letture post fixtures', env: { LETTURE_CONTENT_DIR: 'tests/fixtures/letture-post' } },
 ];
 
 const urlFor = (server: StaticServer, page: string): string => `${server.url}/${page.replace(/index\.html$/, '')}`;

@@ -1,0 +1,79 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatVoto } from '../../lib/lettura-format-it.ts';
+import { metaLine } from '../../lib/lettura-meta.ts';
+import { postHref } from '../../lib/lettura-post.ts';
+
+interface Props {
+  entries: readonly CollectionEntry<'letture'>[];
+}
+
+const { entries } = Astro.props;
+---
+
+{
+  entries.length > 0 && (
+    <section class="recent">
+      <h2>Ultime letture</h2>
+      <ul class="books">
+        {entries.map((entry) => {
+          const href = postHref(entry);
+          const Title = href ? 'a' : 'span';
+          return (
+            <li>
+              <span class="books__vote">{entry.data.voto !== undefined ? formatVoto(entry.data.voto) : ''}</span>
+              <Title class="books__title" href={href}>{entry.data.titolo}</Title>
+              <span class="books__meta">{metaLine(entry)}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  )
+}
+
+<style>
+  .recent {
+    border-top: 2px solid var(--ink);
+    padding-top: 0.8rem;
+    margin-top: 3rem;
+  }
+
+  .recent h2 {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+  }
+
+  .books {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .books li {
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    column-gap: 1rem;
+  }
+
+  .books__vote {
+    grid-row: 1 / span 2;
+    font-size: 2.2rem;
+    line-height: 0.9;
+    font-weight: 300;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .books__title {
+    grid-column: 2;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+
+  .books__meta {
+    grid-column: 2;
+    color: var(--muted);
+  }
+</style>
