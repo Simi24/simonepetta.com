@@ -13,9 +13,8 @@ const shelf = shelfOrder(grouped);
 <Base title="Letture">
   <div class="page">
     <h1 class="page__full">Letture</h1>
-    <p class="lede page__full">
-      Tutto quello che leggo, anche i libri lasciati a metà. Quando ho qualcosa da dire, c'è un testo.
-    </p>
+    <!-- Author-voice copy stays a visible placeholder until the author writes it (SPEC.md §1.2). -->
+    <p class="lede placeholder page__full">Presentazione della sezione: la scrive l'autore.</p>
     <div class="page__full">
       <Shelf entries={shelf} />
     </div>
