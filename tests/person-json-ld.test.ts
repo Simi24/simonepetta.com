@@ -10,3 +10,8 @@ test('builds a schema.org Person with both sameAs URLs (SPEC.md §8)', () => {
   assert.equal(ld.url, 'https://simonepetta.com/');
   assert.deepEqual(ld.sameAs, ['https://github.com/Simi24', 'https://www.linkedin.com/in/simone-paolo-petta/']);
 });
+
+test('has one stable @id derived from the given url', () => {
+  const ld = personJsonLd('https://simonepetta.com/');
+  assert.equal(ld['@id'], 'https://simonepetta.com/#person');
+});

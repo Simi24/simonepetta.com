@@ -9,7 +9,8 @@ import { personJsonLd } from '../../lib/person-json-ld.ts';
 
 const homeUrl = new URL('/', Astro.site).toString();
 const enUrl = new URL('/en/', Astro.site).toString();
-const description = 'Simone Petta: readings, path and open source projects.';
+// No "readings" here: this page has none (SPEC.md §8, both descriptions are functional, not author voice).
+const description = 'Simone Petta: path and open source projects.';
 ---
 
 <Base
@@ -22,7 +23,7 @@ const description = 'Simone Petta: readings, path and open source projects.';
     { lang: 'en', href: enUrl },
   ]}
   og={{ image: '/og/about.png', description }}
-  jsonLd={personJsonLd(enUrl)}
+  jsonLd={personJsonLd(homeUrl)}
 >
   <div class="page">
     <h1 class="page__full">{site.author}</h1>
