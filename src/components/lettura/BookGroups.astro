@@ -1,0 +1,96 @@
+---
+import type { GroupedLetture, LetturaEntry } from '../../lib/letture-order.ts';
+import { formatDataIt, formatVoto } from '../../lib/letture-view.ts';
+
+interface Props {
+  grouped: GroupedLetture;
+}
+
+const { grouped } = Astro.props;
+
+const GROUPS: { key: keyof GroupedLetture; label: string }[] = [
+  { key: 'corso', label: 'Sto leggendo' },
+  { key: 'letti', label: 'Letti' },
+  { key: 'abbandonati', label: 'Abbandonati' },
+];
+
+function metaLine(entry: LetturaEntry): string {
+  const { stato, iniziato, finito, nota } = entry.data;
+  if (stato === 'in-corso') return iniziato ? `iniziato il ${formatDataIt(iniziato)}` : '';
+  if (stato === 'abbandonato') return nota ?? (finito ? `lasciato il ${formatDataIt(finito)}` : '');
+  return finito ? `finito il ${formatDataIt(finito)}` : '';
+}
+---
+
+{
+  GROUPS.map(({ key, label }) => {
+    const entries = grouped[key];
+    if (entries.length === 0) return null;
+    return (
+      <section class="books-group">
+        <h2>{label}</h2>
+        <ul class="books">
+          {entries.map((entry) => {
+            const meta = metaLine(entry);
+            return (
+              <li>
+                <span class="books__vote">{entry.data.voto !== undefined ? formatVoto(entry.data.voto) : ''}</span>
+                <span class="books__title">{entry.data.titolo}</span>
+                <span class="books__meta">
+                  {entry.data.autore}
+                  {meta ? `, ${meta}` : ''}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    );
+  })
+}
+
+<style>
+  .books-group {
+    border-top: 2px solid var(--ink);
+    padding-top: 0.8rem;
+    margin-top: 2.5rem;
+  }
+
+  .books-group h2 {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+  }
+
+  .books {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .books li {
+    display: grid;
+    grid-template-columns: 5rem minmax(0, 1fr);
+    column-gap: 1.2rem;
+  }
+
+  .books__vote {
+    grid-row: 1 / span 2;
+    font-size: 2.9rem;
+    line-height: 0.9;
+    font-weight: 300;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .books__title {
+    grid-column: 2;
+    font-size: 1.45rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  .books__meta {
+    grid-column: 2;
+    color: var(--muted);
+  }
+</style>

@@ -1,0 +1,26 @@
+---
+import { getCollection } from 'astro:content';
+import BookGroups from '../../components/lettura/BookGroups.astro';
+import Shelf from '../../components/lettura/Shelf.astro';
+import Base from '../../layouts/Base.astro';
+import { orderLetture, shelfOrder } from '../../lib/letture-order.ts';
+
+const collection = await getCollection('letture');
+const grouped = orderLetture(collection);
+const shelf = shelfOrder(grouped);
+---
+
+<Base title="Letture">
+  <div class="page">
+    <h1 class="page__full">Letture</h1>
+    <p class="lede page__full">
+      Tutto quello che leggo, anche i libri lasciati a metà. Quando ho qualcosa da dire, c'è un testo.
+    </p>
+    <div class="page__full">
+      <Shelf entries={shelf} />
+    </div>
+    <div class="page__full">
+      <BookGroups grouped={grouped} />
+    </div>
+  </div>
+</Base>

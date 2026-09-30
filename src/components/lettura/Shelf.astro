@@ -1,0 +1,127 @@
+---
+import type { LetturaEntry } from '../../lib/letture-order.ts';
+import { spinePagine, tintForSlug } from '../../lib/letture-view.ts';
+
+interface Props {
+  entries: readonly LetturaEntry[];
+}
+
+const { entries } = Astro.props;
+
+function heightRem(pagine: number | undefined): string {
+  return `${8 + spinePagine(pagine) / 80}rem`;
+}
+
+function stateClass(stato: LetturaEntry['data']['stato']): string {
+  if (stato === 'in-corso') return 'spine--in-corso';
+  if (stato === 'abbandonato') return 'spine--abbandonato';
+  return '';
+}
+---
+
+<div class="shelf-wrap">
+  <div class="shelf" role="list">
+    {
+      entries.map((entry) => (
+        <span
+          class={`spine spine--tint-${tintForSlug(entry.id)} ${stateClass(entry.data.stato)}`}
+          role="listitem"
+          style={`height:${heightRem(entry.data.pagine)};`}
+          title={`${entry.data.titolo}, ${entry.data.autore}`}
+        >
+          <span>{entry.data.titolo}</span>
+        </span>
+      ))
+    }
+  </div>
+  <p class="caption">
+    {
+      entries.length === 0
+        ? 'Lo scaffale è vuoto.'
+        : "L'altezza del dorso segue le pagine. Il segnalibro indica il libro in corso, quello inclinato è stato abbandonato."
+    }
+  </p>
+</div>
+
+<style>
+  .shelf-wrap {
+    overflow-x: auto;
+    margin-top: 0.5rem;
+  }
+
+  .shelf {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    min-height: 8rem;
+    padding: 1.6rem 0.4rem 0;
+    border-bottom: 6px solid var(--ink);
+  }
+
+  .spine {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    display: flex;
+    align-items: center;
+    width: 2.4rem;
+    padding: 0.7rem 0;
+    border-radius: 1px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.1;
+    position: relative;
+    text-decoration: none;
+  }
+
+  .spine > span {
+    overflow: hidden;
+    max-height: 100%;
+  }
+
+  .spine--in-corso::after {
+    content: '';
+    position: absolute;
+    bottom: -1.1rem;
+    left: 42%;
+    width: 0.5rem;
+    height: 1.6rem;
+    background: var(--ink);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+  }
+
+  .spine--abbandonato {
+    transform: rotate(172deg);
+    margin-left: 1.2rem;
+  }
+
+  .caption {
+    margin-top: 0.7rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .spine--tint-1 {
+    background: var(--tint-1);
+    color: var(--tint-1-ink);
+  }
+
+  .spine--tint-2 {
+    background: var(--tint-2);
+    color: var(--tint-2-ink);
+  }
+
+  .spine--tint-3 {
+    background: var(--tint-3);
+    color: var(--tint-3-ink);
+  }
+
+  .spine--tint-4 {
+    background: var(--tint-4);
+    color: var(--tint-4-ink);
+  }
+
+  .spine--tint-5 {
+    background: var(--tint-5);
+    color: var(--tint-5-ink);
+  }
+</style>
