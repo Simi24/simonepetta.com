@@ -26,14 +26,19 @@ export function spineWidthRem(pagine: number | undefined): number {
   return round(2.1 + spinePagine(pagine) / 400);
 }
 
-/** Deterministic tint (1..5) for a book, hashed from its slug so it never reshuffles when others are added (SPEC.md §5.1). */
-export function tintForSlug(slug: string): number {
+/** FNV-1a hash of a slug: stable across builds, so what derives from it never reshuffles when others are added. */
+export function slugHash(slug: string): number {
   let hash = 2166136261;
   for (let i = 0; i < slug.length; i++) {
     hash ^= slug.charCodeAt(i);
     hash = Math.imul(hash, 16777619);
   }
-  return ((hash >>> 0) % TINT_COUNT) + 1;
+  return hash >>> 0;
+}
+
+/** Deterministic tint (1..5) for a book, hashed from its slug so it never reshuffles when others are added (SPEC.md §5.1). */
+export function tintForSlug(slug: string): number {
+  return (slugHash(slug) % TINT_COUNT) + 1;
 }
 
 /** Truncates a spine's title as the prototype does (docs/prototype/visual.html:439). */

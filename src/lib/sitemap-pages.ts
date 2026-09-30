@@ -36,6 +36,7 @@ export function sitemapPages(
       }
       return { path: `/letture/${entry.id}/`, files: [entry.filePath] };
     }),
+    { path: '/appunti/', files: ['src/pages/appunti/index.astro', APPUNTI_CONTENT_DIR] },
     ...appunti.filter(isPublished).map((entry) => ({
       path: `/appunti/${entry.id}/`,
       files: ['src/pages/appunti/[slug]/index.astro', join(APPUNTI_CONTENT_DIR, entry.id)],

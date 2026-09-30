@@ -1,0 +1,67 @@
+---
+import FullBlock from './FullBlock.astro';
+import type { CollectionEntry } from 'astro:content';
+import { sortTheses } from '../../lib/appunti-index.ts';
+
+interface Props {
+  theses: readonly CollectionEntry<'appunti'>[];
+}
+
+const theses = sortTheses(Astro.props.theses.map((entry) => ({ entry, livello: entry.data.livello })));
+---
+
+<FullBlock id="tesi" title="Tesi">
+  {
+    theses.length === 0 ? (
+      <p class="empty">Nessuna tesi pubblicata.</p>
+    ) : (
+      <div class="theses">
+        {theses.map(({ entry }) => (
+          <a class="thesis" href={`/appunti/${entry.id}/`}>
+            <b>{entry.data.titolo}</b>
+            <span>{`Tesi ${entry.data.livello}, ${entry.data.aa}`}</span>
+          </a>
+        ))}
+      </div>
+    )
+  }
+</FullBlock>
+
+<style>
+  .theses {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .thesis {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.9rem 1rem 1rem;
+    border-radius: 2px;
+    background: var(--tint-1);
+    color: var(--tint-1-ink);
+    text-decoration: none;
+    box-shadow: inset 0 -5px 0 color-mix(in srgb, var(--tint-1-ink) 18%, transparent);
+  }
+
+  .thesis b {
+    font-size: 1.25rem;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+  }
+
+  .thesis span {
+    font-size: 0.9rem;
+  }
+
+  .empty {
+    color: var(--muted);
+  }
+
+  @media (max-width: 860px) {
+    .theses {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
