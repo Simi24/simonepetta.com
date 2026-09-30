@@ -182,6 +182,7 @@ The schema is **strict** (unknown keys fail) and lives in its own module, so the
 - **Re-reads** are out of scope: one file per book; a re-read updates the dates.
 - **Ordering**: shelf and index show *in corso* (by `iniziato` descending), then *letti* (by `finito` descending), then *abbandonati* (by `finito` descending). The home shows the three most recently finished books.
 - **Empty state**: with no books the shelf shows an empty plank and a one-line functional caption. Test fixtures never enter the production collection.
+- **Known limitation**: YAML rolls an impossible *unquoted* date forward (`2026-02-30` becomes `2026-03-02`) before the schema ever sees it, so only a quoted date is validated strictly; the writing desk always writes quoted ISO dates.
 
 ### 6.2 What appears
 **All books**, including the one being read and abandoned ones. The index is the shelf plus a list grouped as *Sto leggendo / Letti / Abbandonati*, grades as large numerals. A book with a text links to its post; a book without a text still appears with grade and dates.
