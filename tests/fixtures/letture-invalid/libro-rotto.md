@@ -1,4 +1,4 @@
 ---
 titolo: Libro rotto
-stato: letto
+stato: abbandonato
 ---
