@@ -1,0 +1,129 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { STATO_PRESENTATION } from '../../lib/lettura-presentation.ts';
+import { authorSurname, spineHeightRem, spineWidthRem, tintForSlug, truncateTitle } from '../../lib/lettura-spine.ts';
+
+interface Props {
+  entries: readonly CollectionEntry<'letture'>[];
+}
+
+const { entries } = Astro.props;
+
+function spineClasses(entry: CollectionEntry<'letture'>): string {
+  return ['spine', `spine--tint-${tintForSlug(entry.id)}`, STATO_PRESENTATION[entry.data.stato].spineClass]
+    .filter(Boolean)
+    .join(' ');
+}
+---
+
+<div class="shelf-wrap">
+  <div class="shelf" role="list">
+    {
+      entries.map((entry) => (
+        <span
+          class={spineClasses(entry)}
+          role="listitem"
+          style={`height:${spineHeightRem(entry.data.pagine)}rem;width:${spineWidthRem(entry.data.pagine)}rem;`}
+          title={`${entry.data.titolo}, ${entry.data.autore}`}
+        >
+          <span>{truncateTitle(entry.data.titolo)}</span>
+          <span class="spine__author">{authorSurname(entry.data.autore)}</span>
+        </span>
+      ))
+    }
+  </div>
+  <p class="caption">
+    {
+      entries.length === 0
+        ? 'Lo scaffale è vuoto.'
+        : "L'altezza del dorso segue le pagine. Il segnalibro indica il libro in corso, quello inclinato è stato abbandonato."
+    }
+  </p>
+</div>
+
+<style>
+  .shelf-wrap {
+    overflow-x: auto;
+    margin-top: 0.5rem;
+  }
+
+  .shelf {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    min-height: 8rem;
+    min-width: min-content;
+    padding: 1.6rem 0.4rem 0;
+    border-bottom: 6px solid var(--ink);
+  }
+
+  .spine {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 0;
+    border-radius: 1px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.1;
+    position: relative;
+  }
+
+  .spine > span {
+    overflow: hidden;
+    max-height: 100%;
+  }
+
+  .spine__author {
+    font-weight: 400;
+  }
+
+  .spine--in-corso::after {
+    content: '';
+    position: absolute;
+    bottom: -1.1rem;
+    left: 42%;
+    width: 0.5rem;
+    height: 1.6rem;
+    background: var(--ink);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+  }
+
+  .spine--abbandonato {
+    transform: rotate(172deg);
+    margin-left: 1.2rem;
+  }
+
+  .caption {
+    margin-top: 0.7rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .spine--tint-1 {
+    background: var(--tint-1);
+    color: var(--tint-1-ink);
+  }
+
+  .spine--tint-2 {
+    background: var(--tint-2);
+    color: var(--tint-2-ink);
+  }
+
+  .spine--tint-3 {
+    background: var(--tint-3);
+    color: var(--tint-3-ink);
+  }
+
+  .spine--tint-4 {
+    background: var(--tint-4);
+    color: var(--tint-4-ink);
+  }
+
+  .spine--tint-5 {
+    background: var(--tint-5);
+    color: var(--tint-5-ink);
+  }
+</style>

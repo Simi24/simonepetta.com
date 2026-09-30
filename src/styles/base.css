@@ -70,6 +70,13 @@ h1 {
   font-style: italic;
 }
 
+.lede {
+  grid-column: 5 / span 6;
+  font-size: 1.55rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
 @media (max-width: 860px) {
   .page > *,
   .page > .page__full {

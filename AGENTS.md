@@ -28,7 +28,7 @@ The author's personal site: readings, university notes, and (v2) a per-course ch
 - **TDD**: red, then green, one behavior at a time, at the seams below. No test against internals.
 - **`npm test`**: `node:test` files in `tests/`, run serially (parallel Astro builds race on the shared cache). Build-based tests build the site into a temporary directory through `tests/support/built-site.ts` and assert on the output.
 - **`npm run test:browser`**: Playwright against a fresh build served by `astro preview` (never a reused server).
-- Seams in use: the built output (`dist`), behavior in a real browser, the token contract file.
+- Seams in use: the built output (`dist`), behavior in a real browser, the token contract file, schema modules shared with the writing desk (tested as units, e.g. `src/schemas/lettura.ts`).
 - No network and no credentials in tests.
 
 ## Git conventions (enforced by hooks)
