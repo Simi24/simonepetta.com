@@ -1,0 +1,279 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { orderLetture, shelfOrder } from '../../lib/lettura-order.ts';
+import type { DeskBook } from './client/book.ts';
+
+const collection = await getCollection('letture');
+const shelf = shelfOrder(orderLetture(collection));
+
+const books: DeskBook[] = shelf.map((entry) => ({
+  slug: entry.id,
+  titolo: entry.data.titolo,
+  autore: entry.data.autore,
+  anno_opera: entry.data.anno_opera ?? null,
+  stato: entry.data.stato,
+  iniziato: entry.data.iniziato ?? null,
+  finito: entry.data.finito ?? null,
+  voto: entry.data.voto ?? null,
+  pagine: entry.data.pagine ?? null,
+  nota: entry.data.nota ?? null,
+}));
+
+// Escaped so a title containing "</script>" can't break out of the data island.
+const deskJson = JSON.stringify({ books }).replace(/</g, '\\u003c');
+---
+
+<Base title="Scrivania">
+  <p class="dev-note">Scrivania: solo in locale, con <code>npm run dev</code>.</p>
+  <h1>Cosa hai sul comodino?</h1>
+  <div class="shelf-wrap">
+    <div class="shelf" id="scrivania-shelf" role="group" aria-label="Libri"></div>
+  </div>
+  <p class="caption">Scegli un dorso per aggiornarlo. Quello tratteggiato aggiunge un libro.</p>
+
+  <section class="section" id="scrivania-panel" hidden></section>
+</Base>
+
+<script type="application/json" id="scrivania-data" set:html={deskJson} />
+
+<script>
+  import { initScrivania } from './client/app.ts';
+  initScrivania();
+</script>
+
+<style is:global>
+  .dev-note {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .shelf-wrap {
+    overflow-x: auto;
+    margin-top: 0.5rem;
+  }
+
+  .shelf {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    min-height: 8rem;
+    min-width: min-content;
+    padding: 1.6rem 0.4rem 0;
+    border-bottom: 6px solid var(--ink);
+  }
+
+  .spine {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 0;
+    border: 0;
+    border-radius: 1px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.1;
+    position: relative;
+    transition: translate 0.15s;
+  }
+
+  .spine:hover,
+  .spine:focus-visible,
+  .spine[aria-pressed='true'] {
+    translate: 0 -8px;
+  }
+
+  .spine > span {
+    overflow: hidden;
+    max-height: 100%;
+  }
+
+  .spine__author {
+    font-weight: 400;
+  }
+
+  .spine--in-corso::after {
+    content: '';
+    position: absolute;
+    bottom: -1.1rem;
+    left: 42%;
+    width: 0.5rem;
+    height: 1.6rem;
+    background: var(--ink);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+  }
+
+  .spine--abbandonato {
+    transform: rotate(172deg);
+    margin-left: 1.2rem;
+  }
+
+  .spine--add {
+    background: transparent;
+    outline: 1.5px dashed var(--muted);
+    outline-offset: -1.5px;
+    color: var(--muted);
+    height: 9rem;
+    width: 2.4rem;
+    justify-content: center;
+  }
+
+  .caption {
+    margin-top: 0.7rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .section {
+    border-top: 2px solid var(--ink);
+    padding-top: 0.8rem;
+    margin-top: 2.5rem;
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 1.5rem;
+    align-items: start;
+  }
+
+  .actions .who {
+    grid-column: 1 / span 5;
+  }
+
+  .actions .who b {
+    display: block;
+    font-size: 1.6rem;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .actions .do {
+    grid-column: 6 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .btn {
+    border: 1.5px solid var(--ink);
+    background: transparent;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: translate 0.15s;
+  }
+
+  .btn:active {
+    translate: 0 1px;
+  }
+
+  .btn.solid {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .btn.quiet {
+    border-color: var(--rule);
+    color: var(--muted);
+  }
+
+  .form {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    max-width: 56rem;
+    margin-top: 1rem;
+  }
+
+  .field {
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .field label {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .field input {
+    background: var(--surface);
+    border: 1.5px solid var(--rule);
+    border-radius: 6px;
+    padding: 0.55rem 0.7rem;
+    font: inherit;
+    color: inherit;
+  }
+
+  .field input:focus {
+    border-color: var(--ink);
+    outline: none;
+  }
+
+  .span2 {
+    grid-column: span 2;
+  }
+
+  .span4 {
+    grid-column: 1 / -1;
+  }
+
+  .votes {
+    display: flex;
+    gap: 0.15rem;
+    flex-wrap: wrap;
+  }
+
+  .votes button {
+    border: 0;
+    background: none;
+    font-size: 1.9rem;
+    font-weight: 300;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    padding: 0.15rem 0.3rem;
+    color: var(--muted);
+    border-radius: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .votes button[aria-pressed='true'] {
+    color: var(--bg);
+    background: var(--ink);
+  }
+
+  .votes button.half {
+    font-size: 1.1rem;
+  }
+
+  .errors {
+    margin-top: 0.8rem;
+  }
+
+  .errors .error {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  @media (max-width: 860px) {
+    .actions {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .actions .who,
+    .actions .do {
+      grid-column: 1;
+    }
+
+    .actions .do {
+      margin-top: 1rem;
+    }
+
+    .form {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

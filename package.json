@@ -12,6 +12,7 @@
     "check": "astro check",
     "test": "node --test --test-concurrency=1 \"tests/**/*.test.ts\"",
     "test:browser": "playwright test",
+    "test:browser-dev": "playwright test --config playwright.scrivania.config.ts",
     "gate:budget": "node scripts/quality/check-budget.ts",
     "gate:axe": "playwright test --config playwright.quality.config.ts",
     "test:quality": "npm run gate:budget && npm run gate:axe"
