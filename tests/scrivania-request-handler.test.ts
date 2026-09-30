@@ -62,3 +62,15 @@ test('an invalid payload still responds 400 and writes nothing', async () => {
   assert.equal(res.status, 400);
   assert.equal(readdirSync(contentDir).length, before_);
 });
+
+test('a save with testo writes it as the book’s body', async () => {
+  await post({ data: { titolo: 'Con Testo', autore: 'Autore', stato: 'in-corso', iniziato: '2026-09-14' } });
+  const res = await post({
+    slug: 'con-testo',
+    data: { titolo: 'Con Testo', autore: 'Autore', stato: 'letto', finito: '2026-09-20' },
+    testo: 'La mia reazione al libro.',
+  });
+  const json = (await res.json()) as { slug?: string };
+  assert.equal(res.status, 200);
+  assert.equal(json.slug, 'con-testo');
+});

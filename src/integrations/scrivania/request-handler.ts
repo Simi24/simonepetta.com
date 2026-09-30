@@ -1,23 +1,12 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { LetturaSchemaError } from '../../schemas/lettura.ts';
+import { readJsonBody, respondJson } from './http.ts';
 import { saveLettura } from './save.ts';
 
 interface SavePayload {
   slug?: string;
   data?: unknown;
-}
-
-async function readJsonBody(req: IncomingMessage): Promise<SavePayload> {
-  const chunks: Uint8Array[] = [];
-  for await (const chunk of req) chunks.push(chunk as Uint8Array);
-  const raw = Buffer.concat(chunks).toString('utf8');
-  return raw ? (JSON.parse(raw) as SavePayload) : {};
-}
-
-function respondJson(res: ServerResponse, status: number, body: unknown): void {
-  res.statusCode = status;
-  res.setHeader('Content-Type', 'application/json');
-  res.end(JSON.stringify(body));
+  testo?: string;
 }
 
 export interface SaveHandlerOptions {
@@ -38,8 +27,8 @@ export function createSaveHandler({ contentDir, onSaved }: SaveHandlerOptions) {
     }
     let result;
     try {
-      const { slug, data } = await readJsonBody(req);
-      result = saveLettura({ contentDir, slug, input: data });
+      const { slug, data, testo } = await readJsonBody<SavePayload>(req);
+      result = saveLettura({ contentDir, slug, input: data, testo });
     } catch (error) {
       if (error instanceof LetturaSchemaError) {
         respondJson(res, 400, { issues: error.issues });

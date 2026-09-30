@@ -1,14 +1,14 @@
 import { authorSurname, spineHeightRem, spineWidthRem, tintForSlug, truncateTitle } from '../../../lib/lettura-spine.ts';
 import { STATO_PRESENTATION } from '../../../lib/lettura-presentation.ts';
-import { SAVE_PATH } from '../constants.ts';
-import { postSave } from './api.ts';
 import type { DeskBook, DeskData } from './book.ts';
 import { clear, el, today } from './dom.ts';
-import { addField, addSubmit, showErrors } from './fields.ts';
+import { addField, addSubmit } from './fields.ts';
 import { metaLine } from './meta.ts';
+import { buildSheet } from './sheet.ts';
+import { submitLettura } from './submit.ts';
 import { addVotesField } from './votes.ts';
 
-type Activity = 'edit' | 'finish' | 'drop' | 'stub';
+type Activity = 'edit' | 'finish' | 'drop' | 'write';
 type Selection = { type: 'new' } | { type: 'book'; slug: string };
 
 function readDeskData(): DeskData {
@@ -77,16 +77,6 @@ export function initScrivania(): void {
     return button;
   }
 
-  async function submit(slug: string | undefined, data: Record<string, unknown>, errorsBox: HTMLElement): Promise<void> {
-    clear(errorsBox);
-    const result = await postSave(SAVE_PATH, { slug, data });
-    if (result.ok) {
-      location.assign('/scrivi/'); // trailingSlash: 'always' (astro.config.mjs)
-      return;
-    }
-    showErrors(errorsBox, result.issues);
-  }
-
   function buildActions(book: DeskBook): HTMLElement {
     const wrap = el('div', 'actions');
     const who = el('div', 'who');
@@ -103,17 +93,21 @@ export function initScrivania(): void {
     }
 
     if (book.stato === 'in-corso') {
-      addAction("L'ho finito, scrivo", 'solid', () => setActivity('stub'));
+      addAction("L'ho finito, scrivo", 'solid', () => setActivity('write'));
       addAction('Modifica', 'quiet', () => setActivity('edit'));
       addAction("L'ho finito, senza testo", '', () => setActivity('finish'));
       addAction("L'ho lasciato a metà", 'quiet', () => setActivity('drop'));
     } else if (book.stato === 'letto') {
-      addAction('Modifica', 'solid', () => setActivity('edit'));
-      addAction('Scrivi il testo', 'quiet', () => setActivity('stub'));
+      if (book.testo) {
+        addAction('Modifica', 'solid', () => setActivity('write'));
+      } else {
+        addAction('Scrivi il testo', 'solid', () => setActivity('write'));
+        addAction('Modifica voto e dati', 'quiet', () => setActivity('edit'));
+      }
     } else {
       addAction('Modifica', '', () => setActivity('edit'));
       addAction('Ricomincia', '', () => {
-        void submit(
+        void submitLettura(
           book.slug,
           {
             titolo: book.titolo,
@@ -160,7 +154,7 @@ export function initScrivania(): void {
     const errors = el('div', 'errors');
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      void submit(
+      void submitLettura(
         book.slug,
         {
           titolo: titolo.value.trim(),
@@ -192,7 +186,7 @@ export function initScrivania(): void {
     const errors = el('div', 'errors');
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      void submit(
+      void submitLettura(
         book.slug,
         {
           titolo: book.titolo,
@@ -226,7 +220,7 @@ export function initScrivania(): void {
     const errors = el('div', 'errors');
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      void submit(
+      void submitLettura(
         book.slug,
         {
           titolo: book.titolo,
@@ -245,14 +239,6 @@ export function initScrivania(): void {
     return wrap;
   }
 
-  function buildStub(): HTMLElement {
-    const wrap = el('div');
-    wrap.appendChild(backButton(() => setActivity(null)));
-    wrap.appendChild(el('h2', undefined, 'Si scrive presto'));
-    wrap.appendChild(el('p', 'muted', 'La stesura del testo e l’anteprima arrivano con la prossima scrivania.'));
-    return wrap;
-  }
-
   function buildNewForm(): HTMLElement {
     const wrap = el('div');
     wrap.appendChild(el('h2', undefined, 'Nuovo libro sul comodino'));
@@ -266,7 +252,7 @@ export function initScrivania(): void {
     const errors = el('div', 'errors');
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      void submit(
+      void submitLettura(
         undefined,
         {
           titolo: titolo.value.trim(),
@@ -298,7 +284,7 @@ export function initScrivania(): void {
     if (activity === 'edit') panelEl!.appendChild(buildEditForm(book));
     else if (activity === 'finish') panelEl!.appendChild(buildFinishForm(book));
     else if (activity === 'drop') panelEl!.appendChild(buildDropForm(book));
-    else if (activity === 'stub') panelEl!.appendChild(buildStub());
+    else if (activity === 'write') panelEl!.appendChild(buildSheet(book, () => setActivity(null)));
     else panelEl!.appendChild(buildActions(book));
   }
 

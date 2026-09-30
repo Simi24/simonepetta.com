@@ -12,6 +12,8 @@ export interface DeskBook {
   voto: number | null;
   pagine: number | null;
   nota: string | null;
+  /** The book's post text, trimmed; `null` when it has none yet (SPEC.md §6.4). */
+  testo: string | null;
 }
 
 export interface DeskData {

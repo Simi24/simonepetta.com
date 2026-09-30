@@ -15,6 +15,17 @@ export function renderVotes(container: HTMLElement, selected: number | null, onC
   }
 }
 
+/** Mounts the picker into `container` (already placed in the DOM); returns a getter for the current value. */
+export function mountVotes(container: HTMLElement, initial: number | null): () => number | null {
+  let voto = initial;
+  const update = (value: number | null): void => {
+    voto = value;
+    renderVotes(container, voto, update);
+  };
+  renderVotes(container, voto, update);
+  return () => voto;
+}
+
 /** Appends a labeled `.field span4` grade picker to `form`; returns a getter for the current value. */
 export function addVotesField(form: HTMLElement, initial: number | null): () => number | null {
   const wrap = el('div', 'field span4');
@@ -22,12 +33,5 @@ export function addVotesField(form: HTMLElement, initial: number | null): () => 
   const box = el('div', 'votes');
   wrap.appendChild(box);
   form.appendChild(wrap);
-
-  let voto = initial;
-  const update = (value: number | null): void => {
-    voto = value;
-    renderVotes(box, voto, update);
-  };
-  renderVotes(box, voto, update);
-  return () => voto;
+  return mountVotes(box, initial);
 }

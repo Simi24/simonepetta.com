@@ -24,6 +24,8 @@ const TEXT_PAIRS: Pair[] = [
   ['muted', 'bg'],
   ['ink', 'surface'],
   ['muted', 'surface'],
+  ['ink', 'paper'],
+  ['muted', 'paper'],
 ];
 const TINT_PAIRS: Pair[] = [1, 2, 3, 4, 5].map((n) => [`tint-${n}-ink`, `tint-${n}`]);
 

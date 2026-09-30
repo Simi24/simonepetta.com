@@ -68,6 +68,12 @@ export interface SaveParams {
   /** The existing entry's slug, when editing. Absent for a new book. */
   slug?: string | undefined;
   input: unknown;
+  /**
+   * The writing sheet's current draft (SPEC.md §6.4): when given, it replaces the body outright
+   * (trimmed; blank stays blank). When absent, a metadata-only edit preserves the existing body
+   * exactly — the sheet never sends this field for those saves.
+   */
+  testo?: string | undefined;
 }
 
 export interface SaveResult {
@@ -75,14 +81,21 @@ export interface SaveResult {
   path: string;
 }
 
+/** The body as the writing sheet's text becomes on disk: a blank line after the frontmatter, the text trimmed, a trailing newline — empty when there's nothing to say. */
+function formatTesto(testo: string): string {
+  const trimmed = testo.trim();
+  return trimmed === '' ? '' : `\n${trimmed}\n`;
+}
+
 /**
  * Validates with `parseLettura` (throws `LetturaSchemaError`, unchanged, on invalid input: no file
  * is written) and writes the book's file. A new book gets a fresh, exclusively-created slug
  * (SPEC.md §6.1; never overwrites); an edit keeps the file name it was given — validated as an
- * existing, kebab-case slug so it can't escape `contentDir` — and never touches the body that
- * follows the frontmatter.
+ * existing, kebab-case slug so it can't escape `contentDir`. Metadata-only edits (no `testo`)
+ * never touch the body that follows the frontmatter; the writing sheet's edits (`testo` given)
+ * replace it outright, without needing to read — or recognize — whatever body was there before.
  */
-export function saveLettura({ contentDir, slug, input }: SaveParams): SaveResult {
+export function saveLettura({ contentDir, slug, input, testo }: SaveParams): SaveResult {
   const lettura = parseLettura(input);
   mkdirSync(contentDir, { recursive: true });
 
@@ -109,7 +122,7 @@ export function saveLettura({ contentDir, slug, input }: SaveParams): SaveResult
   if (!existsSync(path)) {
     throw new LetturaSchemaError([`il campo "slug": nessun libro con lo slug "${slug}"`]);
   }
-  const body = readBody(path);
+  const body = testo !== undefined ? formatTesto(testo) : readBody(path);
   writeFileSync(path, serializeLettura(lettura, body));
   return { slug, path };
 }
