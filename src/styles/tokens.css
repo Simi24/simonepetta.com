@@ -1,0 +1,36 @@
+/*
+ * The visual contract as custom properties (SPEC.md §5.1).
+ * Each color is light-dark(light, dark): the theme follows the system unless
+ * the toggle pins it through data-theme on <html>.
+ */
+:root {
+  color-scheme: light dark;
+
+  --bg: light-dark(#ededeb, #151515);
+  --ink: light-dark(#161616, #ebebe8);
+  --muted: light-dark(#646462, #9a9a97);
+  --rule: light-dark(#cfcfcc, #2e2e2d);
+  --surface: light-dark(#e2e2df, #1f1f1e);
+
+  /* Spine and notebook tints: background, then the text drawn on it. No opacity on that text. */
+  --tint-1: light-dark(#161616, #ebebe8);
+  --tint-1-ink: light-dark(#ededeb, #151515);
+  --tint-2: light-dark(#4a4a48, #b5b5b2);
+  --tint-2-ink: light-dark(#ededeb, #151515);
+  --tint-3: light-dark(#2c2c2b, #d0d0cd);
+  --tint-3-ink: light-dark(#ededeb, #151515);
+  --tint-4: light-dark(#9a9a97, #626260);
+  --tint-4-ink: light-dark(#161616, #ebebe8);
+  --tint-5: light-dark(#d2d2cf, #3a3a39);
+  --tint-5-ink: light-dark(#161616, #ebebe8);
+
+  --font: 'Host Grotesk', system-ui, sans-serif;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}

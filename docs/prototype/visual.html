@@ -1,0 +1,519 @@
+<title>Direzioni simonepetta.com</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&display=swap">
+<style>
+/* ---------- tokens ---------- */
+:root {
+  --bg:#ededeb; --ink:#161616; --muted:#646462; --rule:#cfcfcc; --surface:#e2e2df;
+  --sp1:#161616; --sp1t:#ededeb; --sp2:#4a4a48; --sp2t:#ededeb; --sp3:#9a9a97; --sp3t:#161616;
+  --sp4:#d2d2cf; --sp4t:#161616; --sp5:#2c2c2b; --sp5t:#ededeb;
+  --font:"Host Grotesk", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:#151515; --ink:#ebebe8; --muted:#9a9a97; --rule:#2e2e2d; --surface:#1f1f1e;
+    --sp1:#ebebe8; --sp1t:#151515; --sp2:#b5b5b2; --sp2t:#151515; --sp3:#6e6e6c; --sp3t:#ebebe8;
+    --sp4:#3a3a39; --sp4t:#ebebe8; --sp5:#d0d0cd; --sp5t:#151515;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#151515; --ink:#ebebe8; --muted:#9a9a97; --rule:#2e2e2d; --surface:#1f1f1e;
+  --sp1:#ebebe8; --sp1t:#151515; --sp2:#b5b5b2; --sp2t:#151515; --sp3:#6e6e6c; --sp3t:#ebebe8;
+  --sp4:#3a3a39; --sp4t:#ebebe8; --sp5:#d0d0cd; --sp5t:#151515;
+}
+
+/* ---------- base ---------- */
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); margin: 0; -webkit-font-smoothing: antialiased; }
+[hidden] { display: none !important; }
+.site { max-width: 84rem; margin-inline: auto; padding-inline: 20px; padding-block: 28px 150px; font-size: 1.15rem; line-height: 1.5; }
+a { color: inherit; text-decoration-thickness: 1.5px; text-underline-offset: .2em; }
+a:focus-visible, button:focus-visible, [data-go]:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+[data-go] { cursor: pointer; }
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; margin: 0 0 1em; }
+ul, ol { list-style: none; margin: 0; padding: 0; }
+.ph { color: var(--muted); font-style: italic; }
+@font-face { font-family: "Latin Modern Math"; src: url("fonts/latinmodern-math.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "STIX Two Math"; src: url("fonts/stixtwo-math.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "Libertinus Math"; src: url("fonts/libertinus-math.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "Fira Math"; src: url("fonts/fira-math.otf") format("opentype"); font-display: swap; }
+:root { --mathfont: "Fira Math"; }
+:root[data-mf="lm"] { --mathfont: "Latin Modern Math"; }
+:root[data-mf="stix"] { --mathfont: "STIX Two Math"; }
+:root[data-mf="lib"] { --mathfont: "Libertinus Math"; }
+:root[data-mf="fira"] { --mathfont: "Fira Math"; }
+math { font-family: var(--mathfont), "Cambria Math", math; font-size: 1.08em; }
+.eq { overflow-x: auto; overflow-y: hidden; padding-block: .35em; }
+math mtd:nth-child(1) { text-align: right; }
+math mtd:nth-child(2) { text-align: left; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---------- nav ---------- */
+.nav { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; margin-bottom: 3rem; font-weight: 500; }
+.nav a { text-decoration: none; }
+.nav nav { display: flex; gap: 1.8rem; flex-wrap: wrap; }
+.nav nav a[aria-current] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: .25em; }
+
+/* ---------- grid ---------- */
+.page, .hero, .post-head, .appunti-head, .books-group, .block, .row12 {
+  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 1.5rem; }
+.page > * { grid-column: 5 / span 7; }
+.page > .hero, .page > .post-head, .page > .appunti-head, .page > .full { grid-column: 1 / -1; }
+
+h1 { font-weight: 700; font-size: clamp(3rem, 9vw, 7.4rem); line-height: .94; letter-spacing: -.04em; margin: 0 0 .35em; }
+.post-head h1, .appunti-head h1 { font-size: clamp(2.6rem, 6.5vw, 5.6rem); }
+h2 { font-weight: 700; font-size: 1.5rem; letter-spacing: -.02em; margin: 2em 0 .5em; }
+.hero { margin-bottom: 2rem; }
+.hero h1 { grid-column: 1 / -1; }
+.lede { grid-column: 5 / span 6; font-size: 1.55rem; line-height: 1.3; letter-spacing: -.01em; }
+.notice { font-size: .95rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: .6rem; }
+
+/* sections with a 2px rule: label left, content right */
+.block { grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 2px solid var(--ink); padding-top: .8rem; margin-top: 3rem; }
+.block > h2 { grid-column: 1 / -1; margin: 0 0 1rem; font-size: 1.05rem; }
+.block > :not(h2) { grid-column: 1 / -1; }
+.full-block { border-top: 2px solid var(--ink); padding-top: .8rem; margin-top: 3rem; }
+.full-block > h2 { margin: 0 0 1.2rem; font-size: 1.05rem; }
+
+.timeline li { display: grid; grid-template-columns: 6rem 1fr; gap: 1rem; padding-block: .2rem; }
+.when { font-variant-numeric: tabular-nums; font-weight: 500; }
+.projects li a { font-weight: 700; font-size: 1.3rem; }
+.projects span { display: block; color: var(--muted); }
+
+/* colophon */
+.colophon { display: grid; grid-template-columns: 9rem 1fr; gap: .45rem 1.2rem; margin: 0; }
+.colophon dt { font-weight: 500; }
+.colophon dd { margin: 0; color: var(--muted); }
+
+/* ---------- letture: shelf ---------- */
+.shelf-wrap { overflow-x: auto; margin: .5rem 0 0; }
+.shelf { display: flex; align-items: flex-end; gap: 4px; padding: 1.6rem .4rem 0; min-width: min-content; border-bottom: 6px solid var(--ink); }
+.spine { writing-mode: vertical-rl; transform: rotate(180deg); display: flex; justify-content: space-between; align-items: center;
+  padding: .7rem 0; border-radius: 1px; text-decoration: none; font-size: .8rem; line-height: 1.1; font-weight: 600;
+  position: relative; transition: translate .25s cubic-bezier(.2,.8,.2,1); }
+.spine > span { overflow: hidden; max-height: 100%; }
+.spine .sa { font-weight: 400; opacity: .75; }
+.spine[data-go]:hover, .spine:focus-visible { translate: 0 -8px; }
+.spine.abbandonato { transform: rotate(172deg); margin-left: 1.2rem; }
+.spine.corso::after { content: ""; position: absolute; bottom: -1.1rem; left: 42%; width: .5rem; height: 1.6rem;
+  background: var(--ink); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%); }
+.caption { color: var(--muted); font-size: .9rem; margin-top: .7rem; }
+
+.books-group { grid-column: 1 / -1; border-top: 2px solid var(--ink); padding-top: .8rem; margin-top: 2.5rem; }
+.books-group h2 { grid-column: 1 / span 4; margin: 0; font-size: 1.05rem; }
+.books-group ul { grid-column: 5 / -1; }
+.books li { display: grid; grid-template-columns: 5rem minmax(0, 1fr); column-gap: 1.2rem; padding-block: .5rem 1rem; }
+.bv { grid-row: 1 / span 2; font-size: 2.9rem; line-height: .9; font-weight: 300; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.bt { grid-column: 2; font-size: 1.45rem; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; }
+.bmeta { grid-column: 2; color: var(--muted); }
+.recent li { padding-block: .3rem .7rem; }
+.recent .bv { font-size: 2.2rem; }
+.recent .bt { font-size: 1.2rem; }
+
+/* ---------- appunti: theses + piles ---------- */
+.theses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+.thesis { background: var(--sp1); color: var(--sp1t); padding: .9rem 1rem 1rem; border-radius: 2px; text-decoration: none;
+  display: grid; gap: .2rem; box-shadow: inset 0 -5px 0 color-mix(in srgb, var(--sp1t) 18%, transparent); }
+.thesis b { font-size: 1.25rem; letter-spacing: -.015em; line-height: 1.15; }
+.thesis span { opacity: .75; font-size: .9rem; }
+.piles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.5rem; align-items: end; }
+.pile-col { display: flex; flex-direction: column; min-width: 0; }
+.pile { display: flex; flex-direction: column-reverse; gap: 2px; border-bottom: 6px solid var(--ink); padding: 0 .7rem 0 .2rem; }
+.nb { position: relative; display: flex; align-items: center; padding: 0 .55rem; border-radius: 1px;
+  font-size: .78rem; font-weight: 600; letter-spacing: -.005em; min-width: 0; text-decoration: none;
+  transition: translate .25s cubic-bezier(.2,.8,.2,1); }
+.nb > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nb.html::after { content: ""; position: absolute; right: -.6rem; top: 50%; translate: 0 -50%; width: .6rem; height: .85rem; background: var(--ink); border-radius: 0 1px 1px 0; }
+.nb.scan { background: transparent !important; color: var(--muted) !important; outline: 1.5px dashed var(--muted); outline-offset: -1.5px; }
+.nb[data-go]:hover, .nb[data-go]:focus-visible { translate: 4px 0; }
+.pile-year { font-weight: 500; font-size: .95rem; margin-top: .45rem; }
+.pile-year span { display: block; color: var(--muted); font-weight: 400; font-size: .85rem; }
+
+.courses li { display: grid; grid-template-columns: minmax(0, 1fr) 11rem 5rem; gap: 1rem; padding-block: .3rem; border-bottom: 1px solid var(--rule); align-items: center; font-size: .95rem; }
+.courses .cf { white-space: nowrap; }
+.courses .cp { text-align: right; }
+.courses li:first-child { border-top: 1px solid var(--rule); }
+.courses .cn { font-weight: 600; }
+.courses .cf, .courses .cp { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* ---------- post ---------- */
+.back, .crumbs { grid-column: 1 / -1 !important; font-weight: 500; margin-bottom: 1.5rem; display: block; }
+.post-head { margin-bottom: 2rem; }
+.post-head h1 { grid-column: 1 / -1; }
+.post-head h1 cite { font-style: normal; }
+.post-head .byline { grid-column: 5 / span 5; font-size: 1.4rem; font-weight: 500; margin: 0; }
+.facts { grid-column: 1 / span 4; grid-row: 2 / span 2; display: flex; flex-direction: column; gap: .5rem; margin: 0; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; }
+.vote-big { font-size: 4.2rem; line-height: .9; font-weight: 300; letter-spacing: -.04em; }
+blockquote { margin: 1.4em 0; font-size: 2rem; line-height: 1.12; font-weight: 600; letter-spacing: -.025em; }
+blockquote p { margin: 0; }
+
+/* ---------- corso ---------- */
+.appunti-head h1 { grid-column: 1 / -1; }
+.appunti-head > :not(h1) { grid-column: 5 / span 7; }
+.toc { grid-column: 1 / span 3 !important; grid-row: span 6; font-size: .95rem; align-self: start; position: sticky; top: 1.5rem; }
+.toc-title { font-weight: 700; margin-bottom: .4em; }
+.toc li { padding-block: .1rem; }
+.sn { display: block; font-size: .9rem; color: var(--muted); border-left: 2px solid var(--ink); padding-left: .8rem; margin: .6em 0 .3em; }
+.snref { font-weight: 700; }
+.def, .thm, .ex, .proof { margin: 1.3em 0; }
+.lab { font-weight: 700; }
+.thm { font-weight: 500; }
+.thm .thm-name { font-weight: 400; }
+.proof .lab, .ex .lab { font-style: italic; }
+.proof > p:last-child::after { content: "∎"; float: right; }
+
+/* ---------- mobile ---------- */
+@media (max-width: 860px) {
+  .page, .hero, .post-head, .appunti-head, .books-group, .block, .row12 { grid-template-columns: minmax(0, 1fr); }
+  .page > *, .hero > *, .post-head > *, .appunti-head > *, .books-group > *, .block > * { grid-column: 1 !important; grid-row: auto !important; }
+  .toc { position: static; margin-bottom: 1.5rem; }
+  .facts { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: .5rem 1.5rem; margin-top: 1rem; }
+  .books-group h2 { margin-bottom: .6rem; }
+  .piles { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 2rem; }
+  .theses { grid-template-columns: minmax(0, 1fr); }
+  .courses li { grid-template-columns: minmax(0, 1fr) auto; }
+  .courses .cf { grid-column: 1; grid-row: 2; }
+  .colophon { grid-template-columns: minmax(0, 1fr); }
+  .colophon dd { margin-bottom: .5rem; }
+}
+
+/* ---------- prototype toolbar (not part of the design) ---------- */
+.proto { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; padding: .6rem 16px calc(.6rem + env(safe-area-inset-bottom, 0px));
+  background: color-mix(in srgb, var(--bg) 90%, var(--ink)); border-top: 1px solid var(--rule); font: 13px/1.35 system-ui, -apple-system, sans-serif; color: var(--ink); }
+.proto-row { display: flex; gap: .5rem 1.2rem; align-items: center; overflow-x: auto; white-space: nowrap; max-width: 84rem; margin-inline: auto; }
+.proto-group { display: flex; gap: .25rem; align-items: center; }
+.proto-group > span { color: var(--muted); margin-right: .25rem; }
+.proto button { font: inherit; color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 6px; padding: .3rem .6rem; cursor: pointer; }
+.proto button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="site">
+  <header class="nav">
+    <a class="brand" data-go="home" tabindex="0">Simone Petta</a>
+    <nav aria-label="Sezioni">
+      <a data-go="letture" data-nav="letture" tabindex="0">Letture</a>
+      <a data-go="appunti" data-nav="appunti" tabindex="0">Appunti</a>
+      <a data-go="home" data-nav="home" tabindex="0">Chi sono</a>
+      <a lang="en" title="Versione inglese della pagina chi sono">EN</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ CHI SONO ============ -->
+    <section class="page" data-page="home">
+      <header class="hero">
+        <h1>Simone Petta</h1>
+        <p class="lede">Software engineer. Qui tengo il registro di cosa leggo, cosa ho studiato e cosa costruisco.</p>
+      </header>
+      <div class="prose">
+        <p class="ph">[Due o tre paragrafi su chi sei e cosa fai. Li scrivi tu: qui c'è solo lo spazio che occuperanno, più o meno lungo così.]</p>
+        <p class="ph">[Un secondo paragrafo, per vedere il ritmo fra blocchi di testo.]</p>
+      </div>
+      <section class="block">
+        <h2>Percorso</h2>
+        <ol class="timeline">
+          <li><span class="when">2026</span><span class="ph">[Ruolo attuale, azienda]</span></li>
+          <li><span class="when">20XX</span><span class="ph">[Laurea magistrale, ateneo, tesi]</span></li>
+          <li><span class="when">20XX</span><span class="ph">[Laurea triennale, ateneo, tesi]</span></li>
+        </ol>
+      </section>
+      <section class="block">
+        <h2>Open source</h2>
+        <ul class="projects">
+          <li><a href="https://github.com/Simi24">dynantic</a><span>ORM type-safe per DynamoDB, costruito su Pydantic v2.</span></li>
+        </ul>
+      </section>
+      <section class="block">
+        <h2>Ultime letture</h2>
+        <ul class="books recent" id="recent-books"></ul>
+      </section>
+      <section class="block">
+        <h2>Colophon</h2>
+        <dl class="colophon">
+          <dt>Carattere</dt><dd>Host Grotesk, per testo e titoli.</dd>
+          <dt>Matematica</dt><dd>MathML, disegnata dal browser senza JavaScript.</dd>
+          <dt>Appunti</dt><dd>Sorgenti LaTeX convertiti con LaTeXML, fuori dalla build.</dd>
+          <dt>Costruzione</dt><dd>Astro, solo pagine statiche.</dd>
+          <dt>Hosting</dt><dd>Cloudflare Workers.</dd>
+          <dt>Scrittura</dt><dd>Markdown, da una scrivania locale. Testi scritti a mano, senza modelli linguistici.</dd>
+        </dl>
+      </section>
+    </section>
+
+    <!-- ============ LETTURE ============ -->
+    <section class="page" data-page="letture" hidden>
+      <header class="hero">
+        <h1>Letture</h1>
+        <p class="lede">Tutto quello che leggo, anche i libri lasciati a metà. Quando ho qualcosa da dire, c'è un testo.</p>
+      </header>
+      <div class="full">
+        <div class="shelf-wrap"><div class="shelf" id="shelf" role="list"></div></div>
+        <p class="caption">L'altezza del dorso segue le pagine. Il segnalibro indica il libro in corso, quello inclinato è stato abbandonato.</p>
+      </div>
+      <div id="book-groups" class="full"></div>
+      <p class="notice">Dati di esempio, non sono le tue letture.</p>
+    </section>
+
+    <!-- ============ POST ============ -->
+    <article class="page" data-page="post" hidden>
+      <a class="back" data-go="letture" tabindex="0">Letture</a>
+      <header class="post-head">
+        <h1><cite>I promessi sposi</cite></h1>
+        <p class="byline">Alessandro Manzoni, 1840</p>
+        <dl class="facts">
+          <div><dt>Iniziato</dt><dd class="num">2 set 2026</dd></div>
+          <div><dt>Finito</dt><dd class="num">21 set 2026</dd></div>
+          <div><dt>Voto</dt><dd class="vote-big">4</dd></div>
+        </dl>
+      </header>
+      <p class="notice">Testo segnaposto: brani dal primo capitolo dei Promessi sposi, di pubblico dominio. La reazione vera la scrivi tu.</p>
+      <div class="prose">
+        <h2>Cosa ci ho trovato che non mi aspettavo</h2>
+        <p>Quel ramo del lago di Como, che volge a mezzogiorno, tra due catene non interrotte di monti, tutto a seni e a golfi, a seconda dello sporgere e del rientrare di quelli, vien, quasi a un tratto, a ristringersi, e a prender corso e figura di fiume, tra un promontorio a destra, e un'ampia costiera dall'altra parte.</p>
+        <p>E il ponte, che ivi congiunge le due rive, par che renda ancor più sensibile all'occhio questa trasformazione, e segni il punto in cui il lago cessa, e l'Adda rincomincia, per ripigliar poi nome di lago dove le rive, allontanandosi di nuovo, lascian l'acqua distendersi e rallentarsi in nuovi golfi e in nuovi seni.</p>
+        <h2>A cosa si collega</h2>
+        <p>Per una di queste stradicciole, tornava bel bello dalla passeggiata verso casa, sulla sera del giorno 7 novembre dell'anno 1628, don Abbondio, curato d'una delle terre accennate di sopra: il nome di questa, né il casato del personaggio, non si trovan nel manoscritto, né a questo luogo né altrove.</p>
+        <blockquote><p>Questo matrimonio non s'ha da fare, né domani, né mai.</p></blockquote>
+        <h2>Cosa non ha funzionato</h2>
+        <p>Diceva tranquillamente il suo ufizio, e talvolta, tra un salmo e l'altro, chiudeva il breviario, tenendovi dentro, per segno, l'indice della mano destra, e, messa poi questa nell'altra dietro la schiena, proseguiva il suo cammino, guardando a terra, e buttando con un piede verso il muro i ciottoli che facevan inciampo nel sentiero.</p>
+        <h2>Voto, e a chi lo darei</h2>
+        <p>Addio, monti sorgenti dall'acque, ed elevati al cielo; cime inuguali, note a chi è cresciuto tra voi, e impresse nella sua mente, non meno che lo sia l'aspetto de' suoi più familiari.</p>
+      </div>
+    </article>
+
+    <!-- ============ APPUNTI (indice) ============ -->
+    <section class="page" data-page="appunti" hidden>
+      <header class="hero">
+        <h1>Appunti</h1>
+        <p class="lede">Cinque anni di corsi, dal primo esame alle tesi. Tutti in PDF, e quelli con la linguetta si leggono anche qui.</p>
+      </header>
+      <section class="full full-block">
+        <h2>Tesi</h2>
+        <div class="theses">
+          <a class="thesis" tabindex="0"><b class="ph" style="color:inherit">[Titolo della tesi magistrale]</b><span>Tesi magistrale, 20XX</span></a>
+          <a class="thesis" tabindex="0"><b class="ph" style="color:inherit">[Titolo della tesi triennale]</b><span>Tesi triennale, 20XX</span></a>
+        </div>
+      </section>
+      <section class="full full-block">
+        <h2>Corsi</h2>
+        <div class="piles" id="piles"></div>
+        <p class="caption">Lo spessore segue le pagine di appunti. La linguetta indica che il corso si legge anche in pagina web; il bordo tratteggiato è un quaderno scansionato.</p>
+      </section>
+      <section class="full full-block" id="course-list-wrap">
+        <h2>Tutti i corsi</h2>
+        <ul class="courses" id="courses"></ul>
+      </section>
+      <p class="notice">Appunti di uno studente, non materiale ufficiale dei corsi. Corsi, pagine e tesi di esempio.</p>
+    </section>
+
+    <!-- ============ CORSO ============ -->
+    <article class="page" data-page="corso" hidden>
+      <header class="appunti-head">
+        <p class="crumbs"><a data-go="appunti" tabindex="0">Appunti</a> / Probabilità e statistica</p>
+        <h1>Variabili aleatorie continue</h1>
+        <p class="notice">Appunti di uno studente, non materiale ufficiale del corso. Possono contenere errori. Contenuto di esempio.</p>
+      </header>
+      <aside class="toc" aria-label="Indice del capitolo">
+        <p class="toc-title">Capitolo 3</p>
+        <ol>
+          <li><a href="#s31">3.1 Densità</a></li>
+          <li><a href="#s32">3.2 Valore atteso e varianza</a></li>
+          <li><a href="#s33">3.3 Disuguaglianze</a></li>
+          <li><a href="#s34">3.4 La distribuzione esponenziale</a></li>
+        </ol>
+      </aside>
+      <div class="prose">
+        <h2 id="s31">3.1 Densità</h2>
+        <p>Nel caso discreto la probabilità si distribuisce su un insieme numerabile di punti. Qui la massa è spalmata su un intervallo, e la domanda giusta diventa quanta ne cade in un tratto, non in un punto.</p>
+        <div class="def">
+          <p><span class="lab">Definizione 3.1.</span> Una variabile aleatoria <math><mi>X</mi></math> è <em>assolutamente continua</em> se esiste una funzione <math><mi>f</mi><mo>≥</mo><mn>0</mn></math>, detta densità, tale che per ogni <math><mi>a</mi><mo>≤</mo><mi>b</mi></math></p>
+          <div class="eq"><math display="block"><mi>P</mi><mo stretchy="false">(</mo><mi>a</mi><mo>≤</mo><mi>X</mi><mo>≤</mo><mi>b</mi><mo stretchy="false">)</mo><mo>=</mo><msubsup><mo>∫</mo><mi>a</mi><mi>b</mi></msubsup><mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mspace width="0.17em"></mspace><mi>d</mi><mi>x</mi><mo>.</mo></math></div>
+        </div>
+        <p>La densità non è una probabilità e può superare 1. Conta l'area sotto la curva, e l'area totale vale uno:</p>
+        <div class="eq"><math display="block"><msubsup><mo>∫</mo><mrow><mo>−</mo><mi>∞</mi></mrow><mrow><mo>+</mo><mi>∞</mi></mrow></msubsup><mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mspace width="0.17em"></mspace><mi>d</mi><mi>x</mi><mo>=</mo><mn>1</mn><mo>.</mo></math></div>
+        <p>In particolare ogni singolo punto ha probabilità nulla.<sup class="snref">1</sup><span class="sn"><sup>1</sup> Per questo <math><mi>P</mi><mo stretchy="false">(</mo><mi>X</mi><mo>≤</mo><mi>b</mi><mo stretchy="false">)</mo></math> e <math><mi>P</mi><mo stretchy="false">(</mo><mi>X</mi><mo>&lt;</mo><mi>b</mi><mo stretchy="false">)</mo></math> coincidono: gli estremi non contano.</span></p>
+        <h2 id="s32">3.2 Valore atteso e varianza</h2>
+        <p>Le definizioni ricalcano il caso discreto, con l'integrale al posto della somma.</p>
+        <div class="eq"><math display="block"><mi>E</mi><mo stretchy="false">[</mo><mi>X</mi><mo stretchy="false">]</mo><mo>=</mo><msubsup><mo>∫</mo><mrow><mo>−</mo><mi>∞</mi></mrow><mrow><mo>+</mo><mi>∞</mi></mrow></msubsup><mi>x</mi><mspace width="0.17em"></mspace><mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mspace width="0.17em"></mspace><mi>d</mi><mi>x</mi><mo>,</mo><mspace width="2em"></mspace><mi>Var</mi><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo><mo>=</mo><mi>E</mi><mo stretchy="false">[</mo><mo stretchy="false">(</mo><mi>X</mi><mo>−</mo><mi>μ</mi><msup><mo stretchy="false">)</mo><mn>2</mn></msup><mo stretchy="false">]</mo><mo>.</mo></math></div>
+        <p>Nel seguito <math><mi>μ</mi><mo>=</mo><mi>E</mi><mo stretchy="false">[</mo><mi>X</mi><mo stretchy="false">]</mo></math> e <math><msup><mi>σ</mi><mn>2</mn></msup><mo>=</mo><mi>Var</mi><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo></math>.</p>
+        <h2 id="s33">3.3 Disuguaglianze</h2>
+        <p>La varianza misura la dispersione, ma da sola non dice quanto sia probabile allontanarsi dalla media. La disuguaglianza di Čebyšëv dà una stima valida per qualunque distribuzione con varianza finita.<sup class="snref">2</sup><span class="sn"><sup>2</sup> La stima è spesso larga: per una normale <math><mi>P</mi><mo stretchy="false">(</mo><mo>|</mo><mi>X</mi><mo>−</mo><mi>μ</mi><mo>|</mo><mo>≥</mo><mn>2</mn><mi>σ</mi><mo stretchy="false">)</mo><mo>≈</mo><mn>0,046</mn></math>, contro il limite 0,25.</span></p>
+        <div class="thm">
+          <p><span class="lab">Teorema 3.4</span> <span class="thm-name">(Disuguaglianza di Čebyšëv)</span>. Sia <math><mi>X</mi></math> una variabile aleatoria con media <math><mi>μ</mi></math> e varianza <math><msup><mi>σ</mi><mn>2</mn></msup></math> finite. Allora per ogni <math><mi>k</mi><mo>&gt;</mo><mn>0</mn></math></p>
+          <div class="eq"><math display="block"><mi>P</mi><mo stretchy="false">(</mo><mo>|</mo><mi>X</mi><mo>−</mo><mi>μ</mi><mo>|</mo><mo>≥</mo><mi>k</mi><mi>σ</mi><mo stretchy="false">)</mo><mo>≤</mo><mfrac><mn>1</mn><msup><mi>k</mi><mn>2</mn></msup></mfrac><mo>.</mo></math></div>
+        </div>
+        <div class="proof">
+          <p><span class="lab">Dimostrazione.</span> Si spezza l'integrale della varianza e si tiene solo la regione in cui <math><mo>|</mo><mi>x</mi><mo>−</mo><mi>μ</mi><mo>|</mo><mo>≥</mo><mi>k</mi><mi>σ</mi></math>, dove <math><mo stretchy="false">(</mo><mi>x</mi><mo>−</mo><mi>μ</mi><msup><mo stretchy="false">)</mo><mn>2</mn></msup><mo>≥</mo><msup><mi>k</mi><mn>2</mn></msup><msup><mi>σ</mi><mn>2</mn></msup></math>:</p>
+          <div class="eq"><math display="block"><mtable>
+            <mtr><mtd><msup><mi>σ</mi><mn>2</mn></msup></mtd><mtd><mo>=</mo><msub><mo>∫</mo><mi>ℝ</mi></msub><mo stretchy="false">(</mo><mi>x</mi><mo>−</mo><mi>μ</mi><msup><mo stretchy="false">)</mo><mn>2</mn></msup><mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mspace width="0.17em"></mspace><mi>d</mi><mi>x</mi></mtd></mtr>
+            <mtr><mtd></mtd><mtd><mo>≥</mo><msub><mo>∫</mo><mrow><mo>|</mo><mi>x</mi><mo>−</mo><mi>μ</mi><mo>|</mo><mo>≥</mo><mi>k</mi><mi>σ</mi></mrow></msub><mo stretchy="false">(</mo><mi>x</mi><mo>−</mo><mi>μ</mi><msup><mo stretchy="false">)</mo><mn>2</mn></msup><mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mspace width="0.17em"></mspace><mi>d</mi><mi>x</mi></mtd></mtr>
+            <mtr><mtd></mtd><mtd><mo>≥</mo><msup><mi>k</mi><mn>2</mn></msup><msup><mi>σ</mi><mn>2</mn></msup><mspace width="0.17em"></mspace><mi>P</mi><mo stretchy="false">(</mo><mo>|</mo><mi>X</mi><mo>−</mo><mi>μ</mi><mo>|</mo><mo>≥</mo><mi>k</mi><mi>σ</mi><mo stretchy="false">)</mo><mo>.</mo></mtd></mtr>
+          </mtable></math></div>
+          <p>Dividendo per <math><msup><mi>k</mi><mn>2</mn></msup><msup><mi>σ</mi><mn>2</mn></msup></math> si ottiene la tesi.</p>
+        </div>
+        <h2 id="s34">3.4 La distribuzione esponenziale</h2>
+        <div class="ex">
+          <p><span class="lab">Esempio 3.5.</span> Sia <math><mi>X</mi></math> esponenziale di parametro <math><mi>λ</mi><mo>&gt;</mo><mn>0</mn></math>, cioè con densità <math><mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><mi>λ</mi><msup><mi>e</mi><mrow><mo>−</mo><mi>λ</mi><mi>x</mi></mrow></msup></math> per <math><mi>x</mi><mo>≥</mo><mn>0</mn></math> e nulla altrove. Integrando per parti:</p>
+          <div class="eq"><math display="block"><mi>E</mi><mo stretchy="false">[</mo><mi>X</mi><mo stretchy="false">]</mo><mo>=</mo><mfrac><mn>1</mn><mi>λ</mi></mfrac><mo>,</mo><mspace width="2em"></mspace><mi>Var</mi><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mn>1</mn><msup><mi>λ</mi><mn>2</mn></msup></mfrac><mo>.</mo></math></div>
+          <p>Con <math><mi>k</mi><mo>=</mo><mn>2</mn></math> Čebyšëv garantisce una probabilità al più 1/4 di cadere oltre <math><mn>2</mn><mo>/</mo><mi>λ</mi></math> dalla media. Il valore esatto è <math><msup><mi>e</mi><mrow><mo>−</mo><mn>3</mn></mrow></msup><mo>≈</mo><mn>0,050</mn></math>.</p>
+        </div>
+      </div>
+    </article>
+  </main>
+</div>
+
+<div class="proto" role="region" aria-label="Controlli del prototipo">
+  <div class="proto-row">
+    <div class="proto-group" id="g-p"><span>Pagina</span>
+      <button id="p-home" data-p="home">Chi sono</button><button id="p-letture" data-p="letture">Letture</button><button id="p-post" data-p="post">Post</button><button id="p-appunti" data-p="appunti">Appunti</button><button id="p-corso" data-p="corso">Corso</button>
+    </div>
+    <div class="proto-group"><span>Tema</span><button id="theme-btn">Sistema</button></div>
+    <div class="proto-group" id="g-mf"><span>Matematica</span>
+      <button data-mf="lm">Latin Modern</button><button data-mf="stix">STIX Two</button><button data-mf="lib">Libertinus</button><button data-mf="fira">Fira Math</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var BOOKS = [
+    { t: "Lo Zen e l'arte della manutenzione della motocicletta", a: "Robert M. Pirsig", p: 400, s: "corso", start: "2026-09-14" },
+    { t: "I promessi sposi", a: "Alessandro Manzoni", p: 720, s: "letto", end: "2026-09-21", v: 4, post: true },
+    { t: "Il sistema periodico", a: "Primo Levi", p: 240, s: "letto", end: "2026-08-30", v: 4.5, post: true },
+    { t: "Il deserto dei Tartari", a: "Dino Buzzati", p: 270, s: "letto", end: "2026-08-02", v: 3.5 },
+    { t: "Lessico famigliare", a: "Natalia Ginzburg", p: 220, s: "letto", end: "2026-07-12", v: 3 },
+    { t: "Le città invisibili", a: "Italo Calvino", p: 170, s: "letto", end: "2026-06-20", v: 2.5, post: true },
+    { t: "Finzioni", a: "Jorge Luis Borges", p: 180, s: "abbandonato", note: "lasciato a pagina 60" }
+  ];
+  var YEARS = [
+    { y: "1° anno", d: "triennale", c: [["Analisi matematica I", 140, "pdf"], ["Fondamenti di programmazione", 90, "html"], ["Algebra lineare", 110, "pdf"], ["Architettura degli elaboratori", 80, "pdf"]] },
+    { y: "2° anno", d: "triennale", c: [["Probabilità e statistica", 120, "html"], ["Algoritmi e strutture dati", 150, "pdf"], ["Sistemi operativi", 100, "pdf"], ["Basi di dati", 70, "pdf"]] },
+    { y: "3° anno", d: "triennale", c: [["Reti di calcolatori", 90, "pdf"], ["Ingegneria del software", 60, "pdf"], ["Elaborazione dei segnali", 50, "scan"]] },
+    { y: "1° anno", d: "magistrale", c: [["Machine learning", 130, "html"], ["Sistemi distribuiti", 85, "pdf"], ["Ottimizzazione", 95, "pdf"]] },
+    { y: "2° anno", d: "magistrale", c: [["Elaborazione del linguaggio naturale", 75, "pdf"]] }
+  ];
+  var FMT = { pdf: "PDF", html: "Web e PDF", scan: "PDF scansionato" };
+  var MESI = ["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"];
+  function fmtDate(iso) { var d = iso.split("-"); return (+d[2]) + " " + MESI[+d[1] - 1] + " " + d[0]; }
+  function fmtVote(v) { return v == null ? "" : (v % 1 ? Math.floor(v) + ",5" : String(v)); }
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function go(node, page) { node.setAttribute("data-go", page); node.setAttribute("tabindex", "0"); }
+  function hash(str) { var h = 2166136261; for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  var TINTS = ["1", "2", "5", "3", "4"];
+
+  function bookRow(b) {
+    var li = el("li");
+    li.appendChild(el("span", "bv", fmtVote(b.v)));
+    var title = el(b.post ? "a" : "span", "bt", b.t); if (b.post) go(title, "post");
+    li.appendChild(title);
+    var when = b.s === "corso" ? "iniziato il " + fmtDate(b.start) : (b.s === "abbandonato" ? b.note : "finito il " + fmtDate(b.end));
+    li.appendChild(el("span", "bmeta", b.a + ", " + when + (b.post || b.s === "corso" ? "" : ", senza testo")));
+    return li;
+  }
+
+  function renderLetture() {
+    var host = document.getElementById("book-groups");
+    [["corso", "Sto leggendo"], ["letto", "Letti"], ["abbandonato", "Abbandonati"]].forEach(function (g) {
+      var sec = el("section", "books-group"); sec.appendChild(el("h2", null, g[1]));
+      var ul = el("ul", "books");
+      BOOKS.filter(function (b) { return b.s === g[0]; }).forEach(function (b) { ul.appendChild(bookRow(b)); });
+      sec.appendChild(ul); host.appendChild(sec);
+    });
+    var recent = document.getElementById("recent-books");
+    BOOKS.filter(function (b) { return b.s === "letto"; }).slice(0, 3).forEach(function (b) { recent.appendChild(bookRow(b)); });
+    var shelf = document.getElementById("shelf");
+    BOOKS.forEach(function (b, i) {
+      var s = el(b.post ? "a" : "span", "spine " + b.s); s.setAttribute("role", "listitem");
+      if (b.post) go(s, "post");
+      var t = TINTS[i % TINTS.length];
+      s.style.background = "var(--sp" + t + ")"; s.style.color = "var(--sp" + t + "t)";
+      s.style.height = (8 + b.p / 80) + "rem"; s.style.width = (2.1 + b.p / 400) + "rem";
+      s.appendChild(el("span", null, b.t.length > 34 ? b.t.slice(0, 32) + "…" : b.t));
+      s.appendChild(el("span", "sa", b.a.split(" ").slice(-1)[0]));
+      s.title = b.t + ", " + b.a;
+      shelf.appendChild(s);
+    });
+  }
+
+  function renderAppunti() {
+    var piles = document.getElementById("piles"), list = document.getElementById("courses");
+    YEARS.forEach(function (yr, yi) {
+      var col = el("div", "pile-col"), pile = el("div", "pile");
+      yr.c.forEach(function (c, ci) {
+        var nb = el(c[2] === "html" ? "a" : "div", "nb " + c[2]);
+        if (c[0] === "Probabilità e statistica") go(nb, "corso");
+        var t = TINTS[(yi + ci) % TINTS.length];
+        nb.style.background = "var(--sp" + t + ")"; nb.style.color = "var(--sp" + t + "t)";
+        nb.style.height = "calc(1.35rem + " + Math.round(c[1] / 8) + "px)";
+        var off = ((hash(c[0]) % 9) - 4);
+        nb.style.marginLeft = off + "px"; nb.style.marginRight = (-off) + "px";
+        nb.appendChild(el("span", null, c[0])); nb.title = c[0] + ", " + c[1] + " pagine, " + FMT[c[2]];
+        pile.appendChild(nb);
+
+        var li = el("li");
+        var name = el(c[2] === "html" ? "a" : "span", "cn", c[0]); if (c[0] === "Probabilità e statistica") go(name, "corso");
+        li.appendChild(name);
+        li.appendChild(el("span", "cf", yr.y + " " + yr.d));
+        li.appendChild(el("span", "cp", c[1] + " pag."));
+        list.appendChild(li);
+      });
+      col.appendChild(pile);
+      var lab = el("p", "pile-year", yr.y); lab.appendChild(el("span", null, yr.d)); col.appendChild(lab);
+      piles.appendChild(col);
+    });
+  }
+
+  renderLetture();
+  renderAppunti();
+
+  var PAGES = ["home", "letture", "post", "appunti", "corso"];
+  var state = { p: "home", mf: "fira" };
+  try { var saved = JSON.parse(localStorage.getItem("sp-proto-3") || "{}"); if (PAGES.indexOf(saved.p) >= 0) state.p = saved.p; if (saved.mf) state.mf = saved.mf; } catch (e) {}
+  var m = /^#(home|letture|post|appunti|corso)$/.exec(location.hash); if (m) state.p = m[1];
+
+  function apply() {
+    document.querySelectorAll(".page").forEach(function (pg) { pg.hidden = pg.getAttribute("data-page") !== state.p; });
+    document.querySelectorAll("[data-nav]").forEach(function (a) {
+      var n = a.getAttribute("data-nav");
+      var cur = n === state.p || (state.p === "post" && n === "letture") || (state.p === "corso" && n === "appunti");
+      if (cur) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    });
+    root.setAttribute("data-mf", state.mf);
+    document.querySelectorAll("#g-mf button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-mf") === state.mf)); });
+    document.querySelectorAll("#g-p button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-p") === state.p)); });
+    try { localStorage.setItem("sp-proto-3", JSON.stringify(state)); } catch (e) {}
+    try { history.replaceState(null, "", "#" + state.p); } catch (e) {}
+  }
+
+  document.addEventListener("click", function (e) {
+    var mfb = e.target.closest("#g-mf button");
+    if (mfb) { state.mf = mfb.getAttribute("data-mf"); if (state.p !== "corso") { state.p = "corso"; window.scrollTo(0, 0); } apply(); return; }
+    var t = e.target.closest("[data-go], #g-p button");
+    if (!t) return;
+    e.preventDefault(); state.p = t.getAttribute("data-go") || t.getAttribute("data-p"); window.scrollTo(0, 0);
+    apply();
+  });
+  document.addEventListener("keydown", function (e) {
+    if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-go]")) { e.preventDefault(); e.target.click(); }
+  });
+
+  var themes = [null, "light", "dark"], labels = { null: "Sistema", light: "Chiaro", dark: "Scuro" };
+  var ti = themes.indexOf(root.getAttribute("data-theme")); if (ti < 0) ti = 0;
+  var tb = document.getElementById("theme-btn"); tb.textContent = labels[themes[ti]];
+  tb.addEventListener("click", function () {
+    ti = (ti + 1) % 3; var th = themes[ti];
+    if (th) root.setAttribute("data-theme", th); else root.removeAttribute("data-theme");
+    tb.textContent = labels[th];
+  });
+
+  apply();
+})();
+</script>

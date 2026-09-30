@@ -1,0 +1,78 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+.site {
+  max-width: 84rem;
+  margin-inline: auto;
+  padding-inline: 20px;
+  padding-block: 28px 150px;
+  font-size: 1.15rem;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.2em;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  margin: 0 0 1em;
+  text-wrap: pretty;
+}
+
+h1 {
+  margin: 0 0 0.35em;
+  font-size: clamp(3rem, 9vw, 7.4rem);
+  font-weight: 700;
+  line-height: 0.94;
+  letter-spacing: -0.04em;
+}
+
+/* 12-column grid: content from column 5, single column under 860px (SPEC.md §5.2). */
+.page {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 1.5rem;
+}
+
+.page > * {
+  grid-column: 5 / span 7;
+}
+
+.page > .page__full {
+  grid-column: 1 / -1;
+}
+
+.placeholder {
+  color: var(--muted);
+  font-style: italic;
+}
+
+@media (max-width: 860px) {
+  .page > *,
+  .page > .page__full {
+    grid-column: 1 / -1;
+  }
+}

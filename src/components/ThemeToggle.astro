@@ -1,0 +1,23 @@
+---
+// The label is kept in sync by the inline theme script; without JavaScript the button stays invisible.
+---
+
+<button type="button" class="theme-toggle" data-theme-toggle>Tema: sistema</button>
+
+<style>
+  .theme-toggle {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  :global(html:not([data-js])) .theme-toggle {
+    visibility: hidden;
+  }
+</style>
