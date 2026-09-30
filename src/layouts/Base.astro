@@ -2,6 +2,8 @@
 import { SITE_INDEXABLE } from 'astro:env/server';
 import SiteHeader from '../components/SiteHeader.astro';
 import { site } from '../config/site.ts';
+import { serializeJsonLd } from '../lib/json-ld-script.ts';
+import type { PersonJsonLd } from '../lib/person-json-ld.ts';
 import themeScript from '../scripts/theme.js?raw';
 import '../styles/fonts.css';
 import '../styles/tokens.css';
@@ -24,13 +26,14 @@ interface Props {
   canonical?: boolean;
   hreflang?: readonly Hreflang[];
   og?: OpenGraph;
-  jsonLd?: object;
+  jsonLd?: PersonJsonLd;
 }
 
 const { title, lang = site.lang, description, canonical = false, hreflang, og, jsonLd } = Astro.props;
 
 const canonicalUrl = canonical && Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
 const ogImageUrl = og && Astro.site ? new URL(og.image, Astro.site).toString() : undefined;
+const jsonLdScript = jsonLd ? serializeJsonLd(jsonLd) : undefined;
 ---
 
 <!doctype html>
@@ -56,7 +59,7 @@ const ogImageUrl = og && Astro.site ? new URL(og.image, Astro.site).toString() :
         </>
       )
     }
-    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    {jsonLdScript && <script type="application/ld+json" set:html={jsonLdScript} />}
   </head>
   <body>
     <div class="site">

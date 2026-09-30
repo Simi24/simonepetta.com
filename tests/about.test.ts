@@ -102,6 +102,15 @@ test('both about pages carry a Person JSON-LD with both sameAs URLs', () => {
   }
 });
 
+test('the JSON-LD script body on both pages carries no literal "<"', () => {
+  for (const page of ['index.html', 'en/index.html']) {
+    const html = read(buildSite(), page);
+    const body = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1] ?? '';
+    assert.ok(body.length > 0, `${page}: no JSON-LD body found`);
+    assert.ok(!body.includes('<'), `${page}: JSON-LD body contains a literal "<"`);
+  }
+});
+
 test('both about pages share the same Person @id and url, one identity across languages', () => {
   const dist = buildSite();
   const home = jsonLdOf(read(dist, 'index.html')) as { '@id': string; url: string };
