@@ -8,7 +8,7 @@ import { createSaveHandler } from './request-handler.ts';
  * `astro dev`. Neither is registered for `build` or `preview`, so nothing of the desk reaches
  * the production bundle.
  */
-export default function scrivania(): AstroIntegration {
+export function scrivania(): AstroIntegration {
   return {
     name: 'scrivania',
     hooks: {

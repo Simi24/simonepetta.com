@@ -32,6 +32,10 @@ jobs:
       - name: Install Playwright's Chromium
         run: npx playwright install --with-deps chromium
       - run: npm run test:browser
+      - name: Writing desk (dev-only) browser check
+        # SPEC.md §6.4: the desk only exists under `astro dev` — its own fresh, foreground
+        # instance (see playwright.scrivania.config.ts), never reusing the preview server above.
+        run: npm run test:browser-dev
       - name: Quality gates (axe, byte budget)
         # The byte-budget gate checks the `dist` this job just built (the artifact staged for
         # deploy/preview), rather than rebuilding a second time.

@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig, envField } from 'astro/config';
-import scrivania from './src/integrations/scrivania/index.ts';
+import { scrivania } from './src/integrations/scrivania/index.ts';
 
 export default defineConfig({
   site: 'https://simonepetta.com',

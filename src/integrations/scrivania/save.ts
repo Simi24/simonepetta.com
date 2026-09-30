@@ -1,6 +1,8 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseLettura, type Lettura } from '../../schemas/lettura.ts';
+import { LetturaSchemaError, parseLettura, type Lettura } from '../../schemas/lettura.ts';
+
+const KEBAB_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** Strips diacritics and punctuation the same way for a title or an author's surname. */
 function slugPart(value: string): string {
@@ -11,11 +13,6 @@ function slugPart(value: string): string {
     .replace(/['’]/g, '-')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
-}
-
-/** Kebab-case of the title (SPEC.md §6.1). */
-export function slugify(titolo: string): string {
-  return slugPart(titolo);
 }
 
 function authorSurname(autore: string): string {
@@ -32,17 +29,27 @@ function existingSlugs(contentDir: string): Set<string> {
   );
 }
 
-/** Kebab-case of the title, the author's surname appended on collision (SPEC.md §6.1). */
-export function slugFor(titolo: string, autore: string, taken: ReadonlySet<string>): string {
-  const base = slugify(titolo);
-  return taken.has(base) ? `${base}-${slugPart(authorSurname(autore))}` : base;
+/**
+ * Kebab-case of the title, the author's surname appended on collision (SPEC.md §6.1). Throws
+ * when neither candidate is usable: the title has no ASCII letters or digits to slugify, or both
+ * the base slug and the surname variant are already taken.
+ */
+function pickCreateSlug(titolo: string, autore: string, taken: ReadonlySet<string>): string {
+  const base = slugPart(titolo);
+  if (base !== '' && !taken.has(base)) return base;
+  const withSurname = base === '' ? slugPart(authorSurname(autore)) : `${base}-${slugPart(authorSurname(autore))}`;
+  if (withSurname !== '' && !taken.has(withSurname)) return withSurname;
+  throw new LetturaSchemaError([
+    'il campo "titolo": non è possibile generare uno slug libero (titolo non slugificabile o già in uso)',
+  ]);
 }
 
+/** Serializes a value as a valid double-quoted YAML scalar: `JSON.stringify` escapes exactly the characters YAML also needs escaped. */
 function quoted(value: string): string {
-  return `"${value.replace(/"/g, '\\"')}"`;
+  return JSON.stringify(value);
 }
 
-/** Frontmatter + body, dates quoted ISO (SPEC.md §6.1 requires this of the writing desk). */
+/** Frontmatter + body, dates quoted ISO (SPEC.md §6.1 requires this of the writing desk). The body is appended byte for byte: never trimmed. */
 export function serializeLettura(data: Lettura, body: string): string {
   const lines = ['---', `titolo: ${quoted(data.titolo)}`, `autore: ${quoted(data.autore)}`];
   if (data.anno_opera !== undefined) lines.push(`anno_opera: ${data.anno_opera}`);
@@ -53,8 +60,7 @@ export function serializeLettura(data: Lettura, body: string): string {
   if (data.pagine !== undefined) lines.push(`pagine: ${data.pagine}`);
   if (data.nota !== undefined) lines.push(`nota: ${quoted(data.nota)}`);
   lines.push('---');
-  const body_ = body.trim();
-  return `${lines.join('\n')}\n${body_ ? `\n${body_}\n` : ''}`;
+  return `${lines.join('\n')}\n${body}`;
 }
 
 export interface SaveParams {
@@ -71,21 +77,64 @@ export interface SaveResult {
 
 /**
  * Validates with `parseLettura` (throws `LetturaSchemaError`, unchanged, on invalid input: no file
- * is written) and writes the book's file. A new book gets a fresh slug (SPEC.md §6.1); an edit
- * keeps the file name it was given and never touches the body that follows the frontmatter.
+ * is written) and writes the book's file. A new book gets a fresh, exclusively-created slug
+ * (SPEC.md §6.1; never overwrites); an edit keeps the file name it was given — validated as an
+ * existing, kebab-case slug so it can't escape `contentDir` — and never touches the body that
+ * follows the frontmatter.
  */
 export function saveLettura({ contentDir, slug, input }: SaveParams): SaveResult {
   const lettura = parseLettura(input);
   mkdirSync(contentDir, { recursive: true });
-  const finalSlug = slug ?? slugFor(lettura.titolo, lettura.autore, existingSlugs(contentDir));
-  const path = join(contentDir, `${finalSlug}.md`);
-  const body = slug !== undefined && existsSync(path) ? readBody(path) : '';
+
+  if (slug === undefined) {
+    const finalSlug = pickCreateSlug(lettura.titolo, lettura.autore, existingSlugs(contentDir));
+    const path = join(contentDir, `${finalSlug}.md`);
+    try {
+      // 'wx': exclusive create, defense in depth against a slug that (despite the check above)
+      // turns out to already exist — a create must never overwrite a file.
+      writeFileSync(path, serializeLettura(lettura, ''), { flag: 'wx' });
+    } catch (error) {
+      if (isNodeError(error) && error.code === 'EEXIST') {
+        throw new LetturaSchemaError([`il campo "titolo": esiste già un libro con lo slug "${finalSlug}"`]);
+      }
+      throw error;
+    }
+    return { slug: finalSlug, path };
+  }
+
+  if (!KEBAB_SLUG_RE.test(slug)) {
+    throw new LetturaSchemaError([`il campo "slug": "${slug}" non è in kebab-case`]);
+  }
+  const path = join(contentDir, `${slug}.md`);
+  if (!existsSync(path)) {
+    throw new LetturaSchemaError([`il campo "slug": nessun libro con lo slug "${slug}"`]);
+  }
+  const body = readBody(path);
   writeFileSync(path, serializeLettura(lettura, body));
-  return { slug: finalSlug, path };
+  return { slug, path };
 }
 
+function isNodeError(error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error && 'code' in error;
+}
+
+// Matches this module's own `serializeLettura` output exactly: opening "---", a frontmatter block,
+// a closing "---" whose line holds nothing else (so a stray trailing space fails the match rather
+// than silently becoming part of the body), then the body untouched. Tolerates a leading BOM and
+// CRLF line endings — both of which Astro's own loader accepts — since a hand-edited or
+// foreign-tool-saved file can carry either.
+const FRONTMATTER_RE = /^\uFEFF?---(?:\r\n|\n)([\s\S]*?)(?:\r\n|\n)---(?=\r\n|\n|$)(?:\r\n|\n)?([\s\S]*)$/;
+
+/**
+ * Extracts the body that follows an existing file's frontmatter. Throws, rather than guessing,
+ * when the frontmatter can't be recognized: a metadata-only edit must never silently drop text
+ * the loader itself would have accepted some other way.
+ */
 function readBody(path: string): string {
   const raw = readFileSync(path, 'utf8');
-  const match = /^---\n[\s\S]*?\n---\n([\s\S]*)$/.exec(raw);
-  return match?.[1] ?? '';
+  const match = FRONTMATTER_RE.exec(raw);
+  if (!match) {
+    throw new LetturaSchemaError([`il campo "slug": il file esistente ha un frontmatter che non riesco a leggere`]);
+  }
+  return match[2] ?? '';
 }
