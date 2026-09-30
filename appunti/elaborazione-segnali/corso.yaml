@@ -1,10 +1,12 @@
-# NOTE: the real scanned notebook is not yet in the archive (see #32's dev report); the PDF
-# committed alongside this manifest is a placeholder standing in for it. Replace both the PDF
-# and this note once the real scan is available.
+# NOTE: the real scanned notebook is not yet in the archive. No PDF is committed for this
+# course (schema/derived-state coverage for the scansione state lives in
+# tests/fixtures/appunti/quaderno-scansionato instead). Publish once the real scan exists:
+# add the PDF, run pipeline/appunti-meta.ts, and set pubblicato: true.
 titolo: "Elaborazione Segnali"
 tipo: corso
 livello: triennale
 anno: 2
 aa: "2021/22"
 fonte: scansione
-pubblicato: true
+pubblicato: false
+motivo: "scansione non ancora caricata"
