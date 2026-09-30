@@ -327,13 +327,13 @@ Region **eu-south-1** (Milan). Lambda (Python, hand-written loop, not AgentCore 
 | Site Worker code, its Custom Domain (which creates the apex DNS record itself) | `wrangler.jsonc` + `site` workflow |
 | Chat Worker, route `/api/*`, rate limit binding, Worker secrets (Turnstile secret, session signing key, Lambda HMAC secret) | `workers/api/wrangler.jsonc` + `api` workflow (secrets come from GitHub secrets) |
 | Lambda code | `agent` workflow; Terraform has `ignore_changes` on the code |
-| AI Gateways (production and eval) + spend limits + Dynamic Route, Turnstile widget, Web Analytics site, `www` record + redirect rule, Search Console TXT | Terraform (Cloudflare provider); **never the apex record** |
+| AI Gateways (production and eval) + spend limits + Dynamic Route, Turnstile widget, `www` record + redirect rule, Search Console TXT | Terraform (Cloudflare provider); **never the apex record** |
 | Lambda configuration, DynamoDB, S3 Vectors, S3 buckets, IAM, OIDC role, SSM parameters | Terraform (AWS provider) |
 | Terraform state bucket (versioned, encrypted, S3 native lockfile) and an **AWS Budget** of $5/month with email alerts at 50%, 80% and 100% (actual) and 100% (forecast) | a separate `infra/bootstrap` config, applied once |
 
 Terraform is applied **by hand from the author's Mac**, with remote state on S3 so it works from several machines. **AWS account: the author's personal one, CLI profile `personale`** (account `209556027092`). The AWS provider pins `profile = "personale"` and `allowed_account_ids = ["209556027092"]`: the machine's `default` profile is a different account and must never be touched. An AWS Budget only alerts, it never stops spending; the hard cap on model spend stays at the AI Gateway (§9.4). Terraform never owns code that changes often, or every deploy becomes drift.
 
-**One-time manual steps** (the only configuration outside code): create a scoped Cloudflare API token and store it with the account ID as GitHub secrets; start Search Console verification to get the TXT value; enable the opt-in region eu-south-1 and, for v2, Bedrock access to Cohere Embed v4; buy Workers AI Unified Billing credits (v2); confirm that the zone has no conflicting apex/`www` records. These are **S0/S10 prerequisites** the author provides.
+**One-time manual steps** (the only configuration outside code): create the Web Analytics site in the dashboard (S4); create the scoped Cloudflare API tokens (script: `scripts/setup-cloudflare.sh`, a guided wizard) and store it with the account ID as GitHub secrets; start Search Console verification to get the TXT value; enable the opt-in region eu-south-1 and, for v2, Bedrock access to Cohere Embed v4; buy Workers AI Unified Billing credits (v2); confirm that the zone has no conflicting apex/`www` records. These are **S0/S10 prerequisites** the author provides.
 
 ### 10.4 Costs
 v0 + v1: **$0 on Cloudflare** ([#3](https://github.com/Simi24/simonepetta.com/issues/3)); the only AWS resource before v2 is the Terraform state bucket (cents per month). v2: ~$0.5/month AWS infrastructure, ~$2 to 3/month model, hard cap $4.50 + fee; ~$1.2 one-off embeddings.
@@ -386,7 +386,7 @@ Raising a cap requires an explicit commit to the budget config.
 - **Everywhere**: sitemap with `lastmod` from git, canonical URLs, one static Open Graph image per section (no per-post generation). Search Console verified via DNS TXT in Terraform; Bing Webmaster Tools is already verified.
 
 ### 12.4 Analytics
-**Cloudflare Web Analytics**: cookieless (no banner), free. Accepted cost: one beacon script on every page. The site is registered in Terraform; the snippet lives in the layout (no dashboard auto-injection).
+**Cloudflare Web Analytics**: cookieless (no banner), free. Accepted cost: one beacon script on every page. The site is created once by hand in the dashboard (the Web Analytics API rejected the Terraform token in setup, not worth the permissions); its public site token is committed to the site config; the snippet lives in the layout (no dashboard auto-injection).
 
 ---
 
@@ -412,7 +412,7 @@ Vertical slices, each deployable and each meant to be split into issues for ralp
 ### v0: shell, readings, about
 
 **S0 Bootstrap**
-Astro skeleton, `tokens.css`, self-hosted fonts, base layout with nav and theme toggle, `wrangler.jsonc`, `site` workflow (build, deploy, PR previews), quality gates wired (axe, byte budget), Terraform base (state bucket; Cloudflare: Web Analytics site, `www` redirect, DNS TXT), `AGENTS.md`, prototypes copied to `docs/prototype/`.
+Astro skeleton, `tokens.css`, self-hosted fonts, base layout with nav and theme toggle, `wrangler.jsonc`, `site` workflow (build, deploy, PR previews), quality gates wired (axe, byte budget), Terraform base (state bucket, AWS Budget; Cloudflare: `www` redirect, DNS TXT), `AGENTS.md`, prototypes copied to `docs/prototype/`.
 *AC*: an empty shell is live at simonepetta.com in both themes; a PR gets a preview URL; gates run and pass; `terraform plan` is clean.
 
 **S1 Readings (tracer bullet)**
@@ -533,7 +533,7 @@ Found while writing this document and by the cold read (an agent with no context
 
 ### 15.3 S0 prerequisites from the author
 Checked on 2026-09-29:
-- **Cloudflare**: the zone `simonepetta.com` is active in the author's account; it has only `vault.` and `tripla.` records (no apex, no `www`, so no conflicts; Terraform must never manage those two). The existing local `CLOUDFLARE_API_TOKEN` is zone-scoped: it reads Workers scripts and DNS but not Custom Domains, rulesets, AI Gateway, Turnstile or Web Analytics. **Needed from the author**: one token for CI from the dashboard template "Edit Cloudflare Workers", restricted to this account and zone, stored as a GitHub secret; one local-only token for Terraform with, in addition, Account: AI Gateway Edit, Turnstile Edit, Account Settings Edit (required by the Web Analytics API; there is no separate "Web Analytics" permission), Workers AI Read; Zone (`simonepetta.com`): DNS Edit, Single Redirect (Dynamic URL Redirects) Edit.
+- **Cloudflare**: the zone `simonepetta.com` is active in the author's account; it has only `vault.` and `tripla.` records (no apex, no `www`, so no conflicts; Terraform must never manage those two). The existing local `CLOUDFLARE_API_TOKEN` is zone-scoped: it reads Workers scripts and DNS but not Custom Domains, rulesets, AI Gateway, Turnstile or Web Analytics. **Needed from the author**: one token for CI from the dashboard template "Edit Cloudflare Workers", restricted to this account and zone, stored as a GitHub secret; one local-only token for Terraform with, in addition, Account: AI Gateway Edit, Turnstile Edit, Workers AI Read; Zone (`simonepetta.com`): DNS Edit, Single Redirect (Dynamic URL Redirects) Edit.
 - **AWS**: profile `personale`, eu-south-1 already enabled, current spend $0, no budget yet (created in S0).
 - **Search Console**: the TXT value is needed only for S5 (launch), not for S0.
 - **LinkedIn**: given (§8).
