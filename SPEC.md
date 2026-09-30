@@ -208,7 +208,9 @@ Contract: [`docs/prototype/scrivania.html`](https://github.com/Simi24/simonepett
 
 ### 7.1 Corpus and publication policy ([#5](https://github.com/Simi24/simonepetta.com/issues/5), [#14](https://github.com/Simi24/simonepetta.com/issues/14))
 **All sources are already off Overleaf** (export of 2026-09-29) in the private archive repo [`Simi24/appunti-sorgenti`](https://github.com/Simi24/appunti-sorgenti): **30 course projects (13 magistrale, 17 triennale) + 2 theses** (`tesi-magistrale`, `tesi` for the triennale), with Overleaf-compiled PDFs for 29 of them. Also: `GPUcomputing` and `Social_Mining` on GitHub (built PDFs); `LinguaggiTraduttori` on GitHub is the complete version of an Overleaf stub; `Elaborazione Segnali` exists both on Overleaf and as a scan. Six Overleaf projects are barely started (3 to 5 pages); publishing them is the author's call per course in S6.
-- **All published as PDF at launch; HTML is converted one course at a time afterwards, starting with the courses the author wants to chat with.** No curation by quality: elementary is not wrong, and the year label gives context. The **only allowed exclusion is rights** (notes that copy lecturer slides or reproduce textbook figures), checked course by course before publishing.
+- **All published as PDF at launch; HTML is converted one course at a time afterwards, starting with the courses the author wants to chat with.** No curation by quality: elementary is not wrong, and the year label gives context.
+- **Third-party material is published as it is, with attribution and removal on request** (author's decision, 2026-09-30). Many courses embed figures from lecturer slides or textbooks; each course page names its sources (manifest field `fonti`) and shows a removal contact. A course or figure comes down when its rights holder asks, or when the author chooses. The hand-drawn figures in the notes are the author's own.
+- **The PDF stays downloadable in every state.** Converting a course adds HTML next to the PDF, never instead of it.
 - **PDFs are built locally** with TeX Live in Docker, the same toolchain as the pipeline: Overleaf's free plan times out on the large projects. Overleaf is not used anymore.
 - The archive repo stays the complete copy; a course's `.tex` enters this repo (`appunti/<slug>/src/`) only when it is converted.
 
@@ -225,12 +227,13 @@ Contract: [`docs/prototype/scrivania.html`](https://github.com/Simi24/simonepett
 | `fonte` | `overleaf` \| `github` \| `locale` \| `scansione` (where the source came from) |
 | `pubblicato` | boolean |
 | `motivo` | required when `pubblicato: false` |
+| `fonti` | optional list of the course's third-party sources, as plain text (e.g. the lecturer's slides, a textbook); shown on the course page with the removal contact |
 
-**State is derived, never declared**: `scansione` if `fonte: scansione`; `html` if a valid `build/` exists; otherwise `pdf`. **Page counts** live in `appunti/<slug>/meta.json` at the course root, produced by a lightweight pipeline step for every course (page count from the PDF), never typed by hand; `build/` stays conversion-only. Theses are not in the piles, only on top. Site-wide config holds the **university and degree programme names per level** (`triennale`, `magistrale`, which may differ), used in titles for SEO ([#18](https://github.com/Simi24/simonepetta.com/issues/18)). PDFs must stay under Cloudflare's 25 MiB per file (the largest today is ~13 MB).
+**State is derived, never declared**: `scansione` if `fonte: scansione`; `html` if a valid `build/` exists; otherwise `pdf`. **Page counts** live in `appunti/<slug>/meta.json` at the course root, produced by a lightweight pipeline step for every course (page count from the PDF), never typed by hand; `build/` stays conversion-only. Theses are not in the piles, only on top. Site-wide config holds the **removal contact** and the **university and degree programme names per level** (`triennale`, `magistrale`, which may differ), used in titles for SEO ([#18](https://github.com/Simi24/simonepetta.com/issues/18)). PDFs must stay under Cloudflare's 25 MiB per file (the largest today is ~13 MB).
 
 ### 7.3 Pages
 - **Index** `/appunti/`: bound theses on top, notebook piles by year, a full list below, the student-notes notice.
-- **Course page** `/appunti/<slug>/` exists in **every** state, so neither state looks like a leftover: metadata, the PDF, and for converted courses the chapter list (and in v2 the chat link).
+- **Course page** `/appunti/<slug>/` exists in **every** state, so neither state looks like a leftover: metadata, the PDF download, the sources and removal contact, and for converted courses the chapter list (and in v2 the chat link).
 - **Chapters** `/appunti/<slug>/<chapter>/`: one page per chapter, sticky TOC, LaTeX conventions (§5.4). **Chapter slugs** are `<number>-<kebab-title>` (e.g. `3-variabili-aleatorie-continue`), computed at the first conversion and recorded in `build/meta.json`; later conversions reuse them, so URLs never change. LaTeXML output is post-processed by the pipeline into HTML fragments (body only), which Astro wraps in the site layout.
 - **Excluded** courses (`pubblicato: false`) are skipped entirely: no page, no PDF in the assets.
 - **Scanned** courses stay PDF forever.
@@ -240,13 +243,17 @@ Contract: [`docs/prototype/scrivania.html`](https://github.com/Simi24/simonepett
 - **LaTeXML via BookML**, in Docker, **outside the site build**: `make appunti CORSO=<slug>` (or equivalent). Output is committed into `build/`. The site build has no LaTeX and no Docker.
 - **HTML directly, no intermediate Markdown**: Markdown has no numbered theorems and every extra stage is a loss point. Fixes go into the `.tex`.
 - **MathML native**, zero JS. Caveat: MathML Core does not cover numbered equations; LaTeXML's output handles numbering.
-- **TikZ** via `standalone[dvisvgm]` → DVI → dvisvgm. The pipeline rewrites black in SVGs to `currentColor`, so figures follow both themes. **Alt text stays manual**, written at conversion time; a figure without a description **fails** the detector.
+- **Figures are mostly raster images.** Counted on 2026-09-30: **1,877 `\includegraphics`** (jpg and png, 183 MB of sources) against **16 `tikzpicture`** (10 in natural-interaction, 6 in GPUcomputing).
+  - **Raster images**: LaTeXML copies them; the pipeline re-encodes them to WebP at most 1600 px wide with a tool inside the Docker image (no npm dependency), writes `width`/`height` into the HTML so pages do not jump, and marks them `loading="lazy"`. In the dark theme they sit on a light sheet; they are never inverted.
+  - **TikZ** (rare): `standalone[dvisvgm]` → DVI → dvisvgm, black rewritten to `currentColor` so the figure follows both themes.
+  - **Alt text** is drafted by the agent at conversion time from the caption (when there is one) and the image itself; it is functional description, not the author's voice. The author reviews a sample per course. A figure without a description **fails** the detector. The descriptions also let the v2 chat, which reads text only, know what a figure shows.
+- **The PDF of a converted course is recompiled from `src/`** in the same pipeline run (and its `meta.json` page count updated), so fixes made in the `.tex` reach both the HTML and the download.
 - **pandoc is rejected**: it loses silently (drops TikZ, ignores `\NewDocumentCommand`, overrides custom macros with builtins).
 - **Canonical source**: when a course is converted, its sources are copied from `Simi24/appunti-sorgenti` into `src/`; from then on the `.tex` in `src/` is canonical.
 - **Expected cost**: weeks; roughly 1 course in 4 needs real manual intervention. The cost scales with courses, not with the pipeline.
 
 ### 7.5 Leak detector
-Conversion fails silently, so verification cannot be the human eye. The detector compares source and output on `tikzpicture` vs produced SVGs, theorem environments, equations, and LaTeXML error counts. **Any mismatch fails the conversion and `build/` is not updated.** It runs locally and in CI ([§11](#11-build-and-deploy)). **A course that stops compiling keeps its last good `build/`**; the red stays in the pipeline workflow and never reaches the deploy.
+Conversion fails silently, so verification cannot be the human eye. The detector compares source and output on `\includegraphics` vs produced images, `tikzpicture` vs produced SVGs, theorem environments, equations, and LaTeXML error counts, and checks that every figure has alt text. **Any mismatch fails the conversion and `build/` is not updated.** It runs locally and in CI ([§11](#11-build-and-deploy)). **A course that stops compiling keeps its last good `build/`**; the red stays in the pipeline workflow and never reaches the deploy.
 
 ---
 
@@ -404,7 +411,7 @@ Raising a cap requires an explicit commit to the budget config.
 | Workers AI does not document EU inference | prompts are public questions on public notes | [#17](https://github.com/Simi24/simonepetta.com/issues/17) |
 | Tool-use benchmarks are mostly vendor-reported, no Italian data | golden set gates the v2 launch | [#17](https://github.com/Simi24/simonepetta.com/issues/17) |
 | LaTeX conversion loses silently; ~1 course in 4 needs manual work | leak detector, PDF always available | [#4](https://github.com/Simi24/simonepetta.com/issues/4) |
-| Notes that copy lecturer material | per-course rights check before publishing | [#14](https://github.com/Simi24/simonepetta.com/issues/14) |
+| Notes that embed lecturer or textbook figures | published with attribution (`fonti`) and a removal contact; removal on request (author's decision, 2026-09-30) | [#14](https://github.com/Simi24/simonepetta.com/issues/14) |
 | Astro majors require migrations (about yearly) | static output does not expire; content does not depend on Astro | [#6](https://github.com/Simi24/simonepetta.com/issues/6) |
 
 ---
@@ -442,7 +449,7 @@ Replace `minimal-portfolio` on Vercel with a redirect-only deployment (its old c
 ### v1: notes
 
 **S6 Notes as PDF**
-`appunti/` folders, manifest schema (§7.2), derived state, `meta.json` page counts from the pipeline, PDFs copied to the output, course pages, `/appunti/` index (theses, piles, list), notice, university config, notes SEO (§12.3). Per-course rights check before adding each course (build task).
+`appunti/` folders, manifest schema (§7.2), derived state, `meta.json` page counts from the pipeline, PDFs copied to the output, course pages, `/appunti/` index (theses, piles, list), notice, university config, notes SEO (§12.3). Each course's third-party sources recorded in `fonti` (build task).
 *AC*: all published courses and both theses are reachable (the author decides per course whether to publish the six barely started ones); excluded courses leave no page and no PDF; pile thickness follows page counts; scanned courses show the dashed outline.
 
 **S7 Search**
@@ -450,12 +457,12 @@ Pagefind after `astro build`, indexing readings and notes pages, UI on `/cerca/`
 *AC*: search on `/cerca/` finds a reading and a course page; no Pagefind JS on any other page.
 
 **S8 Conversion pipeline**
-Docker (LaTeXML via BookML), `make appunti CORSO=<slug>`, chapter pages with TOC and LaTeX conventions, Fira Math, TikZ with `currentColor`, alt text, leak detector, `appunti` workflow. First course: `GPUcomputing` (the hardest of the measured samples).
-*AC*: one course is readable as HTML with the detector green; a deliberately broken input (a dropped `tikzpicture`) is caught and `build/` is not updated; the site deploy does not depend on the workflow.
+Docker (LaTeXML via BookML), `make appunti CORSO=<slug>`, chapter pages with TOC and LaTeX conventions, Fira Math, PDF recompiled from `src/`, raster figures (WebP, dimensions, lazy loading) and TikZ with `currentColor`, alt text, leak detector, `appunti` workflow. First course: `GPUcomputing` (the hardest of the measured samples).
+*AC*: one course is readable as HTML with the detector green, and its PDF is still downloadable; a deliberately broken input (a dropped figure) is caught and `build/` is not updated; the site deploy does not depend on the workflow.
 
 **S9 Incremental conversions**
 Repeatable per-course conversion, starting with the courses intended for the chat; author reviews the converted math.
-*AC*: each converted course switches from PDF to HTML state with no URL change.
+*AC*: each converted course switches from PDF to HTML state with no URL change and keeps its PDF download.
 
 ### v2: chat
 
@@ -501,7 +508,7 @@ Chat links on converted course pages.
 | [#11 Architettura della chat sugli appunti (v2)](https://github.com/Simi24/simonepetta.com/issues/11) | Per-course agent with S3 Vectors + `read_section`; no Claude; 5 EUR/month; in-page trace. |
 | [#12 Struttura della spec e criterio di chiusura](https://github.com/Simi24/simonepetta.com/issues/12) | This document's shape and the cold-read closing criterion. |
 | [#13 Build e deploy: Workers Builds o GitHub Actions](https://github.com/Simi24/simonepetta.com/issues/13) | GitHub Actions; posts pushed to `main`; PR previews; Terraform by hand. |
-| [#14 Appunti: HTML convertito o PDF pubblicati](https://github.com/Simi24/simonepetta.com/issues/14) | All PDFs now, HTML incrementally; rights is the only exclusion. |
+| [#14 Appunti: HTML convertito o PDF pubblicati](https://github.com/Simi24/simonepetta.com/issues/14) | All PDFs now, HTML incrementally; rights was the only exclusion (superseded by §15.2 item 22: attribution and removal on request). |
 | [#15 AWS o Cloudflare per il carico agentico](https://github.com/Simi24/simonepetta.com/issues/15) | Agent on AWS, site on Cloudflare, Worker in front of the Lambda; the agentic reformulation. |
 | [#16 La scrivania: editor locale per i post di lettura](https://github.com/Simi24/simonepetta.com/issues/16) | Dev-only `/scrivi`; shelf as menu; timer only on the first pass; editing; fixed slugs. |
 | [#17 Modello economico per l'agente della chat](https://github.com/Simi24/simonepetta.com/issues/17) | DeepSeek V4 Flash on Workers AI via AI Gateway; GLM-4.7-Flash fallback; Cohere Embed v4 on Bedrock. |
@@ -514,6 +521,11 @@ Found while writing this document and by the cold read (an agent with no context
 1. **Spine contrast**: dark mid-grey tint `#626260`, no opacity on spine text (§5.1). The prototype failed WCAG AA, which the blocking axe gate would have caught.
 2. **Interface copy rule**: agents may write functional copy; first-person and author-voice copy stays a placeholder (§1.2 point 3).
 3. **Sources off Overleaf now**, not at conversion time: archive repo `Simi24/appunti-sorgenti`; PDFs built locally in Docker (§7.1). Amends [#10](https://github.com/Simi24/simonepetta.com/issues/10).
+
+**Confirmed by the author (2026-09-30)**, found while explaining the notes plan
+22. **Third-party figures**: published as they are, with sources (`fonti`) and a removal contact on each course page; removal on request. Replaces the per-course rights exclusion of [#14](https://github.com/Simi24/simonepetta.com/issues/14). The hand-drawn figures are the author's own.
+23. **Figures are raster, not TikZ** (1,877 images vs 16 TikZ): the pipeline re-encodes images and the detector counts them; alt text is drafted by the agent and sampled by the author, instead of written by hand for ~1,900 images.
+24. **The PDF stays downloadable in every state**, and a converted course's PDF is recompiled from `src/` so HTML and PDF come from the same corrected source.
 
 **Applied by default**
 4. **Theme toggle vs JS budget**: one inline theme script ≤ 1 KB is a declared budget exception (§5.1, §12.2).
