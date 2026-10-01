@@ -87,6 +87,8 @@ export interface SaveParams {
 export interface SaveResult {
   slug: string;
   path: string;
+  titolo: string;
+  stato: string;
 }
 
 /** The body as the writing sheet's text becomes on disk: a blank line after the frontmatter, the text trimmed, a trailing newline — empty when there's nothing to say. */
@@ -120,7 +122,7 @@ export function saveLettura({ contentDir, slug, input, testo, expectedVersion }:
       }
       throw error;
     }
-    return { slug: finalSlug, path };
+    return { slug: finalSlug, path, titolo: lettura.titolo, stato: lettura.stato };
   }
 
   if (!KEBAB_SLUG_RE.test(slug)) {
@@ -135,7 +137,7 @@ export function saveLettura({ contentDir, slug, input, testo, expectedVersion }:
   }
   const body = testo !== undefined ? formatTesto(testo) : readBody(path);
   writeFileSync(path, serializeLettura(lettura, body));
-  return { slug, path };
+  return { slug, path, titolo: lettura.titolo, stato: lettura.stato };
 }
 
 function isNodeError(error: unknown): error is NodeJS.ErrnoException {
