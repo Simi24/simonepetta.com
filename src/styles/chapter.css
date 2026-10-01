@@ -295,6 +295,15 @@
   overflow-x: auto;
 }
 
+/* `tabular`s and inline math sharing a line (a product of tables), as the PDF sets them. */
+.prose .ltx_inline_tabulars {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 0.6em;
+}
+
 .prose .ltx_tabular {
   margin: 0.8em auto;
   border-collapse: collapse;

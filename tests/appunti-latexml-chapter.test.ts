@@ -127,3 +127,30 @@ test('a paragraph block left empty by a removed marker is dropped too', () => {
   assert.match(page, /id="empty"/);
   assert.doesNotMatch(processChapter(page, LINKS).html, /id="empty"/);
 });
+
+/** The numbers shown in the margin of the first listing in `html`, in order. */
+const lineNumbers = (html: string): string[] =>
+  [...html.matchAll(/<span class="ltx_tag ltx_tag_listingline">(\d+)<\/span>/g)].map((match) => match[1]!);
+
+test('algorithm lines are numbered like the PDF: the empty lines that close a block take no number', () => {
+  const { html } = processChapter(fixture('gpu-Ch7-algorithm-table.html'), LINKS);
+  assert.deepEqual(lineNumbers(html), ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']);
+  assert.match(html, /<math[^>]*alttext="R\\leftarrow R-\\\{v\\\}"/);
+});
+
+test('listing captions are numbered per chapter like the PDF: Listing 7.1, 7.2', () => {
+  const { html } = processChapter(fixture('gpu-Ch7-listing-caption.html'), LINKS);
+  const captions = [...html.matchAll(/<span class="ltx_tag ltx_tag_float">([^<]*)<\/span>/g)].map((match) => match[1]);
+  assert.deepEqual(captions, ['Listing\u00a07.1: ', 'Listing\u00a07.2: ']);
+});
+
+test('a tabular inside a paragraph keeps its line without nesting tables in a <p>', () => {
+  const { html } = processChapter(fixture('gpu-Ch8-tabular-in-paragraph.html'), LINKS);
+  assert.doesNotMatch(html, /<p\b[^>]*>(?:(?!<\/p>)[\s\S])*<table/);
+  const lines = [...html.matchAll(/<div class="[^"]*\bltx_inline_tabulars\b[^"]*">([\s\S]*?)<\/div>\n/g)].map((match) => match[1]!);
+  assert.equal(lines.length, 2);
+  for (const line of lines) {
+    // table · table = table, in this order, inside one container
+    assert.deepEqual([...line.matchAll(/<table\b|alttext="([^"]*)"/g)].map((match) => match[1] ?? 'table'), ['table', '\\cdot', 'table', '=', 'table']);
+  }
+});

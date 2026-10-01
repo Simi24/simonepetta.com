@@ -2,6 +2,7 @@ import {
   attribute,
   decodeEntities,
   elementEnd,
+  classes,
   hasClass,
   removeAttribute,
   serialize,
@@ -204,6 +205,73 @@ function flattenCodeListings(tokens: readonly Token[]): Token[] {
   return out;
 }
 
+/**
+ * LaTeXML numbers every line of an algorithm, including the empty ones that only draw the
+ * rules closing a block; algorithm2e (the PDF) does not. Those lines lose their number and
+ * the others are counted again from 1 in each algorithm.
+ */
+function renumberAlgorithmLines(tokens: readonly Token[]): Token[] {
+  const out = [...tokens];
+  let next = 1;
+  for (let i = 0; i < out.length; i++) {
+    const token = out[i]!;
+    if (token.type !== 'open' || token.name !== 'div') continue;
+    if (hasClass(token, 'ltx_listing')) next = 1;
+    if (!hasClass(token, 'ltx_listingline')) continue;
+    const end = elementEnd(out, i);
+    const tag = findOpen(out, i, (t) => hasClass(t, 'ltx_tag_listingline'));
+    if (tag < 0 || tag > end) continue;
+    const tagEnd = elementEnd(out, tag);
+    const hasContent = out.slice(tagEnd + 1, end).some((t) => (t.type === 'text' && t.raw.trim() !== '') || (t.type === 'open' && t.name !== 'code' && !hasClass(t, 'ltx_rule')));
+    if (hasContent) out[tag + 1] = { type: 'text', raw: String(next++) };
+    else out.splice(tag, tagEnd - tag + 1);
+  }
+  return out;
+}
+
+/** Listing captions say "Listing 3: "; the PDF numbers them per chapter, "Listing 7.3: ". */
+function numberListingsPerChapter(tokens: readonly Token[], chapter: number): Token[] {
+  let count = 0;
+  return tokens.map((token, i): Token => {
+    const open = tokens[i - 1];
+    if (token.type !== 'text' || open?.type !== 'open' || !hasClass(open, 'ltx_tag_float') || !/^Listing\s\d+:/.test(token.raw)) return token;
+    return { ...token, raw: token.raw.replace(/^(Listing\s)\d+:/, `$1${chapter}.${++count}:`) };
+  });
+}
+
+/**
+ * LaTeXML puts `tabular`s next to inline math inside one `<p>`, which is invalid (a table
+ * closes the paragraph, so the browser stacks them vertically). Such a paragraph becomes a
+ * `div` that lays its children out on one line. LaTeXML also hoists the paragraph's first
+ * table into a `bml-overflow-wrapper` just before the `<p>`: it is moved back in.
+ */
+function keepTabularsOnOneLine(tokens: readonly Token[]): Token[] {
+  const out: Token[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i]!;
+    const end = token.type === 'open' && token.name === 'p' ? elementEnd(tokens, i) : -1;
+    if (end < 0 || !tokens.slice(i, end).some((t) => t.type === 'open' && t.name === 'table')) {
+      out.push(token);
+      continue;
+    }
+    let hoisted: Token[] = [];
+    let before = out.length - 1;
+    while (before >= 0 && out[before]!.type === 'text' && out[before]!.raw.trim() === '') before--;
+    if (out[before]?.type === 'close' && out[before]!.name === 'div') {
+      let wrapper = before;
+      while (wrapper >= 0 && !(out[wrapper]!.type === 'open' && out[wrapper]!.name === 'div')) wrapper--;
+      if (wrapper >= 0 && hasClass(out[wrapper]!, 'bml-overflow-wrapper')) {
+        hoisted = out.slice(wrapper + 1, before);
+        out.length = wrapper;
+      }
+    }
+    const classNames = [...classes(token), 'ltx_inline_tabulars'].join(' ');
+    out.push({ type: 'open', name: 'div', raw: `<div class="${classNames}">` }, ...hoisted, ...tokens.slice(i + 1, end), { type: 'close', name: 'div', raw: '</div>' });
+    i = end;
+  }
+  return out;
+}
+
 function rewriteHref(href: string, links: LinkTargets): string {
   if (href.startsWith('#') || /^(https?:|mailto:)/.test(href)) return href;
   const [file = '', hash] = href.split('#');
@@ -239,6 +307,9 @@ export function processChapter(page: string, links: LinkTargets, figures: Figure
   });
   tokens = dropElements(tokens, (t) => t.type === 'open' && (t.name === 'button' || t.name === 'annotation' || hasClass(t, 'ltx_listing_data')));
   tokens = flattenCodeListings(tokens);
+  tokens = renumberAlgorithmLines(tokens);
+  tokens = numberListingsPerChapter(tokens, head.numero);
+  tokens = keepTabularsOnOneLine(tokens);
 
   tokens = tokens.map((token): Token => {
     if (token.type === 'text') return { ...token, raw: token.raw.replace(/​/g, '') };

@@ -1,0 +1,217 @@
+<!DOCTYPE html><html class="bml_mathjax4" lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Chapter 7 Pattern Paralleli ‣ GPU computing</title>
+<!--Generated on Thu Oct  1 11:02:31 2026 by LaTeXML (version 0.8.8) http://dlmf.nist.gov/LaTeXML/.-->
+<!--Document created on A.A. 2024/2025.-->
+
+<link rel="stylesheet" href="LaTeXML.css" type="text/css">
+<link rel="stylesheet" href="ltx-report.css" type="text/css">
+<link rel="stylesheet" href="ltx-listings.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/style.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-table.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-search.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-bookdown.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-fontsettings.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.gitbook,plain.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.gitbook.css" type="text/css">
+<link rel="stylesheet" href="bmluser/colors.gitbook-main.css" type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6"></script>
+<link rel="up" href="index.html" title="GPU computing">
+<link rel="start" href="index.html" title="GPU computing">
+<link rel="prev" href="Ch6.html" title="Chapter 6 Numba ‣ GPU computing">
+<link rel="next" href="Ch8.html" title="Chapter 8 PyTorch ‣ GPU computing">
+<link rel="chapter" href="Ch1.html" title="Chapter 1 Introduzione ‣ GPU computing">
+<link rel="chapter" href="Ch2.html" title="Chapter 2 Modello di programmazione CUDA ‣ GPU computing">
+<link rel="chapter" href="Ch3.html" title="Chapter 3 Architetture delle GPU ‣ GPU computing">
+<link rel="chapter" href="Ch4.html" title="Chapter 4 Memorie ‣ GPU computing">
+<link rel="chapter" href="Ch5.html" title="Chapter 5 Ottimizzazione delle prestazioni ‣ GPU computing">
+<link rel="chapter" href="Ch6.html" title="Chapter 6 Numba ‣ GPU computing">
+<link rel="chapter" href="Ch8.html" title="Chapter 8 PyTorch ‣ GPU computing">
+<style>:root{--bml-ltx-font-size:12;--bml-ltxml-dpi:96.36}</style>
+<script src="bookml/js/mathjax4.js" defer></script>
+</head>
+<body class="bml_class_report">
+<div class="book without-animation font-size-2 font-family-1" data-basepath=".">
+<a href="#bml-main-content" tabindex="0" class="bml-skip-to-content">Skip to content.</a>
+<div class="book-summary"><nav class="ltx_page_navbar">
+<ul class="ltx_toclist summary">
+<li>
+<a href="index.html" title="" class="ltx_ref" rel="start">GPU computing</a>
+</li>
+<li class="divider" aria-hidden="true"></li>
+<li data-level="1" data-path="Ch1.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch1.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1 </span></b>Introduzione</a></li>
+<li data-level="2" data-path="Ch2.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch2.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">2 </span></b>Modello di programmazione CUDA</a></li>
+<li data-level="3" data-path="Ch3.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch3.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">3 </span></b>Architetture delle GPU</a></li>
+<li data-level="4" data-path="Ch4.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch4.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">4 </span></b>Memorie</a></li>
+<li data-level="5" data-path="Ch5.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch5.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">5 </span></b>Ottimizzazione delle prestazioni</a></li>
+<li data-level="6" data-path="Ch6.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch6.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">6 </span></b>Numba</a></li>
+<li data-level="7" data-path="" class="ltx_tocentry ltx_tocentry_chapter ltx_ref_self  chapter active">
+<a href="" title="In GPU computing" aria-current="page" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">7 </span></b>Pattern Paralleli</a>
+<ol class="ltx_toclist ltx_toclist_chapter">
+<li data-level="7.1" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter ">
+<a href="#S1" title="In Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">7.1 </span></b>Pattern Paralleli</a>
+<ol class="ltx_toclist ltx_toclist_section">
+<li data-level="7.1.1" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter ">
+<a href="#S1.SS1" title="In 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">7.1.1 </span></b>Scan (Prefix-sum)</a>
+<ol class="ltx_toclist ltx_toclist_subsection">
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_subsubsection  chapter ">
+<a href="#S1.SS1.SSSx1" title="In 7.1.1 Scan (Prefix-sum) ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Implementazione di Horn per GPU</a>
+<ol class="ltx_toclist ltx_toclist_subsubsection">
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S1.SS1.SSSx1.Px1" title="In Implementazione di Horn per GPU ‣ 7.1.1 Scan (Prefix-sum) ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Scan parallelo per lunghezze arbitrarie:</a></li>
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S1.SS1.SSSx1.Px2" title="In Implementazione di Horn per GPU ‣ 7.1.1 Scan (Prefix-sum) ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Analisi efficienza:</a></li>
+</ol>
+</li>
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_subsubsection  chapter ">
+<a href="#S1.SS1.SSSx2" title="In 7.1.1 Scan (Prefix-sum) ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Strategia work efficient</a>
+<ol class="ltx_toclist ltx_toclist_subsubsection">
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S1.SS1.SSSx2.Px1" title="In Strategia work efficient ‣ 7.1.1 Scan (Prefix-sum) ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Fase di up-sweep:</a></li>
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S1.SS1.SSSx2.Px2" title="In Strategia work efficient ‣ 7.1.1 Scan (Prefix-sum) ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Fase di down-sweep:</a></li>
+</ol>
+</li>
+</ol>
+</li>
+<li data-level="7.1.2" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter "><a href="#S1.SS2" title="In 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">7.1.2 </span></b>Grafi</a></li>
+<li data-level="7.1.3" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter ">
+<a href="#S1.SS3" title="In 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">7.1.3 </span></b>Graph Coloring</a>
+<ol class="ltx_toclist ltx_toclist_subsection">
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S1.SS3.SSS0.Px1" title="In 7.1.3 Graph Coloring ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Grafi <math class="ltx_Math" alttext="k" display="inline"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>-colorabili:</a></li>
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_subsubsection  chapter "><a href="#S1.SS3.SSSx1" title="In 7.1.3 Graph Coloring ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Colorazione Greedy sequenziale</a></li>
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_subsubsection  chapter "><a href="#S1.SS3.SSSx2" title="In 7.1.3 Graph Coloring ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Jones-Plassman Coloring</a></li>
+</ol>
+</li>
+<li data-level="7.1.4" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter ">
+<a href="#S1.SS4" title="In 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">7.1.4 </span></b>Insieme Indipendente Massimale MIS</a>
+<ol class="ltx_toclist ltx_toclist_subsection">
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_subsubsection  chapter "><a href="#S1.SS4.SSSx1" title="In 7.1.4 Insieme Indipendente Massimale MIS ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Algoritmo Greedy sequenziale per trovare MIS</a></li>
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_subsubsection  chapter "><a href="#S1.SS4.SSSx2" title="In 7.1.4 Insieme Indipendente Massimale MIS ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Parallel Randomized MIS Algorithm</a></li>
+</ol>
+</li>
+<li data-level="7.1.5" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter ">
+<a href="#S1.SS5" title="In 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">7.1.5 </span></b>Sorting</a>
+<ol class="ltx_toclist ltx_toclist_subsection">
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_subsubsection  chapter "><a href="#S1.SS5.SSSx1" title="In 7.1.5 Sorting ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">MergeSort</a></li>
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_subsubsection  chapter ">
+<a href="#S1.SS5.SSSx2" title="In 7.1.5 Sorting ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Bitonic MergeSort</a>
+<ol class="ltx_toclist ltx_toclist_subsubsection">
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S1.SS5.SSSx2.Px1" title="In Bitonic MergeSort ‣ 7.1.5 Sorting ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Bitonic split:</a></li>
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S1.SS5.SSSx2.Px2" title="In Bitonic MergeSort ‣ 7.1.5 Sorting ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Bitonic Merging Networks:</a></li>
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S1.SS5.SSSx2.Px3" title="In Bitonic MergeSort ‣ 7.1.5 Sorting ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Costruzione di sequenza bitonica:</a></li>
+</ol>
+</li>
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_subsubsection  chapter ">
+<a href="#S1.SS5.SSSx3" title="In 7.1.5 Sorting ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Ordinamento bitonico</a>
+<ol class="ltx_toclist ltx_toclist_subsubsection">
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S1.SS5.SSSx3.Px1" title="In Ordinamento bitonico ‣ 7.1.5 Sorting ‣ 7.1 Pattern Paralleli ‣ Chapter 7 Pattern Paralleli ‣ GPU computing" class="ltx_ref">Complessità:</a></li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+<li data-level="8" data-path="Ch8.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch8.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">8 </span></b>PyTorch</a></li>
+</ul>
+</nav></div>
+
+<div class="ltx_page_main book-body fixed">
+<div class="body-inner">
+<header class="book-header fixed" aria-label="toolbar"><span class="bml-separator"></span></header>
+<div class="page-wrapper" tabindex="-1" role="main">
+<div class="ltx_page_content page-inner" id="bml-main-content">
+<script src="bookml/gitbook/js/app.min.js"></script>
+<script src="bookml/gitbook/js/jquery.highlight.js"></script>
+<script src="bookml/gitbook/js/plugin-search.js"></script>
+<script src="bookml/gitbook/js/plugin-fontsettings.js"></script>
+<script src="bookml/gitbook/js/plugin-bookdown.js"></script>
+<script type="text/javascript">
+                  gitbook.require(["gitbook"], function(gitbook) {
+                  gitbook.start({
+                    "fontsettings": {
+                      "theme": "white",
+                      "family": "sans",
+                      "size": 2
+                    },
+                    "download": [ [ "main.pdf", "PDF" ], ],
+                    "search": {
+                      "engine": "fuse"
+                    },
+                    "toc": {
+                      "collapse": "none"
+                    }
+                  });
+                });
+              </script>
+
+<section class="ltx_chapter ltx_authors_1line normal">
+<div class="section level1">
+<h1 class="ltx_title ltx_title_chapter">
+<span class="ltx_tag ltx_tag_chapter header-section-number">Chapter 7</span> Pattern Paralleli</h1>
+
+<figure id="LST1" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><div class="ltx_listing ltx_lst_language_C ltx_lst_numbers_left ltx_lstlisting bml_background-color_F2F2F2 ltx_framed ltx_framed_rectangle ltx_listing">
+<div class="ltx_listing_data"><div><span><button title="copy code" aria-label="copy code" onclick="const u=event.currentTarget.nextElementSibling.href;navigator.clipboard.writeText(atob(u.substring(u.indexOf(',')+1)))"><i class="fa fa-clone" aria-hidden="true"></i></button><a download="" title="download " href="data:text/plain;base64,dm9pZCBwcmVmaXhfc3VtKGZsb2F0ICphLCBmbG9hdCAqYiwgaW50IG4pIHsKICAgIGJbMF0gPSBhWzBdOwogICAgZm9yIChpbnQgaSA9IDE7IGkgPCBuOyBpKyspCiAgICAgICAgYltpXSA9IGJbaS0xXSArIGFbaV07Cn0="><i class="fa fa-download" aria-hidden="true"></i></a></span></div></div>
+<div id="lstnumberx309" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">1</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_keyword ltx_font_typewriter" style="font-size:83%;"><span class="ltx_text bml_color_0000FF">void</span></span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">prefix_sum</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">(</span><span class="ltx_text ltx_lst_keyword ltx_font_typewriter" style="font-size:83%;"><span class="ltx_text bml_color_0000FF">float</span></span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">*</span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">a</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">,</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_keyword ltx_font_typewriter" style="font-size:83%;"><span class="ltx_text bml_color_0000FF">float</span></span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">*</span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">b</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">,</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_keyword ltx_font_typewriter" style="font-size:83%;"><span class="ltx_text bml_color_0000FF">int</span></span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">n</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">)</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">{</span></code>
+</div>
+<div id="lstnumberx310" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">2</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">    </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">b</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">[0]</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">=</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">a</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">[0];</span></code>
+</div>
+<div id="lstnumberx311" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">3</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">    </span><span class="ltx_text ltx_lst_keyword ltx_font_typewriter" style="font-size:83%;"><span class="ltx_text bml_color_0000FF">for</span></span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">(</span><span class="ltx_text ltx_lst_keyword ltx_font_typewriter" style="font-size:83%;"><span class="ltx_text bml_color_0000FF">int</span></span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">i</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">=</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">1;</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">i</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">&lt;</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">n</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">;</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">i</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">++)</span></code>
+</div>
+<div id="lstnumberx312" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">4</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">        </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">b</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">[</span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">i</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">]</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">=</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">b</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">[</span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">i</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">-1]</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">+</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">a</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">[</span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">i</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">];</span></code>
+</div>
+<div id="lstnumberx313" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">5</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">}</span></code>
+</div>
+</div></div>
+<figcaption class="ltx_caption bml_background-color_F2F2F2"><span class="ltx_tag ltx_tag_float">Listing 1: </span>prefix_sum C</figcaption>
+</figure>
+<figure id="LST2" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><div class="ltx_listing ltx_lst_language_C ltx_lst_numbers_left ltx_lstlisting bml_background-color_F2F2F2 ltx_framed ltx_framed_rectangle ltx_listing">
+<div class="ltx_listing_data"><div><span><button title="copy code" aria-label="copy code" onclick="const u=event.currentTarget.nextElementSibling.href;navigator.clipboard.writeText(atob(u.substring(u.indexOf(',')+1)))"><i class="fa fa-clone" aria-hidden="true"></i></button><a download="" title="download " href="data:text/plain;base64,c21lbVt0aWRdID0gaW5wdXRbdGlkXTsKX19zeW5jdGhyZWFkcygpOw=="><i class="fa fa-download" aria-hidden="true"></i></a></span></div></div>
+<div id="lstnumberx314" class="ltx_listingline">
+                        <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">1</span></span>
+                        
+                        
+                        
+                      <code><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">smem</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">[</span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">tid</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">]</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">=</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">input</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">[</span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">tid</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">];</span></code>
+</div>
+<div id="lstnumberx315" class="ltx_listingline">
+                        <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">2</span></span>
+                        
+                        
+                        
+                      <code><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">__syncthreads</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">();</span></code>
+</div>
+</div></div>
+<figcaption class="ltx_caption bml_background-color_F2F2F2"><span class="ltx_tag ltx_tag_float">Listing 2: </span>Caricamento dati in shared memory</figcaption>
+</figure>
+</section>
+</body>
+</html>
