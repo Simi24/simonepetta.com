@@ -2,6 +2,7 @@ import { join } from 'node:path';
 import type { CollectionEntry } from 'astro:content';
 import { APPUNTI_CONTENT_DIR } from '../config/appunti-content-dir.ts';
 import { LETTURA_CONTENT_DIR } from '../config/lettura-content-dir.ts';
+import { readCorsoBuild } from './corso-build.ts';
 import { isPublished } from './corso-published.ts';
 import { hasPost } from './lettura-post.ts';
 
@@ -38,9 +39,19 @@ export function sitemapPages(
     }),
     { path: '/cerca/', files: ['src/pages/cerca.astro'] },
     { path: '/appunti/', files: ['src/pages/appunti/index.astro', APPUNTI_CONTENT_DIR] },
-    ...appunti.filter(isPublished).map((entry) => ({
-      path: `/appunti/${entry.id}/`,
-      files: ['src/pages/appunti/[slug]/index.astro', join(APPUNTI_CONTENT_DIR, entry.id)],
-    })),
+    ...appunti.filter(isPublished).flatMap((entry) => [
+      {
+        path: `/appunti/${entry.id}/`,
+        files: ['src/pages/appunti/[slug]/index.astro', join(APPUNTI_CONTENT_DIR, entry.id)],
+      },
+      // A converted course's chapters follow the template and their own fragment (SPEC.md §7.3).
+      ...(readCorsoBuild(APPUNTI_CONTENT_DIR, entry.id)?.capitoli ?? []).map((capitolo) => ({
+        path: `/appunti/${entry.id}/${capitolo.slug}/`,
+        files: [
+          'src/pages/appunti/[slug]/[capitolo].astro',
+          join(APPUNTI_CONTENT_DIR, entry.id, 'build', `${capitolo.slug}.html`),
+        ],
+      })),
+    ]),
   ];
 }

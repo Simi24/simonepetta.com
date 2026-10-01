@@ -1,0 +1,67 @@
+---
+import type { Capitolo } from '../../lib/corso-build.ts';
+
+interface Props {
+  corsoSlug: string;
+  previous?: Capitolo | undefined;
+  next?: Capitolo | undefined;
+}
+
+const { corsoSlug, previous, next } = Astro.props;
+const href = (capitolo: Capitolo): string => `/appunti/${corsoSlug}/${capitolo.slug}/`;
+---
+
+<nav class="chapter-nav" aria-label="Capitoli" data-pagefind-ignore>
+  {
+    previous && (
+      <a class="prev" href={href(previous)}>
+        <span class="dir">Capitolo precedente</span>
+        <span class="name">
+          {previous.numero} {previous.titolo}
+        </span>
+      </a>
+    )
+  }
+  {
+    next && (
+      <a class="next" href={href(next)}>
+        <span class="dir">Capitolo successivo</span>
+        <span class="name">
+          {next.numero} {next.titolo}
+        </span>
+      </a>
+    )
+  }
+</nav>
+
+<style>
+  .chapter-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-top: 3rem;
+    border-top: 2px solid var(--ink);
+    padding-top: 0.8rem;
+  }
+
+  .chapter-nav a {
+    display: block;
+    text-decoration: none;
+    max-width: 22rem;
+  }
+
+  .chapter-nav .next {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .dir {
+    display: block;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .name {
+    font-weight: 600;
+  }
+</style>

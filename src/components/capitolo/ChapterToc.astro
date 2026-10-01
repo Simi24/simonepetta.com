@@ -1,0 +1,77 @@
+---
+import type { Capitolo } from '../../lib/corso-build.ts';
+
+interface Props {
+  capitolo: Capitolo;
+}
+
+const { capitolo } = Astro.props;
+---
+
+<!-- Focusable: a long table of contents scrolls inside the sticky box, and a keyboard user must reach it. -->
+<aside class="toc" aria-label="Indice del capitolo" tabindex="0" data-pagefind-ignore>
+  <p class="toc-title">Capitolo {capitolo.numero}</p>
+  <ol>
+    {
+      capitolo.sezioni.map((sezione) => (
+        <li>
+          <a href={`#${sezione.id}`}>
+            {sezione.numero} {sezione.titolo}
+          </a>
+          {sezione.sottosezioni.length > 0 && (
+            <ol>
+              {sezione.sottosezioni.map((sotto) => (
+                <li>
+                  <a href={`#${sotto.id}`}>
+                    {sotto.numero} {sotto.titolo}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</aside>
+
+<style>
+  .toc {
+    grid-column: 1 / span 3;
+    align-self: start;
+    position: sticky;
+    top: 1.5rem;
+    max-height: calc(100vh - 3rem);
+    overflow-y: auto;
+    font-size: 0.95rem;
+  }
+
+  .toc-title {
+    margin: 0 0 0.4em;
+    font-weight: 700;
+  }
+
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .toc li {
+    padding-block: 0.1rem;
+  }
+
+  .toc li li {
+    padding-left: 0.9rem;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 860px) {
+    .toc {
+      grid-column: 1;
+      position: static;
+      max-height: none;
+      margin-bottom: 1.5rem;
+    }
+  }
+</style>

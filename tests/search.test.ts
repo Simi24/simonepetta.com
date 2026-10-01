@@ -28,7 +28,7 @@ test('/cerca/ is the only page that references Pagefind assets', () => {
   assert.ok(search, '/cerca/ is missing');
   assert.match(search.html, /src="\/pagefind\/pagefind-ui\.js"/);
   assert.match(search.html, /href="\/pagefind\/pagefind-ui\.css"/);
-  const others = pages.filter(({ page, html }) => page !== 'cerca/index.html' && /pagefind/i.test(html.replace(/data-pagefind-body/g, '')));
+  const others = pages.filter(({ page, html }) => page !== 'cerca/index.html' && /pagefind/i.test(html.replace(/data-pagefind-(body|ignore)/g, '')));
   assert.deepEqual(others.map(({ page }) => page), []);
 });
 

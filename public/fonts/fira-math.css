@@ -1,0 +1,8 @@
+/* Fira Math, subset, for MathML (OFL, see /fonts/OFL-fira-math.txt). Linked only by pages with math (SPEC.md §5.2). */
+@font-face {
+  font-family: 'Fira Math';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/fira-math.woff2') format('woff2');
+}

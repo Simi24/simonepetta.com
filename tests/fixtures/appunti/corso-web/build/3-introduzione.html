@@ -1,0 +1,207 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">L’obiettivo del corso e’ di affrontare il problema del high performance computing.
+Affronteremo anche il tema delle GPU e del loro utilizzo nel calcolo ad alte prestazioni. Inoltre useremo il framework CUDA per sviluppare applicazioni parallele utilizzando il linguaggio CUDA-c che e’ un estensione del linguaggio c.
+Introdurremo anche alcune librerie di python, andando a focalizzarci su elementi a basso livello.</p>
+</div>
+<div id="p2" class="ltx_para">
+<p class="ltx_p">Il parallel computing e’ la necessita’ di accellerare le computazioni avvalendosi di un numero molteplice di processori. Quando ho un processo di grande dimensioni devo essere in grado di dividere il processo in parti e assegnarlo a vari processi. E’ fondamentale la progettazione del problema per spezzettarlo in problemi autonomi.</p>
+</div>
+<div id="p3" class="ltx_para">
+<p class="ltx_p">La CPU ha degli aspetti critici, sono decenni che non vediamo crescere il clock (quante operazioni puo’ fare al secondo) si e’ andati incontro a misure fisiche che non possono essere superate, come la potenza dissipata.
+Una naturale estensione e’ stata aumentare il numero di core, da multi core a many many core dando vita a device diversi, le GPU, che riscono a mantenere la legge di Moore e a fare si che a costi bassi una workstation diventi una macchina ad alte prestazioni. Bisogna dare credito a Nvidia che ha creato le general purpose GPU, che sono delle GPU che possono essere utilizzate per calcoli generali e non solo per il rendering grafico.</p>
+</div>
+<div id="p4" class="ltx_para">
+<p class="ltx_p">Il parallel computing e’ indipendenza, comunicazione e scalabilita’ dei processi.</p>
+</div>
+<div id="p5" class="ltx_para">
+<p class="ltx_p">Le motivazioni che portano all’utilizzo della GPU, un esempio e’ la riflessione, rifrazone e ombra, la cosa che si fa e’ avere un calcolo semplice che si fa per ogni pixel, quindi calcoli semplici ripetuti un numero esorbitante di volte.
+Vengono anche usate per il deeplearning. Perche’ le CNN sono di interesse per la GPU? fanno un’operazione basilare da ripetere un numero esorbitante di volte, fanno la convoluzione, prendono un immagine ed un kernel e scandiscono l’immagine sottostante estraendone matrici della dimensione del kernel e fare la somma.
+Un altro esempio e’ il calcolo matriciale, vengono fatti due prodotti interni tra i vettori riga e colonna delle matrici, questo puo’ essere parallelizzato pensando che gruppi di thread distinti possono occuparsi di ogni entry, fare questa cosa in sincrono costerebbe <math id="p5.m1" class="ltx_Math" alttext="o(n^{3})" display="inline"><semantics><mrow><mi>o</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>n</mi><mn>3</mn></msup><mo stretchy="false">)</mo></mrow></mrow></semantics></math>.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.1</span> GP-GPU</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">In sistemi eterogenei, le GPU possono essere utilizzate insieme alle CPU per ottenere prestazioni superiori. La chiave per sfruttare al meglio queste architetture eterogenee e’ la suddivisione del lavoro tra le diverse unità di elaborazione, in modo che ogni tipo di processore possa occuparsi delle operazioni per cui e’ piu’ adatto. E’ importante notare che questa architettura e’ di tipo master-slave, dove la CPU funge da master e le GPU da slave.
+Una funzione gpu e’ scritta per sfruttare il parallelismo e CUDA ci permette di pensare il sequenziale nonostante poi i calcoli vengano eseguiti in parallelo, l’obiettivo e’ aumentare la potenza di calcolo.</p>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.2</span> Architetture eterogenee</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">C’e’ la GPU e la CPU, la cpu ha un numero di core. C’e’ un bus di ci per la comunicazione tra CPU e GPU.</p>
+</div>
+<div id="S2.p2" class="ltx_para">
+<p class="ltx_p">Quando si crea codice per queste architetture ci si trova con un eseguibile con blocchi di codice che devono essere eseguiti dalla CPU e blocchi dalla GPU.</p>
+</div>
+<div id="S2.p3" class="ltx_para">
+<p class="ltx_p">Le due parti sono destinate a compiti diversi, se i dati sono piccoli e il parellelismo e’ basso siamo nel dominio della CPU ed e’ quasi inutile fare il parallelismo con la GPU (solo l’overhead del setup iniziale costa di piu’) viceversa se i dati sono grandi e il parallelismo e’ alto, allora ha senso utilizzare la GPU.</p>
+</div>
+<section id="S2.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">1.2.1</span> Parallelismo delle istruzioni</h3>
+
+<div id="S2.SS1.p1" class="ltx_para">
+<p class="ltx_p">Il parallelismo delle istruzioni e’ importante (meno di quello dei dati), nel momento in cui il problema puo’ essere suddiviso in diverse istruzioni queste vengono eseguite in parallelo. Ci vuole una dotazione hardware adeguata per gestire questo tipo di parallelismo, come ad esempio un numero sufficiente di unità di esecuzione e una gestione della comunicazione tra processi.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">1.2.2</span> Parallelismo dei dati</h3>
+
+<div id="S2.SS2.p1" class="ltx_para">
+<p class="ltx_p">Noi lavoreremo in una logica sequenziale ma si estende ad una grossa mole di dati. In questo caso, il parallelismo dei dati diventa cruciale, poiché consente di elaborare simultaneamente grandi volumi di informazioni. Utilizzando tecniche di parallelizzazione, possiamo suddividere i dati in blocchi più piccoli e distribuirli su più unità di elaborazione, massimizzando così l’efficienza e riducendo i tempi di calcolo.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.3</span> Parallelismo di task</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">Il fatto di poter avere gruppi di operazioni distinti, ci porta ad un problema non banale di identificazioni di task indipendenti dall’altri, spesso ci si avvale di strumenti come i grafi. Due task sono indipendenti se le operazioni che li compongono non sono dipendenti tra di loro. Questo problema in termini piu’ formali e’ di colorazione del grado, ogni colore individua un gruppo di nodi indipendnti tra di loro.
+Non e’ un problema banale, perche’ e’ irrisolvibile NP-hard, quindi ci si accontenta di soluzioni approssimative.</p>
+</div>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.4</span> Tassonomia di Flynn</h2>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">Si evidenzia i modelli <span class="ltx_text ltx_font_bold">SISD</span> single instruction single data dove non c’e’ nessun parallelismo e le operazioni vengono eseguite sequenzialmente.
+In contrapposizione abbiamo il <span class="ltx_text ltx_font_bold">SIMD</span> (single instruction multiple data) dove abbiamo un’istruzione che viene eseguita su piu’ dati, sono spesso dotate di librerie e hardware consistente che possono svolgere operazioni parallele, in questo caso c’e’ l’accesso ad una memoria globale.
+<span class="ltx_text ltx_font_bold">MISD</span> (multiple instruction single data) e’ un modello in cui piu’ istruzioni vengono eseguite su un singolo dato, mentre il <span class="ltx_text ltx_font_bold">MIMD</span> (multiple instruction multiple data) consente l’esecuzione di piu’ istruzioni su piu’ dati, rappresentando il massimo livello di parallelismo.</p>
+</div>
+<div id="S4.p2" class="ltx_para">
+<p class="ltx_p">Il modello <span class="ltx_text ltx_font_bold">SIMT</span> e’ interessante e viene introdotto da CUDA, qui ci sono tanti thread che svolgono tante operazioni su thread distinti, deve esserci un sistema book treading. C’e’ un evoluzione del modello SIMD perche’ lo cambia con il modello multithreading, decade il vincolo della singola istruzione, questo e’ dato dalla presenza di branch nel codice. Questo modello e’ molto utile perche’ ci permette di pensare in modo sequenziale anche se complica un po’ l’architettura perche’ bisogna fare comunicare i thread. Questo e’ il modello implementato dai processori GPU.</p>
+</div>
+<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figure 1.1</span>: </span><span class="ltx_text">Confronto tra SIMT e SIMD</span></figcaption>
+</figure>
+<div id="S4.p3" class="ltx_para">
+<p class="ltx_p">Nel simt si fissano gli operandi, mentre nel simd no.</p>
+</div>
+</div>
+</section>
+<section id="S5" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.5</span> GPU Nvidia</h2>
+
+<div id="S5.p1" class="ltx_para">
+<p class="ltx_p">CUDA e’ una libreria che permette di fare applicazioni sulle GPU</p>
+</div>
+<div id="S5.p2" class="ltx_para">
+<p class="ltx_p">Ogni scheda e’ composta da streaming multi processor, ogni streaming contiene dei core che costituiscono l’architettura della scheda, ci sono gli elementi di memoria shared e global.</p>
+</div>
+<section id="S5.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">1.5.1</span> Cuda core</h3>
+
+<div id="S5.SS1.p1" class="ltx_para">
+<p class="ltx_p">Un core ha una logica di processazione vettoriale, piu’ dati insieme che possono essere caratterizzati da diverse unita’ di calcolo (floating point).</p>
+</div>
+</div>
+</section>
+<section id="S5.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">1.5.2</span> CUDA</h3>
+
+<div id="S5.SS2.p1" class="ltx_para">
+<p class="ltx_p">E’ la piattaforma che ci permette di dare luogo ad un modello di programmazione per le schede Nvidia.
+Guardando a CUDA nello specifico per progettare delle applicazioni accellerate per le GPU useremo delle libreria gia’ accellerate per GPU (come il compilatore).</p>
+</div>
+<div id="S5.SS2.p2" class="ltx_para">
+<p class="ltx_p">Ci sono due famiglie di api:</p>
+<ul id="S5.I1" class="ltx_itemize">
+<li id="S5.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I1.i1.p1" class="ltx_para"><p class="ltx_p">CUDA Runtime</p>
+</div>
+</li>
+<li id="S5.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I1.i2.p1" class="ltx_para"><p class="ltx_p">CUDA Driver: sono a basso livello e sono piu’ difficili da utilizzare perche’ non astraggono determinate cose</p>
+</div>
+</li>
+</ul>
+</div>
+<section id="S5.SS2.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Programma CUDA</h4>
+
+<div id="S5.SS2.SSSx1.p1" class="ltx_para">
+<p class="ltx_p">Un programma cuda e’ composto da due parti:</p>
+<ul id="S5.I2" class="ltx_itemize">
+<li id="S5.I2.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I2.i1.p1" class="ltx_para"><p class="ltx_p">codice host eseguito su CPU</p>
+</div>
+</li>
+<li id="S5.I2.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I2.i2.p1" class="ltx_para"><p class="ltx_p">codice device eseguito su GPU</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S5.SS2.SSSx1.p2" class="ltx_para">
+<p class="ltx_p">Il compilatore separa il codice host dal codice device in fase di compilazione, generando un file eseguibile che contiene entrambe le parti.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S5.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">1.5.3</span> Hello world in cuda</h3>
+
+<div id="S5.SS3.p1" class="ltx_para">
+<p class="ltx_p">Per scrivere programmi cuda va modificata la sintassi del c, si scrivono delle funzioni che sono destinate al kernel cuda:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    __global__ void hello_world() {</span>
+<span class="ltx_listingline">        printf("Hello, World from GPU!\n");</span>
+<span class="ltx_listingline">    }</span></code></pre></div>
+</div>
+<div id="S5.SS3.p2" class="ltx_para">
+<p class="ltx_p">Per invocarla va utilizzata questa sintassi in cui specifichiamo il numero di blocchi e il numero di thread per ogni blocco:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    hello_world&lt;&lt;&lt;num_blocks, threads_per_block&gt;&gt;&gt;();</span></code></pre></div>
+</div>
+<div id="S5.SS3.p3" class="ltx_para">
+<p class="ltx_p">Il risultato finale e’:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    __global__ void hello_world() {</span>
+<span class="ltx_listingline">        printf("Hello, World from GPU!\n");</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    int main(void) {</span>
+<span class="ltx_listingline">        hello_world&lt;&lt;&lt;1, 10&gt;&gt;&gt;();</span>
+<span class="ltx_listingline">        cudaDeviceReset();</span>
+<span class="ltx_listingline">        return 0;</span>
+<span class="ltx_listingline">    }</span></code></pre></div>
+</div>
+<div id="S5.SS3.p4" class="ltx_para">
+<p class="ltx_p">In questa funzione stamperemo 10 volte "Hello, World from GPU!".</p>
+</div>
+<div id="S5.SS3.p5" class="ltx_para">
+<p class="ltx_p">La funzione cudaDeviceReset serve a ripristinare lo stato del dispositivo GPU. Viene utilizzata per liberare le risorse allocate sulla GPU e riportare il dispositivo a uno stato pulito. È buona norma chiamare questa funzione alla fine di un programma CUDA per garantire che tutte le risorse siano correttamente rilasciate.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>

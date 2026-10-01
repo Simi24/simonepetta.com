@@ -1,0 +1,47 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import ChapterPage from '../../../components/capitolo/ChapterPage.astro';
+import Base from '../../../layouts/Base.astro';
+import { APPUNTI_CONTENT_DIR } from '../../../config/appunti-content-dir.ts';
+import { corsoJsonLd } from '../../../lib/corso-json-ld.ts';
+import { readChapterFragment, readCorsoBuild, type Capitolo } from '../../../lib/corso-build.ts';
+import { isPublished } from '../../../lib/corso-published.ts';
+import { corsoDescription, corsoTitle } from '../../../lib/corso-presentation.ts';
+import { deriveStato } from '../../../lib/corso-stato.ts';
+
+export async function getStaticPaths() {
+  const collection = await getCollection('appunti');
+  return collection.filter(isPublished).flatMap((entry) => {
+    // A scan stays PDF forever (SPEC.md §7.3), even if a build/ showed up by mistake.
+    if (deriveStato({ fonte: entry.data.fonte, hasValidBuild: true }) !== 'html') return [];
+    const capitoli = readCorsoBuild(APPUNTI_CONTENT_DIR, entry.id)?.capitoli ?? [];
+    return capitoli.map((capitolo, i) => ({
+      params: { slug: entry.id, capitolo: capitolo.slug },
+      props: { entry, capitolo, previous: capitoli[i - 1], next: capitoli[i + 1] },
+    }));
+  });
+}
+
+interface Props {
+  entry: CollectionEntry<'appunti'>;
+  capitolo: Capitolo;
+  previous?: Capitolo | undefined;
+  next?: Capitolo | undefined;
+}
+
+const { entry, capitolo, previous, next } = Astro.props;
+const corso = entry.data;
+const fragment = readChapterFragment(APPUNTI_CONTENT_DIR, entry.id, capitolo);
+const pageUrl = new URL(`/appunti/${entry.id}/${capitolo.slug}/`, Astro.site).toString();
+const description = `Capitolo ${capitolo.numero}, ${capitolo.titolo}. ${corsoDescription(corso)}`;
+---
+
+<Base
+  title={`${capitolo.titolo}, ${corsoTitle(corso)}`}
+  description={description}
+  og={{ image: '/og/appunti.png', description, type: 'article' }}
+  jsonLd={corsoJsonLd(corso, pageUrl, `${corso.titolo}, capitolo ${capitolo.numero}: ${capitolo.titolo}`)}
+>
+  {capitolo.math && <link slot="head" rel="stylesheet" href="/fonts/fira-math.css" />}
+  <ChapterPage corso={corso} corsoSlug={entry.id} capitolo={capitolo} previous={previous} next={next} fragment={fragment} />
+</Base>

@@ -13,14 +13,14 @@ export interface LearningResourceJsonLd {
   about: string;
 }
 
-/** `LearningResource` JSON-LD for a course page (SPEC.md §7.3, §12.3). */
-export function corsoJsonLd(corso: Corso, url: string): LearningResourceJsonLd {
+/** `LearningResource` JSON-LD for a course page, or for one of its chapters via `name` (SPEC.md §7.3, §12.3). */
+export function corsoJsonLd(corso: Corso, url: string, name: string = corso.titolo): LearningResourceJsonLd {
   const programme = degreeProgramme(corso.livello);
   return {
     '@context': 'https://schema.org',
     '@type': 'LearningResource',
     '@id': `${url}#corso`,
-    name: corso.titolo,
+    name,
     url,
     inLanguage: 'it',
     educationalLevel: programme,

@@ -128,7 +128,7 @@ export function checkBudget(dist: string): Violation[] {
     for (const family of fontFamiliesIn(css)) {
       if (!(ALLOWED_FONT_FAMILIES as readonly string[]).includes(family)) {
         violations.push({ page, message: `loads an undeclared font family "${family}"` });
-      } else if (family === 'Fira Math' && !isMathPage(page)) {
+      } else if (family === 'Fira Math' && !isMathPage(page, html)) {
         violations.push({ page, message: 'loads Fira Math but is not a declared math page' });
       }
     }

@@ -20,6 +20,16 @@ npm run check          # astro check
 npm run build
 ```
 
+## Convert a course to HTML
+
+Outside the site build, with Docker running (the image is built on first use, a few minutes):
+
+```sh
+npm run appunti:convert -- <slug>   # reads appunti/<slug>/src/main.tex, writes build/, <slug>.pdf and meta.json
+```
+
+Needs `pdfinfo` (poppler) on `PATH` for the page count. Details and limits: `SPEC.md` §7.4.
+
 ## Setup
 
 - Cloudflare API tokens: `scripts/setup-cloudflare.sh`, a guided wizard (tokens never pass through an agent).

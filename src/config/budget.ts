@@ -47,7 +47,6 @@ export const JS_CAP_EXCEPTIONS: readonly { pattern: RegExp; reason: string }[] =
 export const isJsExceptionPage = (pagePath: string): boolean =>
   JS_CAP_EXCEPTIONS.some(({ pattern }) => pattern.test(pagePath));
 
-/** Pages allowed to load Fira Math, because they render MathML. None published yet. */
-export const MATH_PAGE_PATTERNS: readonly RegExp[] = [];
-
-export const isMathPage = (pagePath: string): boolean => MATH_PAGE_PATTERNS.some((pattern) => pattern.test(pagePath));
+/** Pages allowed to load Fira Math: notes chapters that render MathML (SPEC.md §5.2, §12.2). */
+export const isMathPage = (pagePath: string, html: string): boolean =>
+  isNotesChapterPage(pagePath) && /<math[\s>]/.test(html);
