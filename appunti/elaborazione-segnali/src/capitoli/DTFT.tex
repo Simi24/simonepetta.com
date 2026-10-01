@@ -20,18 +20,18 @@ Notiamo inizialmente che questa formula e' molto simile alla risposta in frequen
 Inoltre ricordando la definizione di prodotto scalare tra due segnali tempo discreti:
 
 \[
-    <x[n]; y[n]> = \sum_{n = - \infty}^{+ \infty} x[n] \cdot y^*[n]
+    \langle x[n]; y[n]\rangle = \sum_{n = - \infty}^{+ \infty} x[n] \cdot y^*[n]
 \]
 
 notiamo che i fasori discreti sono uguali al prodotto scalare tra $x[n]$ e $y^*[n] = e^{j \hat{\omega} n} $, in pratica possiamo riscrivere la DTFT come il prodotto scalare tra un segnale tempo discreto ed una base ortonormale: 
 \[
-    X(e^{j \hat{\omega}}) = <x[n]; e^{j \hat{\omega} n}>
+    X(e^{j \hat{\omega}}) = \langle x[n]; e^{j \hat{\omega} n}\rangle
 \]
 
 Inoltre ricordando la serie di Fourier per il tempo continuo, notiamo che c'e' un parallelismo, perche' anche in quel caso l'analisi di un segnale (fatta con un integrale) era uguale al prodotto scalare tra il segnale stesso ed una base ortonormale:
 
 \[
-    ak = \frac{1}{T_0} \int_0^{T_0} x(t) \cdot e^{-j 2\pi F_0 k t} dt = <x(t); e^{j 2\pi F_0 k t}>
+    ak = \frac{1}{T_0} \int_0^{T_0} x(t) \cdot e^{-j 2\pi F_0 k t} dt = \langle x(t); e^{j 2\pi F_0 k t}\rangle
 \]
 
 Formula di SINTESI:
@@ -370,7 +370,7 @@ Dimostriamolo:
 
 \[\begin{split}
    x[n] &\leftrightarrow X(e^{j \hat{\omega}}) \\
-   x[n] e^{j \hat{\omega}_0 n} &\leftrightarrow X(e^{j (\hat{\omega} - \hat{\omega}_0}))
+   x[n] e^{j \hat{\omega}_0 n} &\leftrightarrow X(e^{j (\hat{\omega} - \hat{\omega}_0)})
 \end{split}\]
 
 \begin{figure}[ht!]
@@ -606,15 +606,15 @@ Dato che sappiamo che la DTFT se esiste e' unica, allora :
 
 \[\begin{split}
     \mbox{DTFT}\{y[n]\} &= \mbox{DTFT}\{x[n] * h[n]\} \\
-    Y(e^{j\hat{\omega}} &= X(e^{j\hat{\omega}}) \cdot \mbox{DTFT}\{h[n]\} \\
+    Y(e^{j\hat{\omega}}) &= X(e^{j\hat{\omega}}) \cdot \mbox{DTFT}\{h[n]\} \\
     \mbox{DTFT}\{h[n]\} &= \sum_{n=-\infty}^{+\infty} h[n] e^{-j \hat{\omega} n_0} = H(e^{j\hat{\omega}})
 \end{split}\]
 
 Abbiamo quindi trovato un terzo modo per vedere la risposta in frequenze che e' la DTFT del sistema e possiamo trovarla dal rapporto tra la DTFT dell'uscita del sistema e la DTFT dell'ingresso del sistema:
 
 \[\begin{split}
-    Y(e^{j\hat{\omega}} &= X(e^{j\hat{\omega}}) \cdot H(e^{j\hat{\omega}}) \\
-    H(e^{j\hat{\omega}}) &= \frac{Y(e^{j\hat{\omega}}}{X(e^{j\hat{\omega}})}
+    Y(e^{j\hat{\omega}}) &= X(e^{j\hat{\omega}}) \cdot H(e^{j\hat{\omega}}) \\
+    H(e^{j\hat{\omega}}) &= \frac{Y(e^{j\hat{\omega}})}{X(e^{j\hat{\omega}})}
 \end{split}\]
 
 \section{Filtraggio (LTI) nel tempo vs frequenze}
@@ -669,7 +669,7 @@ Da questi punti notiamo che il segnale in uscita ha un andamento del tipo:
 Ora per calcolare la risposta in frequenza utilizziamo le coppie di DTFT che abbiamo usato in precedenza per vedere se possiamo ricondurci a qualcuna di esse:
 
 \[
-    H(e^{j\hat{\omega}}) = \sum_{n=-\infty}^{+\infty} h[n] e^{-j\hat{\omega}n} = DTFT\{h[n\} = \frac{1}{1 - \frac{1}{2} e^{-j\hat{\omega}}}
+    H(e^{j\hat{\omega}}) = \sum_{n=-\infty}^{+\infty} h[n] e^{-j\hat{\omega}n} = DTFT\{h[n]\} = \frac{1}{1 - \frac{1}{2} e^{-j\hat{\omega}}}
 \]
 
 Abbiamo risolto questo esercizio in 3 passaggi, siamo partiti dall'equazione alle differenze, abbiamo trovato la risposta all'impulso ed infine abbiamo calcolato la risposta in frequenza, proviamo a farlo in un passaggio solo passando direttamente dall'equazione alle differenze alla risposta in frequenza.
@@ -717,7 +717,7 @@ Cominciamo calcolando la risposta in frequenza usando le proprieta' di unicita',
     &\frac{Y(e^{j\hat{\omega}})}{X(e^{j\hat{\omega}})} = \frac{\frac{1}{20}(1+e^{-j\hat{\omega}})}{1-\frac{9}{10}e^{-j\hat{\omega}}} = H(e^{j\hat{\omega}})
 \end{split}\]
 
-Per trovare la risposta all'impulso dobbiamo calcolare $h[n] = IDTFT\{H(e^{j\hat{\omega}}\}$, per farlo andiamo a vedere le proprieta' e le coppie di DTFT per vedere se possiamo riscrivere H in modo da ricondurci a delle coppie note:
+Per trovare la risposta all'impulso dobbiamo calcolare $h[n] = IDTFT\{H(e^{j\hat{\omega}})\}$, per farlo andiamo a vedere le proprieta' e le coppie di DTFT per vedere se possiamo riscrivere H in modo da ricondurci a delle coppie note:
 
 \[\begin{split}
     H(e^{j\hat{\omega}}) &= \frac{1}{20} \cdot \frac{1}{1-\frac{9}{10}e^{-j\hat{\omega}}} + \frac{1}{20}e^{e^{-j\hat{\omega}}} \cdot \frac{1}{1-\frac{9}{10} e^{-j\hat{\omega}}} \\
@@ -860,10 +860,10 @@ Esiste anche una formula di sintesi la IDFT:
 Abbiamo fatto un esercizio per vedere come funziona la DFT per un vettore di 4 elementi, quindi sappiamo che in questo caso $k=3$ ed N pure, quello che abbiamo fatto e' stato calcolare elemento per elemento la DFT sostituendo opportunamente k ed N nella formula. Successivamente abbiamo visto quanto valgono gli esponenziali complessi (i numeri cerchiati in rosso), ed abbiamo notato che quindi quello che succede e' come se moltiplicassimo il segnale per una matrice H, ed i punti che otteniamo sono:
 
 \[\begin{split}
-    X_[0] = 2 \rightarrow \hat{\omega}_{k=0} = \frac{2\pi}{4} \cdot 0 = 0 \\
-    X_[1] = 1 - i \rightarrow \hat{\omega}_{k=1} = \frac{2\pi}{4} \cdot 1 = \frac{\pi}{2} \\
-    X_[2] = 0 \rightarrow \hat{\omega}_{k=2} = \frac{2\pi}{4} \cdot 2 = \pi \\
-    X_[3] = 1 + i \rightarrow \hat{\omega}_{k=3} = \frac{2\pi}{4} \cdot 3 = \frac{3}{2}\pi \\
+    X[0] = 2 \rightarrow \hat{\omega}_{k=0} = \frac{2\pi}{4} \cdot 0 = 0 \\
+    X[1] = 1 - i \rightarrow \hat{\omega}_{k=1} = \frac{2\pi}{4} \cdot 1 = \frac{\pi}{2} \\
+    X[2] = 0 \rightarrow \hat{\omega}_{k=2} = \frac{2\pi}{4} \cdot 2 = \pi \\
+    X[3] = 1 + i \rightarrow \hat{\omega}_{k=3} = \frac{2\pi}{4} \cdot 3 = \frac{3}{2}\pi \\
 \end{split}\]
 
 \begin{figure}[ht!]
@@ -876,13 +876,13 @@ Tracciando il grafico del modulo e della fase notiamo che non sono simmetrici, q
 Quindi concludendo possiamo dire che la DFT di un segnale (vettore) e' il segnale stesso moltiplicato per la matrice H:
 
 \[
-    \mbox{DFT: } X_[k] = H x[n]
+    \mbox{DFT: } X[k] = H x[n]
 \]
 
 di conseguenza possiamo riscrivere la IDFT come il segnale moltiplicato per la matrice coniugata (coniugato di elemento per elemento della matrice) e trasposta (ruotata sulla diagonale):
 
 \[
-    \mbox{IDFT: } x[n] = H^{-1} X_[k] = \frac{1}{N}(H^*)^T \cdot X_[k]
+    \mbox{IDFT: } x[n] = H^{-1} X[k] = \frac{1}{N}(H^*)^T \cdot X[k]
 \]
 
 Per avere in riscontro di quello fatto adesso in questo esercizio, calcoliamo la DTFT del vettore per vedere se troviamo gli stessi punti:
@@ -916,10 +916,10 @@ A differenze della DTFT che era periodica di $2\pi$ la DFT e' periodica di N pun
 
 \[\begin{split}
     &k \rightarrow \frac{2\pi}{N} \cdot k = \hat{\omega} \\
-    X_[k] &= \sum_{n=0}^{N-1} x[n] e^{-j \frac{2\pi}{N}\cdot kn} \\
-    X_[k+n] &= \sum_{n=0}^{N-1} x[n] e^{-j \frac{2\pi}{N}(k+N)n} \\
+    X[k] &= \sum_{n=0}^{N-1} x[n] e^{-j \frac{2\pi}{N}\cdot kn} \\
+    X[k+n] &= \sum_{n=0}^{N-1} x[n] e^{-j \frac{2\pi}{N}(k+N)n} \\
     &= \sum_{n=0}^{N-1} x[n]e^{-j \frac{2\pi}{N} \cdot kn} \cdot \cancel{e^{-j \frac{2\pi}{\cancel{N}}\cdot n \cancel{N}}} \\
-    X_[k+n] &= X_[k]
+    X[k+n] &= X[k]
 \end{split}\]
 
 \subsection{Propritea' 2: DFT e' simmetrica coniugata se $x[n] \in \mathbf{R}$ }
@@ -968,7 +968,7 @@ Ricordiamo la proprieta' del ritardo temporale per la DTFT:
 Vediamo cosa succede se ritardiamo la DFT, partiamo ricordando com'e' fatta la DFT di un segnale:
 
 \[
-    x[n] = \frac{1}{N} \sum_{k=0}^{N-1} X_[k]e^{-j \frac{2\pi}{N} \cdot kn}
+    x[n] = \frac{1}{N} \sum_{k=0}^{N-1} X[k]e^{-j \frac{2\pi}{N} \cdot kn}
 \]
 
 \begin{figure}[ht!]
@@ -979,9 +979,9 @@ Vediamo cosa succede se ritardiamo la DFT, partiamo ricordando com'e' fatta la D
 ora ritardiamo il segnale sostituendo $n+N$ ad n:
 
 \[\begin{split}
-    x[n+N] &= \frac{1}{N} \sum_{k=0}^{N-1} X_[k]e^{-j \frac{2\pi}{N} (n+N) \cdot k}\\
+    x[n+N] &= \frac{1}{N} \sum_{k=0}^{N-1} X[k]e^{-j \frac{2\pi}{N} (n+N) \cdot k}\\
     &= \sum_{n=0}^{N-1} x[n]e^{-j \frac{2\pi}{N} \cdot kn} \cdot \cancel{e^{-j \frac{2\pi}{\cancel{N}}\cdot n \cancel{N}}} \\
-    X_[n+N] &= X_[n]
+    X[n+N] &= X[n]
 \end{split}\]
 
 Quindi attenzione perche' la ricostruzione rende periodico il segnale. La $x[n]$ corrisponde sia alla DFT di un segnale a supporto compatto che a quella di uno periodico.
@@ -1106,7 +1106,7 @@ Guardiamo adesso una tabella che ci fa capire praticamente quanto e' piu' vantag
         16 & $2 \cdot 16 + 16 = 44$ & 256 \\
         N & $N(\log_2 N-1)$ & $N^2$ \\
         1000 & $2,8 \cdot 10^4$ & $10^6$ \\
-        $10^6$ & $5,8 \cdot 10^7$ & $10^12$ \\
+        $10^6$ & $5,8 \cdot 10^7$ & $10^{12}$ \\
     \end{tabular}
 \end{table}
 
@@ -1130,7 +1130,7 @@ Ma perche' ortogonale e non ortonormale, come invece era per serie di Fourier e 
 Ricordiamo inizialmente che un vettore e' ortogonali quando prodotto scalare per una base e' 0. Dimostriamo quindi che facendo il prodotto vettoriale tra un elemento della DFT ed una base otteniamo 0:
 
 \[\begin{split}
-    <e^{j \frac{2\pi}{N}kn}; e^{j \frac{2\pi}{N}hn}> &= \sum_{n=0}^{N-1} e^{j \frac{2\pi}{N}kn} e^{j \frac{2\pi}{N}hn} \\
+    \langle e^{j \frac{2\pi}{N}kn}; e^{j \frac{2\pi}{N}hn}\rangle &= \sum_{n=0}^{N-1} e^{j \frac{2\pi}{N}kn} e^{j \frac{2\pi}{N}hn} \\
     &= \sum_{n=0}^{N-1} (e^{j \frac{2\pi}{N}})^{(k-h)n} = \frac{1 - e^{j \frac{2\pi}{N}kn}}{1 - e^{j\frac{2\pi}{N}}(k-h)}\\
     &= 
     \begin{cases}
@@ -1142,7 +1142,7 @@ Ricordiamo inizialmente che un vettore e' ortogonali quando prodotto scalare per
 \subsection{Legge di conservazione (Parseval)}
 
 \begin{equation}
-    \sum_{n=0}^{N_1} |x[n]|^2 = \frac{1}{N} \sum_{k=0}^{N-1} |X_{[k]}|^2
+    \sum_{n=0}^{N-1} |x[n]|^2 = \frac{1}{N} \sum_{k=0}^{N-1} |X_{[k]}|^2
 \end{equation}
 
 E' l'energia del segnale se il segnale ha supporto compatto, altrimenti se e' periodico e' l'energia nel periodo.

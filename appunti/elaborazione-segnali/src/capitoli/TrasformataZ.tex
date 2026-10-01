@@ -251,7 +251,7 @@ Vediamo adesso una serie di esempi, ma prima diamo la definizione di PRODUTTORIA
 
 
 \[
-    |H(Z)| = |\frac{b_M \prod_{i = 1}^M (z - z_i)}{a_N \prod_{j = 1}^N (p - p_j)}| = \frac{|b_M| \prod_{i = 1}^M |z - z_i|}{|a_N| \prod_{j = 1}^N |p - p_j|}
+    |H(Z)| = |\frac{b_M \prod_{i = 1}^M (z - z_i)}{a_N \prod_{j = 1}^N (z - p_j)}| = \frac{|b_M| \prod_{i = 1}^M |z - z_i|}{|a_N| \prod_{j = 1}^N |z - p_j|}
 \]
 
 Da questa definizione possiamo vedere delle caratteristiche degli ZERI, dato che il denominatore sara' piccolo quando siamo vicini ad uno zero, gli zeri tendono a far diventare piccola la funzione di trasferimento, graficamente possiamo immaginarlo come se schiacciassimo la funzione sul piano orizzontale.
@@ -388,7 +388,7 @@ Esempio 3:
     &= \frac{1}{1 - \frac{1}{3} z^{-1}} \cdot z^{-1}
 \end{split}\]
 
-Qui pero' abbiamo un problema, perche' non sappiamo se e' un sistema causale o anticausale, ed il comportamento del gradino cambia in base al tipo di sistema, quindi se ROC: $|z| > |\frac{1}{3}$|, allora $h[n] = (\frac{1}{3})^{n-1} u[n-1]$.
+Qui pero' abbiamo un problema, perche' non sappiamo se e' un sistema causale o anticausale, ed il comportamento del gradino cambia in base al tipo di sistema, quindi se ROC: $|z| > |\frac{1}{3}|$, allora $h[n] = (\frac{1}{3})^{n-1} u[n-1]$.
 Invece se ROC: $|z| < |\frac{1}{3}|$, allora $h[n] = -(\frac{1}{3})^{n-1} u[-(n-1)]$.
 
 \newpage
@@ -425,7 +425,7 @@ Facciamolo:
     &Y(z) = X(z) - \sqrt{2} Z\{x[n-1]\} + Z\{x[n-2]\} \\
     &\mbox{Usiamo la proprieta' del ritardo}\\
     &Y(z) = X(z) - \sqrt{2} X(z) z^{-1} + X(z) z^{-2}\\
-    &\frac{Y(z)}{X(z)} = 1 - \sqrt{2} z^{-1} + z^{-1} = \frac{z^2 - \sqrt{2}z + 1}{z^2}
+    &\frac{Y(z)}{X(z)} = 1 - \sqrt{2} z^{-1} + z^{-2} = \frac{z^2 - \sqrt{2}z + 1}{z^2}
 \end{split}\]
 
 Dobbiamo trovare gli ZERI:
@@ -459,7 +459,7 @@ Vogliamo trovare l'equazione alle differenze che l'ha generata. Per farlo dobbia
 
 \[\begin{split}
     &X(z)[1 - \sqrt{3}z^{-1} + z^{-2}] = Y(z)[1 - 0,9 \sqrt{3} z^{-1} + 0,81 z^{-2}]\\
-    &X(z) - \sqrt{3}z^{-1}X(z) + X(z) + z^{-2} = Y(z) - 0,9 \sqrt{3}z^{-1} Y(z) + 0,81z^{-2}Y(z)\\
+    &X(z) - \sqrt{3}z^{-1}X(z) + z^{-2}X(z) = Y(z) - 0,9 \sqrt{3}z^{-1} Y(z) + 0,81z^{-2}Y(z)\\
     &\mbox{Facciamo la trasformata inversa}\\
     &x[n] - \sqrt{3} x[n-1] + x[n-2] = y[n] - 0,9 \sqrt{3} y[n-1] + 0,81 y[n-2]\\
     &y[n] = 0,9 \sqrt{3}y[n-1] - 0,81 y[n-2] + x[n] - \sqrt{3} x[n-1] + x[n-2]
@@ -476,12 +476,12 @@ Il consiglio e' di considerare sempre i polinomi con esponenti negativi, ma quan
 
 ora calcoliamo gli ZERI, portandoli in forma polare:
 \[
-    Z_{1,2} = \frac{\sqrt{3} \pm \sqrt{3-4}}{2} = \frac{\sqrt{3}}{2} \pm i\frac{1}{2} = e^{\pm i \frac{\pi}{3}}
+    Z_{1,2} = \frac{\sqrt{3} \pm \sqrt{3-4}}{2} = \frac{\sqrt{3}}{2} \pm i\frac{1}{2} = e^{\pm i \frac{\pi}{6}}
 \]
 
 e i POLI, portandoli in forma polare:
 \[
-    P_{1,2} = \frac{0,9\sqrt{3}\pm \sqrt{0,81 \cdot 3 - 0,81 \cdot 4}}{2} = \frac{0,9 \sqrt{3} \pm 0,9 i}{2} = 0,9 (\frac{\sqrt{3}}{2} + \frac{1}{2}i) = e^{i \frac{\pi}{3}}
+    P_{1,2} = \frac{0,9\sqrt{3}\pm \sqrt{0,81 \cdot 3 - 0,81 \cdot 4}}{2} = \frac{0,9 \sqrt{3} \pm 0,9 i}{2} = 0,9 (\frac{\sqrt{3}}{2} + \frac{1}{2}i) = 0,9\, e^{i \frac{\pi}{6}}
 \]
 \newpage
 
@@ -575,7 +575,7 @@ Quindi inizialmente calcoliamo la funzione di trasferimento $H(z)$ dell'equaazio
     y[n] = a_1 y[n-1] + b_0 x[n]\\
     Y(z) = a_1 Y(z) z^{-1} + b X(z)\\
     Y(z) \{1 - a_1 z^{-1}\} = bX(z)\\
-    \frac{y(z)}{X(z)} = \frac{b}{1 - a_1 z^{-1}} = H(z)
+    \frac{Y(z)}{X(z)} = \frac{b}{1 - a_1 z^{-1}} = H(z)
 \end{split}\]
 
 Della funzione di trasferimento possiamo dire che la ROC e' $|z| > |a|$, perche' sapevamo che il sistema che l'ha generata e' causale, inoltre esiste un solo polo che e' $a_1$.
@@ -605,7 +605,7 @@ Tracciamo il grafico poli-zeri:
 Ora per trovare $Y(z)$ abbiamo due strategie, possiamo portare a denominatore comune le due frazioni e cercare in numeratori corretti:
 
 \[\begin{split}
-    Y(z) = \frac{b}{(1 - a_1 z^{-1})(1 - z^{-1})} = \frac{B_1}{(1 - a_1 z{-1}} + \frac{B_2}{(1 - z^{-1})}
+    Y(z) = \frac{b}{(1 - a_1 z^{-1})(1 - z^{-1})} = \frac{B_1}{(1 - a_1 z^{-1})} + \frac{B_2}{(1 - z^{-1})}
 \end{split}\]
 
 Devo trovare i valori di $B_1$ e $B_2$, per farlo basta risolvere questo sistema:
@@ -642,8 +642,8 @@ Oppure potevamo usare la TECNICA DEI RESIDUI, ma prima di utilizzarla dobbiamo f
 Quello che dobbiamo fare per trovare $B_1$ e $B_2$ e' moltiplicare la frazione per un fattore che cancella il polo (opposto del fattore che genera il polo), quindi:
 
 \[\begin{split}
-    B_1 &= [Y(z) \cdot(1 - p_1z^{-1})] = [\frac{b}{\cancel{(1 - a_1 z^{-1})}(1 - z^{-1})} \cdot \cancel{(1 - a_1 z^{-1})}] = \frac{b}{1 - a^{-1}} \\
-    B_2 &= [Y(z) \cdot(1 - p_1z^{-1})] = [\frac{b}{(1 - a_1 z^{-1}) \cancel{(1 - z^{-1})}} \cdot \cancel{(1 - z^{-1})}] = \frac{b}{1 - a_1} \\
+    B_1 &= [Y(z) \cdot(1 - p_1z^{-1})] = [\frac{b}{\cancel{(1 - a_1 z^{-1})}(1 - z^{-1})} \cdot \cancel{(1 - a_1 z^{-1})}] = \frac{b}{1 - a_1^{-1}} \\
+    B_2 &= [Y(z) \cdot(1 - p_2z^{-1})] = [\frac{b}{(1 - a_1 z^{-1}) \cancel{(1 - z^{-1})}} \cdot \cancel{(1 - z^{-1})}] = \frac{b}{1 - a_1} \\
 \end{split}\]
 
 \section{Metodo dei residui}

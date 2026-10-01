@@ -347,7 +347,7 @@ Ora semplicemente copiamo ed incolliamo le frequenze ed i fasori, secondo la for
 A questo punto mettiamo insieme gli esponenti degli esponenziali moltiplicati tra di loro, inoltre raccogliamo la i e portiamo fuori i meno in modo tale che gli esponenziali con la stessa base siano complessi coniugati per poter applicare la formula di Eulero:
 
 \[\begin{split}
-    2e^{-i(2\pi 3t - \frac{\pi}{3}} + e^{-i(2\pi 2t + \frac{\pi}{3}} + 3 + e^{i(2\pi 2t + \frac{\pi}{6}} + 2e^{i(2\pi 3t - \frac{\pi}{3}}
+    2e^{-i(2\pi 3t - \frac{\pi}{3})} + e^{-i(2\pi 2t + \frac{\pi}{3})} + 3 + e^{i(2\pi 2t + \frac{\pi}{6})} + 2e^{i(2\pi 3t - \frac{\pi}{3})}
 \end{split}\]
 
 Applichiamo la formula di Eulero tra i coniugati ed ottieniamo:
@@ -839,7 +839,7 @@ $F_c$ e' chiamata frequenza carrier (portante), serve per aumentare la frequenza
 Il prodotto scalare di due funzione periodiche, di periodo $T_0$:
 
 \[
-    <f(t), g(t)> \frac{1}{T_0} \int_0^{T_0} f(t) g^*(t) dt
+    \langle f(t), g(t)\rangle \frac{1}{T_0} \int_0^{T_0} f(t) g^*(t) dt
 \]
 
 Quindi potro' dire che due funzioni sono ortogonali quando il loro prodotto scalare e' zero.
@@ -854,7 +854,7 @@ Possiamo dividere il problema in due casi, quando $k_1 = k_2$:
 
 \[\begin{split}
     \frac{1}{T_0} &\int_0^{T_0} e^{i2\pi t F_o k} \cdot e^{-i2\pi t F_o k} dt \rightarrow = e^0 = 1 \\
-    \frac{1}{T_0} &[t]_0^{T_0} = \frac{T_0}{F_0} = 1
+    \frac{1}{T_0} &[t]_0^{T_0} = T_0 \cdot F_0 = 1
 \end{split}\]
 
 invece quando $k_1 \neq k_2$:
@@ -865,14 +865,14 @@ invece quando $k_1 \neq k_2$:
     &\mbox{applichiamo la formula di risoluzione dell'integrale:}\\
     \frac{1}{T_0} &[\frac{e^{i2\pi t F_0(k_1 - k_2)}}{i2\pi F_0(k_1 - k_2)}]_0^{T_0} \\
     &\mbox{risolvendo ora tra gli estremi e semplificando otteniamo:}\\
-    1 &[\frac{e^{i2\pi t F_0(k_1 - k_2)}-1}{i2\pi (k_1 - k_2}] \\
+    1 &[\frac{e^{i2\pi t F_0(k_1 - k_2)}-1}{i2\pi (k_1 - k_2)}] \\
 \end{split}\]
 
 Notiamo pero' che $k_1 - k_2$ sara' sempre un numero intero $\neq 0$. Quindi l'esponenziale $e^{i2\pi h} = 1$, che sottraendo con l'uno al numeratore dara' sempre 0, qualsiasi siano i valori di $k_1, k_2$.
 
 Capito che :
 \[\begin{split}
-    <e^{i2\pi t F_o k_1}, e^{i2\pi t F_o k_2}> = 
+    \langle e^{i2\pi t F_o k_1}, e^{i2\pi t F_o k_2}\rangle = 
     \begin{cases}
     1 & \text{se } k_1 = k_2 \\
     0   & \text{se } k_1 \neq k_2 

@@ -50,7 +50,7 @@ Equivale alla modellazione discreta di un evento ad impulsi, ad esempio lo scopp
 \[\begin{split}
     u[n] = 
     \begin{cases}
-    1 \text{ se } n \le 0 \\
+    1 \text{ se } n \ge 0 \\
     0 \text{ se } n < 0 \\
     \end{cases}
 \end{split}\]
@@ -69,7 +69,7 @@ E' l'opposto del gradino causale:
     -u[-n-1] = 
     \begin{cases}
     0 \text{ se } n \ge 0 \\
-    -1 \text{ se } n < 0 (n \le 1) \\
+    -1 \text{ se } n < 0 (n \le -1) \\
     \end{cases}
 \end{split}\]
 
@@ -176,7 +176,7 @@ Questa cosa possiamo farla con qualsiasi segnale:
     x[n] = \sum_{k = - \infty}^{+\infty} x[k] \delta[n-k]
 \]
 
-dove $x[n]$ e' il valore del segnale nel punto (la modulazione delle y), $\delta[n-k$ e' la funzione delta traslata nel tempo. Inoltre notiamo che generalizzando si puo' scomporre un segnale anche che non abbia un supporto compatto.
+dove $x[n]$ e' il valore del segnale nel punto (la modulazione delle y), $\delta[n-k]$ e' la funzione delta traslata nel tempo. Inoltre notiamo che generalizzando si puo' scomporre un segnale anche che non abbia un supporto compatto.
 
 Ci serve per descrivere in modo naturale un segnale, un insieme di campioni nel tempo con valori diversi.
 
@@ -284,7 +284,7 @@ Ora riscriviamo i termini in H in forma polare (ricordando che la parte tra il m
     y_c[n] &= | H(e^{j \hat{\omega_0}}) | e^{i \varphi H(e^{j \hat{\omega_0}})} \cdot \frac{A_0}{2} e^{i \varphi_0} e^{\hat{\omega_0}n i} + | H(e^{j \hat{\omega_0}}) | e^{-i \varphi H(e^{j \hat{\omega_0}})} \cdot \frac{A_0}{2} e^{-i \varphi_0} e^{-\hat{\omega_0}n i} \\
     &\mbox{Raccolgo i termini con la stessa base} \\
     &= | H(e^{j \hat{\omega_0}}) | \frac{A_0}{2} e^{i[\hat{\omega_0} n + \varepsilon_0 + \varphi H (e^{j \hat{\omega_0}})]} + | H(e^{j \hat{\omega_0}}) | \frac{A_0}{2} e^{-i[\hat{\omega_0} n + \varepsilon_0 + \varphi H (e^{j \hat{\omega_0}})]} \\
-    y_c[n] &= | H(e^{j \hat{\omega_0}} | A_0 \cos [ \hat{\omega_0} n + \varepsilon_0 + \varphi_0 H (e^{j \hat{\omega_0}})]
+    y_c[n] &= | H(e^{j \hat{\omega_0}}) | A_0 \cos [ \hat{\omega_0} n + \varepsilon_0 + \varphi_0 H (e^{j \hat{\omega_0}})]
 \end{split}\]
 
 Concludendo notiamo che in output dal sistema abbiamo un coseno con la stesse frequenza discreta di qu
@@ -336,7 +336,7 @@ Possiamo definire un'equazione alle differenze standard per qualunque sistema LT
     y[n] = \sum_{h = -N_1, h \neq 0}^{N_2} a h y[n-h] + \sum_{k = -M_1}^{M_2} bk x[n-k]
 \]
 
-In cui $ah$ e $bk$ sono costanti, $y[n-h$ e' l'uscita del sistema futura o passata e $x[n-k]$ e' l'input del sistema (presente, passato o futuro).
+In cui $ah$ e $bk$ sono costanti, $y[n-h]$ e' l'uscita del sistema futura o passata e $x[n-k]$ e' l'input del sistema (presente, passato o futuro).
 La prima sommatoria si chiama parte \underline{AUTOREGRESSIVA (AR)} che dipende dall'output del sistema.
 La seconda sommatoria si chiama \underline{MEDIA MOBILE (MA)} o MOUVING AVERAGE, che dipende solamente dall'input al sistema.
 Se riusciamo a ricondurre l'equazione alle differenze di un sistema a questa equazione generale non dobbiamo verificarne la linearita' e la tempo invarianza.
@@ -458,10 +458,10 @@ Usando Eulero noto che $\frac{e^j \hat{\omega}}{2} + \frac{e^{-j \hat{\omega}}}{
 Ora invece di trasformare in forma polare riscrivo l'equazione in modo che sia scritta in maniera simile alla forma polare, che ricordiamo essere $\phi e^{i \Omega}$, da cui posso ricavare il modulo e la fase:
 
 \[
-    (2 + 2 \cos(\hat{\omega}) e^{-j \hat{\omega}}
+    (2 + 2 \cos(\hat{\omega})) e^{-j \hat{\omega}}
 \]
 
-Dato che $2 + 2 \cos(\hat{\omega} \ge 0$ e' il modulo e la fase sara' $-\hat{\omega}$.
+Dato che $2 + 2 \cos(\hat{\omega}) \ge 0$ e' il modulo e la fase sara' $-\hat{\omega}$.
 
 \begin{figure}[ht!]
     \centering
