@@ -44,7 +44,13 @@ export function serveStatic(root: string): Promise<StaticServer> {
       }
       resolve({
         url: `http://127.0.0.1:${address.port}`,
-        close: () => new Promise((res) => server.close(() => res())),
+        // `close()` alone waits for every connection to finish, including one a browser left with
+        // half a request: the test calling it would sit there until its own timeout.
+        close: () =>
+          new Promise((res) => {
+            server.close(() => res());
+            server.closeAllConnections();
+          }),
       });
     });
   });
