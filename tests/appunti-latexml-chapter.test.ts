@@ -8,6 +8,13 @@ const fixture = (name: string): string => readFileSync(new URL(`./fixtures/latex
 
 const LINKS = { corso: 'gpucomputing', chapterSlugs: { 'Ch1.html': '1-introduzione', 'Ch2.html': '2-modello-di-programmazione-cuda' } };
 
+// gpu-Ch1.html has one raster figure; these tests are about something else.
+const GPU_CH1_FIGURES = {
+  rasters: new Map([['images/simtvssimd.png', { name: 'images-simtvssimd.webp', width: 830, height: 316 }]]),
+  tikz: [],
+  alt: { 'images/simtvssimd.png': 'Confronto fra SIMD e SIMT.' },
+};
+
 test('reads the chapter number and title from the chapter heading', () => {
   assert.deepEqual(readChapterHead(fixture('mini-Ch1.html')), { numero: 1, titolo: 'Variabili aleatorie continue' });
   assert.deepEqual(readChapterHead(fixture('gpu-Ch1.html')), { numero: 1, titolo: 'Introduzione' });
@@ -26,7 +33,7 @@ test('lists the numbered sections of the chapter for its table of contents', () 
 });
 
 test('subsections are listed under their section', () => {
-  const { sezioni } = processChapter(fixture('gpu-Ch1.html'), LINKS);
+  const { sezioni } = processChapter(fixture('gpu-Ch1.html'), LINKS, GPU_CH1_FIGURES);
   const eterogenee = sezioni.find((sezione) => sezione.id === 'S2');
   assert.deepEqual(eterogenee?.sottosezioni, [
     { id: 'S2.SS1', numero: '1.2.1', titolo: 'Parallelismo delle istruzioni' },
@@ -36,7 +43,7 @@ test('subsections are listed under their section', () => {
 });
 
 test('the fragment is the chapter body only: no page chrome, no heading, no script', () => {
-  const { html } = processChapter(fixture('gpu-Ch1.html'), LINKS);
+  const { html } = processChapter(fixture('gpu-Ch1.html'), LINKS, GPU_CH1_FIGURES);
   assert.doesNotMatch(html, /<(html|head|body|script|nav|header|h1|link|button)[\s>]/);
   assert.doesNotMatch(html, /onclick=|data:|\sstyle=/);
   assert.match(html, /L’obiettivo del corso/);
@@ -71,7 +78,7 @@ test('an equation number is announced once: the visible duplicate is hidden from
 });
 
 test('a code listing becomes plain preformatted text: source indentation kept, no inline colors or buttons', () => {
-  const { html } = processChapter(fixture('gpu-Ch1.html'), LINKS);
+  const { html } = processChapter(fixture('gpu-Ch1.html'), LINKS, GPU_CH1_FIGURES);
   assert.match(html, /<pre class="listing" tabindex="0"><code>/);
   assert.match(
     html,
@@ -84,14 +91,6 @@ test('an algorithm keeps its math and its nesting rules', () => {
   const { html } = processChapter(fixture('gpu-Ch7-algorithm-table.html'), LINKS);
   assert.match(html, /<math[^>]*alttext="S\\leftarrow\\emptyset"/);
   assert.match(html, /class="ltx_rule bml_vrule bml_algo_rule"/);
-});
-
-test('a figure is marked as pending, with its caption kept, never silently dropped', () => {
-  const result = processChapter(fixture('gpu-Ch1.html'), LINKS);
-  assert.doesNotMatch(result.html, /<img[\s>]/);
-  assert.equal(result.figurePending, 1);
-  assert.match(result.html, /<p class="figura-pending">Figura in attesa di conversione\.<\/p>/);
-  assert.match(result.html, /<figcaption[^>]*>[\s\S]*Figure 1\.1[\s\S]*<\/figcaption>/);
 });
 
 test('links to other chapters point at the site URLs, and in-page links are kept', () => {
@@ -110,14 +109,6 @@ test('a link the pipeline cannot resolve fails the conversion instead of shippin
 test('tables keep their cell borders and alignment classes', () => {
   const { html } = processChapter(fixture('gpu-Ch7-algorithm-table.html'), LINKS);
   assert.match(html, /<td class="ltx_td ltx_align_right ltx_border_r">/);
-});
-
-test('a TikZ picture LaTeXML drew as inline SVG is marked pending too: its colors are hard black, unusable in the dark theme', () => {
-  const result = processChapter(fixture('gpu-Ch7-tikz-picture.html'), LINKS);
-  assert.doesNotMatch(result.html, /<svg|stroke=|fill="#/);
-  assert.equal(result.figurePending, 1);
-  assert.match(result.html, /Figura in attesa di conversione/);
-  assert.match(result.html, /<figcaption/);
 });
 
 test('a tcolorbox keeps its content and its title, which becomes a heading; the pipeline markers are gone', () => {

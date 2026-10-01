@@ -10,6 +10,7 @@ import {
   tokenize,
   type Token,
 } from './html-tokens.ts';
+import { NO_FIGURES, rasterTag, tikzSvg, type FigureAssets } from './figures.ts';
 
 export interface ChapterHead {
   numero: number;
@@ -39,15 +40,13 @@ export interface ProcessedChapter extends ChapterHead {
   /** The chapter body as an HTML fragment (SPEC.md §7.3), without its heading. */
   html: string;
   hasMath: boolean;
-  /** How many figures were replaced by the "pending" marker (figures are ticket #37). */
-  figurePending: number;
+  /** How many of the compiled TikZ pictures this chapter took, in order (the next chapter starts after them). */
+  tikzUsed: number;
   /** How many tcolorbox environments the stand-in binding marked (the markers are removed from `html`). */
   tcolorboxes: number;
   /** The plain text of each tcolorbox `title=`, which stays in `html` as a heading. */
   tcolorboxTitles: string[];
 }
-
-const FIGURE_PENDING = '<p class="figura-pending">Figura in attesa di conversione.</p>';
 
 const withoutScripts = (html: string): string => html.replace(/<script\b[\s\S]*?<\/script>/gi, '');
 
@@ -157,13 +156,14 @@ function dropEmptyParagraphs(tokens: readonly Token[]): Token[] {
   return out;
 }
 
-/** Replaces every element matching `predicate`, with its content, by `markup`. */
-function replaceElements(tokens: readonly Token[], predicate: (token: Token) => boolean, markup: string): Token[] {
+/** Replaces every element matching `predicate`, with its content, by what `markup` returns for it (in order). */
+function replaceElements(tokens: readonly Token[], predicate: (token: Token) => boolean, markup: (index: number) => string): Token[] {
   const out: Token[] = [];
+  let index = 0;
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]!;
     if (token.type === 'open' && predicate(token)) {
-      out.push({ type: 'other', raw: markup });
+      out.push({ type: 'other', raw: markup(index++) });
       i = elementEnd(tokens, i);
     } else {
       out.push(token);
@@ -215,7 +215,7 @@ function rewriteHref(href: string, links: LinkTargets): string {
   throw new Error(`cannot resolve the link "${href}": it points outside the converted chapters`);
 }
 
-export function processChapter(page: string, links: LinkTargets): ProcessedChapter {
+export function processChapter(page: string, links: LinkTargets, figures: FigureAssets = NO_FIGURES): ProcessedChapter {
   const all = tokenize(withoutScripts(page));
   const { start, end } = chapterBounds(all);
   const head = readChapterHead(page);
@@ -230,18 +230,20 @@ export function processChapter(page: string, links: LinkTargets): ProcessedChapt
   const tcolorboxTitles = tcolorboxTitlesOf(tokens);
   tokens = dropElements(tokens, isTcolorboxMarker);
   tokens = dropEmptyParagraphs(tokens);
-  tokens = replaceElements(tokens, (t) => t.type === 'open' && t.name === 'svg', FIGURE_PENDING);
+  let tikzUsed = 0;
+  tokens = replaceElements(tokens, (t) => t.type === 'open' && t.name === 'svg', (index) => {
+    const tikz = figures.tikz[index];
+    if (tikz === undefined) throw new Error('the chapter has more TikZ pictures than were compiled to SVG');
+    tikzUsed = index + 1;
+    return tikzSvg(tikz, figures.alt[tikz.key] ?? '');
+  });
   tokens = dropElements(tokens, (t) => t.type === 'open' && (t.name === 'button' || t.name === 'annotation' || hasClass(t, 'ltx_listing_data')));
   tokens = flattenCodeListings(tokens);
 
-  let figurePending = tokens.filter((token) => token.raw === FIGURE_PENDING).length;
   tokens = tokens.map((token): Token => {
     if (token.type === 'text') return { ...token, raw: token.raw.replace(/​/g, '') };
     if (token.type !== 'open') return token;
-    if (token.name === 'img') {
-      figurePending++;
-      return { type: 'other', raw: FIGURE_PENDING };
-    }
+    if (token.name === 'img') return { type: 'other', raw: rasterTag(links.corso, attribute(token, 'src') ?? '', figures) };
     let next = removeAttribute(token, 'style');
     const href = token.name === 'a' ? attribute(token, 'href') : undefined;
     if (href !== undefined) next = setAttribute(next, 'href', rewriteHref(href, links));
@@ -250,5 +252,5 @@ export function processChapter(page: string, links: LinkTargets): ProcessedChapt
   });
 
   const html = serialize(tokens).trim();
-  return { ...head, sezioni, html, hasMath: /<math[\s>]/.test(html), figurePending, tcolorboxes, tcolorboxTitles };
+  return { ...head, sezioni, html, hasMath: /<math[\s>]/.test(html), tikzUsed, tcolorboxes, tcolorboxTitles };
 }

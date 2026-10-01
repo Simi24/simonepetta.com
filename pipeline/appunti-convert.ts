@@ -7,6 +7,7 @@ import { APPUNTI_CONTENT_DIR } from '../src/config/appunti-content-dir.ts';
 import { LeakError, parseLatexmlErrors, prepareBuild } from './appunti-build.ts';
 import { installConversion } from './appunti-install.ts';
 import { recoverInterruptedSwap } from './course-swap.ts';
+import { makeFigures } from './figures-docker.ts';
 
 /**
  * Converts one course (SPEC.md §7.4), outside the site build:
@@ -15,6 +16,8 @@ import { recoverInterruptedSwap } from './course-swap.ts';
  *
  * Runs LaTeXML via BookML and latexmk in Docker (`pipeline/Dockerfile`, built on first use,
  * image `simonepetta-appunti`) on a temporary copy of `appunti/<slug>/src/`, then:
+ *   0. re-encodes the images to WebP and compiles the TikZ pictures to SVG, still in Docker
+ *      (`figures.sh`), with the descriptions from `src/alt.json`;
  *   1. post-processes the chapters into `build/` fragments (`appunti-build.ts`),
  *      after the leak detector found nothing;
  *   2. counts the pages of the PDF compiled from the same source, then swaps `build/`, `<slug>.pdf`
@@ -62,23 +65,35 @@ function convert(contentDir: string, slug: string, keepWorkdir: boolean): void {
     }
 
     console.log(`Converting ${slug} in Docker (LaTeXML + BookML, latexmk)...`);
-    execFileSync('docker', ['run', '--rm', '-v', `${work}:/work`, IMAGE, 'sh', '-c', CONTAINER_SCRIPT], { stdio: 'inherit' });
+    const runInContainer = (script: string): void => {
+      execFileSync('docker', ['run', '--rm', '-v', `${work}:/work`, IMAGE, 'sh', '-c', script], { stdio: 'inherit' });
+    };
+    runInContainer(CONTAINER_SCRIPT);
 
     const pdf = join(work, `${MAIN}.pdf`);
     if (!existsSync(pdf)) throw new Error('the PDF was not produced: the course does not compile');
     const latexmlErrors = parseLatexmlErrors(readFileSync(join(work, 'auxdir/latexmlaux', `${MAIN}.latexml.log`), 'utf8'));
 
+    const htmlDir = join(work, 'auxdir/html', MAIN);
+    console.log('Re-encoding the images and compiling the TikZ pictures...');
+    const chapterPages = readdirSync(htmlDir)
+      .filter((file) => /^Ch\d+\.html$/.test(file))
+      .map((file) => readFileSync(join(htmlDir, file), 'utf8'));
+    const figures = makeFigures({ work, srcDir, chapterPages, runInContainer });
+
     const prepared = prepareBuild({
-      htmlDir: join(work, 'auxdir/html', MAIN),
+      htmlDir,
       courseDir,
       corso: slug,
       source: readSources(srcDir),
       latexmlErrors,
+      figures: figures.assets,
+      figureBytes: figures.bytes,
     });
 
     const pagine = installConversion({ courseDir, corso: slug, prepared, pdfPath: pdf });
     const { meta } = prepared;
-    console.log(`${slug}: ${meta.capitoli.length} chapter(s), ${meta.figureInAttesa} figure(s) pending, PDF ${pagine} page(s)`);
+    console.log(`${slug}: ${meta.capitoli.length} chapter(s), ${figures.bytes.size} image(s), ${figures.assets.tikz.length} TikZ picture(s), PDF ${pagine} page(s)`);
   } finally {
     if (keepWorkdir) console.log(`Work directory kept: ${work}`);
     else rmSync(work, { recursive: true, force: true });

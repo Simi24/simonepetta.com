@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -56,7 +56,7 @@ test('a conversion writes one fragment per chapter and records slugs, sections a
     math: true,
   });
   assert.equal(meta.capitoli[1].math, false);
-  assert.equal(meta.figureInAttesa, 0);
+  assert.equal('figureInAttesa' in meta, false);
   const fragment = readFileSync(join(courseDir, 'build/1-variabili-aleatorie-continue.html'), 'utf8');
   assert.match(fragment, /class="ltx_theorem /);
 });
@@ -102,7 +102,7 @@ test('a leak fails the conversion and leaves the last good build/ untouched', ()
 
   assert.throws(
     () => buildFromLatexml({ htmlDir, courseDir, corso: 'mini', source: `${source}\n\\includegraphics{x.png}\n`, latexmlErrors: 0 }),
-    (error) => error instanceof LeakError && error.leaks.some((leak) => /figure/.test(leak)),
+    (error) => error instanceof LeakError && error.leaks.some((leak) => /image/.test(leak)),
   );
   assert.equal(readFileSync(join(courseDir, 'build/meta.json'), 'utf8'), before);
   assert.ok(!existsSync(join(courseDir, 'build.next')));
@@ -121,4 +121,47 @@ test('an output file the pipeline does not know fails the conversion', () => {
     () => buildFromLatexml({ htmlDir, courseDir, corso: 'mini', source, latexmlErrors: 0 }),
     (error) => error instanceof LeakError && error.leaks.some((leak) => /AppA\.html/.test(leak)),
   );
+});
+
+const SIMT = 'images/simtvssimd.png';
+const WEBP_BYTES = Uint8Array.from([0x52, 0x49, 0x46, 0x46, 1, 2, 3]);
+
+/** A one-chapter course whose chapter has one raster figure (LaTeXML's real output for GPUcomputing's chapter 1). */
+function setupWithFigure(alt: Record<string, string>) {
+  const { htmlDir, courseDir } = setup();
+  rmSync(join(htmlDir, 'Ch2.html'));
+  cpSync(join(FIXTURES, 'gpu-Ch1.html'), join(htmlDir, 'Ch1.html'));
+  return {
+    htmlDir,
+    courseDir,
+    corso: 'gpu',
+    source: `\\chapter{Introduzione}\n\\includegraphics{${SIMT}}\n`,
+    latexmlErrors: 0,
+    figures: {
+      rasters: new Map([[SIMT, { name: 'images-simtvssimd.webp', width: 830, height: 316 }]]),
+      tikz: [],
+      alt,
+    },
+    figureBytes: new Map([['images-simtvssimd.webp', WEBP_BYTES]]),
+  };
+}
+
+test('a figure is installed with its chapter: the WebP in build/figure/, the page pointing at it', () => {
+  const input = setupWithFigure({ [SIMT]: 'Confronto fra SIMD e SIMT.' });
+  buildFromLatexml(input);
+  assert.deepEqual(readFileSync(join(input.courseDir, 'build/figure/images-simtvssimd.webp')), Buffer.from(WEBP_BYTES));
+  const page = readFileSync(join(input.courseDir, 'build/1-introduzione.html'), 'utf8');
+  assert.match(page, /src="\/appunti\/gpu\/figure\/images-simtvssimd\.webp"[^>]*alt="Confronto fra SIMD e SIMT\."/);
+});
+
+test('a figure with no description fails the conversion and leaves the course as it was', () => {
+  const input = setupWithFigure({});
+  assert.throws(
+    () => buildFromLatexml(input),
+    (error) =>
+      error instanceof LeakError &&
+      error.leaks.some((leak) => /images-simtvssimd\.webp has no description/.test(leak)) &&
+      error.leaks.some((leak) => leak.includes('alt.json') && leak.includes(SIMT)),
+  );
+  assert.ok(!existsSync(join(input.courseDir, 'build')));
 });
