@@ -213,10 +213,13 @@ function fontDist(face: string, files: Record<string, string> = {}): string {
   });
 }
 
+/** The `wOF2` signature every woff2 file starts with, plus filler. */
+const WOFF2 = 'wOF2\u0000\u0001\u0000\u0000 font data';
+
 const HOST_ROMAN = "@font-face{font-family:'Host Grotesk';font-style:normal;src:url('/fonts/host-grotesk-latin.woff2') format('woff2')}";
 
 test('a declared font face with its declared woff2 file passes', () => {
-  assert.deepEqual(checkBudget(fontDist(HOST_ROMAN, { 'fonts/host-grotesk-latin.woff2': 'x' })), []);
+  assert.deepEqual(checkBudget(fontDist(HOST_ROMAN, { 'fonts/host-grotesk-latin.woff2': WOFF2 })), []);
 });
 
 test('a font face whose woff2 file is missing from dist is a violation', () => {
@@ -226,13 +229,13 @@ test('a font face whose woff2 file is missing from dist is a violation', () => {
 
 test('an allowed family served from another woff2 file (wrong subset) is a violation', () => {
   const face = HOST_ROMAN.replace('host-grotesk-latin.woff2', 'host-grotesk-full.woff2');
-  const violations = checkBudget(fontDist(face, { 'fonts/host-grotesk-full.woff2': 'x' }));
+  const violations = checkBudget(fontDist(face, { 'fonts/host-grotesk-full.woff2': WOFF2 }));
   assert.ok(violations.some((v) => /Host Grotesk.*normal.*host-grotesk-full\.woff2/.test(v.message)));
 });
 
 test('the italic face pointing at the roman file is a violation (wrong style)', () => {
   const face = HOST_ROMAN.replace('normal', 'italic');
-  const violations = checkBudget(fontDist(face, { 'fonts/host-grotesk-latin.woff2': 'x' }));
+  const violations = checkBudget(fontDist(face, { 'fonts/host-grotesk-latin.woff2': WOFF2 }));
   assert.ok(violations.some((v) => /Host Grotesk.*italic.*host-grotesk-latin\.woff2/.test(v.message)));
 });
 
@@ -244,19 +247,19 @@ test('a font face from another origin is a violation', () => {
 
 test('an undeclared font family is a violation', () => {
   const face = "@font-face{font-family:'Comic Sans';src:url('/fonts/c.woff2') format('woff2')}";
-  const violations = checkBudget(fontDist(face, { 'fonts/c.woff2': 'x' }));
+  const violations = checkBudget(fontDist(face, { 'fonts/c.woff2': WOFF2 }));
   assert.ok(violations.some((v) => /undeclared font family "Comic Sans"/.test(v.message)));
 });
 
 test('Fira Math on a page that is not a declared math page is a violation', () => {
   const face = "@font-face{font-family:'Fira Math';font-style:normal;src:url('/fonts/fira-math.woff2') format('woff2')}";
-  const violations = checkBudget(fontDist(face, { 'fonts/fira-math.woff2': 'x' }));
+  const violations = checkBudget(fontDist(face, { 'fonts/fira-math.woff2': WOFF2 }));
   assert.ok(violations.some((v) => /Fira Math but is not a declared math page/.test(v.message)));
 });
 
 test('a font face with no font-style counts as normal', () => {
   const face = "@font-face{font-family:'Host Grotesk';src:url('/fonts/host-grotesk-latin.woff2') format('woff2')}";
-  assert.deepEqual(checkBudget(fontDist(face, { 'fonts/host-grotesk-latin.woff2': 'x' })), []);
+  assert.deepEqual(checkBudget(fontDist(face, { 'fonts/host-grotesk-latin.woff2': WOFF2 })), []);
 });
 
 /** Runs the gate CLI on an existing fixture `dist` (reuse flag set, so nothing is built). */
@@ -284,8 +287,68 @@ test('the CLI exits 1 and names the page when a CSS cap is exceeded', () => {
 });
 
 test('the CLI exits 1 on an undeclared font file', () => {
-  const dist = fontDist(HOST_ROMAN.replace('host-grotesk-latin.woff2', 'other.woff2'), { 'fonts/other.woff2': 'x' });
+  const dist = fontDist(HOST_ROMAN.replace('host-grotesk-latin.woff2', 'other.woff2'), { 'fonts/other.woff2': WOFF2 });
   const { status, stderr } = runBudgetCli(dist);
   assert.equal(status, 1);
   assert.match(stderr, /undeclared file: \/fonts\/other\.woff2/);
+});
+
+test('a font face with a second, external url() source is a violation', () => {
+  const face = HOST_ROMAN.replace(
+    "format('woff2')}",
+    "format('woff2'),url(https://evil.example/x.woff2)}",
+  );
+  const violations = checkBudget(fontDist(face, { 'fonts/host-grotesk-latin.woff2': WOFF2 }));
+  assert.ok(violations.some((v) => /https:\/\/evil\.example\/x\.woff2/.test(v.message)));
+});
+
+test('a font face with a second, undeclared local url() source is a violation', () => {
+  const face = HOST_ROMAN.replace("format('woff2')}", "format('woff2'),url('/fonts/other.woff2')}");
+  const violations = checkBudget(fontDist(face, { 'fonts/host-grotesk-latin.woff2': WOFF2, 'fonts/other.woff2': WOFF2 }));
+  assert.ok(violations.some((v) => /undeclared file: \/fonts\/other\.woff2/.test(v.message)));
+});
+
+test('an external @import in CSS is a violation, in both url() and string form', () => {
+  for (const rule of ['@import url(https://evil.example/a.css);', "@import 'https://evil.example/a.css';", '@import "//evil.example/a.css";']) {
+    const dist = fixtureDist({ 'index.html': `<!doctype html><html><head><style>${rule}</style></head><body></body></html>` });
+    const violations = checkBudget(dist);
+    assert.ok(violations.some((v) => /evil\.example\/a\.css/.test(v.message)), rule);
+  }
+});
+
+test('a local @import is not a violation', () => {
+  const dist = fixtureDist({ 'index.html': '<!doctype html><html><head><style>@import "/a.css";</style></head><body></body></html>', 'a.css': 'p{}' });
+  assert.deepEqual(checkBudget(dist), []);
+});
+
+test('an external <img>, <iframe> or CSS url() on any build is a violation', () => {
+  const cases: Record<string, string> = {
+    'https://evil.example/i.png': '<img src="https://evil.example/i.png" alt="">',
+    'https://evil.example/frame': '<iframe src="https://evil.example/frame"></iframe>',
+    '//evil.example/css.png': '<style>p{background:url(//evil.example/css.png)}</style>',
+    'https://evil.example/q.png': '<style>p{background:url("https://evil.example/q.png")}</style>',
+  };
+  for (const [url, markup] of Object.entries(cases)) {
+    const dist = fixtureDist({ 'index.html': `<!doctype html><html><head></head><body>${markup}</body></html>` });
+    const violations = checkBudget(dist);
+    assert.ok(violations.some((v) => v.message.includes(url)), url);
+  }
+});
+
+test('links that are not loaded (anchors, canonical, hreflang alternates) are not external-resource violations', () => {
+  const dist = fixtureDist({
+    'index.html':
+      '<!doctype html><html><head><link rel="canonical" href="https://simonepetta.com/"><link rel="alternate" hreflang="en" href="https://simonepetta.com/en/"></head><body><a href="https://example.com/">x</a><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt=""></body></html>',
+  });
+  assert.deepEqual(checkBudget(dist), []);
+});
+
+test('a referenced woff2 that is not woff2 (wrong magic bytes) is a violation', () => {
+  const violations = checkBudget(fontDist(HOST_ROMAN, { 'fonts/host-grotesk-latin.woff2': '<html>not a font</html>' }));
+  assert.ok(violations.some((v) => /host-grotesk-latin\.woff2.*not a woff2/.test(v.message)));
+});
+
+test('a referenced woff2 that is empty is a violation', () => {
+  const violations = checkBudget(fontDist(HOST_ROMAN, { 'fonts/host-grotesk-latin.woff2': '' }));
+  assert.ok(violations.some((v) => /host-grotesk-latin\.woff2.*not a woff2/.test(v.message)));
 });

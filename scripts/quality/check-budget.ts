@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,8 +28,8 @@ interface PageAssets {
   html: string;
   css: string;
   js: string;
-  /** External scripts and stylesheets other than the allowlisted beacon. */
-  undeclaredExternals: { kind: 'script' | 'stylesheet'; url: string }[];
+  /** External scripts, stylesheets and other loaded resources, other than the allowlisted beacon. */
+  undeclaredExternals: { kind: 'script' | 'stylesheet' | 'resource'; url: string }[];
 }
 
 const isExternal = (url: string): boolean => /^(https?:)?\/\//.test(url);
@@ -58,6 +58,43 @@ function scriptTags(html: string): { body: string; src: string | undefined; type
     src: attr(match[0], 'src'),
     type: attr(match[0], 'type'),
   }));
+}
+
+/** `<link rel>` values the browser never fetches: crawler metadata (SPEC.md §8, §12.3). */
+const NON_LOADING_LINK_RELS = ['canonical', 'alternate'];
+
+/**
+ * External URLs of everything a page loads besides scripts and stylesheets (reported elsewhere):
+ * media and frames (`src`, `poster`, `data`, `srcset`) and any other `<link>` that is fetched.
+ * Anchors and non-loading links (canonical, hreflang alternates) are not resources.
+ */
+function externalMediaUrls(html: string): string[] {
+  const urls: string[] = [];
+  for (const match of html.matchAll(/<(img|iframe|source|video|audio|embed|track|input|object|link)\b[^>]*>/g)) {
+    const [tag, name] = [match[0], match[1]];
+    if (name === 'link') {
+      const rel = attr(tag, 'rel')?.split(/\s+/).filter(Boolean) ?? [];
+      const loads = rel.length === 0 || !rel.every((value) => NON_LOADING_LINK_RELS.includes(value));
+      const href = attr(tag, 'href');
+      if (loads && !rel.includes('stylesheet') && href && isExternal(href)) urls.push(href);
+      continue;
+    }
+    for (const value of [attr(tag, 'src'), attr(tag, 'poster'), attr(tag, 'data')]) {
+      if (value && isExternal(value)) urls.push(value);
+    }
+    for (const candidate of attr(tag, 'srcset')?.split(',') ?? []) {
+      const url = candidate.trim().split(/\s+/)[0];
+      if (url && isExternal(url)) urls.push(url);
+    }
+  }
+  return urls;
+}
+
+/** External URLs in CSS: every `url(...)` and every `@import`, whether a font, an image or a stylesheet. */
+function externalCssUrls(css: string): string[] {
+  const urls = [...css.matchAll(/url\(\s*["']?([^"')]+?)["']?\s*\)/g)].map((m) => m[1] ?? '');
+  urls.push(...[...css.matchAll(/@import\s+["']([^"']+)["']/g)].map((m) => m[1] ?? ''));
+  return urls.filter(isExternal);
 }
 
 /** Inline and locally-linked CSS/JS for one built page, the way a browser would load it. */
@@ -95,41 +132,62 @@ function collectPageAssets(dist: string, page: string): PageAssets {
     }
   }
 
+  for (const url of [...externalMediaUrls(html), ...externalCssUrls(css)]) {
+    undeclaredExternals.push({ kind: 'resource', url });
+  }
+
   return { html, css, js, undeclaredExternals };
 }
 
 interface FontFace {
   family: string;
   style: string;
-  src: string | undefined;
+  /** Every `url()` source, in order: the browser may use any of them. */
+  srcs: string[];
 }
 
-/** Every `@font-face` in `css`: its family, style (default `normal`) and first `url()` source. */
+/** Every `@font-face` in `css`: its family, style (default `normal`) and `url()` sources. */
 function fontFacesIn(css: string): FontFace[] {
   return [...css.matchAll(/@font-face\s*{([^}]*)}/g)].map((match) => {
     const body = match[1] ?? '';
     return {
       family: /font-family:\s*["']?([^"';]+?)["']?\s*;/.exec(body + ';')?.[1]?.trim() ?? '',
       style: /font-style:\s*([a-z]+)/.exec(body)?.[1] ?? 'normal',
-      src: /url\(\s*["']?([^"')]+)["']?\s*\)/.exec(body)?.[1],
+      srcs: [...body.matchAll(/url\(\s*["']?([^"')]+?)["']?\s*\)/g)].map((m) => m[1] ?? ''),
     };
   });
 }
 
-/** Violations for one declared face: only the exact family + style + woff2 file combinations are allowed. */
+/** The woff2 signature every real font file starts with. */
+const WOFF2_MAGIC = 'wOF2';
+
+const isWoff2File = (path: string): boolean => readFileSync(path).subarray(0, 4).toString('latin1') === WOFF2_MAGIC;
+
+/**
+ * Violations for one declared face: every source must be one of the exact family + style + woff2
+ * file combinations, present in `dist` and really woff2. External sources are reported by the
+ * external-resource check, not here.
+ */
 function fontFaceViolations(dist: string, page: string, html: string, face: FontFace): Violation[] {
-  const { family, style, src } = face;
-  const allowedFamily = ALLOWED_FONT_FACES.some((allowed) => allowed.family === family);
-  if (!allowedFamily) return [{ page, message: `loads an undeclared font family "${family}"` }];
-  if (!src) return [{ page, message: `font face "${family}" (${style}) has no woff2 source` }];
-  if (!ALLOWED_FONT_FACES.some((a) => a.family === family && a.style === style && a.file === src)) {
-    return [{ page, message: `font face "${family}" (${style}) loads an undeclared file: ${src}` }];
+  const { family, style, srcs } = face;
+  if (!ALLOWED_FONT_FACES.some((allowed) => allowed.family === family)) {
+    return [{ page, message: `loads an undeclared font family "${family}"` }];
   }
-  if (!existsSync(join(dist, src))) return [{ page, message: `font file ${src} is missing from the build` }];
+  if (srcs.length === 0) return [{ page, message: `font face "${family}" (${style}) has no woff2 source` }];
+  const violations: Violation[] = [];
+  for (const src of srcs.filter((url) => !isExternal(url))) {
+    if (!ALLOWED_FONT_FACES.some((a) => a.family === family && a.style === style && a.file === src)) {
+      violations.push({ page, message: `font face "${family}" (${style}) loads an undeclared file: ${src}` });
+    } else if (!existsSync(join(dist, src))) {
+      violations.push({ page, message: `font file ${src} is missing from the build` });
+    } else if (!isWoff2File(join(dist, src))) {
+      violations.push({ page, message: `font file ${src} is empty or not a woff2 file (no wOF2 signature)` });
+    }
+  }
   if (family === 'Fira Math' && !isMathPage(page, html)) {
-    return [{ page, message: 'loads Fira Math but is not a declared math page' }];
+    violations.push({ page, message: 'loads Fira Math but is not a declared math page' });
   }
-  return [];
+  return violations;
 }
 
 /** Every quality-budget violation on the built site at `dist` (SPEC.md §12.2). */
