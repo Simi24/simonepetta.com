@@ -31,7 +31,7 @@ The root answer, from the grilling of 2026-09-23 ([map notes](https://github.com
 8. **Minimal** means light for the visitor and clean to maintain, built with real tools. It does not mean "no toolchain".
 
 ### 1.3 Who does what
-The implementation and the conversion of notes are done by agents. Non-delegable, always the author's: **the texts he writes**, the **review of converted math** (a silent error in his notes can only be recognized by whoever wrote them), and the **review of the chat golden set** ([#11](https://github.com/Simi24/simonepetta.com/issues/11)).
+The implementation and the conversion of notes are done by agents. Non-delegable, always the author's: **the texts he writes** and the **review of the chat golden set** ([#11](https://github.com/Simi24/simonepetta.com/issues/11)). The **review of converted math** was delegated by the author to the orchestrating agent on 2026-10-01: every expression of the source is checked against its MathML and every alt text against its image, clear source typos are fixed in `src/` and listed in the PR, and only genuine doubts go back to the author.
 
 ---
 
