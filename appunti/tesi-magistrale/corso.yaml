@@ -3,8 +3,7 @@ tipo: tesi
 livello: magistrale
 aa: "2025"
 fonte: overleaf
-pubblicato: false
-motivo: "in attesa di verifica con l azienda"
+pubblicato: true
 fonti:
   - "Wang et al., 2018 (figura sulla latenza del cold start)"
   - "modelcontextprotocol.io (figura del protocollo MCP)"
