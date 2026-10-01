@@ -47,7 +47,8 @@ jobs:
           fi
       - name: Nothing under appunti/ or pipeline/ changed
         if: steps.changes.outputs.notes != 'true'
-        run: echo 'Early exit: no change under appunti/ or pipeline/, nothing to check.' >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          echo 'Early exit, no change under appunti/ or pipeline/: nothing to check.' >> "$GITHUB_STEP_SUMMARY"
       - name: Install poppler (pdfinfo)
         if: steps.changes.outputs.notes == 'true'
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends poppler-utils
