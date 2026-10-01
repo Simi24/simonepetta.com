@@ -113,7 +113,7 @@ Il thread e’ un singolo flusso di istruzione che si trova in un processo che l
 </li>
 </ul>
 </div>
-<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/gpucomputing/figure/images-statiThread.webp" width="954" height="834" loading="lazy" alt="Diagramma degli stati di un thread: da new si passa a executable con start; executable e running sono collegati da assign (verso running) e interrupt (verso executable); da running si va a waiting con block e si torna a executable con wake up; da running si arriva a finished con end."></div>
 <figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figure 2.1</span>: </span><span class="ltx_text">Stati di un thread</span></figcaption>
 </figure>
 <div id="S2.SS1.p2" class="ltx_para">
@@ -209,7 +209,7 @@ Il thread e’ un singolo flusso di istruzione che si trova in un processo che l
 </ul>
 <p class="ltx_p">Questi possono avere dimensioni 1D, 2D o 3D. Tutto questo fa 9 combinazioni tra grid e block.</p>
 </div>
-<figure id="F2" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figure id="F2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/gpucomputing/figure/images-organizzazioneThread.webp" width="1600" height="405" loading="lazy" alt="Una griglia 1D contiene tre blocchi 1D, BK(0), BK(1) e BK(2); ogni blocco contiene quattro thread, da TH(0) a TH(3)."></div>
 <figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figure 2.2</span>: </span><span class="ltx_text">Organizzazione dei thread in CUDA</span></figcaption>
 </figure>
 <div id="S4.SS1.p2" class="ltx_para">
@@ -271,10 +271,10 @@ Il thread e’ un singolo flusso di istruzione che si trova in un processo che l
 <div id="S4.SS1.p6" class="ltx_para">
 <p class="ltx_p">L’indice univoco del thread nei blocchi si calcola differentemente rispetto alle dimensioni del blocco:</p>
 </div>
-<figure id="F3" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figure id="F3" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/gpucomputing/figure/images-indiceUnicoBlocchi.webp" width="1600" height="859" loading="lazy" alt="Tre schemi di indicizzazione con dimensioni Dx, Dy e Dz: una riga di celle con indice x, una griglia 2D con indice x + y·Dx, un cubo 3D con indice x + y·Dx + z·Dx·Dy; in ogni schema una cella è evidenziata in azzurro."></div>
 <figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figure 2.3</span>: </span><span class="ltx_text">Indice univoco dei thread nei blocchi</span></figcaption>
 </figure>
-<figure id="F4" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figure id="F4" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/gpucomputing/figure/images-grid1Dcoordinate1D.webp" width="1600" height="638" loading="lazy" alt="Una griglia 1D di 4 blocchi da 4 thread ciascuno: i sedici thread sono in fila, colorati per blocco, con threadIdx.x da 0 a 3 in ogni blocco e blockIdx.x da 0 a 3. Sotto, il codice int idx = blockDim.x * blockIdx.x + threadIdx.x; che calcola l'indice lineare."></div>
 <figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figure 2.4</span>: </span><span class="ltx_text">Organizzazione della griglia 1D e coordinate 1D</span></figcaption>
 </figure>
 </div>
@@ -376,7 +376,7 @@ Il thread e’ un singolo flusso di istruzione che si trova in un processo che l
 <p class="ltx_p">Non c’e’ sempre un mapping 1-1 tra i puntatori host e device, guardiamo ora il mapping tra griglia 2d e coordinate 2d.
 Se prendiamo una griglia di blocchi 2x2 mostriamo gli indici dei blocchi e dei thread all’interno, mostriamo che poiche’ i tre campi vengono definiti quando definiamo le griglie dobbiamo capire come usare x e y, il campo x viene considerato come campo che varia sulle colonne della matrice per converso la y indica le righe della matrice e si muove in verticale pensando che l’origine e’ in alto a sinistra. Posso creare un doppio ordine per x e y di indici e le coppie ordinate mi indicizzano tutte le entry della matrice:</p>
 </div>
-<figure id="S4.SS5.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figure id="S4.SS5.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/gpucomputing/figure/images-grid2d.webp" width="1600" height="639" loading="lazy" alt="Una griglia 2x2 di blocchi 3x3 (gridDim = (2,2,1), blockDim = (3,3,1)), con le coordinate (threadIdx.x, threadIdx.y) di ogni thread e i colori per blocco. A destra le formule dimensione X = blockDim.x * blockIdx.x + threadIdx.x e dimensione Y = blockDim.y * blockIdx.y + threadIdx.y, con esempi di valori di X e Y per le righe di thread."></div>
 </figure>
 <div id="S4.SS5.p6" class="ltx_para">
 <p class="ltx_p">Abbiamo quindi prodotto delle coordinate 2d (x,y) per ogni thread all’interno della griglia 2D e a questo punto e’ sufficiente spostarsi nella colonna e nella riga:</p>
@@ -385,7 +385,7 @@ Se prendiamo una griglia di blocchi 2x2 mostriamo gli indici dei blocchi e dei t
 <p class="ltx_p">A questo punto l’indice linearizzato lo ricaviamo in questo modo:</p>
 <div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    int id = iy * nx + ix;</span></code></pre></div>
 </div>
-<figure id="S4.SS5.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figure id="S4.SS5.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/gpucomputing/figure/images-sommaMatriciKernel.webp" width="1600" height="680" loading="lazy" alt="Codice del kernel add_matrix su sfondo nero, che calcola idx e idy da blockDim, blockIdx e threadIdx, l'indice lineare id_elem = idy * nx + idx e, se idx &lt; nx e idy &lt; ny, somma C[id_elem] = A[id_elem] + B[id_elem]. Tre didascalie a fumetto indicano: block 2D e grid 2D, indice lineare degli elementi delle matrici, controllo sui thread effettivi."></div>
 </figure>
 <div id="S4.SS5.p7" class="ltx_para">
 <p class="ltx_p">Se si deve trattare una matrice che rappresenta l’immagine, si possono organizzare blocchi di dimensione fissata (16x16) e calcolare la griglia di conseguenza (5x4).</p>
@@ -504,7 +504,7 @@ Gli elementi di uno streaming multiprocessor tipo sono:</p>
 <div id="S5.SS2.SSSx1.p1" class="ltx_para">
 <p class="ltx_p">Questi sono gli elementi HW di un ambiente multi-threading:</p>
 </div>
-<figure id="S5.SS2.SSSx1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figure id="S5.SS2.SSSx1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/gpucomputing/figure/images-hwMultithreading.webp" width="684" height="426" loading="lazy" alt="Schema hardware di un processore (SM): una Control Unit con PC e IR comanda più Processing Unit sovrapposte, ciascuna con ALU e Register File; le unità sono collegate alla Shared Memory e alla Memory, che comunica con l'I/O."></div>
 </figure>
 </div>
 </section>
@@ -742,9 +742,9 @@ Conviene ricondursi a tecniche ricorsive:</p>
 <div id="S5.SS6.p5" class="ltx_para">
 <p class="ltx_p">Dobbiamo pensare che i dati li dividiamo in blocchi, e poi combinare i risultati parziali usciti dai blocchi:</p>
 </div>
-<figure id="S5.SS6.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figure id="S5.SS6.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/gpucomputing/figure/images-sommeParzialiBlocchi.webp" width="1298" height="370" loading="lazy" alt="Riduzione a due livelli: sul device molti blocchi in parallelo calcolano ciascuno una somma parziale con un albero binario; i risultati parziali sono copiati dal device all'host, dove la riduzione finale avviene in modo sequenziale."></div>
 </figure>
-<figure id="S5.SS6.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figure id="S5.SS6.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/gpucomputing/figure/images-reduction.webp" width="1364" height="698" loading="lazy" alt="Codice del kernel block_parallel_reduce su sfondo nero: ogni blocco riduce in place in memoria globale con un ciclo for su stride, con una sincronizzazione __syncthreads() a ogni passo. Il ciclo è evidenziato; due fumetti spiegano che a ogni passo lavora metà dei thread e che serve sincronizzare i thread prima del passo successivo."></div>
 </figure>
 <div id="S5.SS6.p6" class="ltx_para">
 <p class="ltx_p">Questa soluzione ha il problema della divergenza dei warp, l’if in cui controlliamo che l’indice del thread sia pari, possiamo pero’ eliminare l’if:</p>

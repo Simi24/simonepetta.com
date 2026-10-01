@@ -8,7 +8,7 @@ npm run appunti:convert -- <slug>
 
 ## What a run changes
 
-A run replaces three things in `appunti/<slug>/` **together**: `build/`, `<slug>.pdf` and `meta.json`. Everything that can fail (LaTeXML, the leak detector, the page count via `pdfinfo`) happens before the first write. A failure or a leak leaves the course exactly as it was.
+A run replaces three things in `appunti/<slug>/` **together**: `build/` (chapter fragments and `figure/`, the re-encoded images), `<slug>.pdf` and `meta.json`. Everything that can fail (LaTeXML, the leak detector, the page count via `pdfinfo`) happens before the first write. A failure or a leak leaves the course exactly as it was.
 
 ## If a run was killed in the middle
 
@@ -19,8 +19,12 @@ The three replacements are staged next to their targets (`build.next`, `<slug>.p
 
 So the course is always either entirely the old conversion or entirely the new one. Nothing needs doing by hand; if it matters before the next run, the same recovery is `recoverInterruptedSwap(<course dir>)` from `course-swap.ts`. Leftover `*.next`, `*.old` or `.swap-journal.json` files in a course folder mean a run was interrupted; do not commit them.
 
+## Figures
+
+Raster images are re-encoded to WebP (at most 1600 px wide) and TikZ pictures compiled to SVG inside the container (`figures.sh`); the descriptions come from `appunti/<slug>/src/alt.json`, keyed by the image path (`images/a.png`) or the TikZ file and index (`img/up.tex#1`). A figure without a description fails the conversion: the message lists them, you open each figure, add its entry (Italian, factual, from the caption and what the image shows) and run again. Macros a TikZ picture uses must be one line each in `main.tex`'s preamble.
+
 ## Files
 
-- `Dockerfile`: TeX Live (pinned by digest) + LaTeXML + BookML (pinned, checksummed).
+- `Dockerfile`: TeX Live (pinned by digest; its `dvisvgm` compiles TikZ) + LaTeXML + BookML (pinned, checksummed) + ImageMagick and `webp` (image re-encoding).
 - `bindings/`: LaTeXML stand-ins used by the conversion only (`tcolorbox`: content and `title=` kept, styling dropped).
-- `appunti-convert.ts`: the command. `appunti-build.ts` / `latexml-chapter.ts` / `chapter-slugs.ts`: LaTeXML output to fragments. `leak-detector.ts`: source against output. `appunti-install.ts` / `course-swap.ts`: the write phase. `appunti-meta.ts`: page count.
+- `appunti-convert.ts`: the command. `appunti-build.ts` / `latexml-chapter.ts` / `chapter-slugs.ts`: LaTeXML output to fragments. `leak-detector.ts`: source against output. `appunti-install.ts` / `course-swap.ts`: the write phase. `appunti-meta.ts`: page count. `figures.sh` / `figures-docker.ts` / `figure-sources.ts` / `raster-plan.ts` / `alt-text.ts` / `figures.ts`: figures (container step, source scanning, naming, descriptions, HTML rewriting).

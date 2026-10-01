@@ -1,7 +1,8 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { swapIn, type Staged } from './course-swap.ts';
 import { assignChapterSlugs, type RecordedChapter } from './chapter-slugs.ts';
+import { NO_FIGURES, type FigureAssets } from './figures.ts';
 import { detectLeaks } from './leak-detector.ts';
 import { processChapter, readChapterHead, type ProcessedChapter, type Sezione } from './latexml-chapter.ts';
 
@@ -17,8 +18,6 @@ export interface CapitoloRecord {
 
 export interface BuildMeta {
   capitoli: CapitoloRecord[];
-  /** Figures shown as "pending" until the figures ticket (#37) converts them. */
-  figureInAttesa: number;
 }
 
 export class LeakError extends Error {
@@ -46,7 +45,14 @@ export interface BuildInput {
   /** Every `.tex` file of the course's `src/`, concatenated. */
   source: string;
   latexmlErrors: number;
+  /** What the container made of the figures; none for a course without any. */
+  figures?: FigureAssets;
+  /** The re-encoded images, by file name (`Raster.name`). */
+  figureBytes?: ReadonlyMap<string, Uint8Array>;
 }
+
+/** Where the re-encoded images live inside `build/`. */
+export const FIGURE_DIR = 'figure';
 
 const CHAPTER_FILE = /^Ch(\d+)\.html$/;
 
@@ -58,20 +64,23 @@ function readPreviousSlugs(courseDir: string): RecordedChapter[] {
 }
 
 /** The `build/` folder as a staged entry for `swapIn`. */
-export function stagedBuild(files: ReadonlyMap<string, string>): Staged {
+export function stagedBuild(files: ReadonlyMap<string, string | Uint8Array>): Staged {
   return {
     name: 'build',
     write: (path) => {
       mkdirSync(path, { recursive: true });
-      for (const [name, content] of files) writeFileSync(join(path, name), content);
+      for (const [name, content] of files) {
+        mkdirSync(dirname(join(path, name)), { recursive: true });
+        writeFileSync(join(path, name), content);
+      }
     },
   };
 }
 
 export interface PreparedBuild {
   meta: BuildMeta;
-  /** File name to content, for `build/`. */
-  files: ReadonlyMap<string, string>;
+  /** Path inside `build/` to content. */
+  files: ReadonlyMap<string, string | Uint8Array>;
 }
 
 /**
@@ -91,9 +100,28 @@ export function prepareBuild(input: BuildInput): PreparedBuild {
   const slugs = assignChapterSlugs(heads, readPreviousSlugs(input.courseDir));
   const chapterSlugs = Object.fromEntries(pages.map((page, i) => [page.file, slugs[i]!]));
 
-  const chapters: ProcessedChapter[] = pages.map((page) => processChapter(page.html, { corso: input.corso, chapterSlugs }));
+  const figures = input.figures ?? NO_FIGURES;
+  const figureBytes = input.figureBytes ?? new Map<string, Uint8Array>();
+  let tikzTaken = 0;
+  const chapters: ProcessedChapter[] = pages.map((page) => {
+    const chapter = processChapter(page.html, { corso: input.corso, chapterSlugs }, { ...figures, tikz: figures.tikz.slice(tikzTaken) });
+    tikzTaken += chapter.tikzUsed;
+    return chapter;
+  });
 
-  const leaks = detectLeaks({ source: input.source, chapters, latexmlErrors: input.latexmlErrors, extraOutputFiles });
+  if (tikzTaken !== figures.tikz.length) {
+    throw new Error(`${figures.tikz.length} TikZ picture(s) were compiled but the chapters have ${tikzTaken}: the source and LaTeXML disagree`);
+  }
+
+  const leaks = detectLeaks({
+    source: input.source,
+    chapters,
+    latexmlErrors: input.latexmlErrors,
+    extraOutputFiles,
+    figureFiles: [...figureBytes.keys()],
+  });
+  const undescribed = [...figures.rasters.keys(), ...figures.tikz.map((tikz) => tikz.key)].filter((key) => (figures.alt[key] ?? '').trim() === '');
+  if (undescribed.length > 0) leaks.push(`src/alt.json has no description for: ${undescribed.join(', ')}`);
   if (leaks.length > 0) throw new LeakError(leaks);
 
   const meta: BuildMeta = {
@@ -104,10 +132,10 @@ export function prepareBuild(input: BuildInput): PreparedBuild {
       sezioni: chapter.sezioni,
       math: chapter.hasMath,
     })),
-    figureInAttesa: chapters.reduce((sum, chapter) => sum + chapter.figurePending, 0),
   };
 
-  const files = new Map<string, string>(chapters.map((chapter, i) => [`${slugs[i]}.html`, `${chapter.html}\n`]));
+  const files = new Map<string, string | Uint8Array>(chapters.map((chapter, i) => [`${slugs[i]}.html`, `${chapter.html}\n`]));
+  for (const [name, bytes] of figureBytes) files.set(`${FIGURE_DIR}/${name}`, bytes);
   files.set('meta.json', `${JSON.stringify(meta, null, 2)}\n`);
   return { meta, files };
 }

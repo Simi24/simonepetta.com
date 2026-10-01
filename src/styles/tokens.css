@@ -12,6 +12,8 @@
   --rule: light-dark(#cfcfcc, #2e2e2d);
   --surface: light-dark(#e2e2df, #1f1f1e);
   --paper: light-dark(#f6f6f4, #1b1b1a);
+  /* The sheet raster figures sit on: light in both themes, since they are never inverted. */
+  --sheet: light-dark(#ffffff, #ffffff);
 
   /* Spine and notebook tints: background, then the text drawn on it. No opacity on that text. */
   --tint-1: light-dark(#161616, #ebebe8);

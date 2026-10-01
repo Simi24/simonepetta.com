@@ -92,7 +92,7 @@ In contrapposizione abbiamo il <span class="ltx_text ltx_font_bold">SIMD</span> 
 <div id="S4.p2" class="ltx_para">
 <p class="ltx_p">Il modello <span class="ltx_text ltx_font_bold">SIMT</span> e’ interessante e viene introdotto da CUDA, qui ci sono tanti thread che svolgono tante operazioni su thread distinti, deve esserci un sistema book treading. C’e’ un evoluzione del modello SIMD perche’ lo cambia con il modello multithreading, decade il vincolo della singola istruzione, questo e’ dato dalla presenza di branch nel codice. Questo modello e’ molto utile perche’ ci permette di pensare in modo sequenziale anche se complica un po’ l’architettura perche’ bisogna fare comunicare i thread. Questo e’ il modello implementato dai processori GPU.</p>
 </div>
-<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/gpucomputing/figure/images-simtvssimd.webp" width="1600" height="607" loading="lazy" alt="Confronto tra istruzioni SSE e istruzioni multithread: a sinistra due vettori di quattro elementi (1, 2, 3, 4 e 5, 6, 7, 8) sommati in un solo passo con _mm_add_ps; a destra gli stessi quattro elementi sommati da quattro thread separati, ciascuno con il proprio indice id, con il codice C corrispondente sotto ogni schema."></div>
 <figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figure 1.1</span>: </span><span class="ltx_text">Confronto tra SIMT e SIMD</span></figcaption>
 </figure>
 <div id="S4.p3" class="ltx_para">

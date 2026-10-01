@@ -1,17 +1,17 @@
-import { elementEnd, hasClass, tokenize } from './html-tokens.ts';
+import { attribute, elementEnd, hasClass, serialize, tokenize } from './html-tokens.ts';
+import { MAX_RASTER_WIDTH } from './figures.ts';
 
 /**
  * The leak detector (SPEC.md §7.5): conversion fails silently, so the source is compared with
  * the output on everything that can vanish without an error. Any leak fails the conversion and
- * `build/` is not updated. Alt text on figures is checked once figures are converted (#37);
- * until then every figure is a visible "pending" marker, counted here against the source.
+ * `build/` is not updated. Figures are counted exactly (`\includegraphics` against images,
+ * `tikzpicture` against SVGs) and each one must carry a description.
  */
 
 export interface ReportedChapter {
   numero: number;
   titolo: string;
   html: string;
-  figurePending: number;
   tcolorboxes?: number;
   tcolorboxTitles?: readonly string[];
 }
@@ -24,6 +24,8 @@ export interface ConversionReport {
   latexmlErrors: number;
   /** Files LaTeXML wrote that are neither `index.html` nor a `ChN.html` chapter. */
   extraOutputFiles: readonly string[];
+  /** The files of `build/figure/` the pipeline produced. */
+  figureFiles: readonly string[];
 }
 
 const MIN_CHAPTER_HTML_LENGTH = 40;
@@ -83,6 +85,40 @@ function describeMismatch(label: string, expected: number, actual: number, relat
   return fine ? undefined : `the source has ${expected} ${label}, the output ${relation === 'exactly' ? 'has' : 'has only'} ${actual}`;
 }
 
+const lastSegment = (path: string): string => path.slice(path.lastIndexOf('/') + 1);
+
+/** What is wrong with the figures of the output: images and SVGs, each with its description. */
+function figureLeaks(chapters: readonly ReportedChapter[], figureFiles: readonly string[]): { images: number; svgs: number; leaks: string[] } {
+  const leaks: string[] = [];
+  let images = 0;
+  let svgs = 0;
+  for (const chapter of chapters) {
+    const tokens = tokenize(chapter.html);
+    tokens.forEach((token, i) => {
+      if (token.type !== 'open') return;
+      if (token.name === 'img') {
+        images++;
+        const name = lastSegment(attribute(token, 'src') ?? '');
+        if ((attribute(token, 'alt') ?? '').trim() === '') leaks.push(`the image ${name} has no description (alt text)`);
+        if (!name.endsWith('.webp')) leaks.push(`the image ${name} is not a WebP`);
+        if (!figureFiles.includes(name)) leaks.push(`the image ${name} is not among the produced files`);
+        const width = Number(attribute(token, 'width'));
+        if (!(width > 0)) leaks.push(`the image ${name} has no width`);
+        if (width > MAX_RASTER_WIDTH) leaks.push(`the image ${name} is wider than ${MAX_RASTER_WIDTH} px`);
+        if (!(Number(attribute(token, 'height')) > 0)) leaks.push(`the image ${name} has no height`);
+        if (attribute(token, 'loading') !== 'lazy') leaks.push(`the image ${name} is not lazy loaded`);
+      } else if (token.name === 'svg') {
+        svgs++;
+        if ((attribute(token, 'aria-label') ?? '').trim() === '') leaks.push('a TikZ picture has no description (aria-label)');
+        if (/#000\b|\bblack\b/.test(serialize(tokens.slice(i, elementEnd(tokens, i) + 1)))) {
+          leaks.push('a TikZ picture keeps hard black instead of currentColor');
+        }
+      }
+    });
+  }
+  return { images, svgs, leaks };
+}
+
 export function detectLeaks(report: ConversionReport): string[] {
   const source = withoutComments(report.source);
   const output = report.chapters.map((chapter) => chapter.html).join('\n');
@@ -101,9 +137,10 @@ export function detectLeaks(report: ConversionReport): string[] {
 
   check(describeMismatch('chapter(s)', count(source, /\\chapter\s*[{[]/g), report.chapters.length, 'exactly'));
 
-  const figures = count(source, /\\includegraphics\b/g) + count(source, /\\begin\{tikzpicture\}/g);
-  const pending = report.chapters.reduce((sum, chapter) => sum + chapter.figurePending, 0);
-  check(describeMismatch('figure(s) (\\includegraphics, tikzpicture)', figures, pending, 'exactly'));
+  const figures = figureLeaks(report.chapters, report.figureFiles);
+  check(describeMismatch('image(s) (\\includegraphics)', count(source, /\\includegraphics\b/g), figures.images, 'exactly'));
+  check(describeMismatch('TikZ picture(s) (tikzpicture)', count(source, /\\begin\{tikzpicture\}/g), figures.svgs, 'exactly'));
+  leaks.push(...figures.leaks);
 
   const theorems = theoremNames(source).reduce(
     (sum, name) => sum + count(source, new RegExp(`\\\\begin\\{${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\}`, 'g')),

@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { buildSite } from '../support/built-site.ts';
 import { serveStatic, type StaticServer } from '../support/static-server.ts';
 
-// Fixtures, never the real content: a math chapter with theorems, and one with a listing and a pending figure.
+// Fixtures, never the real content: a math chapter with theorems, and one with a listing, a raster figure and a TikZ figure.
 const dist = buildSite({ APPUNTI_CONTENT_DIR: 'tests/fixtures/appunti' });
 const MATH_CHAPTER = '/appunti/corso-web/1-variabili-aleatorie-continue/';
 const CODE_CHAPTER = '/appunti/corso-web/3-introduzione/';
@@ -97,7 +97,7 @@ test('a numbered equation shows its number once, on the right of the formula', a
   expect(tagLeft).toBeGreaterThanOrEqual(mathRight);
 });
 
-test('lists drop the default indent, listings are monospace and numbered, figures are visibly pending', async ({ page }) => {
+test('lists drop the default indent, listings are monospace and numbered', async ({ page }) => {
   await open(page, CODE_CHAPTER);
   const list = await page.locator('.prose ul').first().evaluate((el) => {
     const style = getComputedStyle(el);
@@ -110,10 +110,6 @@ test('lists drop the default indent, listings are monospace and numbered, figure
   // Line numbers come from a CSS counter, which a computed style reports as its expression.
   expect(await listing.locator('.ltx_listingline').first().evaluate((el) => getComputedStyle(el, '::before').content)).toMatch(/^counter\(/);
   await expect(listing).toContainText('__global__ void hello_world()');
-
-  const pending = page.locator('.figura-pending').first();
-  await expect(pending).toBeVisible();
-  await expect(pending).toHaveText('Figura in attesa di conversione.');
 });
 
 test('the chapter makes no script request beyond the page itself', async ({ page }) => {
@@ -130,3 +126,42 @@ test('the chapter does not scroll sideways on a phone', async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test('figures are visible and keep their shape on mobile: no sideways scroll, image not stretched', async ({ page }) => {
+  await open(page, CODE_CHAPTER, MOBILE);
+  const img = page.locator('img.figura');
+  await img.scrollIntoViewIfNeeded();
+  await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth)).toBe(684);
+  const box = await img.boundingBox();
+  expect(box!.width).toBeLessThanOrEqual(390);
+  expect(box!.width / box!.height).toBeCloseTo(684 / 426, 1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  const tikz = await page.locator('svg.figura-tikz').boundingBox();
+  expect(tikz!.width).toBeLessThanOrEqual(390);
+});
+
+for (const colorScheme of ['light', 'dark'] as const) {
+  test(`in the ${colorScheme} theme a raster figure sits on a light sheet, never inverted, and a TikZ figure follows the text color`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme });
+    await open(page, CODE_CHAPTER);
+    const img = page.locator('img.figura');
+    await img.scrollIntoViewIfNeeded();
+    await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth)).toBe(684);
+    const style = await img.evaluate((el) => {
+      const computed = getComputedStyle(el);
+      return { background: computed.backgroundColor, filter: computed.filter, loading: el.getAttribute('loading') };
+    });
+    expect(style).toEqual({ background: 'rgb(255, 255, 255)', filter: 'none', loading: 'lazy' });
+
+    const tikz = page.locator('svg.figura-tikz');
+    await expect(tikz).toBeVisible();
+    const colors = await page.evaluate(() => ({
+      figure: getComputedStyle(document.querySelector('svg.figura-tikz')!).color,
+      text: getComputedStyle(document.querySelector('.prose p')!).color,
+    }));
+    expect(colors.figure).toBe(colors.text);
+    // The strokes are currentColor: nothing in the picture is a fixed black.
+    expect(await tikz.evaluate((el) => /#000|black/.test(el.outerHTML))).toBe(false);
+    expect(await tikz.evaluate((el) => el.getAttribute('aria-label'))).toBeTruthy();
+  });
+}
