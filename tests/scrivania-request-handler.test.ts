@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, test } from 'node:test';
 import { createSaveHandler } from '../src/integrations/scrivania/request-handler.ts';
+import { makeTempDir } from './support/temp-root.ts';
 
 let server: Server;
 let url: string;
@@ -13,7 +13,7 @@ let onSavedShouldFail = false;
 let lastSaved: unknown;
 
 before(async () => {
-  contentDir = mkdtempSync(join(tmpdir(), 'scrivania-handler-'));
+  contentDir = makeTempDir('scrivania-handler-');
   const handleSave = createSaveHandler({
     contentDir,
     onSaved: (saved) => {

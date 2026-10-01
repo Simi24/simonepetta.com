@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { gitLastmod } from '../src/lib/git-lastmod.ts';
+import { makeTempDir } from './support/temp-root.ts';
 
 /** A throwaway git repo, isolated from this repo's own history. */
 function initRepo(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'git-lastmod-'));
+  const dir = makeTempDir('git-lastmod-');
   execFileSync('git', ['init', '--quiet', '-b', 'main'], { cwd: dir, stdio: 'ignore' });
   return dir;
 }

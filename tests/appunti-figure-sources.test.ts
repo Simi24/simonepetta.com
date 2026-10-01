@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { readAlt } from '../pipeline/alt-text.ts';
 import { findTikz, tikzDocument } from '../pipeline/figure-sources.ts';
 import { imageSources, planRasters } from '../pipeline/raster-plan.ts';
+import { makeTempDir } from './support/temp-root.ts';
 
 const SRC = new URL('./fixtures/figures/src', import.meta.url).pathname;
 
@@ -23,7 +23,7 @@ test('a commented-out picture is not a picture', () => {
 });
 
 test('a missing \\input file fails instead of dropping its pictures', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'figure-sources-'));
+  const dir = makeTempDir('figure-sources-');
   writeFileSync(join(dir, 'main.tex'), '\\begin{document}\\input{nope}\\end{document}');
   assert.throws(() => findTikz(dir), /nope/);
 });
@@ -38,14 +38,14 @@ test('a standalone document keeps the figure-relevant preamble (packages, librar
 });
 
 test('reads the drafted descriptions from src/alt.json, and none when the course has no file yet', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'alt-'));
+  const dir = makeTempDir('alt-');
   assert.deepEqual(readAlt(dir), {});
   writeFileSync(join(dir, 'alt.json'), JSON.stringify({ 'images/a.png': 'Un grafo.' }));
   assert.deepEqual(readAlt(dir), { 'images/a.png': 'Un grafo.' });
 });
 
 test('a malformed alt.json fails loudly rather than reading as "no descriptions"', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'alt-'));
+  const dir = makeTempDir('alt-');
   for (const bad of ['{', '[]', '{"a":1}', '{"a":""}']) {
     writeFileSync(join(dir, 'alt.json'), bad);
     assert.throws(() => readAlt(dir), /alt\.json/, bad);

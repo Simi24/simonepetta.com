@@ -1,18 +1,18 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { checkBudget } from '../../scripts/quality/check-budget.ts';
 import { shouldBuildFreshDist } from '../../scripts/quality/quality-dists.ts';
 import { CLOUDFLARE_BEACON_SCRIPT_SRC, isPagefindAsset } from '../../src/config/budget.ts';
 import { buildSite } from '../support/built-site.ts';
+import { makeTempDir } from '../support/temp-root.ts';
 
 /** A minimal fixture "dist" with the given files, for exercising the checker without an Astro build. */
 function fixtureDist(files: Record<string, string>): string {
-  const dist = mkdtempSync(join(tmpdir(), 'budget-fixture-'));
+  const dist = makeTempDir('budget-fixture-');
   for (const [path, content] of Object.entries(files)) {
     mkdirSync(dirname(join(dist, path)), { recursive: true });
     writeFileSync(join(dist, path), content);

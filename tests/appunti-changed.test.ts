@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { notesChanged, notesChangedBetween } from '../scripts/ci/appunti-changed.ts';
+import { makeTempDir } from './support/temp-root.ts';
 
 test('a change under appunti/ or pipeline/ means the notes changed', () => {
   assert.equal(notesChanged(['README.md', 'appunti/gpucomputing/meta.json']), true);
@@ -32,7 +32,7 @@ function git(cwd: string, ...args: string[]): void {
 }
 
 test('a file moved out of appunti/ counts as a change, even though git sees a rename', () => {
-  const repo = mkdtempSync(join(tmpdir(), 'appunti-changed-'));
+  const repo = makeTempDir('appunti-changed-');
   git(repo, 'init', '-q');
   mkdirSync(join(repo, 'appunti/c'), { recursive: true });
   writeFileSync(join(repo, 'appunti/c/nota.md'), 'una nota abbastanza lunga perché git la riconosca come rinominata\n'.repeat(5));
@@ -46,7 +46,7 @@ test('a file moved out of appunti/ counts as a change, even though git sees a re
 });
 
 test('a diff touching only other paths is no change', () => {
-  const repo = mkdtempSync(join(tmpdir(), 'appunti-changed-'));
+  const repo = makeTempDir('appunti-changed-');
   git(repo, 'init', '-q');
   writeFileSync(join(repo, 'README.md'), 'a\n');
   git(repo, 'add', '-A');

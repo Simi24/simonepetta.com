@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { installConversion } from '../pipeline/appunti-install.ts';
 import { prepareBuild } from '../pipeline/appunti-build.ts';
 import { recoverInterruptedSwap, swapIn, type Staged } from '../pipeline/course-swap.ts';
+import { makeTempDir } from './support/temp-root.ts';
 
 const FIXTURES = new URL('./fixtures/latexml/', import.meta.url).pathname;
 
@@ -20,7 +20,7 @@ const dirOf = (name: string, files: Record<string, string>): Staged => ({
 
 /** A course folder with an old build/, PDF and meta.json. */
 function course(withOld = true): string {
-  const dir = mkdtempSync(join(tmpdir(), 'appunti-swap-'));
+  const dir = makeTempDir('appunti-swap-');
   if (withOld) {
     mkdirSync(join(dir, 'build'));
     writeFileSync(join(dir, 'build/a.html'), 'old build');
@@ -117,7 +117,7 @@ test('a write that fails while staging changes nothing', () => {
 
 /** A Docker-free conversion: the mini course's LaTeXML pages and a PDF stand-in. */
 function prepared(courseDir: string) {
-  const htmlDir = mkdtempSync(join(tmpdir(), 'appunti-install-html-'));
+  const htmlDir = makeTempDir('appunti-install-html-');
   cpSync(join(FIXTURES, 'mini-Ch1.html'), join(htmlDir, 'Ch1.html'));
   cpSync(join(FIXTURES, 'mini-Ch2.html'), join(htmlDir, 'Ch2.html'));
   return prepareBuild({
@@ -144,7 +144,7 @@ test('a missing pdfinfo fails before anything is written: build/, the PDF and me
   const pdf = join(dir, 'staging.pdf');
   writeFileSync(pdf, 'the new pdf');
   const before = snapshot(dir);
-  const emptyBin = mkdtempSync(join(tmpdir(), 'appunti-empty-path-'));
+  const emptyBin = makeTempDir('appunti-empty-path-');
   const path = process.env['PATH'];
   process.env['PATH'] = emptyBin;
   try {

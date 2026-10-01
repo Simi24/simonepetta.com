@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { builtPages, buildSite, read } from './support/built-site.ts';
+import { makeTempDir } from './support/temp-root.ts';
 
 const pageCount = (dist: string): number => {
   const entry = JSON.parse(read(dist, 'pagefind/pagefind-entry.json')) as {
@@ -24,7 +24,7 @@ test('with no readings or notes, no page is marked and the index is empty, not f
 });
 
 test('the build warns when no page is marked for indexing', () => {
-  const outDir = mkdtempSync(join(tmpdir(), 'simonepetta-empty-'));
+  const outDir = makeTempDir('simonepetta-empty-');
   const output = execFileSync('npx', ['astro', 'build', '--outDir', outDir], {
     env: { ...process.env, ...EMPTY },
     encoding: 'utf8',

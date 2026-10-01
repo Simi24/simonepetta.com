@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { saveLettura } from '../src/integrations/scrivania/save.ts';
 import { fileVersion } from '../src/integrations/scrivania/version.ts';
 import { LetturaSchemaError } from '../src/schemas/lettura.ts';
+import { makeTempDir } from './support/temp-root.ts';
 
 function tempContentDir(): string {
-  return mkdtempSync(join(tmpdir(), 'scrivania-save-'));
+  return makeTempDir('scrivania-save-');
 }
 
 test('writes a new book to a slugified file name, with quoted ISO dates', () => {
