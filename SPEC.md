@@ -185,7 +185,7 @@ The schema is **strict** (unknown keys fail) and lives in its own module, so the
 - **Known limitation**: YAML rolls an impossible *unquoted* date forward (`2026-02-30` becomes `2026-03-02`) before the schema ever sees it, so only a quoted date is validated strictly; the writing desk always writes quoted ISO dates.
 
 ### 6.2 What appears
-**All books**, including the one being read and abandoned ones. The index is the shelf plus a list grouped as *Sto leggendo / Letti / Abbandonati*, grades as large numerals. A book with a text links to its post; a book without a text still appears with grade and dates.
+**All books**, including the one being read and abandoned ones. The index is the shelf plus a list grouped as *Sto leggendo / Letti / Abbandonati*, grades as large numerals. A book with a text links to its post; a book without a text still appears with grade and dates. Its meta line ends with ", senza testo" (not for a book being read), as in the prototype.
 
 ### 6.3 Independence from the wiki
 The private wiki keeps its own `letti.csv`. Nothing flows between the two repositories; duplicating 4 or 5 fields per book is accepted ([#8](https://github.com/Simi24/simonepetta.com/issues/8)). The wiki's `libri` skill still describes the old export and must be updated in a wiki session (out of scope here).

@@ -79,6 +79,13 @@ function spineClasses(entry: CollectionEntry<'letture'>): string {
     line-height: 1.1;
     text-decoration: none;
     position: relative;
+    transition: translate 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spine {
+      transition: none;
+    }
   }
 
   .spine[href]:hover,

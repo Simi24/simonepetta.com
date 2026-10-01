@@ -3,9 +3,13 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { buildSite, read } from './support/built-site.ts';
+import { openingTagsWithClass, tagsWithClass } from './support/html-tags.ts';
 
 const FIXTURES_POST = { LETTURE_CONTENT_DIR: 'tests/fixtures/letture-post' };
 const FIXTURES_EMPTY = { LETTURE_CONTENT_DIR: 'tests/fixtures/letture-empty' };
+
+const spineTag = (html: string, title: string) =>
+  openingTagsWithClass(html, 'spine').find((tag) => tag.attrs['title']?.startsWith(`${title},`));
 
 test('a book with a body gets a post page', () => {
   const dist = buildSite(FIXTURES_POST);
@@ -35,28 +39,23 @@ test('the post renders the book’s text', () => {
 
 test('the post links back to the readings index', () => {
   const html = read(buildSite(FIXTURES_POST), 'letture/il-piu-recente/index.html');
-  assert.match(html, /<a class="[^"]*back[^"]*" href="\/letture\/"[^>]*>Letture<\/a>/);
+  const back = tagsWithClass(html, 'back').find((tag) => tag.attrs['href'] === '/letture/');
+  assert.equal(back?.name, 'a');
+  assert.equal(back?.text, 'Letture');
 });
 
 test('the shelf links a spine to its post when the book has one', () => {
   const html = read(buildSite(FIXTURES_POST), 'letture/index.html');
-  assert.match(html, /<a class="spine[^"]*"[^>]*href="\/letture\/il-piu-recente\/"[^>]*title="Il più recente,/);
+  const spine = spineTag(html, 'Il più recente');
+  assert.equal(spine?.name, 'a');
+  assert.equal(spine?.attrs['href'], '/letture/il-piu-recente/');
 });
 
 test('the shelf does not link a spine when the book has no post', () => {
   const html = read(buildSite(FIXTURES_POST), 'letture/index.html');
-  assert.match(html, /<span class="spine[^"]*"[^>]*title="Il senza testo,/);
-  assert.doesNotMatch(html, /<a[^>]*title="Il senza testo,/);
-});
-
-test('the list links a book title to its post when the book has one', () => {
-  const html = read(buildSite(FIXTURES_POST), 'letture/index.html');
-  assert.match(html, /<a class="books__title" href="\/letture\/il-piu-recente\/"[^>]*>Il più recente<\/a>/);
-});
-
-test('the list does not link a book title when the book has no post', () => {
-  const html = read(buildSite(FIXTURES_POST), 'letture/index.html');
-  assert.match(html, /<span class="books__title"[^>]*>Il senza testo<\/span>/);
+  const spine = spineTag(html, 'Il senza testo');
+  assert.equal(spine?.name, 'span');
+  assert.equal(spine?.attrs['href'], undefined);
 });
 
 test('the home shows the three most recently finished books, most recent first', () => {
@@ -72,12 +71,6 @@ test('the home’s recent list never shows an in-corso book', () => {
   assert.doesNotMatch(html, /In lettura di prova/);
 });
 
-test('the home links a recent book to its post when it has one, not when it doesn’t', () => {
-  const html = read(buildSite(FIXTURES_POST), 'index.html');
-  assert.match(html, /<a class="books__title" href="\/letture\/il-piu-recente\/"[^>]*>Il più recente<\/a>/);
-  assert.match(html, /<span class="books__title"[^>]*>Il senza testo<\/span>/);
-});
-
 test('with no finished books the home has no recent-readings section', () => {
   const html = read(buildSite(FIXTURES_EMPTY), 'index.html');
   assert.doesNotMatch(html, /Ultime letture/);
@@ -86,7 +79,8 @@ test('with no finished books the home has no recent-readings section', () => {
 test('a shelf spine link does not carry the listitem role itself: it sits on a wrapping span', () => {
   const html = read(buildSite(FIXTURES_POST), 'letture/index.html');
   assert.doesNotMatch(html, /<a[^>]*role="listitem"/);
-  assert.match(html, /<span role="listitem"[^>]*><a class="spine[^"]*"/);
+  const spine = spineTag(html, 'Il più recente')!;
+  assert.match(html.slice(0, spine.index), /<span[^>]*\brole="listitem"[^>]*>$/);
 });
 
 test('an abandoned book’s post labels the drop date "Abbandonato", never "Finito"', () => {

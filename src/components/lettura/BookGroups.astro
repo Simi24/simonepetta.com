@@ -1,10 +1,9 @@
 ---
-import { formatVoto } from '../../lib/lettura-format-it.ts';
-import { metaLine } from '../../lib/lettura-meta.ts';
 import type { GroupedLetture } from '../../lib/lettura-order.ts';
-import { postHref } from '../../lib/lettura-post.ts';
 import { STATO_PRESENTATION } from '../../lib/lettura-presentation.ts';
 import { STATI_LETTURA } from '../../schemas/lettura.ts';
+import BookList from './BookList.astro';
+import BookRow from './BookRow.astro';
 
 interface Props {
   grouped: GroupedLetture;
@@ -20,19 +19,9 @@ const { grouped } = Astro.props;
     return (
       <section class="books-group">
         <h2>{STATO_PRESENTATION[stato].groupLabel}</h2>
-        <ul class="books">
-          {entries.map((entry) => {
-            const href = postHref(entry);
-            const Title = href ? 'a' : 'span';
-            return (
-              <li>
-                <span class="books__vote">{entry.data.voto !== undefined ? formatVoto(entry.data.voto) : ''}</span>
-                <Title class="books__title" href={href}>{entry.data.titolo}</Title>
-                <span class="books__meta">{metaLine(entry)}</span>
-              </li>
-            );
-          })}
-        </ul>
+        <BookList>
+          {entries.map((entry) => <BookRow entry={entry} />)}
+        </BookList>
       </section>
     );
   })
@@ -55,44 +44,13 @@ const { grouped } = Astro.props;
     font-size: 1.05rem;
   }
 
-  .books {
+  .books-group :global(.book-list) {
     grid-column: 5 / -1;
-    display: grid;
-    gap: 1rem;
-  }
-
-  .books li {
-    display: grid;
-    grid-template-columns: 5rem minmax(0, 1fr);
-    column-gap: 1.2rem;
-  }
-
-  .books__vote {
-    grid-row: 1 / span 2;
-    font-size: 2.9rem;
-    line-height: 0.9;
-    font-weight: 300;
-    letter-spacing: -0.04em;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .books__title {
-    grid-column: 2;
-    font-size: 1.45rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.15;
-    text-decoration: none;
-  }
-
-  .books__meta {
-    grid-column: 2;
-    color: var(--muted);
   }
 
   @media (max-width: 860px) {
     .books-group h2,
-    .books {
+    .books-group :global(.book-list) {
       grid-column: 1 / -1;
     }
   }

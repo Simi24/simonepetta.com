@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { buildSite, read } from './support/built-site.ts';
+import { openingTagsWithClass, tagsWithClass } from './support/html-tags.ts';
 
 const FIXTURES = { LETTURE_CONTENT_DIR: 'tests/fixtures/letture' };
 const FIXTURES_EMPTY = { LETTURE_CONTENT_DIR: 'tests/fixtures/letture-empty' };
@@ -14,12 +15,11 @@ const FIXTURE_MARKER = '■FIXTURE-ONLY■';
 
 const lettureHtml = (env: Record<string, string> = {}) => read(buildSite(env), 'letture/index.html');
 
-/** The book's whole `<span class="spine ...">...</span>` element, as rendered on the shelf. */
+/** The book's whole spine element (opening tag to the end of its author span), as rendered on the shelf. */
 const spineFor = (html: string, title: string): string => {
-  const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = new RegExp(`<span class="[^"]*"[^>]*title="${escaped},[^>]*>[\\s\\S]*?</span></span>`).exec(html);
-  if (!match) throw new Error(`no spine found for "${title}"`);
-  return match[0];
+  const tag = openingTagsWithClass(html, 'spine').find((candidate) => candidate.attrs['title']?.startsWith(`${title},`));
+  if (!tag) throw new Error(`no spine found for "${title}"`);
+  return /^[\s\S]*?<\/span><\/span>/.exec(html.slice(tag.index))![0];
 };
 
 test('the nav links to /letture/', () => {
@@ -45,8 +45,10 @@ test('the shelf does not shrink its spines: it scrolls instead', () => {
 
 test('with no books the shelf shows an empty plank and a one-line caption', () => {
   const html = lettureHtml(FIXTURES_EMPTY);
-  assert.match(html, /<div class="shelf" role="list"[^>]*><\/div>/);
-  assert.match(html, /<p class="caption"[^>]*>Lo scaffale è vuoto\.<\/p>/);
+  const [shelf] = openingTagsWithClass(html, 'shelf');
+  assert.equal(shelf?.attrs['role'], 'list');
+  assert.ok(html.slice(shelf!.index + shelf!.raw.length).startsWith('</div>'), 'the shelf is not empty');
+  assert.ok(tagsWithClass(html, 'caption').some((tag) => tag.text === 'Lo scaffale è vuoto.'));
 });
 
 test('fixture books never enter the production collection', () => {
@@ -59,7 +61,7 @@ test('fixture books never enter the production collection', () => {
 test('adding a book makes it appear on the shelf and in the list', () => {
   const html = lettureHtml(FIXTURES);
   assert.match(html, /title="Il nome della rosa, Umberto Eco"/);
-  assert.match(html, /<span class="books__title"[^>]*>Il nome della rosa<\/span>/);
+  assert.ok(tagsWithClass(html, 'book-row__title').some((tag) => tag.text === 'Il nome della rosa'));
 });
 
 test('spine height follows pagine, clamped to 80..1000, with a 250-page default', () => {
@@ -89,8 +91,9 @@ test('the spine carries the author’s surname at full opacity', () => {
 
 test('a letto spine has no trailing space in its class attribute', () => {
   const html = lettureHtml(FIXTURES);
-  assert.match(html, /class="spine spine--tint-\d"/);
-  assert.doesNotMatch(html, /class="spine spine--tint-\d "/);
+  const classes = openingTagsWithClass(html, 'spine').map((tag) => tag.attrs['class']!);
+  assert.ok(classes.some((value) => /^spine spine--tint-\d$/.test(value)));
+  assert.ok(classes.every((value) => value === value.trim()));
 });
 
 test('a reading-now book gets the bookmark and an abandoned book leans', () => {
@@ -110,8 +113,8 @@ test('a book’s tint does not change when other books are added', () => {
 
 test('grades render as large numerals with an Italian decimal comma', () => {
   const html = lettureHtml(FIXTURES);
-  assert.match(html, /<span class="books__vote"[^>]*>4,5<\/span>/);
-  assert.match(html, /<span class="books__vote"[^>]*>3,5<\/span>/);
+  const votes = tagsWithClass(html, 'book-row__vote').map((tag) => tag.text);
+  assert.ok(votes.includes('4,5') && votes.includes('3,5'));
 });
 
 test('the list groups books as Sto leggendo, Letti, Abbandonati', () => {
@@ -165,7 +168,7 @@ test('the list follows the grid: label in columns 1-4, content from column 5, on
   const html = lettureHtml(FIXTURES);
   assert.match(html, /\.books-group\[[^\]]+\]\{[^}]*grid-template-columns:repeat\(12,minmax\(0,1fr\)\)/);
   assert.match(html, /\.books-group\[[^\]]+\] h2\[[^\]]+\]\{[^}]*grid-column:1\/span 4/);
-  assert.match(html, /\.books\[[^\]]+\]\{[^}]*grid-column:5\/-1/);
+  assert.match(html, /\.books-group\[[^\]]+\] \.book-list\{[^}]*grid-column:5\/-1/);
   assert.match(html, /@media \(width<=860px\)\{[^}]*grid-column:1\/-1/);
 });
 
