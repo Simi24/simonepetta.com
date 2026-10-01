@@ -6,6 +6,8 @@ export default defineConfig({
   testDir: 'tests/quality',
   // tests/quality/ also holds budget.test.ts (a node:test file, run by `npm test`): exclude it here.
   testMatch: /.*\.spec\.ts/,
+  // One test walks every page of a build in both themes; with the converted chapters that outgrew the 30 s default on CI.
+  timeout: 120_000,
   forbidOnly: !!process.env['CI'],
   reporter: process.env['CI'] ? 'github' : 'list',
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
