@@ -33,6 +33,16 @@ const MAIN = 'main';
 /** BookML's per-chapter run, inside the container. `main.tex` is the course's entry point. */
 const CONTAINER_SCRIPT = 'cp -R /opt/bookml-release/bookml . && cp bookml/GNUmakefile . && make SPLITAT=chapter';
 
+/**
+ * On Linux, files a root container writes into the bind mount are root-owned and the host cannot
+ * remove them. Run as the invoking user instead, with a writable HOME for the TeX and ImageMagick
+ * caches. macOS Docker Desktop remaps ownership, so it keeps running as root there.
+ */
+function asInvokingUser(): string[] {
+  if (process.platform !== 'linux' || process.getuid === undefined || process.getgid === undefined) return [];
+  return ['--user', `${process.getuid()}:${process.getgid()}`, '-e', 'HOME=/tmp'];
+}
+
 function ensureImage(): void {
   const present = spawnSync('docker', ['image', 'inspect', IMAGE], { stdio: 'ignore' }).status === 0;
   if (present) return;
@@ -58,7 +68,7 @@ function convert(contentDir: string, slug: string, keepWorkdir: boolean): void {
 
     console.log(`Converting ${slug} in Docker (LaTeXML + BookML, latexmk)...`);
     const runInContainer = (script: string): void => {
-      execFileSync('docker', ['run', '--rm', '-v', `${work}:/work`, IMAGE, 'sh', '-c', script], { stdio: 'inherit' });
+      execFileSync('docker', ['run', '--rm', ...asInvokingUser(), '-v', `${work}:/work`, IMAGE, 'sh', '-c', script], { stdio: 'inherit' });
     };
     runInContainer(CONTAINER_SCRIPT);
 
