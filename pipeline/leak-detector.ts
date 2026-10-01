@@ -12,6 +12,7 @@ export interface ReportedChapter {
   numero: number;
   titolo: string;
   html: string;
+  /** Absent when the output no longer records them (a committed `build/`): the box checks are then skipped. */
   tcolorboxes?: number;
   tcolorboxTitles?: readonly string[];
 }
@@ -156,15 +157,18 @@ export function detectLeaks(report: ConversionReport): string[] {
   const outputEquations = report.chapters.reduce((sum, chapter) => sum + countDisplayEquations(chapter.html), 0);
   check(describeMismatch('display equation(s)', equations, outputEquations, 'exactly'));
 
-  const boxes = count(source, /\\begin\{tcolorbox\}/g);
-  check(describeMismatch('tcolorbox(es)', boxes, report.chapters.reduce((sum, chapter) => sum + (chapter.tcolorboxes ?? 0), 0), 'exactly'));
-  const sourceTitles = tcolorboxTitlesInSource(source);
-  const outputTitles = report.chapters.flatMap((chapter) => chapter.tcolorboxTitles ?? []);
-  check(describeMismatch('tcolorbox title(s)', sourceTitles.length, outputTitles.length, 'exactly'));
-  for (const title of sourceTitles) {
-    const plain = plainWords(title);
-    if (plain !== undefined && !outputTitles.some((out) => out.replace(/\s+/g, ' ') === plain)) {
-      leaks.push(`the tcolorbox title "${plain}" of the source is not in the output`);
+  // A committed `build/` no longer records the boxes (the pipeline strips its markers): then only a conversion can check them.
+  if (report.chapters.some((chapter) => chapter.tcolorboxes !== undefined)) {
+    const boxes = count(source, /\\begin\{tcolorbox\}/g);
+    check(describeMismatch('tcolorbox(es)', boxes, report.chapters.reduce((sum, chapter) => sum + (chapter.tcolorboxes ?? 0), 0), 'exactly'));
+    const sourceTitles = tcolorboxTitlesInSource(source);
+    const outputTitles = report.chapters.flatMap((chapter) => chapter.tcolorboxTitles ?? []);
+    check(describeMismatch('tcolorbox title(s)', sourceTitles.length, outputTitles.length, 'exactly'));
+    for (const title of sourceTitles) {
+      const plain = plainWords(title);
+      if (plain !== undefined && !outputTitles.some((out) => out.replace(/\s+/g, ' ') === plain)) {
+        leaks.push(`the tcolorbox title "${plain}" of the source is not in the output`);
+      }
     }
   }
 

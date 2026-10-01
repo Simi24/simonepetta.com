@@ -165,3 +165,28 @@ test('a figure with no description fails the conversion and leaves the course as
   );
   assert.ok(!existsSync(join(input.courseDir, 'build')));
 });
+
+test('a dropped image is caught and the last good build/ stays as it was', () => {
+  const input = setupWithFigure({ [SIMT]: 'Confronto fra SIMD e SIMT.' });
+  buildFromLatexml(input);
+  const before = readFileSync(join(input.courseDir, 'build/1-introduzione.html'), 'utf8');
+  const twoImages = { ...input, source: `${input.source}\\includegraphics{images/gone.png}\n` };
+  assert.throws(
+    () => buildFromLatexml(twoImages),
+    (error) => error instanceof LeakError && error.leaks.some((leak) => /2 image.*1/.test(leak)),
+  );
+  assert.equal(readFileSync(join(input.courseDir, 'build/1-introduzione.html'), 'utf8'), before);
+  assert.deepEqual(readdirSync(join(input.courseDir, 'build')).sort(), ['1-introduzione.html', 'figure', 'meta.json']);
+});
+
+test('a dropped tikzpicture is caught and the last good build/ stays as it was', () => {
+  const { htmlDir, courseDir, source } = setup();
+  buildFromLatexml({ htmlDir, courseDir, corso: 'mini', source, latexmlErrors: 0 });
+  const before = readFileSync(join(courseDir, 'build/meta.json'), 'utf8');
+  assert.throws(
+    () => buildFromLatexml({ htmlDir, courseDir, corso: 'mini', source: `${source}\n\\begin{tikzpicture}\\end{tikzpicture}\n`, latexmlErrors: 0 }),
+    (error) => error instanceof LeakError && error.leaks.some((leak) => /1 TikZ.*0/.test(leak)),
+  );
+  assert.equal(readFileSync(join(courseDir, 'build/meta.json'), 'utf8'), before);
+  assert.deepEqual(readdirSync(join(courseDir, 'build')).sort(), ['1-variabili-aleatorie-continue.html', '2-secondo.html', 'meta.json']);
+});

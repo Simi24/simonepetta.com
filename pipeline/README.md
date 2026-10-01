@@ -23,6 +23,10 @@ So the course is always either entirely the old conversion or entirely the new o
 
 Raster images are re-encoded to WebP (at most 1600 px wide) and TikZ pictures compiled to SVG inside the container (`figures.sh`); the descriptions come from `appunti/<slug>/src/alt.json`, keyed by the image path (`images/a.png`) or the TikZ file and index (`img/up.tex#1`). A figure without a description fails the conversion: the message lists them, you open each figure, add its entry (Italian, factual, from the caption and what the image shows) and run again. Macros a TikZ picture uses must be one line each in `main.tex`'s preamble.
 
+## Checks in CI (the `appunti` workflow)
+
+`npm run test:pipeline` runs the pipeline's unit tests (list the new pipeline test files in that script). `node pipeline/appunti-check.ts` needs neither Docker nor LaTeX: for each published course it checks that `meta.json` matches the PDF's page count (`pdfinfo`) and, for a converted course, runs the leak detector on the committed `build/` against `src/`. It fails when it checks no course at all. A committed `build/` no longer records the tcolorboxes or LaTeXML's error count, so those two are checked only when converting. The `appunti` workflow's manual run (`workflow_dispatch`, input: the course slug) re-converts that course in Docker and fails if `build/` or `meta.json` differ from what is committed, uploading the diff; the PDF is not compared (LaTeX embeds timestamps), only its page count through `meta.json`.
+
 ## Files
 
 - `Dockerfile`: TeX Live (pinned by digest; its `dvisvgm` compiles TikZ) + LaTeXML + BookML (pinned, checksummed) + ImageMagick and `webp` (image re-encoding).
