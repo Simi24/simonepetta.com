@@ -19,8 +19,9 @@ export async function runAndListLeftovers(
 ): Promise<{ leftovers: string[]; exitCode: number | null }> {
   const sandbox = mkdtempSync(join(tmpdir(), 'temp-leaks-'));
   try {
-    // NODE_TEST_CONTEXT would make a nested `node --test` believe it is a test subprocess and run nothing.
-    const { NODE_TEST_CONTEXT: _context, ...env } = process.env;
+    // NODE_TEST_CONTEXT would make a nested `node --test` believe it is a test subprocess and run nothing;
+    // an inherited SIMONEPETTA_TEST_TMP would send the child's temp dirs outside the sandbox, unseen.
+    const { NODE_TEST_CONTEXT: _context, SIMONEPETTA_TEST_TMP: _root, ...env } = process.env;
     const child = spawn(command, args, { env: { ...env, TMPDIR: sandbox }, stdio: ['ignore', 'pipe', 'inherit'] });
     let output = '';
     child.stdout.on('data', (chunk: Buffer) => {
