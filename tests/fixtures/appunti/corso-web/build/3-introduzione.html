@@ -92,8 +92,114 @@ In contrapposizione abbiamo il <span class="ltx_text ltx_font_bold">SIMD</span> 
 <div id="S4.p2" class="ltx_para">
 <p class="ltx_p">Il modello <span class="ltx_text ltx_font_bold">SIMT</span> e’ interessante e viene introdotto da CUDA, qui ci sono tanti thread che svolgono tante operazioni su thread distinti, deve esserci un sistema book treading. C’e’ un evoluzione del modello SIMD perche’ lo cambia con il modello multithreading, decade il vincolo della singola istruzione, questo e’ dato dalla presenza di branch nel codice. Questo modello e’ molto utile perche’ ci permette di pensare in modo sequenziale anche se complica un po’ l’architettura perche’ bisogna fare comunicare i thread. Questo e’ il modello implementato dai processori GPU.</p>
 </div>
-<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/corso-web/figure/figura-prova.webp" width="684" height="426" loading="lazy" alt="Schema di un processore con unità di controllo e unità di elaborazione."></div>
 <figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figure 1.1</span>: </span><span class="ltx_text">Confronto tra SIMT e SIMD</span></figcaption>
+</figure>
+<figure id="F2" class="ltx_figure"><div class="bml-overflow-wrapper"><svg class="figura-tikz" role="img" aria-label="Albero binario bilanciato della fase di up-sweep: la radice 1,2,3,4 ha come figli 1,2 e 3,4, che hanno come foglie 1, 2, 3 e 4. Una freccia verticale a destra è orientata verso l'alto." width="193.203507pt" height="76.197898pt" viewBox="-72.000004 -72.000002 193.203507 76.197898">
+<defs>
+<path id="img-pattern-upsweep-tex-1-g0-44" d="M2.080199-.215193C2.092154-.095641 2.092154 .02391 2.092154 .143462C2.056289 .812951 1.793275 1.518306 1.315068 1.996513C1.267248 2.044334 1.195517 2.116065 1.195517 2.187796V2.211706C1.219427 2.271482 1.267248 2.295392 1.303113 2.295392C1.470486 2.295392 1.75741 1.876961 1.888917 1.649813C2.163885 1.183562 2.343213 .609714 2.343213 .047821C2.343213-.406476 2.223661-1.171606 1.613948-1.171606C1.255293-1.171606 1.0401-.872727 1.0401-.573848C1.0401-.239103 1.303113-.011955 1.613948-.011955C1.80523-.011955 1.960648-.095641 2.080199-.215193Z"/>
+<path id="img-pattern-upsweep-tex-1-g0-49" d="M1.08792-7.197011V-6.850311C1.625903-6.850311 2.080199-6.933998 2.606227-7.161146V-.884682C2.606227-.418431 2.139975-.3467 1.673724-.3467C1.482441-.3467 1.303113-.358655 1.147696-.358655V-.011955H4.889664V-.358655C4.746202-.358655 4.554919-.3467 4.375592-.3467C3.777833-.3467 3.431133-.406476 3.431133-.920548V-7.782814C3.431133-7.854545 3.407223-7.962142 3.287671-7.962142C3.120299-7.962142 2.976837-7.734994 2.82142-7.651308C2.307347-7.304608 1.697634-7.197011 1.08792-7.197011Z"/>
+<path id="img-pattern-upsweep-tex-1-g0-50" d="M.980324-6.252553C1.219427-6.993773 1.80523-7.615442 2.630137-7.615442C3.694147-7.615442 4.25604-6.611208 4.25604-5.66675C4.25604-4.447323 3.383313-3.466999 2.630137-2.606227L1.769365-1.637858C1.518306-1.362889 1.267248-1.075965 1.016189-.789041L.74122-.478207C.669489-.382565 .573848-.334745 .573848-.179328C.573848-.119552 .585803-.059776 .585803-.011955H4.937484L5.248319-2.020423H4.985305C4.889664-1.458531 4.925529-.884682 4.411457-.884682C4.076712-.884682 3.730012-.860772 3.395268-.860772H1.41071C2.032379-1.482441 2.630137-2.092154 3.275716-2.677958C4.112578-3.431133 5.248319-4.339726 5.248319-5.595019C5.248319-7.10137 4.088667-7.962142 2.797509-7.962142C1.625903-7.962142 .573848-7.005729 .573848-5.798257C.573848-5.463512 .6934-5.212453 1.123786-5.140722C1.518306-5.140722 1.721544-5.415691 1.721544-5.71457C1.721544-5.989539 1.554172-6.216687 1.219427-6.276463C1.135741-6.276463 1.06401-6.276463 .980324-6.252553Z"/>
+<path id="img-pattern-upsweep-tex-1-g0-51" d="M1.219427-6.874222C1.518306-7.388294 2.187796-7.675218 2.797509-7.675218C3.502864-7.675218 4.016936-7.220922 4.016936-6.288418C4.016936-5.571108 3.718057-4.62665 2.964882-4.399502C2.737733-4.315816 2.462765-4.375592 2.247572-4.303861H2.199751C2.092154-4.303861 1.948692-4.303861 1.948692-4.184309C1.948692-4.076712 2.032379-4.052802 2.139975-4.052802H2.271482C2.414944-4.052802 2.570361-4.064757 2.713823-4.064757C3.837609-4.064757 4.23213-3.060523 4.23213-2.175841C4.23213-1.41071 4.052802-.083686 2.857285-.083686C2.092154-.083686 1.374844-.418431 .944458-1.135741H1.052055C1.422665-1.135741 1.685679-1.362889 1.685679-1.733499C1.685679-2.092154 1.41071-2.319303 1.052055-2.319303H1.004234C.6934-2.283437 .490162-2.020423 .490162-1.721544C.490162-.478207 1.721544 .239103 2.857285 .239103C4.148443 .239103 5.34396-.71731 5.34396-2.068244C5.34396-3.120299 4.399502-4.124533 3.311582-4.208219C4.327771-4.60274 5.021171-5.296139 5.021171-6.336239C5.021171-7.44807 3.765878-7.962142 2.857285-7.962142C1.960648-7.962142 .812951-7.460025 .812951-6.38406C.812951-6.121046 .944458-5.846077 1.279203-5.786301H1.362889C1.673724-5.786301 1.912827-6.025405 1.912827-6.336239C1.912827-6.635118 1.697634-6.886177 1.350934-6.886177C1.303113-6.886177 1.267248-6.886177 1.219427-6.874222Z"/>
+<path id="img-pattern-upsweep-tex-1-g0-52" d="M.32279-2.008468H3.466999V-.872727C3.466999-.382565 3.132254-.358655 2.331258-.358655V-.011955H5.451557V-.358655C5.308095-.358655 5.164633-.3467 5.033126-.3467C4.638605-.3467 4.315816-.406476 4.315816-.872727V-2.008468H5.511333V-2.355168H4.315816V-7.926276C4.315816-8.033873 4.25604-8.081694 4.160399-8.081694C3.90934-8.081694 3.455044-7.208966 3.180075-6.77858C2.319303-5.439601 1.43462-4.112578 .585803-2.773599L.430386-2.534496C.358655-2.426899 .310834-2.343213 .310834-2.211706C.310834-2.139975 .32279-2.068244 .32279-2.008468ZM.621669-2.355168L3.514819-6.850311V-2.355168H.621669Z"/>
+</defs>
+<g id="img-pattern-upsweep-tex-1-page1">
+<g stroke-miterlimit="10" transform="translate(9.235554,-63.083672)scale(0.996264,-0.996264)">
+<g fill="currentColor" stroke="currentColor">
+<g stroke-width="0.4">
+<g transform="translate(-16.64174,-2.70172)">
+<g stroke="none" transform="scale(-1.00375,1.00375)translate(9.235554,-63.083672)scale(-1,-1)">
+<g fill="currentColor">
+<g stroke="none">
+<use x="9.235554" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-49"/>
+<use x="15.087176" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-44"/>
+<use x="18.338074" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-50"/>
+<use x="24.189696" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-44"/>
+<use x="27.440593" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-51"/>
+<use x="33.292215" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-44"/>
+<use x="36.543112" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-52"/>
+</g>
+</g>
+</g>
+</g>
+<g transform="translate(-57.2972,-32.57697)">
+<g stroke="none" transform="scale(-1.00375,1.00375)translate(9.235554,-63.083672)scale(-1,-1)">
+<g fill="currentColor">
+<g stroke="none">
+<use x="9.235554" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-49"/>
+<use x="15.087176" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-44"/>
+<use x="18.338074" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-50"/>
+</g>
+</g>
+</g>
+</g>
+<path d="M-15.24635-9.14938L-38.17151-22.9039" fill="none"/>
+<g transform="translate(-77.62491,-63.61859)">
+<g stroke="none" transform="scale(-1.00375,1.00375)translate(9.235554,-63.083672)scale(-1,-1)">
+<g fill="currentColor">
+<g stroke="none">
+<use x="9.235554" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-49"/>
+</g>
+</g>
+</g>
+</g>
+<path d="M-57.41571-39.02463L-68.03719-51.76697" fill="none"/>
+<g transform="translate(-27.83281,-63.61859)">
+<g stroke="none" transform="scale(-1.00375,1.00375)translate(9.235554,-63.083672)scale(-1,-1)">
+<g fill="currentColor">
+<g stroke="none">
+<use x="9.235554" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-50"/>
+</g>
+</g>
+</g>
+</g>
+<path d="M-42.1685-39.02463L-31.54707-51.76697" fill="none"/>
+<g transform="translate(42.28702,-32.57697)">
+<g stroke="none" transform="scale(-1.00375,1.00375)translate(9.235554,-63.083672)scale(-1,-1)">
+<g fill="currentColor">
+<g stroke="none">
+<use x="9.235554" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-51"/>
+<use x="15.087176" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-44"/>
+<use x="18.338074" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-52"/>
+</g>
+</g>
+</g>
+</g>
+<path d="M15.24635-9.14938L38.17152-22.9039" fill="none"/>
+<g transform="translate(21.9593,-63.61859)">
+<g stroke="none" transform="scale(-1.00375,1.00375)translate(9.235554,-63.083672)scale(-1,-1)">
+<g fill="currentColor">
+<g stroke="none">
+<use x="9.235554" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-51"/>
+</g>
+</g>
+</g>
+</g>
+<path d="M42.1685-39.02463L31.54703-51.76697" fill="none"/>
+<g transform="translate(71.7514,-63.61859)">
+<g stroke="none" transform="scale(-1.00375,1.00375)translate(9.235554,-63.083672)scale(-1,-1)">
+<g fill="currentColor">
+<g stroke="none">
+<use x="9.235554" y="-63.083672" href="#img-pattern-upsweep-tex-1-g0-52"/>
+</g>
+</g>
+</g>
+</g>
+<path d="M57.41571-39.02463L68.03714-51.76697" fill="none"/>
+<path d="M109.54257-64.72969V-6.20189" fill="none"/>
+<g transform="matrix(0.0,1.0,-1.0,0.0,109.54257,-6.20189)">
+<g stroke-dasharray="none" stroke-dashoffset="0.0">
+ <g stroke-linejoin="miter">
+ <path d="M9.96457 0C8.74089 .19893 3.36191 1.32619 0 2.5529V-2.5529C3.36191-1.32619 8.74089-.19893 9.96457 0Z"/>
+ </g>
+ </g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</svg></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 3.2: </span>Un comparatore.</figcaption>
 </figure>
 <div id="S4.p3" class="ltx_para">
 <p class="ltx_p">Nel simt si fissano gli operandi, mentre nel simd no.</p>

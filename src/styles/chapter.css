@@ -328,7 +328,7 @@
   text-align: right;
 }
 
-/* Figures: a visible placeholder until the figures ticket converts them (#37). */
+/* Figures (SPEC.md §7.4). */
 .prose figure {
   margin: 1.4em 0;
 }
@@ -339,13 +339,22 @@
   font-size: 0.95rem;
 }
 
-.prose .figura-pending {
-  margin: 0;
-  padding: 1.2rem 1rem;
-  border: 1px dashed var(--muted);
-  color: var(--muted);
-  font-style: italic;
-  text-align: center;
+/* Raster images keep their own colors on a light sheet in both themes; they are never inverted. */
+.prose .figura {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+  background: var(--sheet);
+}
+
+/* TikZ pictures are inline SVG drawn in currentColor: they take the text color of the theme. */
+.prose .figura-tikz {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+  color: var(--ink);
 }
 
 .prose .ltx_flex_figure {

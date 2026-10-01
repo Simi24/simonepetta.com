@@ -13,7 +13,7 @@ const capitoloSchema = z.object({
   math: z.boolean(),
 });
 
-const buildSchema = z.object({ capitoli: z.array(capitoloSchema), figureInAttesa: z.number().int().nonnegative().optional() });
+const buildSchema = z.object({ capitoli: z.array(capitoloSchema) });
 
 export type Capitolo = z.infer<typeof capitoloSchema>;
 export type CorsoBuild = z.infer<typeof buildSchema>;
