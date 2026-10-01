@@ -93,7 +93,7 @@ Mentre se prendiamo la <span class="ltx_text ltx_font_bold">frequenza discreta</
 <h4 class="ltx_title ltx_title_subsubsection">Corollario</h4>
 
 <div id="S2.SS1.SSSx1.p1" class="ltx_para">
-<p class="ltx_p">Un coseno tempo continuo e’ sempre periodico, pero’un coseno tempo discreto non e’ necessariamente periodico, perche’, dato il coseno discreto definito <math id="S2.SS1.SSSx1.p1.m1" class="ltx_math_unparsed" alttext="x[n]=\cos(2\pi\tilde{f}n" display="inline"><semantics><mrow><mi>x</mi><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>=</mo><mi>cos</mi><mrow><mo stretchy="false">(</mo><mn>2</mn><mi>π</mi><mover accent="true"><mi>f</mi><mo>~</mo></mover><mi>n</mi></mrow></mrow></semantics></math>, se dovessimo trovare il periodo nel tempo continuo faremmo <math id="S2.SS1.SSSx1.p1.m2" class="ltx_Math" alttext="T=\frac{1}{f}" display="inline"><semantics><mrow><mi>T</mi><mo>=</mo><mfrac><mn>1</mn><mi>f</mi></mfrac></mrow></semantics></math>, ma se ad esempio la frequenza discreta fosse <math id="S2.SS1.SSSx1.p1.m3" class="ltx_Math" alttext="\frac{4}{5}" display="inline"><semantics><mfrac><mn>4</mn><mn>5</mn></mfrac></semantics></math>, il periodo verrebbe <math id="S2.SS1.SSSx1.p1.m4" class="ltx_Math" alttext="\tilde{T}=\frac{5}{4}" display="inline"><semantics><mrow><mover accent="true"><mi>T</mi><mo>~</mo></mover><mo>=</mo><mfrac><mn>5</mn><mn>4</mn></mfrac></mrow></semantics></math> che non essendo un numero interno non puo’ essere un periodo.
+<p class="ltx_p">Un coseno tempo continuo e’ sempre periodico, pero’un coseno tempo discreto non e’ necessariamente periodico, perche’, dato il coseno discreto definito <math id="S2.SS1.SSSx1.p1.m1" class="ltx_Math" alttext="x[n]=\cos(2\pi\tilde{f}n)" display="inline"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mover accent="true"><mi>f</mi><mo>~</mo></mover><mo>⁢</mo><mi>n</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></semantics></math>, se dovessimo trovare il periodo nel tempo continuo faremmo <math id="S2.SS1.SSSx1.p1.m2" class="ltx_Math" alttext="T=\frac{1}{f}" display="inline"><semantics><mrow><mi>T</mi><mo>=</mo><mfrac><mn>1</mn><mi>f</mi></mfrac></mrow></semantics></math>, ma se ad esempio la frequenza discreta fosse <math id="S2.SS1.SSSx1.p1.m3" class="ltx_Math" alttext="\frac{4}{5}" display="inline"><semantics><mfrac><mn>4</mn><mn>5</mn></mfrac></semantics></math>, il periodo verrebbe <math id="S2.SS1.SSSx1.p1.m4" class="ltx_Math" alttext="\tilde{T}=\frac{5}{4}" display="inline"><semantics><mrow><mover accent="true"><mi>T</mi><mo>~</mo></mover><mo>=</mo><mfrac><mn>5</mn><mn>4</mn></mfrac></mrow></semantics></math> che non essendo un numero interno non puo’ essere un periodo.
 Di conseguenza il vero periodo di una funzione a tempo discreto e’ un multiplo intero del periodo ottenuto come se fossimo nel tempo continuo, moltiplicato in modo che sia un intero, nel nostro caso <math id="S2.SS1.SSSx1.p1.m5" class="ltx_Math" alttext="\tilde{T}=\frac{5}{4}\cdot 4=5" display="inline"><semantics><mrow><mover accent="true"><mi>T</mi><mo>~</mo></mover><mo>=</mo><mrow><mfrac><mn>5</mn><mn>4</mn></mfrac><mo lspace="0.222em" rspace="0.222em">⋅</mo><mn>4</mn></mrow><mo>=</mo><mn>5</mn></mrow></semantics></math>.</p>
 </div>
 <div id="S2.SS1.SSSx1.p2" class="ltx_para">
@@ -131,7 +131,7 @@ x_{3}(t)&amp;{}=\cos(2\pi 1000t)\rightarrow f_{s}=5000\mbox{Hz}\rightarrow x[n]=
 <div id="S2.SS2.p4" class="ltx_para">
 <p class="ltx_p">Questo ci fa intuire che se vogliamo tornare indietro dobbiamo sapere le diverse frequenze di campionamento, altrimenti sarebbe impossibile distinguere a quale segnala appartiene il segnale campionato.</p>
 </div>
-<figure id="S2.SS2.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez9-stessoSegnale.webp" width="945" height="337" loading="lazy" alt="Due insiemi disegnati a mano: a sinistra &quot;tempo continuo&quot; con x1(t), x2(t), x3(t), a destra &quot;tempo discreto&quot; con un punto giallo e la scritta x[n] = cos(2/5 π n). Tre frecce gialle, etichettate f1, f2, f3 in rosso, portano dai tre segnali continui allo stesso punto."></div>
+<figure id="S2.SS2.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez9-stessoSegnale.webp" width="945" height="337" loading="lazy" alt="Due insiemi disegnati a mano: a sinistra &quot;tempo continui&quot; con x1(t), x2(t), x3(t), a destra &quot;tempo discreti&quot; con un punto giallo e la scritta x[n] = cos(2/5 π n). Tre frecce gialle, etichettate f1, f2, f3 in rosso, portano dai tre segnali continui allo stesso punto."></div>
 </figure>
 </div>
 </section>
@@ -302,7 +302,7 @@ Lo facciamo decomponendo il coseno con la formula di Eulero inversa:</p>
 <div id="S3.SS1.p7" class="ltx_para">
 <p class="ltx_p">Il grafico del modulo:</p>
 </div>
-<figure id="S3.SS1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-moduloEsempio.webp" width="1276" height="347" loading="lazy" alt="Grafico del modulo con asse ω (cappuccio) e frecce rosse di altezza 1 in ±2π/5, con il cerchietto 1 sulla freccia positiva. Altre frecce, senza etichetta di altezza, stanno attorno a ±8π/5 (scritte in giallo) e 2,5π (in blu). Righe gialle in -π e π; segnati anche -3π, -2π, 2π, 3π."></div>
+<figure id="S3.SS1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-moduloEsempio.webp" width="1276" height="347" loading="lazy" alt="Grafico del modulo con asse ω (cappuccio): frecce rosse di altezza 1 in ±2π/5, con un 1 cerchiato vicino a quella positiva. Altre due frecce, senza altezza indicata, stanno attorno a -2,5π e a 2,5π (etichetta in blu). In giallo sono segnati -8π/5 e 8π/5, righe gialle verticali in -π e π, e sull'asse anche -3π, -2π, 2π, 3π."></div>
 </figure>
 <div id="S3.SS1.p8" class="ltx_para">
 <p class="ltx_p">Dal grafico noto che e’ ottenuto l’alias principale, in quanto il modulo sta tra <math id="S3.SS1.p8.m1" class="ltx_Math" alttext="-\pi,\pi" display="inline"><semantics><mrow><mrow><mo>−</mo><mi>π</mi></mrow><mo>,</mo><mi>π</mi></mrow></semantics></math>.
@@ -322,7 +322,7 @@ Quindi ricordando che <math id="S3.SS1.p8.m2" class="ltx_Math" alttext="t=n\cdot
 <div id="S3.SS1.p11" class="ltx_para">
 <p class="ltx_p">tracciando il grafico:</p>
 </div>
-<figure id="S3.SS1.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-moduloEsempio2.webp" width="1029" height="303" loading="lazy" alt="Grafico del modulo con asse ω (cappuccio). Quattro frecce gialle stanno a ±2π/5 e ±8π/5 (scritto anche -8/5 π), con il cerchietto 2 vicino a quella in 8π/5. Righe gialle in -π e π; due tratti neri in circa ±12π/5."></div>
+<figure id="S3.SS1.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-moduloEsempio2.webp" width="1029" height="303" loading="lazy" alt="Grafico del modulo con asse ω (cappuccio). Quattro frecce arancioni a ±2π/5 e ±8π/5, con il numero 2 cerchiato in arancione vicino a quella in 8π/5. Righe gialle evidenziate in -π e π; due tratti neri in ±12π/5."></div>
 </figure>
 <div id="S3.SS1.p12" class="ltx_para">
 <p class="ltx_p">Noto che abbiamo ottenuto un’alias secondario, calcolo quindi quello principale:</p>
@@ -353,7 +353,7 @@ Quindi ricordando che <math id="S3.SS1.p8.m2" class="ltx_Math" alttext="t=n\cdot
 <div id="S3.SS1.p18" class="ltx_para">
 <p class="ltx_p">tracciando il grafico:</p>
 </div>
-<figure id="S3.SS1.fig3" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-moduloEsempio3.webp" width="1343" height="350" loading="lazy" alt="Grafico del modulo con asse ω (cappuccio) e cerchietto 3 in verde. Una freccia rossa è in 0 con una freccia che la indica, frecce verdi in ±2π e frecce rosse agli estremi del grafico. Righe gialle in -π e π."></div>
+<figure id="S3.SS1.fig3" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-moduloEsempio3.webp" width="1343" height="350" loading="lazy" alt="Grafico del modulo con asse ω (cappuccio) e numero 3 cerchiato in verde. Una freccia rossa in 0, indicata da una piccola freccia rossa; due frecce verdi in corrispondenza delle etichette 2π ai due lati; due frecce rosse agli estremi con un'etichetta rossa non leggibile. Righe gialle evidenziate in corrispondenza di π ai due lati dell'origine."></div>
 </figure>
 <div id="S3.SS1.p19" class="ltx_para">
 <p class="ltx_p">Noto che abbiamo ottenuto un’alias secondario, calcolo quindi quello principale:</p>
@@ -376,7 +376,7 @@ Quindi ricordando che <math id="S3.SS1.p8.m2" class="ltx_Math" alttext="t=n\cdot
 <div id="S3.SS1.p23" class="ltx_para">
 <p class="ltx_p">Tracciandone il grafico del modulo:</p>
 </div>
-<figure id="S3.SS1.fig4" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-moduloEsempio4.webp" width="1092" height="302" loading="lazy" alt="Grafico del modulo con asse ω (cappuccio) e cerchietto 4. Frecce blu a ±π/2, in 2,5π e a sinistra verso -3π; segnati sull'asse anche -3π, -2π, -π, π, 3/2 π, 2π, 2,5π, 3π. Righe gialle in -π e π."></div>
+<figure id="S3.SS1.fig4" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-moduloEsempio4.webp" width="1092" height="302" loading="lazy" alt="Grafico del modulo con asse ω (cappuccio) e numero 4 cerchiato in blu. Frecce blu in -2,5π, ±π/2 e 2,5π; due tratti verticali neri in circa ±3/2π. Sull'asse sono segnati -3π, -2π, -π, π/2, π, 3/2 π, 2π, 2,5π, 3π. Righe gialle in -π e π."></div>
 </figure>
 <div id="S3.SS1.p24" class="ltx_para">
 <p class="ltx_p">Notiamo ancora una volta che abbiamo ottenuto un alias secondario, quindi otteniamo quello principale e poi ricostruiamo il segnale:</p>
@@ -495,7 +495,7 @@ Il Kernel di ricostruzione in questo caso e’ il rettangolo di altezza 1 in bas
 <div id="S4.SS1.p4" class="ltx_para">
 <p class="ltx_p">Potremmo fare anche una ricostruzione lineare di primo grado, ovvero tracciamo una retta tra i vari campioni. In questo caso il kernel di ricostruzione e’ un triangolo con base <math id="S4.SS1.p4.m1" class="ltx_Math" alttext="-T,T" display="inline"><semantics><mrow><mrow><mo>−</mo><mi>T</mi></mrow><mo>,</mo><mi>T</mi></mrow></semantics></math> ed alto 1, che prendiamo e posizioniamo su ogni campione, e sommiamo tutti i triangoli. Ovviamente come si nota dal grafico ci sono delle sovrapposizioni tra i trinagoli:</p>
 </div>
-<figure id="S4.SS1.fig3" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-lineare.webp" width="703" height="301" loading="lazy" alt="Grafico con triangoli sovrapposti centrati sugli indici i-1, i, i+1, i+2, in rosso, arancione e verde, ognuno con altezza pari al campione (x[i], x[i+1], x[i+2]). Una linea blu spessa mostra la somma, cioè la spezzata che unisce i campioni. Alcuni punti blu sono segnati sui lati dei triangoli."></div>
+<figure id="S4.SS1.fig3" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-lineare.webp" width="703" height="301" loading="lazy" alt="Grafico con tre triangoli sovrapposti: rosso centrato in i (vertice x[i]), arancione centrato in i+1 (vertice x[i+1]), verde centrato in i+2 (vertice x[i+2]); sull'asse anche i-1. Una linea blu spessa unisce i vertici x[i] e x[i+2] passando per x[i+1]; alcuni punti blu sono segnati sui lati dei triangoli e x[i] e i sono evidenziati in giallo."></div>
 </figure>
 <section id="S4.SS1.SSSx1" class="ltx_subsubsection normal">
 <div class="section level4">

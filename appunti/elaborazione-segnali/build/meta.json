@@ -207,17 +207,17 @@
             {
               "id": "S8.SS1",
               "numero": "4.8.1",
-              "titolo": "x⁢(t)x(t) assolutamente sommabile"
+              "titolo": "x(t) assolutamente sommabile"
             },
             {
               "id": "S8.SS2",
               "numero": "4.8.2",
-              "titolo": "x⁢(t)x(t) ha un numero finito di estremi (massimi e minimi, nel periodo)"
+              "titolo": "x(t) ha un numero finito di estremi (massimi e minimi, nel periodo)"
             },
             {
               "id": "S8.SS3",
               "numero": "4.8.3",
-              "titolo": "x⁢(t)x(t) ha un numero di discontinuita’ finite e dev’essere finito (nel periodo)"
+              "titolo": "x(t) ha un numero di discontinuita’ finite e dev’essere finito (nel periodo)"
             }
           ]
         },
@@ -593,12 +593,12 @@
             {
               "id": "S1.SS1",
               "numero": "7.1.1",
-              "titolo": "DTFT e’ periodica di periodo 2⁢π2\\pi"
+              "titolo": "DTFT e’ periodica di periodo 2π"
             },
             {
               "id": "S1.SS2",
               "numero": "7.1.2",
-              "titolo": "La DTFT gode della proprieta’ si simmetria coniugata se x⁢[n]x[n] e’ reale"
+              "titolo": "La DTFT gode della proprieta’ si simmetria coniugata se x[n] e’ reale"
             },
             {
               "id": "S1.SS3",
@@ -608,7 +608,7 @@
             {
               "id": "S1.SS4",
               "numero": "7.1.4",
-              "titolo": "Se esiste la DTFT di x⁢[n]x[n], allora e’ unica"
+              "titolo": "Se esiste la DTFT di x[n], allora e’ unica"
             },
             {
               "id": "S1.SS5",
@@ -659,7 +659,7 @@
             {
               "id": "S5.SS1",
               "numero": "7.5.1",
-              "titolo": "Ulteriori riflessioni su cosa voglia dire analizzare e sintetizzare un segnale x⁢[n]x[n]"
+              "titolo": "Ulteriori riflessioni su cosa voglia dire analizzare e sintetizzare un segnale x[n]"
             }
           ]
         },
@@ -799,7 +799,7 @@
             {
               "id": "S22.SS2",
               "numero": "7.22.2",
-              "titolo": "Propritea’ 2: DFT e’ simmetrica coniugata se x⁢[n]∈𝐑x[n]\\in\\mathbf{R}"
+              "titolo": "Propritea’ 2: DFT e’ simmetrica coniugata se x[n]∈𝐑"
             },
             {
               "id": "S22.SS3",
@@ -900,7 +900,7 @@
             {
               "id": "S3.SS1",
               "numero": "8.3.1",
-              "titolo": "H⁢(z)H(z) per un sistema LTI qualunque"
+              "titolo": "H(z) per un sistema LTI qualunque"
             }
           ]
         },
@@ -947,13 +947,13 @@
         {
           "id": "S7",
           "numero": "8.7",
-          "titolo": "Dalla H⁢(z)H(z) all’equazione alle differenze",
+          "titolo": "Dalla H(z) all’equazione alle differenze",
           "sottosezioni": []
         },
         {
           "id": "S8",
           "numero": "8.8",
-          "titolo": "Da H⁢(z)H(z) alla risposta all’impulso",
+          "titolo": "Da H(z) alla risposta all’impulso",
           "sottosezioni": []
         },
         {
