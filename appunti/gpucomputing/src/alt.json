@@ -1,5 +1,5 @@
 {
-  "images/simtvssimd.png": "Confronto tra istruzioni SSE e istruzioni multithread: a sinistra due vettori di quattro elementi (1, 2, 3, 4 e 5, 6, 7, 8) sommati in un solo passo con _mm_add_ps; a destra gli stessi quattro elementi sommati da quattro thread separati, ciascuno con il proprio indice id, con il codice C corrispondente sotto ogni schema.",
+  "images/simtvssimd.png": "Confronto tra istruzioni SSE e istruzioni multithread: a sinistra due vettori di quattro elementi (1, 2, 3, 4 e 5, 6, 7, 8) sommati in un solo passo con _mm_add_ps; a destra le stesse quattro coppie di elementi sommate da quattro thread separati, ciascuno con il proprio indice id, con il codice C corrispondente sotto ogni schema.",
   "images/statiThread.png": "Diagramma degli stati di un thread: da new si passa a executable con start; executable e running sono collegati da assign (verso running) e interrupt (verso executable); da running si va a waiting con block e si torna a executable con wake up; da running si arriva a finished con end.",
   "images/organizzazioneThread.png": "Una griglia 1D contiene tre blocchi 1D, BK(0), BK(1) e BK(2); ogni blocco contiene quattro thread, da TH(0) a TH(3).",
   "images/indiceUnicoBlocchi.png": "Tre schemi di indicizzazione con dimensioni Dx, Dy e Dz: una riga di celle con indice x, una griglia 2D con indice x + y·Dx, un cubo 3D con indice x + y·Dx + z·Dx·Dy; in ogni schema una cella è evidenziata in azzurro.",
@@ -15,7 +15,7 @@
   "img/pattern/upsweep.tex#1": "Albero binario bilanciato della fase di up-sweep: la radice 1,2,3,4 ha come figli 1,2 e 3,4, che hanno come foglie 1, 2, 3 e 4. Una freccia verticale a destra è orientata verso l'alto.",
   "img/pattern/downsweep.tex#1": "Albero binario bilanciato della fase di down-sweep: la radice 0 ha come figli 0 e 1,2; le foglie sono 0, 1, 1,2 e 1,2,3. Una freccia verticale a destra è orientata verso il basso.",
   "img/pattern/bmn2.tex#1": "Blocco BM[2] con simbolo ⊕ in rosso, con ingressi x e y a sinistra e uscite a destra x' = min{x, y} e y' = max{x, y}.",
-  "img/pattern/c1.tex#1": "Comparatore a due fili: due linee orizzontali, x e y, collegate da un segmento verticale con un cerchio su ciascuna; le uscite sono x' = min{x, y} e y' = max{x, y}.",
+  "img/pattern/c1.tex#1": "Comparatore a due fili: due linee orizzontali, x e y, collegate da un segmento verticale che attraversa i due cerchi; le uscite sono x' = min{x, y} e y' = max{x, y}.",
   "img/pattern/bmn2c.tex#1": "Blocco BM[2] con simbolo ⊖ in rosso, con ingressi x e y a sinistra e uscite a destra x' = max{x, y} e y' = min{x, y}.",
-  "img/pattern/c2.tex#1": "Comparatore a due fili: due linee orizzontali, x e y, collegate da un segmento verticale con un cerchio su ciascuna; le uscite sono x' = max{x, y} e y' = min{x, y}."
+  "img/pattern/c2.tex#1": "Comparatore a due fili: due linee orizzontali, x e y, collegate da un segmento verticale che unisce i due cerchi senza attraversarli; le uscite sono x' = max{x, y} e y' = min{x, y}."
 }

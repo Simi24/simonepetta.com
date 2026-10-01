@@ -1,0 +1,208 @@
+<!DOCTYPE html><html class="bml_mathjax4" lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Chapter 8 PyTorch ‣ GPU computing</title>
+<!--Generated on Thu Oct  1 11:02:31 2026 by LaTeXML (version 0.8.8) http://dlmf.nist.gov/LaTeXML/.-->
+<!--Document created on A.A. 2024/2025.-->
+
+<link rel="stylesheet" href="LaTeXML.css" type="text/css">
+<link rel="stylesheet" href="ltx-report.css" type="text/css">
+<link rel="stylesheet" href="ltx-listings.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/style.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-table.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-search.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-bookdown.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-fontsettings.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.gitbook,plain.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.gitbook.css" type="text/css">
+<link rel="stylesheet" href="bmluser/colors.gitbook-main.css" type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6"></script>
+<link rel="up" href="index.html" title="GPU computing">
+<link rel="start" href="index.html" title="GPU computing">
+<link rel="prev" href="Ch7.html" title="Chapter 7 Pattern Paralleli ‣ GPU computing">
+<link rel="chapter" href="Ch1.html" title="Chapter 1 Introduzione ‣ GPU computing">
+<link rel="chapter" href="Ch2.html" title="Chapter 2 Modello di programmazione CUDA ‣ GPU computing">
+<link rel="chapter" href="Ch3.html" title="Chapter 3 Architetture delle GPU ‣ GPU computing">
+<link rel="chapter" href="Ch4.html" title="Chapter 4 Memorie ‣ GPU computing">
+<link rel="chapter" href="Ch5.html" title="Chapter 5 Ottimizzazione delle prestazioni ‣ GPU computing">
+<link rel="chapter" href="Ch6.html" title="Chapter 6 Numba ‣ GPU computing">
+<link rel="chapter" href="Ch7.html" title="Chapter 7 Pattern Paralleli ‣ GPU computing">
+<style>:root{--bml-ltx-font-size:12;--bml-ltxml-dpi:96.36}</style>
+<script src="bookml/js/mathjax4.js" defer></script>
+</head>
+<body class="bml_class_report">
+<div class="book without-animation font-size-2 font-family-1" data-basepath=".">
+<a href="#bml-main-content" tabindex="0" class="bml-skip-to-content">Skip to content.</a>
+<div class="book-summary"><nav class="ltx_page_navbar">
+<ul class="ltx_toclist summary">
+<li>
+<a href="index.html" title="" class="ltx_ref" rel="start">GPU computing</a>
+</li>
+<li class="divider" aria-hidden="true"></li>
+<li data-level="1" data-path="Ch1.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch1.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1 </span></b>Introduzione</a></li>
+<li data-level="2" data-path="Ch2.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch2.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">2 </span></b>Modello di programmazione CUDA</a></li>
+<li data-level="3" data-path="Ch3.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch3.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">3 </span></b>Architetture delle GPU</a></li>
+<li data-level="4" data-path="Ch4.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch4.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">4 </span></b>Memorie</a></li>
+<li data-level="5" data-path="Ch5.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch5.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">5 </span></b>Ottimizzazione delle prestazioni</a></li>
+<li data-level="6" data-path="Ch6.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch6.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">6 </span></b>Numba</a></li>
+<li data-level="7" data-path="Ch7.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch7.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">7 </span></b>Pattern Paralleli</a></li>
+<li data-level="8" data-path="" class="ltx_tocentry ltx_tocentry_chapter ltx_ref_self  chapter active">
+<a href="" title="In GPU computing" aria-current="page" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">8 </span></b>PyTorch</a>
+<ol class="ltx_toclist ltx_toclist_chapter">
+<li data-level="8.1" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter "><a href="#S1" title="In Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">8.1 </span></b>Tensori</a></li>
+<li data-level="8.2" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter ">
+<a href="#S2" title="In Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">8.2 </span></b>Operazioni</a>
+<ol class="ltx_toclist ltx_toclist_section">
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S2.SS0.SSS0.Px1" title="In 8.2 Operazioni ‣ Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref">Broadcasting:</a></li>
+<li data-level="8.2.1" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter "><a href="#S2.SS1" title="In 8.2 Operazioni ‣ Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">8.2.1 </span></b>Spostare sulla GPU</a></li>
+</ol>
+</li>
+<li data-level="8.3" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter ">
+<a href="#S3" title="In Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">8.3 </span></b>Linear Neural Networks</a>
+<ol class="ltx_toclist ltx_toclist_section">
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S3.SS0.SSS0.Px1" title="In 8.3 Linear Neural Networks ‣ Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref">Regressione:</a></li>
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S3.SS0.SSS0.Px2" title="In 8.3 Linear Neural Networks ‣ Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref">Loss function:</a></li>
+<li data-level="8.3.1" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter ">
+<a href="#S3.SS1" title="In 8.3 Linear Neural Networks ‣ Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">8.3.1 </span></b>Discesa del gradiente</a>
+<ol class="ltx_toclist ltx_toclist_subsection">
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S3.SS1.SSS0.Px1" title="In 8.3.1 Discesa del gradiente ‣ 8.3 Linear Neural Networks ‣ Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref">Normalizzazione:</a></li>
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S3.SS1.SSS0.Px2" title="In 8.3.1 Discesa del gradiente ‣ 8.3 Linear Neural Networks ‣ Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref">Sequential lerning:</a></li>
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S3.SS1.SSS0.Px3" title="In 8.3.1 Discesa del gradiente ‣ 8.3 Linear Neural Networks ‣ Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref">Algoritmo gradient descent:</a></li>
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S3.SS1.SSS0.Px4" title="In 8.3.1 Discesa del gradiente ‣ 8.3 Linear Neural Networks ‣ Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref">Minibatch Stochastic Gradient Descent (SGD):</a></li>
+</ol>
+</li>
+<li data-level="8.3.2" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter ">
+<a href="#S3.SS2" title="In 8.3 Linear Neural Networks ‣ Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">8.3.2 </span></b>Autograd</a>
+<ol class="ltx_toclist ltx_toclist_subsection">
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_paragraph  chapter "><a href="#S3.SS2.SSS0.Px1" title="In 8.3.2 Autograd ‣ 8.3 Linear Neural Networks ‣ Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref">Altri optimizer:</a></li>
+</ol>
+</li>
+</ol>
+</li>
+<li data-level="8.4" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter ">
+<a href="#S4" title="In Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">8.4 </span></b>Multi Layer Perceptron MLP</a>
+<ol class="ltx_toclist ltx_toclist_section">
+<li data-level="8.4.1" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter "><a href="#S4.SS1" title="In 8.4 Multi Layer Perceptron MLP ‣ Chapter 8 PyTorch ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">8.4.1 </span></b>Modulo <span class="ltx_text ltx_font_typewriter">nn</span></a></li>
+</ol>
+</li>
+</ol>
+</li>
+</ul>
+</nav></div>
+
+<div class="ltx_page_main book-body fixed">
+<div class="body-inner">
+<header class="book-header fixed" aria-label="toolbar"><span class="bml-separator"></span></header>
+<div class="page-wrapper" tabindex="-1" role="main">
+<div class="ltx_page_content page-inner" id="bml-main-content">
+<script src="bookml/gitbook/js/app.min.js"></script>
+<script src="bookml/gitbook/js/jquery.highlight.js"></script>
+<script src="bookml/gitbook/js/plugin-search.js"></script>
+<script src="bookml/gitbook/js/plugin-fontsettings.js"></script>
+<script src="bookml/gitbook/js/plugin-bookdown.js"></script>
+<script type="text/javascript">
+                  gitbook.require(["gitbook"], function(gitbook) {
+                  gitbook.start({
+                    "fontsettings": {
+                      "theme": "white",
+                      "family": "sans",
+                      "size": 2
+                    },
+                    "download": [ [ "main.pdf", "PDF" ], ],
+                    "search": {
+                      "engine": "fuse"
+                    },
+                    "toc": {
+                      "collapse": "none"
+                    }
+                  });
+                });
+              </script>
+
+<section class="ltx_chapter ltx_authors_1line normal">
+<div class="section level1">
+<h1 class="ltx_title ltx_title_chapter">
+<span class="ltx_tag ltx_tag_chapter header-section-number">Chapter 8</span> PyTorch</h1>
+
+<div id="S2.SS0.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">Da NumPy viene copiato il broadcasting, se le dimensioni non coincidono, il risultato "estende" la dimensione minore.</p>
+</div>
+<div id="S2.SS0.SSS0.Px1.p2" class="ltx_para">
+<p class="ltx_p">Esempi:</p>
+<div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">1</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">2</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">3</span></td>
+</tr>
+</table>
+</div>
+<p class="ltx_p ltx_align_center"><math id="S2.SS0.SSS0.Px1.p2.m1" class="ltx_Math" alttext="\cdot" display="inline"><semantics><mo>⋅</mo><annotation encoding="application/x-tex">\cdot</annotation></semantics></math>
+
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">2</span></td>
+</tr>
+</table>
+<math id="S2.SS0.SSS0.Px1.p2.m2" class="ltx_Math" alttext="=" display="inline"><semantics><mo>=</mo><annotation encoding="application/x-tex">=</annotation></semantics></math>
+
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">2</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">4</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">6</span></td>
+</tr>
+</table></p>
+</div>
+<div class="ltx_logical-block">
+          
+<div id="S2.SS0.SSS0.Px1.p3" class="ltx_para">
+<div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">1</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">2</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">3</span></td>
+</tr>
+</table>
+</div>
+<p class="ltx_p ltx_align_center"><math id="S2.SS0.SSS0.Px1.m1" class="ltx_Math" alttext="\cdot" display="inline"><semantics><mo>⋅</mo><annotation encoding="application/x-tex">\cdot</annotation></semantics></math>
+
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">1</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">2</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">3</span></td>
+</tr>
+</table>
+<math id="S2.SS0.SSS0.Px1.m2" class="ltx_Math" alttext="=" display="inline"><semantics><mo>=</mo><annotation encoding="application/x-tex">=</annotation></semantics></math>
+
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">1</span></td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">2</span></td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">3</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">2</span></td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">4</span></td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">6</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">3</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">6</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">9</span></td>
+</tr>
+</table></p>
+</div>
+</div>
+</section>
+</body>
+</html>
