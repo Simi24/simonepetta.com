@@ -42,8 +42,8 @@ Three sequential releases of **the same site**: same repository, same origin, sa
 | Release | Contents | Size |
 |---|---|---|
 | **v0** | Shell, readings, about (IT + EN) with colophon, the local writing desk, RSS, analytics, quality gates. Replaces `minimal-portfolio`. | days |
-| **v1** | Notes: all 30+ courses + 2 theses published as PDF, notes index, course pages, Pagefind search, conversion pipeline, first HTML conversions (incremental afterwards). | weeks, mostly ingestion |
-| **v2** | Per-course chat agent on converted courses, with spend caps, eval and in-page trace. | weeks |
+| **v1** | Notes: all 30+ courses + 2 theses published as PDF, notes index, course pages, Pagefind search, conversion pipeline, two courses converted to HTML (no further conversions, §7.1). | weeks, mostly ingestion |
+| **v2** | Per-course chat agent on the courses the author enables, reading their LaTeX sources, with spend caps, eval and in-page trace. | weeks |
 
 **Non-goals**: writing the content (author); restructuring the private wiki; comments, newsletter, accounts; an online CMS (writing happens locally, [#16](https://github.com/Simi24/simonepetta.com/issues/16)); a cross-course chat ([#11](https://github.com/Simi24/simonepetta.com/issues/11)); a separate theses section ([#9](https://github.com/Simi24/simonepetta.com/issues/9)).
 
@@ -208,11 +208,11 @@ Contract: [`docs/prototype/scrivania.html`](https://github.com/Simi24/simonepett
 
 ### 7.1 Corpus and publication policy ([#5](https://github.com/Simi24/simonepetta.com/issues/5), [#14](https://github.com/Simi24/simonepetta.com/issues/14))
 **All sources are already off Overleaf** (export of 2026-09-29) in the private archive repo [`Simi24/appunti-sorgenti`](https://github.com/Simi24/appunti-sorgenti): **30 course projects (13 magistrale, 17 triennale) + 2 theses** (`tesi-magistrale`, `tesi` for the triennale), with Overleaf-compiled PDFs for 29 of them. Also: `GPUcomputing` and `Social_Mining` on GitHub (built PDFs); `LinguaggiTraduttori` on GitHub is the complete version of an Overleaf stub; `Elaborazione Segnali` exists both on Overleaf and as a scan. Six Overleaf projects are barely started (3 to 5 pages); publishing them is the author's call per course in S6.
-- **All published as PDF at launch; HTML is converted one course at a time afterwards, starting with the courses the author wants to chat with.** No curation by quality: elementary is not wrong, and the year label gives context.
+- **All published as PDF; HTML stops at two courses.** `gpucomputing` and `elaborazione-segnali` are converted (S8, S9). On 2026-10-01 the author stopped further conversions: whoever studies from the notes downloads the PDF, and a conversion costs hours of agent work per course. The pipeline stays, for the two converted courses. No curation by quality: elementary is not wrong, and the year label gives context.
 - **Third-party material is published as it is, with attribution and removal on request** (author's decision, 2026-09-30). Many courses embed figures from lecturer slides or textbooks; each course page names its sources (manifest field `fonti`) and shows a removal contact. A course or figure comes down when its rights holder asks, or when the author chooses. The hand-drawn figures in the notes are the author's own.
 - **The PDF stays downloadable in every state.** Converting a course adds HTML next to the PDF, never instead of it.
 - **PDFs are built locally** with TeX Live in Docker, the same toolchain as the pipeline: Overleaf's free plan times out on the large projects. Overleaf is not used anymore.
-- The archive repo stays the complete copy; a course's `.tex` enters this repo (`appunti/<slug>/src/`) only when it is converted.
+- The archive repo stays the complete copy; a course's `.tex` enters this repo (`appunti/<slug>/src/`) only when it is converted or enabled for the chat (§9.1); `.tex` without `build/` leaves the course in the `pdf` state.
 
 ### 7.2 Manifest ([#10](https://github.com/Simi24/simonepetta.com/issues/10))
 `appunti/<slug>/corso.yaml`, validated by an Astro schema:
@@ -233,7 +233,7 @@ Contract: [`docs/prototype/scrivania.html`](https://github.com/Simi24/simonepett
 
 ### 7.3 Pages
 - **Index** `/appunti/`: bound theses on top, notebook piles by year, a full list below, the student-notes notice.
-- **Course page** `/appunti/<slug>/` exists in **every** state, so neither state looks like a leftover: metadata, the PDF download, the sources and removal contact, and for converted courses the chapter list (and in v2 the chat link).
+- **Course page** `/appunti/<slug>/` exists in **every** state, so neither state looks like a leftover: metadata, the PDF download, the sources and removal contact, for converted courses the chapter list, and in v2 the chat link on chat-enabled courses.
 - **Chapters** `/appunti/<slug>/<chapter>/`: one page per chapter, sticky TOC, LaTeX conventions (§5.4). **Chapter slugs** are `<number>-<kebab-title>` (e.g. `3-variabili-aleatorie-continue`), computed at the first conversion and recorded in `build/meta.json`; later conversions reuse them, so URLs never change. A later run matches each chapter to its recorded slug by title, then by number: a renamed chapter keeps its URL, and a chapter replaced by a different one at the same number gets a new slug only if its title differs from every recorded one (otherwise it takes over the old URL); the pipeline does not warn about a takeover, and the old slug is dropped from `build/meta.json` when no chapter claims it, so its URL disappears. LaTeXML output is post-processed by the pipeline into HTML fragments (body only), which Astro wraps in the site layout.
 - **Excluded** courses (`pubblicato: false`) are skipped entirely: no page, no PDF in the assets.
 - **Scanned** courses stay PDF forever.
@@ -246,7 +246,7 @@ Contract: [`docs/prototype/scrivania.html`](https://github.com/Simi24/simonepett
 - **Figures are mostly raster images.** Counted on 2026-09-30: **1,877 `\includegraphics`** (jpg and png, 183 MB of sources) against **16 `tikzpicture`** (10 in natural-interaction, 6 in GPUcomputing).
   - **Raster images**: LaTeXML copies them; the pipeline re-encodes them to WebP at most 1600 px wide with a tool inside the Docker image (no npm dependency), writes `width`/`height` into the HTML so pages do not jump, and marks them `loading="lazy"`. In the dark theme they sit on a light sheet; they are never inverted.
   - **TikZ** (rare): `standalone[dvisvgm]` → DVI → dvisvgm, black rewritten to `currentColor` so the figure follows both themes.
-  - **Alt text** is drafted by the agent at conversion time from the caption (when there is one) and the image itself; it is functional description, not the author's voice. The author reviews a sample per course. A figure without a description **fails** the detector. The descriptions also let the v2 chat, which reads text only, know what a figure shows.
+  - **Alt text** is drafted by the agent at conversion time from the caption (when there is one) and the image itself; it is functional description, not the author's voice. The author reviews a sample per course. A figure without a description **fails** the detector. On converted courses, the descriptions also let the v2 chat, which reads text only, know what a figure shows.
 - **The PDF of a converted course is recompiled from `src/`** in the same pipeline run (and its `meta.json` page count updated), so fixes made in the `.tex` reach both the HTML and the download.
 - **pandoc is rejected**: it loses silently (drops TikZ, ignores `\NewDocumentCommand`, overrides custom macros with builtins).
 - **Canonical source**: when a course is converted, its sources are copied from `Simi24/appunti-sorgenti` into `src/`; from then on the `.tex` in `src/` is canonical.
@@ -276,7 +276,7 @@ Structure prototyped in [#9](https://github.com/Simi24/simonepetta.com/issues/9)
 ## 9. Chat (v2)
 
 ### 9.1 Shape ([#11](https://github.com/Simi24/simonepetta.com/issues/11), [#15](https://github.com/Simi24/simonepetta.com/issues/15))
-**One agent per course**, available only on converted courses. It is an agent, not a fixed RAG pipeline: it decides what to search, what to open and when to stop.
+**One agent per course**, available on the courses the author enables (listed in the site config), converted or not. It reads the course's **LaTeX sources**, not the HTML: every published course has them, and models read LaTeX math as well as MathML. It is an agent, not a fixed RAG pipeline: it decides what to search, what to open and when to stop.
 
 ```
 Preact island (static page /appunti/<slug>/chat/)
@@ -284,7 +284,7 @@ Preact island (static page /appunti/<slug>/chat/)
     → AWS Lambda (Python, eu-south-1), hand-written tool-use loop
         → Cloudflare AI Gateway (spend limits) → model on Workers AI
         → S3 Vectors (search_course, filtered by course)
-        → S3 section texts (read_section: whole sections, from LaTeXML output)
+        → S3 section texts (read_section: whole sections, extracted from the .tex)
         → DynamoDB (session, monthly spend counter)
 ```
 
@@ -295,7 +295,7 @@ The Worker sits **in front of** the Lambda (same origin, no CORS).
 ### 9.2 Tools and answer rules
 - `search_course(query)`: semantic search over the course's chunks, returns candidate sections with a snippet.
 - `read_section(section_id)`: the **whole section, verbatim**. Vectors only locate; answers are built from whole sections, so math is never answered from fragments.
-- `cite(section_id, anchor)`: records the source of a claim.
+- `cite(section_id, anchor)`: records the source of a claim. The citation links to the section in the HTML chapter when the course is converted, otherwise to the PDF page where the section starts (`<slug>.pdf#page=N`, the page read from the LaTeX `.aux` when the PDF is compiled).
 - **Loop with `max_steps`.** An answer without citations is rejected by the loop, which asks the model to cite or to say the information is not there. **"This is not in your notes" is a legitimate answer.** Questions about other courses get a pointer to the notes index and Pagefind, not an answer.
 - The loop is **defensive**: validate tool arguments, retry malformed calls.
 - **Trace**: collapsed under each answer ("how I got here": searches, sections opened, citations, tokens), visible only to the asker, no public trace pages.
@@ -466,7 +466,7 @@ Docker (LaTeXML via BookML), `make appunti CORSO=<slug>`, chapter pages with TOC
 *AC*: one course is readable as HTML with the detector green, and its PDF is still downloadable; a deliberately broken input (a dropped figure) is caught and `build/` is not updated; the site deploy does not depend on the workflow.
 
 **S9 Incremental conversions**
-Repeatable per-course conversion, starting with the courses intended for the chat; author reviews the converted math.
+Repeatable per-course conversion; the math review is delegated to the orchestrating agent (§1.3). Closed with the second course ([#39](https://github.com/Simi24/simonepetta.com/issues/39)): no further conversions (§7.1).
 *AC*: each converted course switches from PDF to HTML state with no URL change and keeps its PDF download.
 
 ### v2: chat
@@ -476,8 +476,8 @@ Terraform for AWS (Lambda, DynamoDB, S3 Vectors, S3, IAM, OIDC) and Cloudflare (
 *AC*: `terraform plan` is clean; with a temporary tiny limit, the gateway returns `429`.
 
 **S11 Indexing**
-Pipeline step that chunks converted sections, embeds them with Cohere Embed v4 and writes S3 Vectors with a course filter; uploads section texts to S3.
-*AC*: sample queries return the expected sections of a converted course.
+Pipeline step that extracts the sections of each chat-enabled course from its `.tex` (`\input` resolved, comments stripped), chunks them, embeds them with Cohere Embed v4 and writes S3 Vectors with a course filter; uploads section texts and each section's PDF page to S3.
+*AC*: sample queries return the expected sections of a chat-enabled course, including a PDF-only one.
 
 **S12 Agent loop**
 Lambda with the three tools, `max_steps`, citation enforcement, "not in your notes" answers, defensive argument validation, DynamoDB spend counter, session memory with TTL.
@@ -485,14 +485,14 @@ Lambda with the three tools, `max_steps`, citation enforcement, "not in your not
 
 **S13 Chat Worker and page**
 `workers/api`: Turnstile, signed session token, rate limiting binding, proxy to the Lambda (no streaming, §9.1); Preact island on the static chat page; collapsed trace; budget-exhausted state; `api` and `agent` workflows.
-*AC*: end-to-end chat on a converted course; rate limit triggers; with the budget exhausted the page shows the paused state and the rest of the site is unaffected.
+*AC*: end-to-end chat on a PDF-only course, with citations opening the right PDF page; rate limit triggers; with the budget exhausted the page shows the paused state and the rest of the site is unaffected.
 
 **S14 Evaluation**
 Golden set (agent drafts, author reviews), `eval` workflow with a separate gateway and cap, static report page, run on primary and fallback.
 *AC*: the report is published; the author records go/no-go for launch.
 
 **S15 v2 launch**
-Chat links on converted course pages.
+Chat links on chat-enabled course pages.
 
 ---
 
@@ -532,6 +532,9 @@ Found while writing this document and by the cold read (an agent with no context
 23. **Figures are raster, not TikZ** (1,877 images vs 16 TikZ): the pipeline re-encodes images and the detector counts them; alt text is drafted by the agent and sampled by the author, instead of written by hand for ~1,900 images.
 24. **The PDF stays downloadable in every state**, and a converted course's PDF is recompiled from `src/` so HTML and PDF come from the same corrected source.
 
+**Confirmed by the author (2026-10-01)**
+25. **HTML stops at two courses** (`gpucomputing`, `elaborazione-segnali`): readers download the PDF, conversions cost hours each (§7.1, S9).
+
 **Applied by default**
 4. **Theme toggle vs JS budget**: one inline theme script ≤ 1 KB is a declared budget exception (§5.1, §12.2).
 5. **Readings schema**: `pagine` and `nota` added; field rules per state made explicit (§6.1).
@@ -551,6 +554,7 @@ Found while writing this document and by the cold read (an agent with no context
 19. **Vercel**: redirect-only deployment instead of deleting the project (S5).
 20. **This document is authoritative** for implementation; conflicts become issues (header).
 21. **Prototypes** are copied to `docs/prototype/` in S0 (§14).
+26. **The chat reads the LaTeX sources** of the courses the author enables, converted or not; citations open the HTML section or the PDF page (§9.1, §9.2, S11). Follows from item 25; replaces "chat only on converted courses".
 
 ### 15.3 S0 prerequisites from the author
 Checked on 2026-09-29:
