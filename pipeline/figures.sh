@@ -18,6 +18,7 @@ done < figures-rasters.txt
 
 if [ -d figures-tikz ]; then
   for tex in figures-tikz/*.tex; do
+    [ -e "$tex" ] || continue # no picture: the glob stays literal
     id=$(basename "$tex" .tex)
     (cd figures-tikz && latex -interaction=nonstopmode -halt-on-error "$id.tex" > "$id.out" 2>&1) \
       || { echo "TikZ picture $id does not compile:" >&2; tail -30 "figures-tikz/$id.out" >&2; exit 1; }
