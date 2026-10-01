@@ -29,7 +29,7 @@ Come esempio vediamo il for della parallel reduction vista in precedenza:</p>
 <span class="ltx_listingline">    }</span></code></pre></div>
 <p class="ltx_p">32 non e’ un numero casuale ma stiamo facendo l’unrolling a livello di warp:</p>
 </div>
-<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/gpucomputing/figure/images-architetture-threadWarp.webp" width="1067" height="574" loading="lazy" alt="Riduzione in memoria condivisa con loop unrolling dentro un warp: a sinistra le istruzioni smem[tid] += smem[tid + k] per k = 32, 16, 8, 4, 2, 1; a destra uno schema ad albero in cui a ogni passo i valori della seconda metà delle caselle si sommano a quelli della prima, fino a un solo valore."></div>
 <figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figure 3.1</span>: </span><span class="ltx_text">Uso dei thread del warp per il loop unrolling</span></figcaption>
 </figure>
 <section id="S1.SS1" class="ltx_subsection normal">
@@ -40,7 +40,7 @@ Come esempio vediamo il for della parallel reduction vista in precedenza:</p>
 <div id="S1.SS1.p1" class="ltx_para">
 <p class="ltx_p">Possiamo estendere l’idea di loop unrolling anche a livello di block. In questo caso, invece di unrollare le operazioni all’interno di un singolo warp, possiamo unrollare le operazioni su più thread all’interno di un block. Questo approccio può portare a un utilizzo più efficiente delle risorse della GPU e a una riduzione del numero di sincronizzazioni necessarie.</p>
 </div>
-<figure id="F2" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figure id="F2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/gpucomputing/figure/images-architetture-blockUnroll.webp" width="1099" height="562" loading="lazy" alt="Codice della funzione blockReduce, che esegue la riduzione in place in memoria condivisa: una serie di istruzioni if con blockDim.x >= 1024, 512, 256 e 128 e tid &lt; 512, 256, 128 e 64, ciascuna seguita da __syncthreads(), poi warpReduce per i primi 32 thread. Due fumetti indicano: riduzione di blocco con sincronizzazione (senza SIMD) e riduzione di warp alla fine."></div>
 <figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figure 3.2</span>: </span><span class="ltx_text">Block unrolling</span></figcaption>
 </figure>
 </div>
