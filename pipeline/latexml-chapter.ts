@@ -56,15 +56,26 @@ function findOpen(tokens: readonly Token[], from: number, predicate: (token: Tok
   return -1;
 }
 
+/** The text of a heading: the math's own symbols once (not its TeX annotation), without invisible operators. */
+function headingText(tokens: readonly Token[], start: number, end: number): string {
+  const visible: Token[] = [];
+  for (let i = start; i <= end; i++) {
+    const token = tokens[i]!;
+    if (token.type === 'open' && token.name === 'annotation') i = elementEnd(tokens, i);
+    else visible.push(token);
+  }
+  return decodeEntities(textOf(visible, 0, visible.length - 1)).replace(/[\u2061-\u2064]/g, '');
+}
+
 /** The heading's number span and its remaining text, e.g. `Chapter 1` and `Introduzione`. */
 function splitHeading(tokens: readonly Token[], heading: number): { tag: string; title: string } {
   const end = elementEnd(tokens, heading);
   const tagStart = findOpen(tokens, heading, (t) => hasClass(t, 'ltx_tag'));
-  if (tagStart < 0 || tagStart > end) return { tag: '', title: decodeEntities(textOf(tokens, heading, end)).trim() };
+  if (tagStart < 0 || tagStart > end) return { tag: '', title: headingText(tokens, heading, end).trim() };
   const tagEnd = elementEnd(tokens, tagStart);
   return {
     tag: decodeEntities(textOf(tokens, tagStart, tagEnd)).trim(),
-    title: decodeEntities(textOf(tokens, tagEnd + 1, end)).replace(/\s+/g, ' ').trim(),
+    title: headingText(tokens, tagEnd + 1, end).replace(/\s+/g, ' ').trim(),
   };
 }
 

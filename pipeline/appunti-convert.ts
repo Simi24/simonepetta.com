@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { APPUNTI_CONTENT_DIR } from '../src/config/appunti-content-dir.ts';
-import { LeakError, parseLatexmlErrors, prepareBuild } from './appunti-build.ts';
+import { LeakError, parseLatexmlErrors, parseLatexmlPostErrors, prepareBuild } from './appunti-build.ts';
 import { readSources } from './course-sources.ts';
 import { installConversion } from './appunti-install.ts';
 import { recoverInterruptedSwap } from './course-swap.ts';
@@ -75,6 +75,9 @@ function convert(contentDir: string, slug: string, keepWorkdir: boolean): void {
     const pdf = join(work, `${MAIN}.pdf`);
     if (!existsSync(pdf)) throw new Error('the PDF was not produced: the course does not compile');
     const latexmlErrors = parseLatexmlErrors(readFileSync(join(work, 'auxdir/latexmlaux', `${MAIN}.latexml.log`), 'utf8'));
+
+    const postErrors = parseLatexmlPostErrors(readFileSync(join(work, 'auxdir/latexmlaux', `${MAIN}.latexmlpost.log`), 'utf8'));
+    if (postErrors.length > 0) throw new Error(`latexmlpost reported errors:\n${postErrors.map((error) => `  - ${error}`).join('\n')}`);
 
     const htmlDir = join(work, 'auxdir/html', MAIN);
     console.log('Re-encoding the images and compiling the TikZ pictures...');

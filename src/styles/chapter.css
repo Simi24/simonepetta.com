@@ -87,6 +87,11 @@
   min-width: 0;
 }
 
+/* Chrome does not draw `menclose` (\cancel): a diagonal line in the text color stands in for the strike-through. */
+.prose menclose[notation~='updiagonalstrike'] {
+  background: linear-gradient(to top left, transparent calc(50% - 0.5px), currentColor calc(50% - 0.5px), currentColor calc(50% + 0.5px), transparent calc(50% + 0.5px));
+}
+
 /* Math: native MathML in Fira Math (SPEC.md §5.2). The font file is linked only by pages with math. */
 .prose math {
   font-family: 'Fira Math', 'STIX Two Math', 'Cambria Math', math;

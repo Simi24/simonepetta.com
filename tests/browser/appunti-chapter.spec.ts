@@ -165,3 +165,22 @@ for (const colorScheme of ['light', 'dark'] as const) {
     expect(await tikz.evaluate((el) => el.getAttribute('aria-label'))).toBeTruthy();
   });
 }
+
+test('a \\cancel strike-through (menclose, which Chrome does not draw) is a diagonal line in the text color, in both themes', async ({ page }) => {
+  await open(page, MATH_CHAPTER);
+  await page.evaluate(() => {
+    document.querySelector('.prose')!.insertAdjacentHTML('beforeend', '<p><math id="cancelled"><menclose notation="updiagonalstrike"><mi>x</mi></menclose></math></p>');
+  });
+  const enclose = page.locator('#cancelled menclose');
+  const paint = () => enclose.evaluate((el) => ({ image: getComputedStyle(el).backgroundImage, color: getComputedStyle(el).color }));
+
+  const light = await paint();
+  expect(light.image).toContain('linear-gradient');
+  expect(light.image).toContain(light.color);
+
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+  const dark = await paint();
+  expect(dark.image).toContain(dark.color);
+  expect(dark.color).not.toBe(light.color);
+});
