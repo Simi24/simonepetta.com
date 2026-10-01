@@ -1,0 +1,16 @@
+# -*- mode: Perl -*-
+# Stand-in for tcolorbox, used by the conversion only (never by the PDF build).
+# LaTeXML 0.8.8's own binding loads the raw expl3 of the installed TeX Live, which
+# is too new for it and never finishes. The box styling (colors, frames) is print
+# decoration; the content is kept as is.
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+DefEnvironment('{tcolorbox} OptionalUndigested', '#body');
+DefMacro('\tcbset{}', '');
+DefMacro('\tcbuselibrary{}', '');
+DefMacro('\newtcolorbox[]{}[]{}', '');
+
+1;

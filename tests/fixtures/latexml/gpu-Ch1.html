@@ -1,0 +1,417 @@
+<!DOCTYPE html><html class="bml_mathjax4" lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Chapter 1 Introduzione ‣ GPU computing</title>
+<!--Generated on Wed Sep 30 23:55:33 2026 by LaTeXML (version 0.8.8) http://dlmf.nist.gov/LaTeXML/.-->
+<!--Document created on A.A. 2024/2025.-->
+
+<link rel="stylesheet" href="LaTeXML.css" type="text/css">
+<link rel="stylesheet" href="ltx-report.css" type="text/css">
+<link rel="stylesheet" href="ltx-listings.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/style.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-table.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-search.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-bookdown.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-fontsettings.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.gitbook,plain.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.gitbook.css" type="text/css">
+<link rel="stylesheet" href="bmluser/colors.gitbook-main.css" type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6"></script>
+<link rel="up" href="index.html" title="GPU computing">
+<link rel="start" href="index.html" title="GPU computing">
+<link rel="prev" href="index.html" title="GPU computing">
+<link rel="next" href="Ch2.html" title="Chapter 2 Modello di programmazione CUDA ‣ GPU computing">
+<link rel="chapter" href="Ch2.html" title="Chapter 2 Modello di programmazione CUDA ‣ GPU computing">
+<link rel="chapter" href="Ch3.html" title="Chapter 3 Architetture delle GPU ‣ GPU computing">
+<link rel="chapter" href="Ch4.html" title="Chapter 4 Memorie ‣ GPU computing">
+<link rel="chapter" href="Ch5.html" title="Chapter 5 Ottimizzazione delle prestazioni ‣ GPU computing">
+<link rel="chapter" href="Ch6.html" title="Chapter 6 Numba ‣ GPU computing">
+<link rel="chapter" href="Ch7.html" title="Chapter 7 Pattern Paralleli ‣ GPU computing">
+<link rel="chapter" href="Ch8.html" title="Chapter 8 PyTorch ‣ GPU computing">
+<style>:root{--bml-ltx-font-size:12;--bml-ltxml-dpi:96.36}</style>
+<script src="bookml/js/mathjax4.js" defer></script>
+</head>
+<body class="bml_class_report">
+<div class="book without-animation font-size-2 font-family-1" data-basepath=".">
+<a href="#bml-main-content" tabindex="0" class="bml-skip-to-content">Skip to content.</a>
+<div class="book-summary"><nav class="ltx_page_navbar">
+<ul class="ltx_toclist summary">
+<li>
+<a href="index.html" title="" class="ltx_ref" rel="start">GPU computing</a>
+</li>
+<li class="divider" aria-hidden="true"></li>
+<li data-level="1" data-path="" class="ltx_tocentry ltx_tocentry_chapter ltx_ref_self  chapter active">
+<a href="" title="In GPU computing" aria-current="page" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1 </span></b>Introduzione</a>
+<ol class="ltx_toclist ltx_toclist_chapter">
+<li data-level="1.1" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter "><a href="#S1" title="In Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.1 </span></b>GP-GPU</a></li>
+<li data-level="1.2" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter ">
+<a href="#S2" title="In Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.2 </span></b>Architetture eterogenee</a>
+<ol class="ltx_toclist ltx_toclist_section">
+<li data-level="1.2.1" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter "><a href="#S2.SS1" title="In 1.2 Architetture eterogenee ‣ Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.2.1 </span></b>Parallelismo delle istruzioni</a></li>
+<li data-level="1.2.2" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter "><a href="#S2.SS2" title="In 1.2 Architetture eterogenee ‣ Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.2.2 </span></b>Parallelismo dei dati</a></li>
+</ol>
+</li>
+<li data-level="1.3" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter "><a href="#S3" title="In Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.3 </span></b>Parallelismo di task</a></li>
+<li data-level="1.4" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter "><a href="#S4" title="In Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.4 </span></b>Tassonomia di Flynn</a></li>
+<li data-level="1.5" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter ">
+<a href="#S5" title="In Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.5 </span></b>GPU Nvidia</a>
+<ol class="ltx_toclist ltx_toclist_section">
+<li data-level="1.5.1" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter "><a href="#S5.SS1" title="In 1.5 GPU Nvidia ‣ Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.5.1 </span></b>Cuda core</a></li>
+<li data-level="1.5.2" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter ">
+<a href="#S5.SS2" title="In 1.5 GPU Nvidia ‣ Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.5.2 </span></b>CUDA</a>
+<ol class="ltx_toclist ltx_toclist_subsection">
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_subsubsection  chapter "><a href="#S5.SS2.SSSx1" title="In 1.5.2 CUDA ‣ 1.5 GPU Nvidia ‣ Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref">Programma CUDA</a></li>
+</ol>
+</li>
+<li data-level="1.5.3" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter "><a href="#S5.SS3" title="In 1.5 GPU Nvidia ‣ Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.5.3 </span></b>Hello world in cuda</a></li>
+</ol>
+</li>
+</ol>
+</li>
+<li data-level="2" data-path="Ch2.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch2.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">2 </span></b>Modello di programmazione CUDA</a></li>
+<li data-level="3" data-path="Ch3.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch3.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">3 </span></b>Architetture delle GPU</a></li>
+<li data-level="4" data-path="Ch4.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch4.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">4 </span></b>Memorie</a></li>
+<li data-level="5" data-path="Ch5.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch5.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">5 </span></b>Ottimizzazione delle prestazioni</a></li>
+<li data-level="6" data-path="Ch6.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch6.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">6 </span></b>Numba</a></li>
+<li data-level="7" data-path="Ch7.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch7.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">7 </span></b>Pattern Paralleli</a></li>
+<li data-level="8" data-path="Ch8.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch8.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">8 </span></b>PyTorch</a></li>
+</ul>
+</nav></div>
+
+<div class="ltx_page_main book-body fixed">
+<div class="body-inner">
+<header class="book-header fixed" aria-label="toolbar"><span class="bml-separator"></span></header>
+<div class="page-wrapper" tabindex="-1" role="main">
+<div class="ltx_page_content page-inner" id="bml-main-content">
+<script src="bookml/gitbook/js/app.min.js"></script>
+<script src="bookml/gitbook/js/jquery.highlight.js"></script>
+<script src="bookml/gitbook/js/plugin-search.js"></script>
+<script src="bookml/gitbook/js/plugin-fontsettings.js"></script>
+<script src="bookml/gitbook/js/plugin-bookdown.js"></script>
+<script type="text/javascript">
+                  gitbook.require(["gitbook"], function(gitbook) {
+                  gitbook.start({
+                    "fontsettings": {
+                      "theme": "white",
+                      "family": "sans",
+                      "size": 2
+                    },
+                    "download": [ [ "main.pdf", "PDF" ], ],
+                    "search": {
+                      "engine": "fuse"
+                    },
+                    "toc": {
+                      "collapse": "none"
+                    }
+                  });
+                });
+              </script>
+
+<section class="ltx_chapter ltx_authors_1line normal">
+<div class="section level1">
+<h1 class="ltx_title ltx_title_chapter">
+<span class="ltx_tag ltx_tag_chapter header-section-number">Chapter 1</span> Introduzione</h1>
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">L’obiettivo del corso e’ di affrontare il problema del high performance computing.
+Affronteremo anche il tema delle GPU e del loro utilizzo nel calcolo ad alte prestazioni. Inoltre useremo il framework CUDA per sviluppare applicazioni parallele utilizzando il linguaggio CUDA-c che e’ un estensione del linguaggio c.
+Introdurremo anche alcune librerie di python, andando a focalizzarci su elementi a basso livello.</p>
+</div>
+<div id="p2" class="ltx_para">
+<p class="ltx_p">Il parallel computing e’ la necessita’ di accellerare le computazioni avvalendosi di un numero molteplice di processori. Quando ho un processo di grande dimensioni devo essere in grado di dividere il processo in parti e assegnarlo a vari processi. E’ fondamentale la progettazione del problema per spezzettarlo in problemi autonomi.</p>
+</div>
+<div id="p3" class="ltx_para">
+<p class="ltx_p">La CPU ha degli aspetti critici, sono decenni che non vediamo crescere il clock (quante operazioni puo’ fare al secondo) si e’ andati incontro a misure fisiche che non possono essere superate, come la potenza dissipata.
+Una naturale estensione e’ stata aumentare il numero di core, da multi core a many many core dando vita a device diversi, le GPU, che riscono a mantenere la legge di Moore e a fare si che a costi bassi una workstation diventi una macchina ad alte prestazioni. Bisogna dare credito a Nvidia che ha creato le general purpose GPU, che sono delle GPU che possono essere utilizzate per calcoli generali e non solo per il rendering grafico.</p>
+</div>
+<div id="p4" class="ltx_para">
+<p class="ltx_p">Il parallel computing e’ indipendenza, comunicazione e scalabilita’ dei processi.</p>
+</div>
+<div id="p5" class="ltx_para">
+<p class="ltx_p">Le motivazioni che portano all’utilizzo della GPU, un esempio e’ la riflessione, rifrazone e ombra, la cosa che si fa e’ avere un calcolo semplice che si fa per ogni pixel, quindi calcoli semplici ripetuti un numero esorbitante di volte.
+Vengono anche usate per il deeplearning. Perche’ le CNN sono di interesse per la GPU? fanno un’operazione basilare da ripetere un numero esorbitante di volte, fanno la convoluzione, prendono un immagine ed un kernel e scandiscono l’immagine sottostante estraendone matrici della dimensione del kernel e fare la somma.
+Un altro esempio e’ il calcolo matriciale, vengono fatti due prodotti interni tra i vettori riga e colonna delle matrici, questo puo’ essere parallelizzato pensando che gruppi di thread distinti possono occuparsi di ogni entry, fare questa cosa in sincrono costerebbe <math id="p5.m1" class="ltx_Math" alttext="o(n^{3})" display="inline"><semantics><mrow><mi>o</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>n</mi><mn>3</mn></msup><mo stretchy="false">)</mo></mrow></mrow><annotation encoding="application/x-tex">o(n^{3})</annotation></semantics></math>.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">1.1</span> GP-GPU</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">In sistemi eterogenei, le GPU possono essere utilizzate insieme alle CPU per ottenere prestazioni superiori. La chiave per sfruttare al meglio queste architetture eterogenee e’ la suddivisione del lavoro tra le diverse unità di elaborazione, in modo che ogni tipo di processore possa occuparsi delle operazioni per cui e’ piu’ adatto. E’ importante notare che questa architettura e’ di tipo master-slave, dove la CPU funge da master e le GPU da slave.
+Una funzione gpu e’ scritta per sfruttare il parallelismo e CUDA ci permette di pensare il sequenziale nonostante poi i calcoli vengano eseguiti in parallelo, l’obiettivo e’ aumentare la potenza di calcolo.</p>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">1.2</span> Architetture eterogenee</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">C’e’ la GPU e la CPU, la cpu ha un numero di core. C’e’ un bus di ci per la comunicazione tra CPU e GPU.</p>
+</div>
+<div id="S2.p2" class="ltx_para">
+<p class="ltx_p">Quando si crea codice per queste architetture ci si trova con un eseguibile con blocchi di codice che devono essere eseguiti dalla CPU e blocchi dalla GPU.</p>
+</div>
+<div id="S2.p3" class="ltx_para">
+<p class="ltx_p">Le due parti sono destinate a compiti diversi, se i dati sono piccoli e il parellelismo e’ basso siamo nel dominio della CPU ed e’ quasi inutile fare il parallelismo con la GPU (solo l’overhead del setup iniziale costa di piu’) viceversa se i dati sono grandi e il parallelismo e’ alto, allora ha senso utilizzare la GPU.</p>
+</div>
+<section id="S2.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">1.2.1</span> Parallelismo delle istruzioni</h3>
+
+<div id="S2.SS1.p1" class="ltx_para">
+<p class="ltx_p">Il parallelismo delle istruzioni e’ importante (meno di quello dei dati), nel momento in cui il problema puo’ essere suddiviso in diverse istruzioni queste vengono eseguite in parallelo. Ci vuole una dotazione hardware adeguata per gestire questo tipo di parallelismo, come ad esempio un numero sufficiente di unità di esecuzione e una gestione della comunicazione tra processi.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">1.2.2</span> Parallelismo dei dati</h3>
+
+<div id="S2.SS2.p1" class="ltx_para">
+<p class="ltx_p">Noi lavoreremo in una logica sequenziale ma si estende ad una grossa mole di dati. In questo caso, il parallelismo dei dati diventa cruciale, poiché consente di elaborare simultaneamente grandi volumi di informazioni. Utilizzando tecniche di parallelizzazione, possiamo suddividere i dati in blocchi più piccoli e distribuirli su più unità di elaborazione, massimizzando così l’efficienza e riducendo i tempi di calcolo.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">1.3</span> Parallelismo di task</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">Il fatto di poter avere gruppi di operazioni distinti, ci porta ad un problema non banale di identificazioni di task indipendenti dall’altri, spesso ci si avvale di strumenti come i grafi. Due task sono indipendenti se le operazioni che li compongono non sono dipendenti tra di loro. Questo problema in termini piu’ formali e’ di colorazione del grado, ogni colore individua un gruppo di nodi indipendnti tra di loro.
+Non e’ un problema banale, perche’ e’ irrisolvibile NP-hard, quindi ci si accontenta di soluzioni approssimative.</p>
+</div>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">1.4</span> Tassonomia di Flynn</h2>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">Si evidenzia i modelli <span class="ltx_text ltx_font_bold">SISD</span> single instruction single data dove non c’e’ nessun parallelismo e le operazioni vengono eseguite sequenzialmente.
+In contrapposizione abbiamo il <span class="ltx_text ltx_font_bold">SIMD</span> (single instruction multiple data) dove abbiamo un’istruzione che viene eseguita su piu’ dati, sono spesso dotate di librerie e hardware consistente che possono svolgere operazioni parallele, in questo caso c’e’ l’accesso ad una memoria globale.
+<span class="ltx_text ltx_font_bold">MISD</span> (multiple instruction single data) e’ un modello in cui piu’ istruzioni vengono eseguite su un singolo dato, mentre il <span class="ltx_text ltx_font_bold">MIMD</span> (multiple instruction multiple data) consente l’esecuzione di piu’ istruzioni su piu’ dati, rappresentando il massimo livello di parallelismo.</p>
+</div>
+<div id="S4.p2" class="ltx_para">
+<p class="ltx_p">Il modello <span class="ltx_text ltx_font_bold">SIMT</span> e’ interessante e viene introdotto da CUDA, qui ci sono tanti thread che svolgono tante operazioni su thread distinti, deve esserci un sistema book treading. C’e’ un evoluzione del modello SIMD perche’ lo cambia con il modello multithreading, decade il vincolo della singola istruzione, questo e’ dato dalla presenza di branch nel codice. Questo modello e’ molto utile perche’ ci permette di pensare in modo sequenziale anche se complica un po’ l’architettura perche’ bisogna fare comunicare i thread. Questo e’ il modello implementato dai processori GPU.</p>
+</div>
+<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><img src="images/simtvssimd.png" id="F1.g1" class="ltx_graphics ltx_centering ltx_img_landscape" width="415" height="158" alt="Refer to caption"></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text" style="font-size:91%;">Figure 1.1</span>: </span><span class="ltx_text" style="font-size:91%;">Confronto tra SIMT e SIMD</span></figcaption>
+</figure>
+<div id="S4.p3" class="ltx_para">
+<p class="ltx_p">Nel simt si fissano gli operandi, mentre nel simd no.</p>
+</div>
+</div>
+</section>
+<section id="S5" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">1.5</span> GPU Nvidia</h2>
+
+<div id="S5.p1" class="ltx_para">
+<p class="ltx_p">CUDA e’ una libreria che permette di fare applicazioni sulle GPU</p>
+</div>
+<div id="S5.p2" class="ltx_para">
+<p class="ltx_p">Ogni scheda e’ composta da streaming multi processor, ogni streaming contiene dei core che costituiscono l’architettura della scheda, ci sono gli elementi di memoria shared e global.</p>
+</div>
+<section id="S5.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">1.5.1</span> Cuda core</h3>
+
+<div id="S5.SS1.p1" class="ltx_para">
+<p class="ltx_p">Un core ha una logica di processazione vettoriale, piu’ dati insieme che possono essere caratterizzati da diverse unita’ di calcolo (floating point).</p>
+</div>
+</div>
+</section>
+<section id="S5.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">1.5.2</span> CUDA</h3>
+
+<div id="S5.SS2.p1" class="ltx_para">
+<p class="ltx_p">E’ la piattaforma che ci permette di dare luogo ad un modello di programmazione per le schede Nvidia.
+Guardando a CUDA nello specifico per progettare delle applicazioni accellerate per le GPU useremo delle libreria gia’ accellerate per GPU (come il compilatore).</p>
+</div>
+<div id="S5.SS2.p2" class="ltx_para">
+<p class="ltx_p">Ci sono due famiglie di api:</p>
+<ul id="S5.I1" class="ltx_itemize">
+<li id="S5.I1.i1" class="ltx_item" style="list-style-type:none;">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I1.i1.p1" class="ltx_para">​<p class="ltx_p">CUDA Runtime</p>
+</div>
+</li>
+<li id="S5.I1.i2" class="ltx_item" style="list-style-type:none;">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I1.i2.p1" class="ltx_para">​<p class="ltx_p">CUDA Driver: sono a basso livello e sono piu’ difficili da utilizzare perche’ non astraggono determinate cose</p>
+</div>
+</li>
+</ul>
+</div>
+<section id="S5.SS2.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Programma CUDA</h4>
+
+<div id="S5.SS2.SSSx1.p1" class="ltx_para">
+<p class="ltx_p">Un programma cuda e’ composto da due parti:</p>
+<ul id="S5.I2" class="ltx_itemize">
+<li id="S5.I2.i1" class="ltx_item" style="list-style-type:none;">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I2.i1.p1" class="ltx_para">​<p class="ltx_p">codice host eseguito su CPU</p>
+</div>
+</li>
+<li id="S5.I2.i2" class="ltx_item" style="list-style-type:none;">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I2.i2.p1" class="ltx_para">​<p class="ltx_p">codice device eseguito su GPU</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S5.SS2.SSSx1.p2" class="ltx_para">
+<p class="ltx_p">Il compilatore separa il codice host dal codice device in fase di compilazione, generando un file eseguibile che contiene entrambe le parti.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S5.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">1.5.3</span> Hello world in cuda</h3>
+
+<div id="S5.SS3.p1" class="ltx_para">
+<p class="ltx_p">Per scrivere programmi cuda va modificata la sintassi del c, si scrivono delle funzioni che sono destinate al kernel cuda:</p>
+<div class="bml_listing"><div class="ltx_listing ltx_lst_language_C ltx_lst_numbers_left ltx_lstlisting bml_background-color_F2F2F2 ltx_framed ltx_framed_rectangle ltx_listing">
+<div class="ltx_listing_data"><div><span><button title="copy code" aria-label="copy code" onclick="const u=event.currentTarget.nextElementSibling.href;navigator.clipboard.writeText(atob(u.substring(u.indexOf(',')+1)))"><i class="fa fa-clone" aria-hidden="true"></i></button><a download="" title="download " href="data:text/plain;base64,ICAgIF9fZ2xvYmFsX18gdm9pZCBoZWxsb193b3JsZCgpIHsKICAgICAgICBwcmludGYoIkhlbGxvLCBXb3JsZCBmcm9tIEdQVSFcbiIpOwogICAgfQ=="><i class="fa fa-download" aria-hidden="true"></i></a></span></div></div>
+<div id="lstnumberx1" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">1</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">    </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">__global__</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_keyword ltx_font_typewriter" style="font-size:83%;"><span class="ltx_text bml_color_0000FF">void</span></span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">hello_world</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">()</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">{</span></code>
+</div>
+<div id="lstnumberx2" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">2</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">        </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">printf</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">(</span><span class="ltx_text ltx_lst_string ltx_font_typewriter" style="font-size:83%;"><span class="ltx_text bml_color_FF0000">"Hello,<span class="ltx_text ltx_lst_space"> </span>World<span class="ltx_text ltx_lst_space"> </span>from<span class="ltx_text ltx_lst_space"> </span>GPU!\n"</span></span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">);</span></code>
+</div>
+<div id="lstnumberx3" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">3</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">    </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">}</span></code>
+</div>
+</div></div>
+</div>
+<div id="S5.SS3.p2" class="ltx_para">
+<p class="ltx_p">Per invocarla va utilizzata questa sintassi in cui specifichiamo il numero di blocchi e il numero di thread per ogni blocco:</p>
+<div class="bml_listing"><div class="ltx_listing ltx_lst_language_C ltx_lst_numbers_left ltx_lstlisting bml_background-color_F2F2F2 ltx_framed ltx_framed_rectangle ltx_listing">
+<div class="ltx_listing_data"><div><span><button title="copy code" aria-label="copy code" onclick="const u=event.currentTarget.nextElementSibling.href;navigator.clipboard.writeText(atob(u.substring(u.indexOf(',')+1)))"><i class="fa fa-clone" aria-hidden="true"></i></button><a download="" title="download " href="data:text/plain;base64,ICAgIGhlbGxvX3dvcmxkPDw8bnVtX2Jsb2NrcywgdGhyZWFkc19wZXJfYmxvY2s+Pj4oKTs="><i class="fa fa-download" aria-hidden="true"></i></a></span></div></div>
+<div id="lstnumberx4" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">1</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">    </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">hello_world</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">&lt;&lt;&lt;</span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">num_blocks</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">,</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">threads_per_block</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">&gt;&gt;&gt;();</span></code>
+</div>
+</div></div>
+</div>
+<div id="S5.SS3.p3" class="ltx_para">
+<p class="ltx_p">Il risultato finale e’:</p>
+<div class="bml_listing"><div class="ltx_listing ltx_lst_language_C ltx_lst_numbers_left ltx_lstlisting bml_background-color_F2F2F2 ltx_framed ltx_framed_rectangle ltx_listing">
+<div class="ltx_listing_data"><div><span><button title="copy code" aria-label="copy code" onclick="const u=event.currentTarget.nextElementSibling.href;navigator.clipboard.writeText(atob(u.substring(u.indexOf(',')+1)))"><i class="fa fa-clone" aria-hidden="true"></i></button><a download="" title="download " href="data:text/plain;base64,ICAgIF9fZ2xvYmFsX18gdm9pZCBoZWxsb193b3JsZCgpIHsKICAgICAgICBwcmludGYoIkhlbGxvLCBXb3JsZCBmcm9tIEdQVSFcbiIpOwogICAgfQoKICAgIGludCBtYWluKHZvaWQpIHsKICAgICAgICBoZWxsb193b3JsZDw8PDEsIDEwPj4+KCk7CiAgICAgICAgY3VkYURldmljZVJlc2V0KCk7CiAgICAgICAgcmV0dXJuIDA7CiAgICB9"><i class="fa fa-download" aria-hidden="true"></i></a></span></div></div>
+<div id="lstnumberx5" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">1</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">    </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">__global__</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_keyword ltx_font_typewriter" style="font-size:83%;"><span class="ltx_text bml_color_0000FF">void</span></span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">hello_world</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">()</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">{</span></code>
+</div>
+<div id="lstnumberx6" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">2</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">        </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">printf</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">(</span><span class="ltx_text ltx_lst_string ltx_font_typewriter" style="font-size:83%;"><span class="ltx_text bml_color_FF0000">"Hello,<span class="ltx_text ltx_lst_space"> </span>World<span class="ltx_text ltx_lst_space"> </span>from<span class="ltx_text ltx_lst_space"> </span>GPU!\n"</span></span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">);</span></code>
+</div>
+<div id="lstnumberx7" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">3</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">    </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">}</span></code>
+</div>
+<div id="lstnumberx8" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">4</span></span>
+                
+                
+                
+              <code></code>
+</div>
+<div id="lstnumberx9" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">5</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">    </span><span class="ltx_text ltx_lst_keyword ltx_font_typewriter" style="font-size:83%;"><span class="ltx_text bml_color_0000FF">int</span></span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">main</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">(</span><span class="ltx_text ltx_lst_keyword ltx_font_typewriter" style="font-size:83%;"><span class="ltx_text bml_color_0000FF">void</span></span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">)</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">{</span></code>
+</div>
+<div id="lstnumberx10" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">6</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">        </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">hello_world</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">&lt;&lt;&lt;1,</span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">10&gt;&gt;&gt;();</span></code>
+</div>
+<div id="lstnumberx11" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">7</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">        </span><span class="ltx_text ltx_lst_identifier ltx_font_typewriter" style="font-size:83%;">cudaDeviceReset</span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">();</span></code>
+</div>
+<div id="lstnumberx12" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">8</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">        </span><span class="ltx_text ltx_lst_keyword ltx_font_typewriter" style="font-size:83%;"><span class="ltx_text bml_color_0000FF">return</span></span><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;"> </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">0;</span></code>
+</div>
+<div id="lstnumberx13" class="ltx_listingline">
+                <span class="ltx_tag ltx_tag_listingline"><span class="ltx_text" style="font-size:83%;">9</span></span>
+                
+                
+                
+              <code><span class="ltx_text ltx_lst_space ltx_font_typewriter" style="font-size:83%;">    </span><span class="ltx_text ltx_font_typewriter" style="font-size:83%;">}</span></code>
+</div>
+</div></div>
+</div>
+<div id="S5.SS3.p4" class="ltx_para">
+<p class="ltx_p">In questa funzione stamperemo 10 volte "Hello, World from GPU!".</p>
+</div>
+<div id="S5.SS3.p5" class="ltx_para">
+<p class="ltx_p">La funzione cudaDeviceReset serve a ripristinare lo stato del dispositivo GPU. Viene utilizzata per liberare le risorse allocate sulla GPU e riportare il dispositivo a uno stato pulito. È buona norma chiamare questa funzione alla fine di un programma CUDA per garantire che tutte le risorse siano correttamente rilasciate.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+</div>
+</div>
+<a href="index.html" class="navigation navigation-prev" aria-label="Previous page"><i class="fa fa-angle-left"></i></a><a href="Ch2.html" class="navigation navigation-next" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+</div>
+</div>
+</body>
+
+</html>

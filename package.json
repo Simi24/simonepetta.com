@@ -14,6 +14,7 @@
     "test:browser": "playwright test",
     "test:browser-dev": "playwright test --config playwright.scrivania.config.ts",
     "og:generate": "node scripts/og/generate-og-images.ts",
+    "appunti:convert": "node pipeline/appunti-convert.ts",
     "gate:budget": "node scripts/quality/check-budget.ts",
     "gate:axe": "playwright test --config playwright.quality.config.ts",
     "test:quality": "npm run gate:budget && npm run gate:axe"

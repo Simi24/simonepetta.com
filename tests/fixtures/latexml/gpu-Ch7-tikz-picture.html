@@ -1,0 +1,130 @@
+<!DOCTYPE html><html class="bml_mathjax4" lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Chapter 1 Introduzione ‣ GPU computing</title>
+<!--Generated on Wed Sep 30 23:55:33 2026 by LaTeXML (version 0.8.8) http://dlmf.nist.gov/LaTeXML/.-->
+<!--Document created on A.A. 2024/2025.-->
+
+<link rel="stylesheet" href="LaTeXML.css" type="text/css">
+<link rel="stylesheet" href="ltx-report.css" type="text/css">
+<link rel="stylesheet" href="ltx-listings.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/style.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-table.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-search.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-bookdown.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-fontsettings.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.gitbook,plain.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.gitbook.css" type="text/css">
+<link rel="stylesheet" href="bmluser/colors.gitbook-main.css" type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6"></script>
+<link rel="up" href="index.html" title="GPU computing">
+<link rel="start" href="index.html" title="GPU computing">
+<link rel="prev" href="index.html" title="GPU computing">
+<link rel="next" href="Ch2.html" title="Chapter 2 Modello di programmazione CUDA ‣ GPU computing">
+<link rel="chapter" href="Ch2.html" title="Chapter 2 Modello di programmazione CUDA ‣ GPU computing">
+<link rel="chapter" href="Ch3.html" title="Chapter 3 Architetture delle GPU ‣ GPU computing">
+<link rel="chapter" href="Ch4.html" title="Chapter 4 Memorie ‣ GPU computing">
+<link rel="chapter" href="Ch5.html" title="Chapter 5 Ottimizzazione delle prestazioni ‣ GPU computing">
+<link rel="chapter" href="Ch6.html" title="Chapter 6 Numba ‣ GPU computing">
+<link rel="chapter" href="Ch7.html" title="Chapter 7 Pattern Paralleli ‣ GPU computing">
+<link rel="chapter" href="Ch8.html" title="Chapter 8 PyTorch ‣ GPU computing">
+<style>:root{--bml-ltx-font-size:12;--bml-ltxml-dpi:96.36}</style>
+<script src="bookml/js/mathjax4.js" defer></script>
+</head>
+<body class="bml_class_report">
+<div class="book without-animation font-size-2 font-family-1" data-basepath=".">
+<a href="#bml-main-content" tabindex="0" class="bml-skip-to-content">Skip to content.</a>
+<div class="book-summary"><nav class="ltx_page_navbar">
+<ul class="ltx_toclist summary">
+<li>
+<a href="index.html" title="" class="ltx_ref" rel="start">GPU computing</a>
+</li>
+<li class="divider" aria-hidden="true"></li>
+<li data-level="1" data-path="" class="ltx_tocentry ltx_tocentry_chapter ltx_ref_self  chapter active">
+<a href="" title="In GPU computing" aria-current="page" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1 </span></b>Introduzione</a>
+<ol class="ltx_toclist ltx_toclist_chapter">
+<li data-level="1.1" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter "><a href="#S1" title="In Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.1 </span></b>GP-GPU</a></li>
+<li data-level="1.2" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter ">
+<a href="#S2" title="In Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.2 </span></b>Architetture eterogenee</a>
+<ol class="ltx_toclist ltx_toclist_section">
+<li data-level="1.2.1" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter "><a href="#S2.SS1" title="In 1.2 Architetture eterogenee ‣ Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.2.1 </span></b>Parallelismo delle istruzioni</a></li>
+<li data-level="1.2.2" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter "><a href="#S2.SS2" title="In 1.2 Architetture eterogenee ‣ Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.2.2 </span></b>Parallelismo dei dati</a></li>
+</ol>
+</li>
+<li data-level="1.3" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter "><a href="#S3" title="In Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.3 </span></b>Parallelismo di task</a></li>
+<li data-level="1.4" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter "><a href="#S4" title="In Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.4 </span></b>Tassonomia di Flynn</a></li>
+<li data-level="1.5" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter ">
+<a href="#S5" title="In Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.5 </span></b>GPU Nvidia</a>
+<ol class="ltx_toclist ltx_toclist_section">
+<li data-level="1.5.1" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter "><a href="#S5.SS1" title="In 1.5 GPU Nvidia ‣ Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.5.1 </span></b>Cuda core</a></li>
+<li data-level="1.5.2" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter ">
+<a href="#S5.SS2" title="In 1.5 GPU Nvidia ‣ Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.5.2 </span></b>CUDA</a>
+<ol class="ltx_toclist ltx_toclist_subsection">
+<li data-level="" data-path="" class="ltx_tocentry ltx_tocentry_subsubsection  chapter "><a href="#S5.SS2.SSSx1" title="In 1.5.2 CUDA ‣ 1.5 GPU Nvidia ‣ Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref">Programma CUDA</a></li>
+</ol>
+</li>
+<li data-level="1.5.3" data-path="" class="ltx_tocentry ltx_tocentry_subsection  chapter "><a href="#S5.SS3" title="In 1.5 GPU Nvidia ‣ Chapter 1 Introduzione ‣ GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.5.3 </span></b>Hello world in cuda</a></li>
+</ol>
+</li>
+</ol>
+</li>
+<li data-level="2" data-path="Ch2.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch2.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">2 </span></b>Modello di programmazione CUDA</a></li>
+<li data-level="3" data-path="Ch3.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch3.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">3 </span></b>Architetture delle GPU</a></li>
+<li data-level="4" data-path="Ch4.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch4.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">4 </span></b>Memorie</a></li>
+<li data-level="5" data-path="Ch5.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch5.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">5 </span></b>Ottimizzazione delle prestazioni</a></li>
+<li data-level="6" data-path="Ch6.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch6.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">6 </span></b>Numba</a></li>
+<li data-level="7" data-path="Ch7.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch7.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">7 </span></b>Pattern Paralleli</a></li>
+<li data-level="8" data-path="Ch8.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch8.html" title="In GPU computing" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">8 </span></b>PyTorch</a></li>
+</ul>
+</nav></div>
+
+<div class="ltx_page_main book-body fixed">
+<div class="body-inner">
+<header class="book-header fixed" aria-label="toolbar"><span class="bml-separator"></span></header>
+<div class="page-wrapper" tabindex="-1" role="main">
+<div class="ltx_page_content page-inner" id="bml-main-content">
+<script src="bookml/gitbook/js/app.min.js"></script>
+<script src="bookml/gitbook/js/jquery.highlight.js"></script>
+<script src="bookml/gitbook/js/plugin-search.js"></script>
+<script src="bookml/gitbook/js/plugin-fontsettings.js"></script>
+<script src="bookml/gitbook/js/plugin-bookdown.js"></script>
+<script type="text/javascript">
+                  gitbook.require(["gitbook"], function(gitbook) {
+                  gitbook.start({
+                    "fontsettings": {
+                      "theme": "white",
+                      "family": "sans",
+                      "size": 2
+                    },
+                    "download": [ [ "main.pdf", "PDF" ], ],
+                    "search": {
+                      "engine": "fuse"
+                    },
+                    "toc": {
+                      "collapse": "none"
+                    }
+                  });
+                });
+              </script>
+
+<section class="ltx_chapter ltx_authors_1line normal">
+<div class="section level1">
+<h1 class="ltx_title ltx_title_chapter">
+<span class="ltx_tag ltx_tag_chapter header-section-number">Chapter 7</span> Pattern Paralleli</h1>
+
+<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><span class="ltx_inline-block"><svg id="F1.pic1" class="ltx_picture ltx_centering" height="102.2" overflow="visible" version="1.1" width="258.77" viewBox="0 0 258.77 102.2"><g class="bml_fill_000000 bml_stroke_000000" fill="#000000" stroke="#000000" stroke-width="0.4pt" transform="translate(0,102.2) matrix(1 0 0 -1 0 0) translate(113.03,0) translate(0,90.16)"><g class="bml_fill_000000 bml_stroke_000000" fill="#000000" stroke="#000000" transform="matrix(1.0 0.0 0.0 1.0 -22.67 -3.6)"><foreignObject height="13.93" overflow="visible" transform="matrix(1 0 0 -1 0 20.06)" width="47.05">1,2,3,4</foreignObject></g><g class="bml_fill_000000 bml_stroke_000000" fill="#000000" stroke="#000000" transform="matrix(1.0 0.0 0.0 1.0 -76.61 -43.43)"><foreignObject height="13.93" overflow="visible" transform="matrix(1 0 0 -1 0 20.06)" width="21.22">1,2</foreignObject></g><path d="M -20.51 -12.31 L -50.57 -30.34" style="fill:none"></path><g class="bml_fill_000000 bml_stroke_000000" fill="#000000" stroke="#000000" transform="matrix(1.0 0.0 0.0 1.0 -103.58 -84.82)"><foreignObject height="10.7" overflow="visible" transform="matrix(1 0 0 -1 0 20.06)" width="8.3">1</foreignObject></g><path d="M -76.65 -52.14 L -90.62 -68.91" style="fill:none"></path><g class="bml_fill_000000 bml_stroke_000000" fill="#000000" stroke="#000000" transform="matrix(1.0 0.0 0.0 1.0 -37.19 -84.82)"><foreignObject height="10.7" overflow="visible" transform="matrix(1 0 0 -1 0 20.06)" width="8.3">2</foreignObject></g><path d="M -56.13 -52.14 L -42.15 -68.91" style="fill:none"></path><g class="bml_fill_000000 bml_stroke_000000" fill="#000000" stroke="#000000" transform="matrix(1.0 0.0 0.0 1.0 56.17 -43.43)"><foreignObject height="13.93" overflow="visible" transform="matrix(1 0 0 -1 0 20.06)" width="21.22">3,4</foreignObject></g><path d="M 20.51 -12.31 L 50.57 -30.34" style="fill:none"></path><g class="bml_fill_000000 bml_stroke_000000" fill="#000000" stroke="#000000" transform="matrix(1.0 0.0 0.0 1.0 29.19 -84.82)"><foreignObject height="10.7" overflow="visible" transform="matrix(1 0 0 -1 0 20.06)" width="8.3">3</foreignObject></g><path d="M 56.13 -52.14 L 42.15 -68.91" style="fill:none"></path><g class="bml_fill_000000 bml_stroke_000000" fill="#000000" stroke="#000000" transform="matrix(1.0 0.0 0.0 1.0 95.58 -84.82)"><foreignObject height="10.7" overflow="visible" transform="matrix(1 0 0 -1 0 20.06)" width="8.3">4</foreignObject></g><path d="M 76.65 -52.14 L 90.62 -68.91" style="fill:none"></path><path d="M 146.06 -86.31 L 146.06 -8.27" style="fill:none"></path><g stroke-dasharray="none" stroke-dashoffset="0.0pt" stroke-linejoin="miter" transform="matrix(0.0 1.0 -1.0 0.0 146.06 -8.27)"><path d="M 13.31 0 C 11.67 0.27 4.49 1.77 0 3.4 L 0 -3.4 C 4.49 -1.77 11.67 -0.27 13.31 0 Z"></path></g></g></svg></span></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text" style="font-size:91%;">Figure 7.1</span>: </span><span class="ltx_text" style="font-size:91%;">Fase di up-sweep sull’albero bilanciato.</span></figcaption>
+</figure>
+</div>
+</section>
+</div>
+</div>
+</div>
+<a href="index.html" class="navigation navigation-prev" aria-label="Previous page"><i class="fa fa-angle-left"></i></a><a href="Ch2.html" class="navigation navigation-next" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+</div>
+</div>
+</body>
+
+</html>

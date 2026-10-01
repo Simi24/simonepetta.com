@@ -1,0 +1,161 @@
+<!DOCTYPE html><html class="bml_mathjax4" lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Chapter 1 Variabili aleatorie continue ‣ Mini</title>
+<!--Generated on Wed Sep 30 23:57:23 2026 by LaTeXML (version 0.8.8) http://dlmf.nist.gov/LaTeXML/.-->
+
+<link rel="stylesheet" href="LaTeXML.css" type="text/css">
+<link rel="stylesheet" href="ltx-report.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/style.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-table.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-search.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-bookdown.css" type="text/css">
+<link rel="stylesheet" href="bookml/gitbook/css/plugin-fontsettings.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.gitbook,plain.css" type="text/css">
+<link rel="stylesheet" href="bookml/CSS/style.gitbook.css" type="text/css">
+<link rel="stylesheet" href="bmluser/colors.gitbook-main.css" type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6"></script>
+<link rel="up" href="index.html" title="Mini">
+<link rel="start" href="index.html" title="Mini">
+<link rel="prev" href="index.html" title="Mini">
+<link rel="next" href="Ch2.html" title="Chapter 2 Secondo ‣ Mini">
+<link rel="chapter" href="Ch2.html" title="Chapter 2 Secondo ‣ Mini">
+<style>:root{--bml-ltx-font-size:10;--bml-ltxml-dpi:96.36}</style>
+<script src="bookml/js/mathjax4.js" defer></script>
+</head>
+<body class="bml_class_report">
+<div class="book without-animation font-size-2 font-family-1" data-basepath=".">
+<a href="#bml-main-content" tabindex="0" class="bml-skip-to-content">Skip to content.</a>
+<div class="book-summary"><nav class="ltx_page_navbar">
+<ul class="ltx_toclist summary">
+<li>
+<a href="index.html" title="" class="ltx_ref" rel="start">Mini</a>
+</li>
+<li class="divider" aria-hidden="true"></li>
+<li data-level="1" data-path="" class="ltx_tocentry ltx_tocentry_chapter ltx_ref_self  chapter active">
+<a href="" title="In Mini" aria-current="page" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1 </span></b>Variabili aleatorie continue</a>
+<ol class="ltx_toclist ltx_toclist_chapter">
+<li data-level="1.1" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter "><a href="#S1" title="In Chapter 1 Variabili aleatorie continue ‣ Mini" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.1 </span></b>Densità</a></li>
+<li data-level="1.2" data-path="" class="ltx_tocentry ltx_tocentry_section  chapter "><a href="#S2" title="In Chapter 1 Variabili aleatorie continue ‣ Mini" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">1.2 </span></b>Allineamenti</a></li>
+</ol>
+</li>
+<li data-level="2" data-path="Ch2.html" class="ltx_tocentry ltx_tocentry_chapter  chapter "><a href="Ch2.html" title="In Mini" class="ltx_ref"><b><span class="ltx_tag ltx_tag_ref">2 </span></b>Secondo</a></li>
+</ul>
+</nav></div>
+
+<div class="ltx_page_main book-body fixed">
+<div class="body-inner">
+<header class="book-header fixed" aria-label="toolbar"><span class="bml-separator"></span></header>
+<div class="page-wrapper" tabindex="-1" role="main">
+<div class="ltx_page_content page-inner" id="bml-main-content">
+<script src="bookml/gitbook/js/app.min.js"></script>
+<script src="bookml/gitbook/js/jquery.highlight.js"></script>
+<script src="bookml/gitbook/js/plugin-search.js"></script>
+<script src="bookml/gitbook/js/plugin-fontsettings.js"></script>
+<script src="bookml/gitbook/js/plugin-bookdown.js"></script>
+<script type="text/javascript">
+                  gitbook.require(["gitbook"], function(gitbook) {
+                  gitbook.start({
+                    "fontsettings": {
+                      "theme": "white",
+                      "family": "sans",
+                      "size": 2
+                    },
+                    "download": [ [ "main.pdf", "PDF" ], ],
+                    "search": {
+                      "engine": "fuse"
+                    },
+                    "toc": {
+                      "collapse": "none"
+                    }
+                  });
+                });
+              </script>
+
+<section class="ltx_chapter normal">
+<div class="section level1">
+<h1 class="ltx_title ltx_title_chapter">
+<span class="ltx_tag ltx_tag_chapter header-section-number">Chapter 1</span> Variabili aleatorie continue</h1>
+
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">1.1</span> Densità</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">Una variabile <math id="S1.p1.m1" class="ltx_Math" alttext="X" display="inline"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math> è <em class="ltx_emph ltx_font_italic">continua</em> se esiste <math id="S1.p1.m2" class="ltx_Math" alttext="f\geq 0" display="inline"><semantics><mrow><mi>f</mi><mo>≥</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">f\geq 0</annotation></semantics></math>.<span id="footnote1" class="ltx_note ltx_role_footnote"><sup class="ltx_note_mark">1</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">1</sup>
+              <span class="ltx_tag ltx_tag_note">1</span>
+              
+              
+            Per questo gli estremi non contano.</span></span></span></p>
+</div>
+<div id="Thmtheorem1" class="ltx_theorem ltx_theorem_definition" role="region" aria-labelledby="bml-auto-id1">
+<div class="ltx_title ltx_runin ltx_title_theorem">
+<span class="ltx_tag ltx_tag_theorem header-section-number" id="bml-auto-id1"><span class="ltx_text ltx_font_bold">Definizione 1.1</span></span><span class="ltx_text ltx_font_bold">.</span>
+</div>
+<div id="Thmtheorem1.p1" class="ltx_para">
+<p class="ltx_p"><span class="ltx_text ltx_font_italic">Sia <math id="Thmtheorem1.p1.m1" class="ltx_Math" alttext="f" display="inline"><semantics><mi>f</mi><annotation encoding="application/x-tex">f</annotation></semantics></math> una densità.</span></p>
+</div>
+</div>
+<div id="Thmtheorem2" class="ltx_theorem ltx_theorem_theorem" role="region" aria-labelledby="bml-auto-id2">
+<div class="ltx_title ltx_runin ltx_title_theorem">
+<span class="ltx_tag ltx_tag_theorem header-section-number" id="bml-auto-id2"><span class="ltx_text ltx_font_bold">Teorema 1.2</span></span><span class="ltx_text ltx_font_bold"> </span>(Disuguaglianza di Čebyšëv)<span class="ltx_text ltx_font_bold">.</span>
+</div>
+<div id="Thmtheorem2.p1" class="ltx_para">
+<p class="ltx_p"><span class="ltx_text ltx_font_italic">Per ogni <math id="Thmtheorem2.p1.m1" class="ltx_Math" alttext="k&gt;0" display="inline"><semantics><mrow><mi>k</mi><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">k&gt;0</annotation></semantics></math></span></p>
+<div id="E1" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id3">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id3"><span class="bml_sr_only">equation </span>(1.1)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno">(1.1)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E1.m1" class="ltx_Math" alttext="P(|X-\mu|\geq k\sigma)\leq\frac{1}{k^{2}}." display="block"><semantics><mrow><mrow><mrow><mi>P</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mo stretchy="false">|</mo><mrow><mi>X</mi><mo>−</mo><mi>μ</mi></mrow><mo stretchy="false">|</mo></mrow><mo>≥</mo><mrow><mi>k</mi><mo>⁢</mo><mi>σ</mi></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>≤</mo><mfrac><mn>1</mn><msup><mi>k</mi><mn>2</mn></msup></mfrac></mrow><mo lspace="0em">.</mo></mrow><annotation encoding="application/x-tex">P(|X-\mu|\geq k\sigma)\leq\frac{1}{k^{2}}.</annotation></semantics></math></div>
+</div>
+</div>
+</div>
+<div class="ltx_proof" role="group" aria-labelledby="bml-auto-id4">
+<div class="ltx_title ltx_runin ltx_font_italic ltx_title_proof" id="bml-auto-id4">Proof.</div>
+<div id="S1.p2" class="ltx_para">
+<p class="ltx_p">Si spezza l’integrale. Vedi il Teorema <a href="#Thmtheorem2" title="Teorema 1.2 (Disuguaglianza di Čebyšëv). ‣ 1.1 Densità ‣ Chapter 1 Variabili aleatorie continue ‣ Mini" class="ltx_ref"><span class="ltx_text ltx_ref_tag">1.2</span></a>.
+∎</p>
+</div>
+</div>
+<div id="Thmtheorem3" class="ltx_theorem ltx_theorem_example" role="region" aria-labelledby="bml-auto-id5">
+<div class="ltx_title ltx_runin ltx_title_theorem">
+<span class="ltx_tag ltx_tag_theorem header-section-number" id="bml-auto-id5"><span class="ltx_text ltx_font_bold">Esempio 1.3</span></span><span class="ltx_text ltx_font_bold">.</span>
+</div>
+<div id="Thmtheorem3.p1" class="ltx_para">
+<p class="ltx_p"><span class="ltx_text ltx_font_italic">Esponenziale.</span></p>
+</div>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">1.2</span> Allineamenti</h2>
+
+<div id="S2.p1" class="ltx_para">
+<div id="Ch2.S0.EGx1" class="ltx_equationgroup ltx_eqn_align bml_equationgroup bml_equation_container ltx_align_baseline">
+<div id="Ex1" class="ltx_equation bml_equation ltx_align_baseline" role="group" aria-label="equation">
+<div class="ltx_td ltx_align_right bml_eqn_cell"><math id="Ex1.m1" class="ltx_Math" alttext="\displaystyle a" display="inline"><semantics><mi>a</mi><annotation encoding="application/x-tex">\displaystyle a</annotation></semantics></math></div>
+<div class="ltx_td ltx_align_left bml_eqn_cell"><math id="Ex1.m2" class="ltx_Math" alttext="\displaystyle{}=b" display="inline"><semantics><mrow><mi></mi><mo>=</mo><mi>b</mi></mrow><annotation encoding="application/x-tex">\displaystyle{}=b</annotation></semantics></math></div>
+</div>
+<div id="Ex2" class="ltx_equation bml_equation ltx_align_baseline" role="group" aria-label="equation">
+<div class="ltx_td ltx_align_right bml_eqn_cell"><math id="Ex2.m1" class="ltx_Math" alttext="\displaystyle c" display="inline"><semantics><mi>c</mi><annotation encoding="application/x-tex">\displaystyle c</annotation></semantics></math></div>
+<div class="ltx_td ltx_align_left bml_eqn_cell"><math id="Ex2.m2" class="ltx_Math" alttext="\displaystyle{}=d" display="inline"><semantics><mrow><mi></mi><mo>=</mo><mi>d</mi></mrow><annotation encoding="application/x-tex">\displaystyle{}=d</annotation></semantics></math></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>
+</div>
+</div>
+<a href="index.html" class="navigation navigation-prev" aria-label="Previous page"><i class="fa fa-angle-left"></i></a><a href="Ch2.html" class="navigation navigation-next" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+</div>
+</div>
+</body>
+
+</html>
