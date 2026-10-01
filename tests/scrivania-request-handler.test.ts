@@ -10,12 +10,14 @@ let server: Server;
 let url: string;
 let contentDir: string;
 let onSavedShouldFail = false;
+let lastSaved: unknown;
 
 before(async () => {
   contentDir = mkdtempSync(join(tmpdir(), 'scrivania-handler-'));
   const handleSave = createSaveHandler({
     contentDir,
-    onSaved: () => {
+    onSaved: (saved) => {
+      lastSaved = saved;
       if (onSavedShouldFail) throw new Error('refresh finto non riuscito');
     },
   });
@@ -75,4 +77,11 @@ test('a save with testo writes it as the book’s body', async () => {
   assert.equal(json.slug, 'con-testo');
   const written = readFileSync(join(contentDir, 'con-testo.md'), 'utf8');
   assert.ok(written.includes('La mia reazione al libro.'), `body missing from the written file:\n${written}`);
+});
+
+test('the refresh hook is told what was saved, so it can wait until that is served', async () => {
+  const data = { titolo: 'Da Servire', autore: 'Autore', stato: 'letto', finito: '2026-09-14' };
+  const created = (await (await post({ data })).json()) as { slug: string };
+  await post({ slug: created.slug, data, testo: '  Il testo da servire.  ' });
+  assert.deepEqual(lastSaved, { slug: 'da-servire', titolo: 'Da Servire', stato: 'letto', testo: '  Il testo da servire.  ' });
 });

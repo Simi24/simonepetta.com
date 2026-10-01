@@ -1,4 +1,5 @@
-import { addBook, expect, saveAndReload, saveBook, spine, test, uniqueTitle } from './desk.ts';
+import { expect, test } from '@playwright/test';
+import { addBook, saveAndReload, saveBook, spine, uniqueTitle } from './desk.ts';
 
 // The writing sheet (SPEC.md §6.4) exists only under `astro dev`: this is the seam for the timer
 // *starting*, the outline, the preview and the unsaved-text guard. The countdown's own tick-by-tick
@@ -280,4 +281,26 @@ test('the save button is disabled while a save is in flight', async ({ page }, t
   await expect(saveButton).toBeDisabled();
   release();
   await reloaded;
+});
+
+// Astro's dev server reloads every open page when the content store is written (any save). An
+// open sheet in another tab must not lose its text silently: the reload goes through the sheet's
+// unsaved-text guard, and cancelling it keeps the text.
+
+test('a save in another tab reloads the open sheet only through the unsaved-text guard', async ({ context }, testInfo) => {
+  const sheetTab = await context.newPage();
+  const otherTab = await context.newPage();
+  const titolo = uniqueTitle('Libro con il foglio aperto', testInfo);
+  await addBook(sheetTab, titolo);
+  await spine(sheetTab, titolo).click();
+  await sheetTab.getByRole('button', { name: "L'ho finito, scrivo" }).click();
+  await sheetTab.locator('#dk-text').fill('Testo non ancora salvato.');
+
+  const guard = sheetTab.waitForEvent('dialog');
+  await addBook(otherTab, uniqueTitle('Libro salvato altrove', testInfo));
+  const dialog = await guard;
+  expect(dialog.type()).toBe('beforeunload');
+  await dialog.dismiss();
+
+  await expect(sheetTab.locator('#dk-text')).toHaveValue('Testo non ancora salvato.');
 });

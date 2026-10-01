@@ -1,4 +1,5 @@
-import { expect, saveAndReload, spine, test, uniqueTitle } from './desk.ts';
+import { expect, test } from '@playwright/test';
+import { saveAndReload, spine, uniqueTitle } from './desk.ts';
 
 // The one flow that exists only under `astro dev` (SPEC.md §6.4): everything else about the
 // writing desk is covered at the `save.ts` unit seam and the build-output seam.

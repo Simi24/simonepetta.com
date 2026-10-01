@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { LetturaSchemaError } from '../../schemas/lettura.ts';
 import { readJsonBody, respondJson } from './http.ts';
 import { saveLettura } from './save.ts';
+import type { SavedBook } from './served.ts';
 
 interface SavePayload {
   slug?: string;
@@ -12,8 +13,8 @@ interface SavePayload {
 
 export interface SaveHandlerOptions {
   contentDir: string;
-  /** Called after a file is written, so the caller can refresh the content collection. */
-  onSaved?: (result: { slug: string }) => Promise<void> | void;
+  /** Called after a file is written, so the caller can refresh the content collection and wait for it to be served. */
+  onSaved?: (saved: SavedBook) => Promise<void> | void;
 }
 
 /**
@@ -27,8 +28,11 @@ export function createSaveHandler({ contentDir, onSaved }: SaveHandlerOptions) {
       return;
     }
     let result;
+    let testo: string | undefined;
     try {
-      const { slug, data, testo, expectedVersion } = await readJsonBody<SavePayload>(req);
+      const payload = await readJsonBody<SavePayload>(req);
+      const { slug, data, expectedVersion } = payload;
+      testo = payload.testo;
       result = saveLettura({ contentDir, slug, input: data, testo, expectedVersion });
     } catch (error) {
       if (error instanceof LetturaSchemaError) {
@@ -42,7 +46,7 @@ export function createSaveHandler({ contentDir, onSaved }: SaveHandlerOptions) {
     // collection) must not read as "the save failed" and invite a duplicate save — it's reported
     // as a warning on an otherwise-successful response.
     try {
-      await onSaved?.(result);
+      await onSaved?.({ slug: result.slug, titolo: result.titolo, stato: result.stato, testo });
       respondJson(res, 200, { slug: result.slug });
     } catch (error) {
       respondJson(res, 200, {
