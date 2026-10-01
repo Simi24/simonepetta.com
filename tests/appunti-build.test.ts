@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { buildFromLatexml, LeakError, parseLatexmlErrors, parseLatexmlPostErrors } from '../pipeline/appunti-build.ts';
+import { makeTempDir } from './support/temp-root.ts';
 
 const FIXTURES = new URL('./fixtures/latexml/', import.meta.url).pathname;
 
 /** A fake LaTeXML output directory (Ch1, Ch2 from the mini course) plus the course's source. */
 function setup(): { htmlDir: string; courseDir: string; source: string } {
-  const root = mkdtempSync(join(tmpdir(), 'appunti-build-'));
+  const root = makeTempDir('appunti-build-');
   const htmlDir = join(root, 'html');
   mkdirSync(htmlDir);
   cpSync(join(FIXTURES, 'mini-Ch1.html'), join(htmlDir, 'Ch1.html'));
@@ -80,7 +80,7 @@ test('a second run keeps every chapter URL, even when a chapter is renamed in pl
   buildFromLatexml({ htmlDir, courseDir, corso: 'mini', source, latexmlErrors: 0 });
   const first = readMeta(courseDir).capitoli.map((c: { slug: string }) => c.slug);
 
-  const second = mkdtempSync(join(tmpdir(), 'appunti-build-second-'));
+  const second = makeTempDir('appunti-build-second-');
   cpSync(join(htmlDir, 'Ch1.html'), join(second, 'Ch1.html'));
   writeFileSync(join(second, 'Ch2.html'), readFileSync(join(htmlDir, 'Ch2.html'), 'utf8').replace(/> Secondo</, '> Secondo, riscritto<'));
   buildFromLatexml({ htmlDir: second, courseDir, corso: 'mini', source, latexmlErrors: 0 });
@@ -96,7 +96,7 @@ test('a chapter inserted before an existing one does not take its URL', () => {
   buildFromLatexml({ htmlDir, courseDir, corso: 'mini', source, latexmlErrors: 0 });
   const first = readMeta(courseDir).capitoli.map((c: { slug: string }) => c.slug);
 
-  const second = mkdtempSync(join(tmpdir(), 'appunti-build-inserted-'));
+  const second = makeTempDir('appunti-build-inserted-');
   const ch2 = readFileSync(join(htmlDir, 'Ch2.html'), 'utf8');
   cpSync(join(htmlDir, 'Ch1.html'), join(second, 'Ch1.html'));
   writeFileSync(join(second, 'Ch2.html'), ch2.replace(/> Secondo</, '> Nuovo capitolo<'));

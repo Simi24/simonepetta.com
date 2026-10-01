@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { buildSite, read } from './support/built-site.ts';
+import { makeTempDir } from './support/temp-root.ts';
 
 const FIXTURES = { APPUNTI_CONTENT_DIR: 'tests/fixtures/appunti' };
 const indexHtml = (env: Record<string, string> = FIXTURES) => read(buildSite(env), 'appunti/index.html');
@@ -156,7 +156,7 @@ const manifest = (titolo: string, tipo: 'corso' | 'tesi'): string =>
   ].join('\n');
 
 function tempContent(courses: Record<string, 'corso' | 'tesi'>): string {
-  const dir = mkdtempSync(join(tmpdir(), 'appunti-index-'));
+  const dir = makeTempDir('appunti-index-');
   for (const [slug, tipo] of Object.entries(courses)) {
     mkdirSync(join(dir, slug));
     writeFileSync(join(dir, slug, 'corso.yaml'), manifest(slug, tipo));

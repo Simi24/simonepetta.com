@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readdirSync, readFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { makeTempDir } from './temp-root.ts';
 
 const builds = new Map<string, string>();
 
@@ -10,7 +10,7 @@ export function buildSite(env: Record<string, string> = {}): string {
   const key = JSON.stringify(env);
   const cached = builds.get(key);
   if (cached) return cached;
-  const outDir = mkdtempSync(join(tmpdir(), 'simonepetta-build-'));
+  const outDir = makeTempDir('simonepetta-build-');
   execFileSync('npx', ['astro', 'build', '--outDir', outDir], {
     env: { ...process.env, ...env },
     stdio: 'pipe',

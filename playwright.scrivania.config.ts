@@ -1,11 +1,9 @@
-import { mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
+import { makeTempDir } from './tests/support/temp-root.ts';
 
 const port = 4591;
 // A fresh, empty content dir per run: the writing desk must never touch src/content/letture/.
-const contentDir = mkdtempSync(join(tmpdir(), 'scrivania-dev-'));
+const contentDir = makeTempDir('scrivania-dev-');
 
 export default defineConfig({
   testDir: 'tests/browser-dev',

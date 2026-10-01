@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { buildSite, read } from './support/built-site.ts';
+import { makeTempDir } from './support/temp-root.ts';
 
 const FIXTURES_APPUNTI = { APPUNTI_CONTENT_DIR: 'tests/fixtures/appunti' };
 
@@ -72,7 +72,7 @@ test('an unpublished course leaves no page and no PDF in the output', () => {
 });
 
 test('a PDF larger than 25 MiB fails the build', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'appunti-oversized-'));
+  const dir = makeTempDir('appunti-oversized-');
   const slug = 'corso-enorme';
   mkdirSync(join(dir, slug), { recursive: true });
   writeFileSync(

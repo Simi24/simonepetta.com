@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { coursesWithPdf, parsePdfinfoPages, writeCorsoMeta } from '../pipeline/appunti-meta.ts';
+import { makeTempDir } from './support/temp-root.ts';
 
 /**
  * Whether `pdfinfo` (poppler) is on `PATH`. The `site` workflow does not install it (only the
@@ -38,7 +38,7 @@ test('throws when pdfinfo output has no Pages line', () => {
 });
 
 function fixtureContentDir(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'appunti-meta-'));
+  const dir = makeTempDir('appunti-meta-');
   for (const slug of ['una-pagina', 'tre-pagine']) {
     mkdirSync(join(dir, slug), { recursive: true });
     copyFileSync(join(import.meta.dirname, 'fixtures/appunti-pdf', `${slug}.pdf`), join(dir, slug, `${slug}.pdf`));

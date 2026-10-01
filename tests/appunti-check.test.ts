@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { buildFromLatexml } from '../pipeline/appunti-build.ts';
 import { checkCourses } from '../pipeline/appunti-check.ts';
+import { makeTempDir } from './support/temp-root.ts';
 
 const LATEXML = new URL('./fixtures/latexml/', import.meta.url).pathname;
 const SIMT = 'images/simtvssimd.png';
@@ -20,7 +20,7 @@ const pages = (count: number) => () => count;
  * chapter 1 (one raster figure), the way the pipeline would leave it: `src/`, `build/`, PDF, `meta.json`.
  */
 function convertedCourse(slug = 'gpu'): { contentDir: string; courseDir: string } {
-  const root = mkdtempSync(join(tmpdir(), 'appunti-check-'));
+  const root = makeTempDir('appunti-check-');
   const contentDir = join(root, 'appunti');
   const courseDir = join(contentDir, slug);
   const htmlDir = join(root, 'html');
@@ -109,7 +109,7 @@ test('an unpublished course is not checked', () => {
 });
 
 test('a content dir with no courses at all fails rather than passing by checking nothing', () => {
-  const contentDir = mkdtempSync(join(tmpdir(), 'appunti-check-empty-'));
+  const contentDir = makeTempDir('appunti-check-empty-');
   const result = checkCourses(contentDir, { pageCount: pages(1) });
   assert.match(result.problems.join('\n'), /no published course/);
 });
