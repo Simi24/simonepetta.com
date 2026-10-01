@@ -1,0 +1,9 @@
+titolo: "Sistemi Operativi"
+tipo: corso
+livello: triennale
+anno: 2
+aa: "2021/22"
+fonte: overleaf
+pubblicato: true
+fonti:
+  - 'Tanenbaum, "I moderni sistemi operativi", 4ª edizione (libro di testo del corso)'
