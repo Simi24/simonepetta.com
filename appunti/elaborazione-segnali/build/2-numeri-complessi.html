@@ -1,0 +1,241 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">Facciamo un ripasso dei numeri complessi, perche’ come vedremo saranno fondamentali per rappresentare i segnali che studieremo.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">2.1</span> Rappresentazione cartesiana</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">La rappresentazione cartesiana di un numero complesso generale e’:</p>
+<div id="E1" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id1">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id1"><span class="bml_sr_only">equation </span>(2.1)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(2.1)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E1.m1" class="ltx_Math" alttext="z=x+iy" display="block"><semantics><mrow><mi>z</mi><mo>=</mo><mrow><mi>x</mi><mo>+</mo><mrow><mi>i</mi><mo>⁢</mo><mi>y</mi></mrow></mrow></mrow></semantics></math></div>
+</div>
+<p class="ltx_p">Dove <math id="S1.p1.m1" class="ltx_Math" alttext="x\in\mathbb{R}" display="inline"><semantics><mrow><mi>x</mi><mo>∈</mo><mi>ℝ</mi></mrow></semantics></math>, <math id="S1.p1.m2" class="ltx_Math" alttext="x\in\mathbb{R}" display="inline"><semantics><mrow><mi>x</mi><mo>∈</mo><mi>ℝ</mi></mrow></semantics></math> ed <math id="S1.p1.m3" class="ltx_Math" alttext="i=j=\sqrt{-1}" display="inline"><semantics><mrow><mi>i</mi><mo>=</mo><mi>j</mi><mo>=</mo><msqrt><mrow><mo>−</mo><mn>1</mn></mrow></msqrt></mrow></semantics></math> ed e’ detta unita’ immaginaria.
+Riportando queste informazioni su un piano cartesiano di cui l’asse delle Y appartiene ai numeri immaginari e l’asse delle X appartiene ai numeri reali otteniamo:</p>
+</div>
+<figure id="S1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez2-rappCartesiana.webp" width="424" height="166" loading="lazy" alt="Piano complesso con asse verticale immaginario (etichetta Im) e asse orizzontale reale (R). Un punto rosso con scritto z = x + iy ha coordinate x sull'asse reale e y sull'asse immaginario; la y è tratteggiata. Un segmento ρ collega l'origine al punto, con l'angolo θ rispetto all'asse reale."></div>
+</figure>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">2.2</span> Rappresentazione Polare</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Oltre alla rappresentazione cartesiana esiste anche la rappresentazione polare, che punta a rappresentare il numero complesso utilizzando l’angolo che si forma tra l’asse x e la semiretta che rappresenta il numero complesso.</p>
+</div>
+<div id="S2.p2" class="ltx_para">
+<p class="ltx_p">E la rappresentazione polare e’:</p>
+<div id="E2" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id2">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id2"><span class="bml_sr_only">equation </span>(2.2)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(2.2)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E2.m1" class="ltx_Math" alttext="z=\rho[\cos\theta+i\sin\theta]" display="block"><semantics><mrow><mi>z</mi><mo>=</mo><mrow><mi>ρ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mrow><mi>cos</mi><mo lspace="0.167em">⁡</mo><mi>θ</mi></mrow><mo>+</mo><mrow><mi>i</mi><mo lspace="0.167em">⁢</mo><mrow><mi>sin</mi><mo lspace="0.167em">⁡</mo><mi>θ</mi></mrow></mrow></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+<p class="ltx_p">Ci sono due componenti fondamentali in questa rappresentazione:</p>
+<ul id="S2.I1" class="ltx_itemize">
+<li id="S2.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i1.p1" class="ltx_para"><p class="ltx_p">Modulo: <math id="S2.I1.i1.p1.m1" class="ltx_Math" alttext="\rho" display="inline"><semantics><mi>ρ</mi></semantics></math></p>
+</div>
+</li>
+<li id="S2.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i2.p1" class="ltx_para"><p class="ltx_p">Fase: <math id="S2.I1.i2.p1.m1" class="ltx_Math" alttext="\theta" display="inline"><semantics><mi>θ</mi></semantics></math></p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S2.p3" class="ltx_para">
+<p class="ltx_p">Si puo’ passare tra le due rappresentazioni seguendo queste formule, ricordando che la rappresentazione cartesiana e’: <math id="S2.p3.m1" class="ltx_Math" alttext="z=x+iy" display="inline"><semantics><mrow><mi>z</mi><mo>=</mo><mrow><mi>x</mi><mo>+</mo><mrow><mi>i</mi><mo>⁢</mo><mi>y</mi></mrow></mrow></mrow></semantics></math></p>
+</div>
+<figure id="T1" class="ltx_table"><div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_r">Rapp. Cartesiana</td>
+<td class="ltx_td ltx_align_center">Rapp. Polare</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t"><math id="T1.m1" class="ltx_Math" alttext="x=\rho\cos\theta" display="inline"><semantics><mrow><mi>x</mi><mo>=</mo><mrow><mi>ρ</mi><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo lspace="0.167em">⁡</mo><mi>θ</mi></mrow></mrow></mrow></semantics></math></td>
+<td class="ltx_td ltx_align_center ltx_border_t"><math id="T1.m2" class="ltx_Math" alttext="\rho=\sqrt{{x^{2}}+{y^{2}}}" display="inline"><semantics><mrow><mi>ρ</mi><mo>=</mo><msqrt><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup></mrow></msqrt></mrow></semantics></math></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_r"><math id="T1.m3" class="ltx_Math" alttext="y=\rho\sin\theta" display="inline"><semantics><mrow><mi>y</mi><mo>=</mo><mrow><mi>ρ</mi><mo lspace="0.167em">⁢</mo><mrow><mi>sin</mi><mo lspace="0.167em">⁡</mo><mi>θ</mi></mrow></mrow></mrow></semantics></math></td>
+<td class="ltx_td ltx_align_center"><math id="T1.m4" class="ltx_Math" alttext="\theta=\arctan\frac{y}{x}" display="inline"><semantics><mrow><mi>θ</mi><mo>=</mo><mrow><mi>arctan</mi><mo lspace="0.167em">⁡</mo><mfrac><mi>y</mi><mi>x</mi></mfrac></mrow></mrow></semantics></math></td>
+</tr>
+</table>
+</div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table">Table 2.1: </span>Passare da rappresentazione cartesiana a polare</figcaption>
+</figure>
+<section id="S2.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.2.1</span> Esercizio</h3>
+
+<div id="S2.SS1.p1" class="ltx_para">
+<p class="ltx_p">Proviamo ora a fare un esercizio, dobbiamo rappresentare in forma polare il seguente numero immaginario espresso in forma cartesiana:</p>
+<div id="E3" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id3">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id3"><span class="bml_sr_only">equation </span>(2.3)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(2.3)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E3.m1" class="ltx_Math" alttext="z=-2+i\cdot 3" display="block"><semantics><mrow><mi>z</mi><mo>=</mo><mrow><mrow><mo>−</mo><mn>2</mn></mrow><mo>+</mo><mrow><mi>i</mi><mo lspace="0.222em" rspace="0.222em">⋅</mo><mn>3</mn></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S2.SS1.p2" class="ltx_para">
+<p class="ltx_p">Cominciamo calcolando il modulo applicando semplicemente la formula vista in tabella <a title="Table 2.1 ‣ 2.2 Rappresentazione Polare ‣ Chapter 2 Numeri complessi ‣ Elaborazione dei segnali" class="ltx_ref" href="#T1"><span class="ltx_text ltx_ref_tag">2.1</span></a>:</p>
+<div id="E4" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id4">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id4"><span class="bml_sr_only">equation </span>(2.4)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(2.4)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E4.m1" class="ltx_Math" alttext="\rho=\sqrt{{-2^{2}}+{3^{2}}}=\sqrt{13}" display="block"><semantics><mrow><mi>ρ</mi><mo>=</mo><msqrt><mrow><mrow><mo>−</mo><msup><mn>2</mn><mn>2</mn></msup></mrow><mo>+</mo><msup><mn>3</mn><mn>2</mn></msup></mrow></msqrt><mo>=</mo><msqrt><mn>13</mn></msqrt></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S2.SS1.p3" class="ltx_para">
+<p class="ltx_p">Successivamente calcoliamo la fase, sempre applicando la formula vista in tabella <a title="Table 2.1 ‣ 2.2 Rappresentazione Polare ‣ Chapter 2 Numeri complessi ‣ Elaborazione dei segnali" class="ltx_ref" href="#T1"><span class="ltx_text ltx_ref_tag">2.1</span></a>:</p>
+<div id="E5" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id5">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id5"><span class="bml_sr_only">equation </span>(2.5)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(2.5)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E5.m1" class="ltx_Math" alttext="\theta=\arctan-\frac{3}{2}" display="block"><semantics><mrow><mi>θ</mi><mo>=</mo><mrow><mi>arctan</mi><mo lspace="0em">−</mo><mfrac><mn>3</mn><mn>2</mn></mfrac></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S2.SS1.p4" class="ltx_para">
+<p class="ltx_p">Sulla fase abbiamo un problema, in quanto se dovessimo fare <math id="S2.SS1.p4.m1" class="ltx_Math" alttext="\arctan-\frac{3}{2}" display="inline"><semantics><mrow><mi>arctan</mi><mo lspace="0em">−</mo><mfrac><mn>3</mn><mn>2</mn></mfrac></mrow></semantics></math> alla calcolatrice ci risulterebbe <math id="S2.SS1.p4.m2" class="ltx_Math" alttext="-56.3^{\circ}" display="inline"><semantics><mrow><mo>−</mo><msup><mn>56.3</mn><mo>∘</mo></msup></mrow></semantics></math>, che non ha senso a prima vista in quanto negativo.
+Spieghiamo questa cosa in quanto la calcolatrice ragiona solo nei quadranti 1 e 4 del piano cartesiano, quindi per sistemare questo problema dobbiamo sommare (o sottrarre) <math id="S2.SS1.p4.m3" class="ltx_Math" alttext="180^{\circ}" display="inline"><semantics><msup><mn>180</mn><mo>∘</mo></msup></semantics></math> all’angolo che abbiamo trovato, ottenendo quindi: <math id="S2.SS1.p4.m4" class="ltx_Math" alttext="123.7^{\circ}" display="inline"><semantics><msup><mn>123.7</mn><mo>∘</mo></msup></semantics></math>.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">2.3</span> Coniugato Complesso</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">Ogni numero immaginario ha un suo coniugato complesso, che ha lo stesso modulo e fase con segno invertito rispetto al numero immaginario di partenza.</p>
+</div>
+<div id="S3.p2" class="ltx_para">
+<div id="E6" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id6">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id6"><span class="bml_sr_only">equation </span>(2.6)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(2.6)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E6.m1" class="ltx_Math" alttext="z=x+iy\rightarrow z^{*}=x-iy" display="block"><semantics><mrow><mi>z</mi><mo>=</mo><mrow><mi>x</mi><mo>+</mo><mrow><mi>i</mi><mo>⁢</mo><mi>y</mi></mrow></mrow><mo stretchy="false">→</mo><msup><mi>z</mi><mo>∗</mo></msup><mo>=</mo><mrow><mi>x</mi><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mi>y</mi></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.p3" class="ltx_para">
+<p class="ltx_p">Graficamente otteniamo un punto ribaltato rispetto all’asse x:</p>
+</div>
+<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez2-coniugatoComplesso.webp" width="328" height="119" loading="lazy" alt="Piano complesso con due punti simmetrici rispetto all'asse reale: in alto x + iy = z, con segmento ρ e angolo θ; in basso x - iy = z*, con segmento ρ e angolo -θ = 2π - θ."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 2.1: </span>Coniugato Complesso</figcaption>
+</figure>
+<section id="S3.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.3.1</span> Operazioni</h3>
+
+<div id="S3.SS1.p1" class="ltx_para">
+<p class="ltx_p">Vediamo ora le operazioni con tra un numero immaginario ed il suo complesso.</p>
+</div>
+<div id="S3.SS1.p2" class="ltx_para">
+<p class="ltx_p">Somma:</p>
+<div id="E7" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id7">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id7"><span class="bml_sr_only">equation </span>(2.7)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(2.7)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E7.m1" class="ltx_Math" alttext="z+z^{*}=x+x=2x" display="block"><semantics><mrow><mrow><mi>z</mi><mo>+</mo><msup><mi>z</mi><mo>∗</mo></msup></mrow><mo>=</mo><mrow><mi>x</mi><mo>+</mo><mi>x</mi></mrow><mo>=</mo><mrow><mn>2</mn><mo>⁢</mo><mi>x</mi></mrow></mrow></semantics></math></div>
+</div>
+<p class="ltx_p">La somma di un numero complesso ed il suo coniugato e’ uguale a due volte la sua parte reale.</p>
+</div>
+<div id="S3.SS1.p3" class="ltx_para">
+<p class="ltx_p">Prodotto:</p>
+<div id="E8" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id8">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id8"><span class="bml_sr_only">equation </span>(2.8)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(2.8)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E8.m1" class="ltx_Math" alttext="z+z^{*}=(x+iy)\cdot(x-iy)=x^{2}-iyx+iyx-i^{2}y^{2}=x^{2}+y^{2}=\rho^{2}" display="block" tabindex="0"><semantics><mrow><mrow><mi>z</mi><mo>+</mo><msup><mi>z</mi><mo>∗</mo></msup></mrow><mo>=</mo><mrow><mrow><mo stretchy="false">(</mo><mrow><mi>x</mi><mo>+</mo><mrow><mi>i</mi><mo>⁢</mo><mi>y</mi></mrow></mrow><mo rspace="0.055em" stretchy="false">)</mo></mrow><mo rspace="0.222em">⋅</mo><mrow><mo stretchy="false">(</mo><mrow><mi>x</mi><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mi>y</mi></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mrow><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mi>y</mi><mo>⁢</mo><mi>x</mi></mrow></mrow><mo>+</mo><mrow><mi>i</mi><mo>⁢</mo><mi>y</mi><mo>⁢</mo><mi>x</mi></mrow></mrow><mo>−</mo><mrow><msup><mi>i</mi><mn>2</mn></msup><mo>⁢</mo><msup><mi>y</mi><mn>2</mn></msup></mrow></mrow><mo>=</mo><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup></mrow><mo>=</mo><msup><mi>ρ</mi><mn>2</mn></msup></mrow></semantics></math></div>
+</div>
+<p class="ltx_p">Notiamo che <math id="S3.SS1.p3.m1" class="ltx_Math" alttext="i^{2}=(\sqrt{-1})^{2}=-1" display="inline"><semantics><mrow><msup><mi>i</mi><mn>2</mn></msup><mo>=</mo><msup><mrow><mo stretchy="false">(</mo><msqrt><mrow><mo>−</mo><mn>1</mn></mrow></msqrt><mo stretchy="false">)</mo></mrow><mn>2</mn></msup><mo>=</mo><mrow><mo>−</mo><mn>1</mn></mrow></mrow></semantics></math>.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">2.4</span> Teorema fondamentale dell’algebra</h2>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">Data un equazione polinomiale di grado <math id="S4.p1.m1" class="ltx_Math" alttext="N\geq 1" display="inline"><semantics><mrow><mi>N</mi><mo>≥</mo><mn>1</mn></mrow></semantics></math></p>
+<div id="E9" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id9">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id9"><span class="bml_sr_only">equation </span>(2.9)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(2.9)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E9.m1" class="ltx_Math" alttext="a_{n}z^{n}+a_{n-1}z^{n-1}+\mbox{...}a_{1}z+a_{0}=0" display="block"><semantics><mrow><mrow><mrow><msub><mi>a</mi><mi>n</mi></msub><mo>⁢</mo><msup><mi>z</mi><mi>n</mi></msup></mrow><mo>+</mo><mrow><msub><mi>a</mi><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo>+</mo><mrow><mtext>…</mtext><mo>⁢</mo><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><mi>z</mi></mrow><mo>+</mo><msub><mi>a</mi><mn>0</mn></msub></mrow><mo>=</mo><mn>0</mn></mrow></semantics></math></div>
+</div>
+<p class="ltx_p">Ammette sempre e solo N soluzioni (radici) in <math id="S4.p1.m2" class="ltx_Math" alttext="\mathbb{C}" display="inline"><semantics><mi>ℂ</mi></semantics></math>.
+Inoltre se <math id="S4.p1.m3" class="ltx_Math" alttext="a_{k}\in\mathbb{R}" display="inline"><semantics><mrow><msub><mi>a</mi><mi>k</mi></msub><mo>∈</mo><mi>ℝ</mi></mrow></semantics></math> (sono numeri reali) le soluzioni sono reali o complesse coniugate. Questa cosa introduce una simmetria, sappiamo che se i termini del polinomio sono reali non avremo mai un complesso da solo ma sara’ sempre accompagnato dal suo coniugato ed e’ una cosa che servira’ successivamente.</p>
+</div>
+</div>
+</section>
+<section id="S5" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">2.5</span> Formula di Eulero</h2>
+
+<div id="S5.p1" class="ltx_para">
+<p class="ltx_p">Esprimo prima cos, sin e l’esponenziale in serie:</p>
+<div id="E10" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id10">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id10"><span class="bml_sr_only">equation </span>(2.10)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(2.10)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E10.m1" class="ltx_Math" alttext="\begin{split}\cos&amp;{}\theta=1-\frac{1}{2!}\theta^{2}+\frac{1}{4!}\theta^{4}-%
+\frac{1}{6!}\theta^{6}\mbox{...}\\
+\sin&amp;{}\theta=\theta-\frac{1}{3!}\theta^{3}+\frac{1}{5!}\theta^{5}-\frac{1}{7!%
+}\theta^{7}\mbox{...}\\
+e^{\theta}&amp;{}=1+\theta+\frac{\theta^{2}}{2!}+\frac{\theta^{3}}{3!}+\frac{%
+\theta^{4}}{4!}+\mbox{...}\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mi>cos</mi></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi>θ</mi><mo>=</mo><mrow><mrow><mrow><mn>1</mn><mo>−</mo><mrow><mfrac><mn>1</mn><mrow><mn>2</mn><mo>!</mo></mrow></mfrac><mo>⁢</mo><msup><mi>θ</mi><mn>2</mn></msup></mrow></mrow><mo>+</mo><mrow><mfrac><mn>1</mn><mrow><mn>4</mn><mo>!</mo></mrow></mfrac><mo>⁢</mo><msup><mi>θ</mi><mn>4</mn></msup></mrow></mrow><mo>−</mo><mrow><mfrac><mn>1</mn><mrow><mn>6</mn><mo>!</mo></mrow></mfrac><mo>⁢</mo><msup><mi>θ</mi><mn>6</mn></msup><mo>⁢</mo><mtext>…</mtext></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mi>sin</mi></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi>θ</mi><mo>=</mo><mrow><mrow><mrow><mi>θ</mi><mo>−</mo><mrow><mfrac><mn>1</mn><mrow><mn>3</mn><mo>!</mo></mrow></mfrac><mo>⁢</mo><msup><mi>θ</mi><mn>3</mn></msup></mrow></mrow><mo>+</mo><mrow><mfrac><mn>1</mn><mrow><mn>5</mn><mo>!</mo></mrow></mfrac><mo>⁢</mo><msup><mi>θ</mi><mn>5</mn></msup></mrow></mrow><mo>−</mo><mrow><mfrac><mn>1</mn><mrow><mn>7</mn><mo>!</mo></mrow></mfrac><mo>⁢</mo><msup><mi>θ</mi><mn>7</mn></msup><mo>⁢</mo><mtext>…</mtext></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><msup><mi>e</mi><mi>θ</mi></msup></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mn>1</mn><mo>+</mo><mi>θ</mi><mo>+</mo><mfrac><msup><mi>θ</mi><mn>2</mn></msup><mrow><mn>2</mn><mo>!</mo></mrow></mfrac><mo>+</mo><mfrac><msup><mi>θ</mi><mn>3</mn></msup><mrow><mn>3</mn><mo>!</mo></mrow></mfrac><mo>+</mo><mfrac><msup><mi>θ</mi><mn>4</mn></msup><mrow><mn>4</mn><mo>!</mo></mrow></mfrac><mo>+</mo><mtext>…</mtext></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S5.p2" class="ltx_para">
+<p class="ltx_p">Eulero nota che se cerchiamo di calcolare l’esponenziale in serie moltiplicando l’esponente per i, il fattore i e’ presente solo nei termini dispari, se sviluppiamo le potenze.</p>
+</div>
+<div id="S5.p3" class="ltx_para">
+<div id="E11" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id11">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id11"><span class="bml_sr_only">equation </span>(2.11)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(2.11)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E11.m1" class="ltx_Math" alttext="\begin{split}e^{i\theta}&amp;{}=1+(i\theta)+\frac{(i\theta)^{2}}{2!}+\frac{(i%
+\theta)^{3}}{3!}+\frac{(i\theta)^{4}}{4!}+\mbox{...}\\
+&amp;{}=1+i\theta-\frac{\theta^{2}}{2!}-\frac{i\theta^{3}}{3!}+\frac{\theta^{4}}{4%
+!}+\mbox{...}\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mi>θ</mi></mrow></msup></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mn>1</mn><mo>+</mo><mrow><mo stretchy="false">(</mo><mrow><mi>i</mi><mo>⁢</mo><mi>θ</mi></mrow><mo stretchy="false">)</mo></mrow><mo>+</mo><mfrac><msup><mrow><mo stretchy="false">(</mo><mrow><mi>i</mi><mo>⁢</mo><mi>θ</mi></mrow><mo stretchy="false">)</mo></mrow><mn>2</mn></msup><mrow><mn>2</mn><mo>!</mo></mrow></mfrac><mo>+</mo><mfrac><msup><mrow><mo stretchy="false">(</mo><mrow><mi>i</mi><mo>⁢</mo><mi>θ</mi></mrow><mo stretchy="false">)</mo></mrow><mn>3</mn></msup><mrow><mn>3</mn><mo>!</mo></mrow></mfrac><mo>+</mo><mfrac><msup><mrow><mo stretchy="false">(</mo><mrow><mi>i</mi><mo>⁢</mo><mi>θ</mi></mrow><mo stretchy="false">)</mo></mrow><mn>4</mn></msup><mrow><mn>4</mn><mo>!</mo></mrow></mfrac><mo>+</mo><mtext>…</mtext></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mrow><mn>1</mn><mo>+</mo><mrow><mi>i</mi><mo>⁢</mo><mi>θ</mi></mrow></mrow><mo>−</mo><mfrac><msup><mi>θ</mi><mn>2</mn></msup><mrow><mn>2</mn><mo>!</mo></mrow></mfrac><mo>−</mo><mfrac><mrow><mi>i</mi><mo>⁢</mo><msup><mi>θ</mi><mn>3</mn></msup></mrow><mrow><mn>3</mn><mo>!</mo></mrow></mfrac></mrow><mo>+</mo><mfrac><msup><mi>θ</mi><mn>4</mn></msup><mrow><mn>4</mn><mo>!</mo></mrow></mfrac><mo>+</mo><mtext>…</mtext></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S5.p4" class="ltx_para">
+<p class="ltx_p">Da questa considerazione troviamo la formula di Eulero :</p>
+<div id="E12" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id12">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id12"><span class="bml_sr_only">equation </span>(2.12)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(2.12)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E12.m1" class="ltx_Math" alttext="e^{i\theta}=\cos\theta+i\sin\theta" display="block"><semantics><mrow><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mi>θ</mi></mrow></msup><mo>=</mo><mrow><mrow><mi>cos</mi><mo lspace="0.167em">⁡</mo><mi>θ</mi></mrow><mo>+</mo><mrow><mi>i</mi><mo lspace="0.167em">⁢</mo><mrow><mi>sin</mi><mo lspace="0.167em">⁡</mo><mi>θ</mi></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<figure id="F2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez2-formulaEulero.webp" width="430" height="160" loading="lazy" alt="Piano complesso (assi Im e R) con una circonferenza rossa di raggio 1 centrata nell'origine, che interseca gli assi in i, -i, 1 e -1. Un punto sulla circonferenza con angolo θ è etichettato z = cosθ + i sinθ = e^{iθ}."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 2.2: </span>Rappresentazione su cerchio unitario</figcaption>
+</figure>
+<section id="S5.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.5.1</span> Formule di Eulero inverse</h3>
+
+<div id="S5.SS1.p1" class="ltx_para">
+<p class="ltx_p">Esistono delle formule di Eulero con cui trovare sin e cos a partire dall’esponenziale:</p>
+</div>
+<div id="S5.SS1.p2" class="ltx_para">
+<div id="E13" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id13">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id13"><span class="bml_sr_only">equation </span>(2.13)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(2.13)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E13.m1" class="ltx_Math" alttext="\begin{split}\cos\theta&amp;{}=\frac{e^{i\theta}+e^{-i\theta}}{2}\\
+\sin\theta&amp;{}=\frac{e^{i\theta}-e^{-i\theta}}{2i}\end{split}" display="block"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>cos</mi><mo lspace="0.167em">⁡</mo><mi>θ</mi></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mfrac><mrow><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mi>θ</mi></mrow></msup><mo>+</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mi>θ</mi></mrow></mrow></msup></mrow><mn>2</mn></mfrac></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>sin</mi><mo lspace="0.167em">⁡</mo><mi>θ</mi></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mfrac><mrow><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mi>θ</mi></mrow></msup><mo>−</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mi>θ</mi></mrow></mrow></msup></mrow><mrow><mn>2</mn><mo>⁢</mo><mi>i</mi></mrow></mfrac></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>

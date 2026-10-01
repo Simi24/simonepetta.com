@@ -6,6 +6,18 @@ Conversion of a course's LaTeX to HTML chapters (SPEC.md §7.4). Run with Docker
 npm run appunti:convert -- <slug>
 ```
 
+## Convert a course
+
+One ticket per course, always the same steps (needs Docker; Node from `.nvmrc`):
+
+1. **Copy the sources** from the archive (`appunti-sorgenti/overleaf/<slug>/`, or the GitHub repo) into `appunti/<slug>/src/`: `main.tex` at the root, the chapters and the images where `main.tex` expects them. From now on the `.tex` in `src/` is canonical. The course must already have its `corso.yaml` and published PDF.
+2. **Run the conversion**: `npm run appunti:convert -- <slug>`. The first run builds the Docker image (a few minutes); a course takes one to two minutes after that. It fails before writing anything if LaTeXML reports errors, a figure has no description, or the leak detector finds a mismatch.
+3. **Write the alt text** for every figure. The failure lists the images without a description. Open each image and add its entry to `src/alt.json` (Italian, factual, from the caption and what is drawn: axes, curves, labels, formulas as written). For hand drawings describe only what is visible, never the meaning beyond it. Run again until the list is empty.
+4. **Fix what LaTeXML cannot handle** (read its warnings in the run's output). Fix the cause, never the math: a binding in `bindings/` for a package or macro LaTeXML lacks, a one-line preamble macro for TikZ, a typo in the `.tex` (the PDF is rebuilt from it too). Never change what a formula means to make it parse; a formula LaTeXML only half understands (`Warning:not_parsed`) still renders from its tokens, and the math review looks at it.
+5. **Detector green**: the run prints `N chapter(s), N image(s), N TikZ picture(s), PDF N page(s)` and swaps in `build/`, the PDF and `meta.json` together. Then `npm run check`, `npm test`, `npm run build` and `npm run test:quality` (chapters stay under 150 KB gzip).
+6. **Math review**, outside the ticket and before publication (SPEC.md §1.3): the reviewer reads the preview of the chapters with the most math and compares them with the PDF. Fixes go into the `.tex` and the conversion runs again.
+7. **Publish**: merging the ticket's PR is the publication. The course page moves from `pdf` to `html` by itself (a valid `build/` exists); the URL does not change and the PDF stays downloadable.
+
 ## What a run changes
 
 A run replaces three things in `appunti/<slug>/` **together**: `build/` (chapter fragments and `figure/`, the re-encoded images), `<slug>.pdf` and `meta.json`. Everything that can fail (LaTeXML, the leak detector, the page count via `pdfinfo`) happens before the first write. A failure or a leak leaves the course exactly as it was.

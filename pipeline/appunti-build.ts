@@ -36,6 +36,21 @@ export function parseLatexmlErrors(log: string): number {
   return errors === undefined ? 0 : Number(errors);
 }
 
+/**
+ * Messages of `latexmlpost` known to be harmless, by exact text. BookML's schema does not know the
+ * `resource` element that `cancel.sty` adds, so the document "fails" validation although the HTML
+ * is complete and the strike-throughs are produced.
+ */
+const HARMLESS_POST_ERRORS: readonly string[] = ['Error:malformed:document Document fails RelaxNG validation (bookml/schema)'];
+
+/** The errors (`Error:` and `Fatal:` lines) in the log of `latexmlpost` that are not allow-listed. */
+export function parseLatexmlPostErrors(log: string): string[] {
+  return log
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter((line) => /^(?:Error|Fatal):/.test(line) && !HARMLESS_POST_ERRORS.includes(line));
+}
+
 export interface BuildInput {
   /** LaTeXML's per-chapter HTML output (`auxdir/html/main`). */
   htmlDir: string;

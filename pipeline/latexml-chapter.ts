@@ -56,15 +56,26 @@ function findOpen(tokens: readonly Token[], from: number, predicate: (token: Tok
   return -1;
 }
 
+/** The text of a heading: the math's own symbols once (not its TeX annotation), without invisible operators. */
+function headingText(tokens: readonly Token[], start: number, end: number): string {
+  const visible: Token[] = [];
+  for (let i = start; i <= end; i++) {
+    const token = tokens[i]!;
+    if (token.type === 'open' && token.name === 'annotation') i = elementEnd(tokens, i);
+    else visible.push(token);
+  }
+  return decodeEntities(textOf(visible, 0, visible.length - 1)).replace(/[\u2061-\u2064]/g, '');
+}
+
 /** The heading's number span and its remaining text, e.g. `Chapter 1` and `Introduzione`. */
 function splitHeading(tokens: readonly Token[], heading: number): { tag: string; title: string } {
   const end = elementEnd(tokens, heading);
   const tagStart = findOpen(tokens, heading, (t) => hasClass(t, 'ltx_tag'));
-  if (tagStart < 0 || tagStart > end) return { tag: '', title: decodeEntities(textOf(tokens, heading, end)).trim() };
+  if (tagStart < 0 || tagStart > end) return { tag: '', title: headingText(tokens, heading, end).trim() };
   const tagEnd = elementEnd(tokens, tagStart);
   return {
     tag: decodeEntities(textOf(tokens, tagStart, tagEnd)).trim(),
-    title: decodeEntities(textOf(tokens, tagEnd + 1, end)).replace(/\s+/g, ' ').trim(),
+    title: headingText(tokens, tagEnd + 1, end).replace(/\s+/g, ' ').trim(),
   };
 }
 
@@ -275,6 +286,23 @@ function keepTabularsOnOneLine(tokens: readonly Token[]): Token[] {
   return out;
 }
 
+/**
+ * A display equation scrolls sideways when it is wider than the page (CSS), and a scrolling
+ * region must be reachable with the keyboard. Width is not known here, so the equations long
+ * enough to overflow a narrow screen (by their visible symbols) get a tab stop; short ones do not.
+ */
+const WIDE_MATH_SYMBOLS = 30;
+const SYMBOL = /<(mi|mn|mo|mtext)\b[^>]*>([^<]*)<\/\1>/g;
+
+function makeWideMathFocusable(tokens: readonly Token[]): Token[] {
+  return tokens.map((token, i): Token => {
+    if (token.type !== 'open' || token.name !== 'math' || attribute(token, 'display') !== 'block') return token;
+    const math = serialize(tokens.slice(i, elementEnd(tokens, i)));
+    const symbols = [...math.matchAll(SYMBOL)].filter(([, , text]) => !/^[\u2061-\u2064]*$/.test(text ?? '')).length;
+    return symbols >= WIDE_MATH_SYMBOLS ? setAttribute(token, 'tabindex', '0') : token;
+  });
+}
+
 function rewriteHref(href: string, links: LinkTargets): string {
   if (href.startsWith('#') || /^(https?:|mailto:)/.test(href)) return href;
   const [file = '', hash] = href.split('#');
@@ -313,6 +341,7 @@ export function processChapter(page: string, links: LinkTargets, figures: Figure
   tokens = renumberAlgorithmLines(tokens);
   tokens = numberListingsPerChapter(tokens, head.numero);
   tokens = keepTabularsOnOneLine(tokens);
+  tokens = makeWideMathFocusable(tokens);
 
   tokens = tokens.map((token): Token => {
     if (token.type === 'text') return { ...token, raw: token.raw.replace(/​/g, '') };

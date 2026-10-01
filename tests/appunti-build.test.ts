@@ -3,7 +3,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { buildFromLatexml, LeakError, parseLatexmlErrors } from '../pipeline/appunti-build.ts';
+import { buildFromLatexml, LeakError, parseLatexmlErrors, parseLatexmlPostErrors } from '../pipeline/appunti-build.ts';
 
 const FIXTURES = new URL('./fixtures/latexml/', import.meta.url).pathname;
 
@@ -32,6 +32,20 @@ test('reads the error count off LaTeXML\'s own summary line', () => {
 
 test('refuses a log with no summary line rather than assuming it was clean', () => {
   assert.throws(() => parseLatexmlErrors('the converter died\n'), /summary/);
+});
+
+test('reads the errors of latexmlpost, and lets only the allow-listed message through', () => {
+  const harmless = 'Error:malformed:document Document fails RelaxNG validation (bookml/schema)';
+  const log = `latexmlpost (LaTeXML version 0.8.8) paginating x\n${harmless}\n\tValidation reports: file:///work/index.html:3: ...\n(post-processing...\n`;
+  assert.deepEqual(parseLatexmlPostErrors(log), []);
+  assert.deepEqual(parseLatexmlPostErrors(`${log}Error:expected:graphic Could not find image x.png\nFatal:perl:die oops\n`), [
+    'Error:expected:graphic Could not find image x.png',
+    'Fatal:perl:die oops',
+  ]);
+  assert.deepEqual(parseLatexmlPostErrors(log.replace('RelaxNG validation (bookml/schema)', 'RelaxNG validation (other)')), [
+    'Error:malformed:document Document fails RelaxNG validation (other)',
+  ]);
+  assert.deepEqual(parseLatexmlPostErrors('(post-processing...\n'), []);
 });
 
 test('a conversion writes one fragment per chapter and records slugs, sections and math in build/meta.json', () => {

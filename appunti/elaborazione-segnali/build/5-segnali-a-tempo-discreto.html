@@ -1,0 +1,586 @@
+<div class="section level1">
+
+
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">5.1</span> Dal tempo continuo al tempo discreto</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">Per arrivare a parlare dei segnali a tempo discreto cominciamo a capire come si passa da un segnale a tempo continuo ad uno a tempo discreto.</p>
+</div>
+<figure id="S1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez9-convertitoreAD.webp" width="1265" height="328" loading="lazy" alt="Schema a blocchi: un ingresso analogico entra in un riquadro grande con due blocchi in serie, campionatore e quantizzatore, e l'uscita digitale esce con una freccia larga. A mano sono scritti &quot;tempo continuo&quot; sotto l'ingresso, &quot;convertitore A/D&quot; sotto lo schema e &quot;tempo discreto&quot; sotto l'uscita."></div>
+</figure>
+<div id="S1.p2" class="ltx_para">
+<p class="ltx_p">Per fare questo passaggio si usa un convertitore A/D (analogico digitale) che prende in input un segnale a tempo continuo e ci fornisce in output un segnale a tempo discreto.</p>
+</div>
+<section id="S1.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.1.1</span> Campionatore</h3>
+
+<div id="S1.SS1.p1" class="ltx_para">
+<p class="ltx_p">E’ il componente del convertitore che fa il campionamento. Ho un segnale a tempo continuo e ne considero solo alcuni campioni, ad esempio se il nostro segnale e’: <math id="S1.SS1.p1.m1" class="ltx_Math" alttext="x(t)=A\cos{(2\pi f_{0}t+\varphi_{0})}" display="inline"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>A</mi><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><msub><mi>f</mi><mn>0</mn></msub><mo>⁢</mo><mi>t</mi></mrow><mo>+</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></semantics></math>, si decide un intervallo di campionamento <math id="S1.SS1.p1.m2" class="ltx_Math" alttext="T_{c}" display="inline"><semantics><msub><mi>T</mi><mi>c</mi></msub></semantics></math> che e’ in pratica la distanza tra due campioni. Di conseguenza sostituendo a t <math id="S1.SS1.p1.m3" class="ltx_Math" alttext="nT_{c}" display="inline"><semantics><mrow><mi>n</mi><mo>⁢</mo><msub><mi>T</mi><mi>c</mi></msub></mrow></semantics></math> si ottiene il segnale a tempo discreto:</p>
+<div id="Ex1" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex1.m1" class="ltx_Math" alttext="x({\color[rgb]{1,0,0}nTc})=A\cos(2\pi f_{0}{\color[rgb]{1,0,0}nTc}+\varphi_{0})" display="block"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi class="bml_color_FF0000">n</mi><mo>⁢</mo><mi class="bml_color_FF0000">T</mi><mo>⁢</mo><mi class="bml_color_FF0000">c</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>A</mi><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><msub><mi>f</mi><mn>0</mn></msub><mo>⁢</mo><mi class="bml_color_FF0000">n</mi><mo>⁢</mo><mi class="bml_color_FF0000">T</mi><mo>⁢</mo><mi class="bml_color_FF0000">c</mi></mrow><mo>+</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S1.SS1.p2" class="ltx_para">
+<p class="ltx_p">Il nostro obbiettivo sara’ capire come campionare bene. Nella maggior parte dei casi campioneremo in modo uniforme, ovvero c’e’ una distanza uguale tra un campione e l’altro, ma si puo’ anche campionare in modo non uniforme.</p>
+</div>
+<figure id="S1.SS1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez9-campionatore.webp" width="697" height="536" loading="lazy" alt="Segnale a tempo continuo S(t), curva verde con area gialla, campionato in punti numerati 0, 1, ..., i, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 sull'asse t, ognuno con un'asta verticale e un punto blu. I campioni sono etichettati S_i. A mano sono scritti &quot;tempo continuo&quot; e &quot;Tc intervallo di campionamento&quot;."></div>
+</figure>
+</div>
+</section>
+<section id="S1.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.1.2</span> Quantizzatore (quantizzazione)</h3>
+
+<div id="S1.SS2.p1" class="ltx_para">
+<p class="ltx_p">Possiamo considerarlo come una funzione matematica tale per cui in ingresso c’e’ un segnale reale ed in uscita’ c’e’ un segnale che appartiene ad un sottoinsieme di numeri interi.</p>
+</div>
+<div id="S1.SS2.p2" class="ltx_para">
+<p class="ltx_p">In pratica e’ come se facessimo un arrotondamento di un decimale ad una certa posizione, facciamo un approssimazione del segnale scegliendo quanti campioni prendere.
+Il least siginificant bit e’ dato da : <math id="S1.SS2.p2.m1" class="ltx_Math" alttext="\frac{\mbox{RANGE}}{2^{n_{q}}}" display="inline"><semantics><mfrac><mtext>RANGE</mtext><msup><mn>2</mn><msub><mi>n</mi><mi>q</mi></msub></msup></mfrac></semantics></math>, dove il denominatore e’ il numero di bit di quantizzazione.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">5.2</span> Osservazioni su segnali discreti</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Per fare un passo avanti per capire come campionare, analizziamo alcune caratteristiche di un segnale campionato, ovvero discreto.</p>
+</div>
+<div id="S2.p2" class="ltx_para">
+<p class="ltx_p">Cominciamo dando della terminologia, diremo <span class="ltx_text ltx_framed ltx_framed_underline">intervallo di campionamento</span> (espresso in secondi e costante) <math id="S2.p2.m1" class="ltx_Math" alttext="T_{s}" display="inline"><semantics><msub><mi>T</mi><mi>s</mi></msub></semantics></math> mentre diremo <span class="ltx_text ltx_framed ltx_framed_underline">frequenza di campionamento</span> o sampling frequency <math id="S2.p2.m2" class="ltx_Math" alttext="f_{c}=\frac{1}{T_{c}}" display="inline"><semantics><mrow><msub><mi>f</mi><mi>c</mi></msub><mo>=</mo><mfrac><mn>1</mn><msub><mi>T</mi><mi>c</mi></msub></mfrac></mrow></semantics></math>, espressa in Hz.</p>
+</div>
+<section id="S2.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.2.1</span> La frequenza discreta e’ adimensionale</h3>
+
+<div id="S2.SS1.p1" class="ltx_para">
+<p class="ltx_p">Se abbiamo un segnale tempo continuo e lo campioniamo, ricordando che <math id="S2.SS1.p1.m1" class="ltx_Math" alttext="T_{c}=\frac{1}{f_{c}}" display="inline"><semantics><mrow><msub><mi>T</mi><mi>c</mi></msub><mo>=</mo><mfrac><mn>1</mn><msub><mi>f</mi><mi>c</mi></msub></mfrac></mrow></semantics></math> otteniamo:</p>
+<div id="Ex2" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex2.m1" class="ltx_Math" alttext="x[n]=x(nT_{c})=A\cos{(2\pi f_{0}\frac{n}{f_{c}}+\varphi_{0})}" display="block"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>n</mi><mo>⁢</mo><msub><mi>T</mi><mi>c</mi></msub></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>A</mi><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><msub><mi>f</mi><mn>0</mn></msub><mo>⁢</mo><mfrac><mi>n</mi><msub><mi>f</mi><mi>c</mi></msub></mfrac></mrow><mo>+</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S2.SS1.p2" class="ltx_para">
+<p class="ltx_p">Se consideriamo l’argomento del coseno in cui compare la frequenza:</p>
+<div id="Ex3" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex3.m1" class="ltx_Math" alttext="\tilde{\omega}=2\pi\frac{f_{0}}{f_{c}}" display="block"><semantics><mrow><mover accent="true"><mi>ω</mi><mo>~</mo></mover><mo>=</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mfrac><msub><mi>f</mi><mn>0</mn></msub><msub><mi>f</mi><mi>c</mi></msub></mfrac></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S2.SS1.p3" class="ltx_para">
+<p class="ltx_p">Lo chiameremo <span class="ltx_text ltx_font_bold">velocita’ angolare o pulsazione discreta</span> ed e’ misurata in radianti (RAD).
+Mentre se prendiamo la <span class="ltx_text ltx_font_bold">frequenza discreta</span>:</p>
+</div>
+<div id="S2.SS1.p4" class="ltx_para">
+<div id="Ex4" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex4.m1" class="ltx_Math" alttext="\frac{f_{0}}{f_{c}}=\tilde{f}" display="block"><semantics><mrow><mfrac><msub><mi>f</mi><mn>0</mn></msub><msub><mi>f</mi><mi>c</mi></msub></mfrac><mo>=</mo><mover accent="true"><mi>f</mi><mo>~</mo></mover></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S2.SS1.p5" class="ltx_para">
+<p class="ltx_p">e ne facciamo l’analisi dimensionale vediamo che sono Hz fratto Hz, quindi e’ una grandezza adimensionale che <span class="ltx_text ltx_font_bold">NON</span> ha niente a che vedere con il tempo.</p>
+</div>
+<section id="S2.SS1.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Corollario</h4>
+
+<div id="S2.SS1.SSSx1.p1" class="ltx_para">
+<p class="ltx_p">Un coseno tempo continuo e’ sempre periodico, pero’un coseno tempo discreto non e’ necessariamente periodico, perche’, dato il coseno discreto definito <math id="S2.SS1.SSSx1.p1.m1" class="ltx_Math" alttext="x[n]=\cos(2\pi\tilde{f}n)" display="inline"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mover accent="true"><mi>f</mi><mo>~</mo></mover><mo>⁢</mo><mi>n</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></semantics></math>, se dovessimo trovare il periodo nel tempo continuo faremmo <math id="S2.SS1.SSSx1.p1.m2" class="ltx_Math" alttext="T=\frac{1}{f}" display="inline"><semantics><mrow><mi>T</mi><mo>=</mo><mfrac><mn>1</mn><mi>f</mi></mfrac></mrow></semantics></math>, ma se ad esempio la frequenza discreta fosse <math id="S2.SS1.SSSx1.p1.m3" class="ltx_Math" alttext="\frac{4}{5}" display="inline"><semantics><mfrac><mn>4</mn><mn>5</mn></mfrac></semantics></math>, il periodo verrebbe <math id="S2.SS1.SSSx1.p1.m4" class="ltx_Math" alttext="\tilde{T}=\frac{5}{4}" display="inline"><semantics><mrow><mover accent="true"><mi>T</mi><mo>~</mo></mover><mo>=</mo><mfrac><mn>5</mn><mn>4</mn></mfrac></mrow></semantics></math> che non essendo un numero interno non puo’ essere un periodo.
+Di conseguenza il vero periodo di una funzione a tempo discreto e’ un multiplo intero del periodo ottenuto come se fossimo nel tempo continuo, moltiplicato in modo che sia un intero, nel nostro caso <math id="S2.SS1.SSSx1.p1.m5" class="ltx_Math" alttext="\tilde{T}=\frac{5}{4}\cdot 4=5" display="inline"><semantics><mrow><mover accent="true"><mi>T</mi><mo>~</mo></mover><mo>=</mo><mrow><mfrac><mn>5</mn><mn>4</mn></mfrac><mo lspace="0.222em" rspace="0.222em">⋅</mo><mn>4</mn></mrow><mo>=</mo><mn>5</mn></mrow></semantics></math>.</p>
+</div>
+<div id="S2.SS1.SSSx1.p2" class="ltx_para">
+<p class="ltx_p">Se pero’ <math id="S2.SS1.SSSx1.p2.m1" class="ltx_Math" alttext="\tilde{f}" display="inline"><semantics><mover accent="true"><mi>f</mi><mo>~</mo></mover></semantics></math> e’ un numero irrazionale non possiamo renderlo un intero, di conseguenza esistono infinite cosinusoidi non periodiche nel tempo discreto (e se consideriamo le dimensione degli insiemi sono di piu’ quelle non periodiche).</p>
+</div>
+<div id="S2.SS1.SSSx1.p3" class="ltx_para">
+<p class="ltx_p">Quindi sintetizzando solo le cosinusoidi discrete che hanno <math id="S2.SS1.SSSx1.p3.m1" class="ltx_Math" alttext="\tilde{f}" display="inline"><semantics><mover accent="true"><mi>f</mi><mo>~</mo></mover></semantics></math> (frequenza) che e’ un numero razionale sono periodiche.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S2.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.2.2</span> Segnali diversi campionati a frequenze diverse possono dare lo stesso segnale</h3>
+
+<div id="S2.SS2.p1" class="ltx_para">
+<p class="ltx_p">Consideriamo tre segnali a tempo continuo diversi, campioniamoli con una frequenza di campionamento (<math id="S2.SS2.p1.m1" class="ltx_Math" alttext="f_{s}" display="inline"><semantics><msub><mi>f</mi><mi>s</mi></msub></semantics></math>) diversa e vediamo che segnale a tempo discreto otteniamo:</p>
+</div>
+<div id="S2.SS2.p2" class="ltx_para">
+<div id="Ex5" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex5.m1" class="ltx_Math" alttext="\begin{split}x_{1}(t)&amp;{}=\cos(2\pi 200t)\rightarrow f_{s}=1000\mbox{Hz}%
+\rightarrow x[n]=\cos(s\pi 200\frac{n}{1000})=\cos(2\pi\frac{n}{5})\\
+x_{2}(t)&amp;{}=\cos(2\pi 100t)\rightarrow f_{s}=500\mbox{Hz}\rightarrow x[n]=\cos%
+(s\pi 100\frac{n}{500})=\cos(2\pi\frac{n}{5})\\
+x_{3}(t)&amp;{}=\cos(2\pi 1000t)\rightarrow f_{s}=5000\mbox{Hz}\rightarrow x[n]=%
+\cos(s\pi 1000\frac{n}{5000})=\cos(2\pi\frac{n}{5})\\
+\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><msub><mi>x</mi><mn>1</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mn>200</mn><mo>⁢</mo><mi>t</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">→</mo><msub><mi>f</mi><mi>s</mi></msub><mo>=</mo><mrow><mn>1000</mn><mo>⁢</mo><mtext>Hz</mtext></mrow><mo stretchy="false">→</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mi>s</mi><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mn>200</mn><mo>⁢</mo><mfrac><mi>n</mi><mn>1000</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mfrac><mi>n</mi><mn>5</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><msub><mi>x</mi><mn>2</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mn>100</mn><mo>⁢</mo><mi>t</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">→</mo><msub><mi>f</mi><mi>s</mi></msub><mo>=</mo><mrow><mn>500</mn><mo>⁢</mo><mtext>Hz</mtext></mrow><mo stretchy="false">→</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mi>s</mi><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mn>100</mn><mo>⁢</mo><mfrac><mi>n</mi><mn>500</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mfrac><mi>n</mi><mn>5</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><msub><mi>x</mi><mn>3</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mn>1000</mn><mo>⁢</mo><mi>t</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">→</mo><msub><mi>f</mi><mi>s</mi></msub><mo>=</mo><mrow><mn>5000</mn><mo>⁢</mo><mtext>Hz</mtext></mrow><mo stretchy="false">→</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mi>s</mi><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mn>1000</mn><mo>⁢</mo><mfrac><mi>n</mi><mn>5000</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mfrac><mi>n</mi><mn>5</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S2.SS2.p3" class="ltx_para">
+<p class="ltx_p">Da questo notiamo che abbiamo ottenuto sempre lo stesso segnale, dato che la frequenza di campionamento e’ adimensionale puo’ capitare, come in questo caso, che campionando segnali diversi con frequenze diverse il risultato sia lo stesso segnale.</p>
+</div>
+<div id="S2.SS2.p4" class="ltx_para">
+<p class="ltx_p">Questo ci fa intuire che se vogliamo tornare indietro dobbiamo sapere le diverse frequenze di campionamento, altrimenti sarebbe impossibile distinguere a quale segnala appartiene il segnale campionato.</p>
+</div>
+<figure id="S2.SS2.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez9-stessoSegnale.webp" width="945" height="337" loading="lazy" alt="Due insiemi disegnati a mano: a sinistra &quot;tempo continui&quot; con x1(t), x2(t), x3(t), a destra &quot;tempo discreti&quot; con un punto giallo e la scritta x[n] = cos(2/5 π n). Tre frecce gialle, etichettate f1, f2, f3 in rosso, portano dai tre segnali continui allo stesso punto."></div>
+</figure>
+</div>
+</section>
+<section id="S2.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.2.3</span> Ogni coseno discreto ha infiniti ALIAS SECONDARI, ma uno PRINCIPALE nell’intervallo</h3>
+
+<div id="S2.SS3.p1" class="ltx_para">
+<p class="ltx_p">Dato un segnale a tempo discreto, che chiamiamo ALIAS PRINCIPALE, posso costruire un altro segnale discreto identico ma con i termini diversi, che chiamiamo ALIAS SECONDARIO:</p>
+</div>
+<div id="S2.SS3.p2" class="ltx_para">
+<div id="Ex6" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex6.m1" class="ltx_Math" alttext="\begin{split}x_{1}[n]&amp;{}=\cos(\frac{2}{5}\pi)=\cos(0,4\pi n)\\
+x_{2}[n]&amp;{}=\cos(0,4\pi n+2\pi n)=\cos(2,4\pi n)=\cos(0,4\pi n)\\
+x_{3}[n]&amp;{}=\cos(0,4\pi n-2\pi n)=\cos(-1,6\pi n)=\cos(1,6\pi n)\\
+\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><msub><mi>x</mi><mn>1</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mfrac><mn>2</mn><mn>5</mn></mfrac><mo>⁢</mo><mi>π</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><mrow><mn>4</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><msub><mi>x</mi><mn>2</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><mrow><mrow><mn>4</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mn>2</mn><mo>,</mo><mrow><mn>4</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><mrow><mn>4</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><msub><mi>x</mi><mn>3</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><mrow><mrow><mn>4</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo>−</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mo>−</mo><mn>1</mn></mrow><mo>,</mo><mrow><mn>6</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>,</mo><mrow><mn>6</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S2.SS3.p3" class="ltx_para">
+<p class="ltx_p">Quindi ogni coseno discreto ha infiniti alias secondari, ma uno principale nell’intervallo <math id="S2.SS3.p3.m1" class="ltx_Math" alttext="(-\pi]" display="inline"><semantics><mrow><mo stretchy="false">(</mo><mrow><mo>−</mo><mi>π</mi></mrow><mo stretchy="false">]</mo></mrow></semantics></math>, cioe’ sappiamo quindi che la velocita’ angolare <math id="S2.SS3.p3.m2" class="ltx_Math" alttext="\tilde{\omega}" display="inline"><semantics><mover accent="true"><mi>ω</mi><mo>~</mo></mover></semantics></math> deve appartenere a questo intervallo. Espresso in termini di frequenza, sappiamo che la frequenza discreta <math id="S2.SS3.p3.m3" class="ltx_Math" alttext="\tilde{f}\in[-\frac{1}{2},\frac{1}{2})" display="inline"><semantics><mrow><mover accent="true"><mi>f</mi><mo>~</mo></mover><mo>∈</mo><mrow><mo stretchy="false">[</mo><mrow><mo>−</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow><mo>,</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo stretchy="false">)</mo></mrow></mrow></semantics></math>.</p>
+</div>
+<div id="S2.SS3.p4" class="ltx_para">
+<p class="ltx_p">Nel mondo reale la frequenza puo’ crescere all’infinito, mentre nel discreto non puo’ mai superare <math id="S2.SS3.p4.m1" class="ltx_Math" alttext="0,5" display="inline"><semantics><mrow><mn>0</mn><mo>,</mo><mn>5</mn></mrow></semantics></math> altrimenti si ottiene un alias secondario del segnale originale.</p>
+</div>
+<figure id="S2.SS3.tab1" class="ltx_table"><div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_border_r"></td>
+<td class="ltx_td ltx_align_center ltx_border_r"><math id="S2.SS3.m1" class="ltx_Math" alttext="\cos(0,4\pi n)" display="inline"><semantics><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><mrow><mn>4</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></semantics></math></td>
+<td class="ltx_td ltx_align_center ltx_border_r"><math id="S2.SS3.m2" class="ltx_Math" alttext="\cos(2,4\pi n)" display="inline"><semantics><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mn>2</mn><mo>,</mo><mrow><mn>4</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></semantics></math></td>
+<td class="ltx_td ltx_align_center ltx_border_r"><math id="S2.SS3.m3" class="ltx_Math" alttext="\cos(-0,4\pi n)" display="inline"><semantics><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mo>−</mo><mn>0</mn></mrow><mo>,</mo><mrow><mn>4</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></semantics></math></td>
+<td class="ltx_td ltx_align_center"><math id="S2.SS3.m4" class="ltx_Math" alttext="\cos(1,6\pi n)" display="inline"><semantics><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>,</mo><mrow><mn>6</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></semantics></math></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t">n=1</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t">0,3090</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t">0,3090</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t">0,3090</td>
+<td class="ltx_td ltx_align_center ltx_border_t">0,3090</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_r">n=2</td>
+<td class="ltx_td ltx_align_center ltx_border_r">-0,8090</td>
+<td class="ltx_td ltx_align_center ltx_border_r">-0,8090</td>
+<td class="ltx_td ltx_align_center ltx_border_r">-0,8090</td>
+<td class="ltx_td ltx_align_center">-0,8090</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_r">n=3</td>
+<td class="ltx_td ltx_align_center ltx_border_r">-0,8090</td>
+<td class="ltx_td ltx_align_center ltx_border_r">-0,8090</td>
+<td class="ltx_td ltx_align_center ltx_border_r">-0,8090</td>
+<td class="ltx_td ltx_align_center">-0,8090</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_r">n=4</td>
+<td class="ltx_td ltx_align_center ltx_border_r">0,3090</td>
+<td class="ltx_td ltx_align_center ltx_border_r">0,3090</td>
+<td class="ltx_td ltx_align_center ltx_border_r">0,3090</td>
+<td class="ltx_td ltx_align_center">0,3090</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_r">n=5</td>
+<td class="ltx_td ltx_align_center ltx_border_r">1,0000</td>
+<td class="ltx_td ltx_align_center ltx_border_r">1,0000</td>
+<td class="ltx_td ltx_align_center ltx_border_r">1,0000</td>
+<td class="ltx_td ltx_align_center">1,0000</td>
+</tr>
+</table>
+</div>
+</figure>
+<section id="S2.SS3.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Folded Alias</h4>
+
+<div id="S2.SS3.SSSx1.p1" class="ltx_para">
+<p class="ltx_p">Se trovo un’alias secondario che ha un segno negativo, posso spostare quel meno alla fase, ottenendo cosi’ un Folded Alias, ovvero un alias con la fase cambiata di segno.</p>
+</div>
+<div id="S2.SS3.SSSx1.p2" class="ltx_para">
+<div id="Ex7" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex7.m1" class="ltx_Math" alttext="\cos(0,4\pi n+\varphi)=\cos({\color[rgb]{1,0,0}-}1,6\pi n+\varphi)=\cos(1,6\pi
+n%
+{\color[rgb]{1,0,0}-}\varphi)" display="block" tabindex="0"><semantics><mrow><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><mrow><mrow><mn>4</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><mi>φ</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mo class="bml_color_FF0000">−</mo><mn class="bml_color_000000">1</mn></mrow><mo>,</mo><mrow><mrow><mn>6</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><mi>φ</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>,</mo><mrow><mrow><mn class="bml_color_000000">6</mn><mo>⁢</mo><mi class="bml_color_000000">π</mi><mo>⁢</mo><mi class="bml_color_000000">n</mi></mrow><mo class="bml_color_FF0000">−</mo><mi class="bml_color_000000">φ</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S2.SS3.SSSx1.p3" class="ltx_para">
+<p class="ltx_p">E se tolgo quel meno dalla fase trasformandolo in un complesso ottengo:</p>
+<div id="Ex8" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex8.m1" class="ltx_Math" alttext="\cos(0,4\pi n+\varphi+2\pi hn)\rightarrow h\in\mathbf{Z}" display="block"><semantics><mrow><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><mrow><mrow><mn>4</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><mi>φ</mi><mo>+</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mi>n</mi></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">→</mo><mi>h</mi><mo>∈</mo><mi>𝐙</mi></mrow></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">5.3</span> Spettro</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">Vediamo ora come ottenere lo spettro di un segnale tempo discreto.
+Lo facciamo decomponendo il coseno con la formula di Eulero inversa:</p>
+</div>
+<div id="S3.p2" class="ltx_para">
+<div id="Ex9" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex9.m1" class="ltx_Math" alttext="x_{1}[n]=\cos(2\pi\tilde{f}n+\varphi)=\frac{1}{2}e^{i\varphi}\cdot e^{i2\pi%
+\tilde{f}n}+e^{-i\varphi}\cdot e^{-i2\pi\tilde{f}n}" display="block" tabindex="0"><semantics><mrow><mrow><msub><mi>x</mi><mn>1</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mover accent="true"><mi>f</mi><mo>~</mo></mover><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><mi>φ</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mi>φ</mi></mrow></msup></mrow><mo lspace="0.222em" rspace="0.222em">⋅</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mover accent="true"><mi>f</mi><mo>~</mo></mover><mo>⁢</mo><mi>n</mi></mrow></msup></mrow><mo>+</mo><mrow><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mi>φ</mi></mrow></mrow></msup><mo lspace="0.222em" rspace="0.222em">⋅</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mover accent="true"><mi>f</mi><mo>~</mo></mover><mo>⁢</mo><mi>n</mi></mrow></mrow></msup></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.p3" class="ltx_para">
+<p class="ltx_p">Il grafico del modulo dello spettro e’:</p>
+</div>
+<figure id="S3.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-spettroDiscreto.webp" width="989" height="308" loading="lazy" alt="Grafico del modulo dello spettro con asse orizzontale ω (cappuccio) e f (cappuccio), con scritta &quot;pari&quot;. Due frecce verdi di altezza 1/2 sono in -f e +f (cappuccio), cioè -2π f e 2π f. Due righe gialle verticali segnano -π e π, che corrispondono a -1/2 e 1/2 sull'asse f."></div>
+</figure>
+<div id="S3.p4" class="ltx_para">
+<p class="ltx_p">Ricordiamo che per essere formali, quando passiamo nel discreto disegno delle frecce e non solo barre, sia nel grafico del modulo che della fase.</p>
+</div>
+<div id="S3.p5" class="ltx_para">
+<p class="ltx_p">Consideriamo ora un’altro segnale, che sappiamo essere un alias di quello precedente:</p>
+</div>
+<div id="S3.p6" class="ltx_para">
+<div id="Ex10" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex10.m1" class="ltx_Math" alttext="x_{2}[n]=\cos(2\pi\tilde{f}n+\varphi+2\pi n)=\frac{1}{2}e^{i\varphi}\cdot e^{i%
+(2\pi\tilde{f}+2\pi)n}+\frac{1}{2}e^{-i\varphi}\cdot e^{-i(2\pi\tilde{f}+2\pi)n}" display="block" tabindex="0"><semantics><mrow><mrow><msub><mi>x</mi><mn>2</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mover accent="true"><mi>f</mi><mo>~</mo></mover><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><mi>φ</mi><mo>+</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mi>φ</mi></mrow></msup></mrow><mo lspace="0.222em" rspace="0.222em">⋅</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mover accent="true"><mi>f</mi><mo>~</mo></mover></mrow><mo>+</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mi>n</mi></mrow></msup></mrow><mo>+</mo><mrow><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mi>φ</mi></mrow></mrow></msup></mrow><mo lspace="0.222em" rspace="0.222em">⋅</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mover accent="true"><mi>f</mi><mo>~</mo></mover></mrow><mo>+</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mi>n</mi></mrow></mrow></msup></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.p7" class="ltx_para">
+<p class="ltx_p">Notiamo che nonostante i segnali siano degli alias hanno dei grafici diversi, questo perche’ lo spettro di un segnale tempo discreto e’ periodico, quindi contiene ”righe” periodiche (<math id="S3.p7.m1" class="ltx_Math" alttext="T=2\pi" display="inline"><semantics><mrow><mi>T</mi><mo>=</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow></mrow></semantics></math>), che sono tutti gli spettri degli alias.</p>
+</div>
+<div id="S3.p8" class="ltx_para">
+<p class="ltx_p">Questo ci fa intuire che l’unico segnale che posso ricostruire dato lo spettro e’ l’alias principale (esempio frazioni).</p>
+</div>
+<section id="S3.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.3.1</span> Esempio</h3>
+
+<div id="S3.SS1.p1" class="ltx_para">
+<p class="ltx_p">Abbiamo un segnale tempo continuo da campionare, provo varie frequenze di campionamento per vedere quale posso usare per ricostruire il segnale.</p>
+</div>
+<div id="S3.SS1.p2" class="ltx_para">
+<div id="Ex11" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex11.m1" class="ltx_Math" alttext="x(t)=\cos(2\pi\cdot 100t+\frac{\pi}{3})" display="block"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow><mo lspace="0.222em" rspace="0.222em">⋅</mo><mn>100</mn></mrow><mo>⁢</mo><mi>t</mi></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p3" class="ltx_para">
+<p class="ltx_p">La prima frequenza di campionamento e’ <math id="S3.SS1.p3.m1" class="ltx_Math" alttext="f_{s}=500" display="inline"><semantics><mrow><msub><mi>f</mi><mi>s</mi></msub><mo>=</mo><mn>500</mn></mrow></semantics></math>Hz:</p>
+</div>
+<div id="S3.SS1.p4" class="ltx_para">
+<div id="Ex12" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex12.m1" class="ltx_Math" alttext="x[n]=2\cos(2\pi 100\frac{n}{500}+\frac{\pi}{3})=2\cos(\frac{2\pi}{5}n+\frac{%
+\pi}{3})" display="block"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mn>100</mn><mo>⁢</mo><mfrac><mi>n</mi><mn>500</mn></mfrac></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mfrac><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow><mn>5</mn></mfrac><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p5" class="ltx_para">
+<p class="ltx_p">Ora ricavo lo spettro:</p>
+</div>
+<div id="S3.SS1.p6" class="ltx_para">
+<div id="Ex13" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex13.m1" class="ltx_Math" alttext="x[n]=1e^{i\frac{\pi}{3}}e^{i\frac{2}{5}\pi n}+1e^{-i\frac{\pi}{3}}e^{-i\frac{2%
+}{5}\pi n}" display="block" tabindex="0"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mn>1</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow></msup><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mfrac><mn>2</mn><mn>5</mn></mfrac><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow></msup></mrow><mo>+</mo><mrow><mn>1</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow></mrow></msup><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mfrac><mn>2</mn><mn>5</mn></mfrac><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow></mrow></msup></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p7" class="ltx_para">
+<p class="ltx_p">Il grafico del modulo:</p>
+</div>
+<figure id="S3.SS1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-moduloEsempio.webp" width="1276" height="347" loading="lazy" alt="Grafico del modulo con asse ω (cappuccio): frecce rosse di altezza 1 in ±2π/5, con un 1 cerchiato vicino a quella positiva. Altre due frecce, senza altezza indicata, stanno attorno a -2,5π e a 2,5π (etichetta in blu). In giallo sono segnati -8π/5 e 8π/5, righe gialle verticali in -π e π, e sull'asse anche -3π, -2π, 2π, 3π."></div>
+</figure>
+<div id="S3.SS1.p8" class="ltx_para">
+<p class="ltx_p">Dal grafico noto che e’ ottenuto l’alias principale, in quanto il modulo sta tra <math id="S3.SS1.p8.m1" class="ltx_Math" alttext="-\pi,\pi" display="inline"><semantics><mrow><mrow><mo>−</mo><mi>π</mi></mrow><mo>,</mo><mi>π</mi></mrow></semantics></math>.
+Quindi ricordando che <math id="S3.SS1.p8.m2" class="ltx_Math" alttext="t=n\cdot T_{c}=\frac{n}{T_{c}}" display="inline"><semantics><mrow><mi>t</mi><mo>=</mo><mrow><mi>n</mi><mo lspace="0.222em" rspace="0.222em">⋅</mo><msub><mi>T</mi><mi>c</mi></msub></mrow><mo>=</mo><mfrac><mi>n</mi><msub><mi>T</mi><mi>c</mi></msub></mfrac></mrow></semantics></math> e che <math id="S3.SS1.p8.m3" class="ltx_Math" alttext="n=t\cdot T_{c}" display="inline"><semantics><mrow><mi>n</mi><mo>=</mo><mrow><mi>t</mi><mo lspace="0.222em" rspace="0.222em">⋅</mo><msub><mi>T</mi><mi>c</mi></msub></mrow></mrow></semantics></math> posso ricostruire l’alias principale:</p>
+</div>
+<div id="S3.SS1.p9" class="ltx_para">
+<div id="Ex14" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex14.m1" class="ltx_Math" alttext="x[t\cdot f_{c}]=2\cos(\frac{2\pi}{5}\cdot t500+\frac{\pi}{3})" display="block"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>t</mi><mo lspace="0.222em" rspace="0.222em">⋅</mo><msub><mi>f</mi><mi>c</mi></msub></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mrow><mfrac><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow><mn>5</mn></mfrac><mo lspace="0.222em" rspace="0.222em">⋅</mo><mi>t</mi></mrow><mo>⁢</mo><mn>500</mn></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p10" class="ltx_para">
+<p class="ltx_p">Usiamo ora come frequenza di campionamento <math id="S3.SS1.p10.m1" class="ltx_Math" alttext="f_{s}=125" display="inline"><semantics><mrow><msub><mi>f</mi><mi>s</mi></msub><mo>=</mo><mn>125</mn></mrow></semantics></math>Hz:</p>
+<div id="Ex15" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex15.m1" class="ltx_Math" alttext="x[n]=2\cos(2\pi 100\frac{n}{125})=2\cos(\frac{2\pi}{5}4n)" display="block"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mn>100</mn><mo>⁢</mo><mfrac><mi>n</mi><mn>125</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mfrac><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow><mn>5</mn></mfrac><mo>⁢</mo><mn>4</mn><mo>⁢</mo><mi>n</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p11" class="ltx_para">
+<p class="ltx_p">tracciando il grafico:</p>
+</div>
+<figure id="S3.SS1.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-moduloEsempio2.webp" width="1029" height="303" loading="lazy" alt="Grafico del modulo con asse ω (cappuccio). Quattro frecce arancioni a ±2π/5 e ±8π/5, con il numero 2 cerchiato in arancione vicino a quella in 8π/5. Righe gialle evidenziate in -π e π; due tratti neri in ±12π/5."></div>
+</figure>
+<div id="S3.SS1.p12" class="ltx_para">
+<p class="ltx_p">Noto che abbiamo ottenuto un’alias secondario, calcolo quindi quello principale:</p>
+</div>
+<div id="S3.SS1.p13" class="ltx_para">
+<div id="Ex16" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex16.m1" class="ltx_Math" alttext="x[n]=\cos(\frac{8}{5}\pi n+\frac{\pi}{3})=\cos(\frac{8}{5}\pi n+\frac{\pi}{3}-%
+2\pi n)=\cos(-\frac{2}{5}\pi n+\frac{\pi}{3})=\cos(\frac{2}{5}\pi n+\frac{\pi}%
+{3})" display="block" tabindex="0"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mfrac><mn>8</mn><mn>5</mn></mfrac><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mrow><mfrac><mn>8</mn><mn>5</mn></mfrac><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo>−</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mo>−</mo><mrow><mfrac><mn>2</mn><mn>5</mn></mfrac><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mfrac><mn>2</mn><mn>5</mn></mfrac><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p14" class="ltx_para">
+<p class="ltx_p">Posso quindi ricostruire solo l’alias principale (sostituendo ad n <math id="S3.SS1.p14.m1" class="ltx_Math" alttext="t\cdot f_{s}" display="inline"><semantics><mrow><mi>t</mi><mo lspace="0.222em" rspace="0.222em">⋅</mo><msub><mi>f</mi><mi>s</mi></msub></mrow></semantics></math>:</p>
+</div>
+<div id="S3.SS1.p15" class="ltx_para">
+<div id="Ex17" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex17.m1" class="ltx_Math" alttext="x[t\cdot f_{s}]=\cos(\frac{2}{5}\pi t125+\frac{\pi}{3})" display="block"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>t</mi><mo lspace="0.222em" rspace="0.222em">⋅</mo><msub><mi>f</mi><mi>s</mi></msub></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mfrac><mn>2</mn><mn>5</mn></mfrac><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>t</mi><mo>⁢</mo><mn>125</mn></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p16" class="ltx_para">
+<p class="ltx_p">Usiamo ora come frequenza di campionamento <math id="S3.SS1.p16.m1" class="ltx_Math" alttext="f_{s}=100" display="inline"><semantics><mrow><msub><mi>f</mi><mi>s</mi></msub><mo>=</mo><mn>100</mn></mrow></semantics></math>Hz:</p>
+</div>
+<div id="S3.SS1.p17" class="ltx_para">
+<div id="Ex18" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex18.m1" class="ltx_Math" alttext="x[n]=2\cos(2\pi 100\frac{n}{100}+\frac{\pi}{3})=2\cos(2\pi n+\frac{\pi}{3})" display="block"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mn>100</mn><mo>⁢</mo><mfrac><mi>n</mi><mn>100</mn></mfrac></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p18" class="ltx_para">
+<p class="ltx_p">tracciando il grafico:</p>
+</div>
+<figure id="S3.SS1.fig3" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-moduloEsempio3.webp" width="1343" height="350" loading="lazy" alt="Grafico del modulo con asse ω (cappuccio) e numero 3 cerchiato in verde. Una freccia rossa in 0, indicata da una piccola freccia rossa; due frecce verdi in corrispondenza delle etichette 2π ai due lati; due frecce rosse agli estremi con un'etichetta rossa non leggibile. Righe gialle evidenziate in corrispondenza di π ai due lati dell'origine."></div>
+</figure>
+<div id="S3.SS1.p19" class="ltx_para">
+<p class="ltx_p">Noto che abbiamo ottenuto un’alias secondario, calcolo quindi quello principale:</p>
+</div>
+<div id="S3.SS1.p20" class="ltx_para">
+<div id="Ex19" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex19.m1" class="ltx_Math" alttext="x[n]=2\cos(2\pi n+\frac{\pi}{3})=2\cos(\frac{\pi}{3})\rightarrow x(t)=2\cos(%
+\frac{\pi}{3})" display="block" tabindex="0"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mfrac><mi>π</mi><mn>3</mn></mfrac><mo stretchy="false">)</mo></mrow></mrow></mrow><mo stretchy="false">→</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mfrac><mi>π</mi><mn>3</mn></mfrac><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p21" class="ltx_para">
+<p class="ltx_p">Come ultimo esempio usiamo la frequenza di campionamento <math id="S3.SS1.p21.m1" class="ltx_Math" alttext="f_{s}=80" display="inline"><semantics><mrow><msub><mi>f</mi><mi>s</mi></msub><mo>=</mo><mn>80</mn></mrow></semantics></math> Hz, da cui, come fatto fino ad ora, otteniamo il segnale campionato:</p>
+</div>
+<div id="S3.SS1.p22" class="ltx_para">
+<div id="Ex20" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex20.m1" class="ltx_Math" alttext="x[n]=2\cos(2\pi 100\frac{n}{80}+\frac{\pi}{3})=2\cos(2\pi\frac{5n}{4}+\frac{pi%
+}{3})" display="block" tabindex="0"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mn>100</mn><mo>⁢</mo><mfrac><mi>n</mi><mn>80</mn></mfrac></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mfrac><mrow><mn>5</mn><mo>⁢</mo><mi>n</mi></mrow><mn>4</mn></mfrac></mrow><mo>+</mo><mfrac><mrow><mi>p</mi><mo>⁢</mo><mi>i</mi></mrow><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p23" class="ltx_para">
+<p class="ltx_p">Tracciandone il grafico del modulo:</p>
+</div>
+<figure id="S3.SS1.fig4" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-moduloEsempio4.webp" width="1092" height="302" loading="lazy" alt="Grafico del modulo con asse ω (cappuccio) e numero 4 cerchiato in blu. Frecce blu in -2,5π, ±π/2 e 2,5π; due tratti verticali neri in circa ±3/2π. Sull'asse sono segnati -3π, -2π, -π, π/2, π, 3/2 π, 2π, 2,5π, 3π. Righe gialle in -π e π."></div>
+</figure>
+<div id="S3.SS1.p24" class="ltx_para">
+<p class="ltx_p">Notiamo ancora una volta che abbiamo ottenuto un alias secondario, quindi otteniamo quello principale e poi ricostruiamo il segnale:</p>
+</div>
+<div id="S3.SS1.p25" class="ltx_para">
+<div id="Ex21" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex21.m1" class="ltx_Math" alttext="x[n]=2\cos(\frac{5}{2}\pi n+\frac{\pi}{3})=2\cos(\frac{\pi}{2}n+\frac{\pi}{3})%
+\rightarrow x(t)=2\cos(\frac{\pi}{2}80t+\frac{\pi}{3})=2\cos(2\pi 20t+\frac{%
+\pi}{3})" display="block" tabindex="0"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mfrac><mn>5</mn><mn>2</mn></mfrac><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mfrac><mi>π</mi><mn>2</mn></mfrac><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow><mo stretchy="false">→</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mfrac><mi>π</mi><mn>2</mn></mfrac><mo>⁢</mo><mn>80</mn><mo>⁢</mo><mi>t</mi></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow><mo>=</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mn>20</mn><mo>⁢</mo><mi>t</mi></mrow><mo>+</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p26" class="ltx_para">
+<p class="ltx_p">Le cose che dobbiamo ricordarci da questo esempio sono:</p>
+</div>
+<div id="S3.SS1.p27" class="ltx_para">
+<ol id="S3.I1" class="ltx_enumerate">
+<li id="S3.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">1.</span><div id="S3.I1.i1.p1" class="ltx_para"><p class="ltx_p">Possiamo ricostruire solo un segnale che una volta campionato sta nell’alias principale (esistono infinite rappresentazioni dello spettro)</p>
+</div>
+</li>
+<li id="S3.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">2.</span><div id="S3.I1.i2.p1" class="ltx_para"><p class="ltx_p">Generalizzando l’esempio abbiamo potuto ricostruire il segnale solo se <math id="S3.I1.i2.p1.m1" class="ltx_Math" alttext="\tilde{omega}" display="inline"><semantics><mover accent="true"><mrow><mi>o</mi><mo>⁢</mo><mi>m</mi><mo>⁢</mo><mi>e</mi><mo>⁢</mo><mi>g</mi><mo>⁢</mo><mi>a</mi></mrow><mo>~</mo></mover></semantics></math> era nell’alias principale.</p>
+</div>
+</li>
+</ol>
+</div>
+<div id="S3.SS1.p28" class="ltx_para">
+<p class="ltx_p">Generalizziamo per capire in che intervallo dev’essere la velocita’ angolare:</p>
+</div>
+<div id="S3.SS1.p29" class="ltx_para">
+<div id="Ex22" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex22.m1" class="ltx_Math" alttext="\begin{split}&amp;{}\mbox{Segnale tempo continuo:}\\
+x(t)&amp;{}=\cos(2\pi\cdot f_{0}t)\rightarrow t=\frac{n}{f_{s}}\\
+&amp;{}\mbox{Campionando otteniamo il segnale tempo discreto:}\\
+x[n]&amp;{}=\cos(2\pi f_{0}\cdot\frac{n}{f_{s}})\\
+2\pi\frac{f_{0}}{f_{s}}&amp;{}=\tilde{\omega}\rightarrow\mbox{Lo vogliamo nell'%
+alias principale}\\
+-\pi&amp;{}&lt;2\pi\frac{f_{0}}{f_{s}}\neq\pi\\
+f_{s}&amp;{}&gt;2|f_{0}|\\
+\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mtext>Segnale tempo continuo:</mtext></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow><mo lspace="0.222em" rspace="0.222em">⋅</mo><msub><mi>f</mi><mn>0</mn></msub></mrow><mo>⁢</mo><mi>t</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">→</mo><mi>t</mi><mo>=</mo><mfrac><mi>n</mi><msub><mi>f</mi><mi>s</mi></msub></mfrac></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mtext>Campionando otteniamo il segnale tempo discreto:</mtext></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><msub><mi>f</mi><mn>0</mn></msub></mrow><mo lspace="0.222em" rspace="0.222em">⋅</mo><mfrac><mi>n</mi><msub><mi>f</mi><mi>s</mi></msub></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mfrac><msub><mi>f</mi><mn>0</mn></msub><msub><mi>f</mi><mi>s</mi></msub></mfrac></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mover accent="true"><mi>ω</mi><mo>~</mo></mover><mo stretchy="false">→</mo><mtext>Lo vogliamo nell’alias principale</mtext></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mo>−</mo><mi>π</mi></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>&lt;</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mfrac><msub><mi>f</mi><mn>0</mn></msub><msub><mi>f</mi><mi>s</mi></msub></mfrac></mrow><mo>≠</mo><mi>π</mi></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><msub><mi>f</mi><mi>s</mi></msub></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>&gt;</mo><mrow><mn>2</mn><mo>⁢</mo><mrow><mo stretchy="false">|</mo><msub><mi>f</mi><mn>0</mn></msub><mo stretchy="false">|</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p30" class="ltx_para">
+<p class="ltx_p">Riassumendo vogliamo che la frequenza di campionamento <math id="S3.SS1.p30.m1" class="ltx_Math" alttext="f_{s}" display="inline"><semantics><msub><mi>f</mi><mi>s</mi></msub></semantics></math> sia il doppio del modulo di <math id="S3.SS1.p30.m2" class="ltx_Math" alttext="f_{0}" display="inline"><semantics><msub><mi>f</mi><mn>0</mn></msub></semantics></math> (frequenza cosinusoidale discreta) affinche’ il segnale sia ricostruibile in modo esatto (Shannon).</p>
+</div>
+<figure id="S3.SS1.fig5" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez11-spettroAlias.webp" width="1575" height="1080" loading="lazy" alt="Due grafici. In alto, &quot;modulo spettro x(t) T.C.&quot; con asse f (Hz), ω: quattro aste colorate (rosso, verde, blu, giallo) a sinistra di -22000 Hz e quattro speculari a destra di 22000 Hz. In basso, &quot;modulo spettro x[n] T.D.&quot; con asse segnato π a destra e a sinistra: le aste originali compaiono ai lati e, vicino all'origine, due copie ribaltate con maschera e scritta &quot;Alias&quot;."></div>
+</figure>
+<div id="S3.SS1.p31" class="ltx_para">
+<p class="ltx_p">Quando campioniamo un segnale non rispettando il teorema di Shannon succede che le frequenze superano l’alias principale e di conseguenza vengono ribaltate creando rumore entrando nell’alias principale.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">5.4</span> Teorema del campionamento (Shannon)</h2>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">Dato un segnale tempo continui <math id="S4.p1.m1" class="ltx_Math" alttext="x(t)" display="inline"><semantics><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow></semantics></math> a <span class="ltx_text ltx_font_bold">banda limitata</span> B, lo si puo’ ricostruire perfettamente dai propri campioni se e solo se</p>
+</div>
+<div id="S4.p2" class="ltx_para">
+<div id="Ex23" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex23.m1" class="ltx_Math" alttext="f_{s}=2B" display="block"><semantics><mrow><msub><mi>f</mi><mi>s</mi></msub><mo>=</mo><mrow><mn>2</mn><mo>⁢</mo><mi>B</mi></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S4.p3" class="ltx_para">
+<p class="ltx_p">Utilizzando un <span class="ltx_text ltx_framed ltx_framed_underline">kernel di ricostruzione</span> ottimo</p>
+</div>
+<div id="S4.p4" class="ltx_para">
+<div id="Ex24" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex24.m1" class="ltx_Math" alttext="p(t)=\frac{\sin(\frac{\pi t}{T_{s}})}{\frac{\pi t}{T_{s}}}=sinc(\pi tf_{s})" display="block"><semantics><mrow><mrow><mi>p</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mfrac><mrow><mi>sin</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mfrac><mrow><mi>π</mi><mo>⁢</mo><mi>t</mi></mrow><msub><mi>T</mi><mi>s</mi></msub></mfrac><mo stretchy="false">)</mo></mrow></mrow><mfrac><mrow><mi>π</mi><mo>⁢</mo><mi>t</mi></mrow><msub><mi>T</mi><mi>s</mi></msub></mfrac></mfrac><mo>=</mo><mrow><mi>s</mi><mo>⁢</mo><mi>i</mi><mo>⁢</mo><mi>n</mi><mo>⁢</mo><mi>c</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>π</mi><mo>⁢</mo><mi>t</mi><mo>⁢</mo><msub><mi>f</mi><mi>s</mi></msub></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S4.p5" class="ltx_para">
+<p class="ltx_p">Con banda limitata intendiamo un segnale composto da tante cosinusoidi ma che non vanno all’infinito, di conseguenza ne esiste una massima, quindi e’ la frequenza massima appartenente ad un segnale.</p>
+</div>
+<figure id="S4.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-banda.webp" width="611" height="270" loading="lazy" alt="Grafico del modulo di uno spettro a tempo continuo (&quot;modulo T.C.&quot;) con asse f (Hz): righe rosse verticali di altezze diverse, distribuite simmetricamente attorno all'origine. Una doppia freccia azzurra dall'origine verso destra indica B, con la scritta &quot;banda&quot;."></div>
+</figure>
+<div id="S4.p6" class="ltx_para">
+<p class="ltx_p">Diamo adesso della terminologia:</p>
+<ul id="S4.I1" class="ltx_itemize">
+<li id="S4.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S4.I1.i1.p1" class="ltx_para"><p class="ltx_p">NYQUIST RATE: e’ il doppio della frequenza massima <math id="S4.I1.i1.p1.m1" class="ltx_Math" alttext="2B,2F_{MAX}" display="inline"><semantics><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>B</mi></mrow><mo>,</mo><mrow><mn>2</mn><mo>⁢</mo><msub><mi>F</mi><mrow><mi>M</mi><mo>⁢</mo><mi>A</mi><mo>⁢</mo><mi>X</mi></mrow></msub></mrow></mrow></semantics></math>. Noi dobbiamo sempre campionare usando una <math id="S4.I1.i1.p1.m2" class="ltx_Math" alttext="f_{s}&gt;" display="inline"><semantics><mrow><msub><mi>f</mi><mi>s</mi></msub><mo>&gt;</mo><mi></mi></mrow></semantics></math> della NYQUIST RATE.</p>
+</div>
+</li>
+<li id="S4.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S4.I1.i2.p1" class="ltx_para"><p class="ltx_p">NYQUIST FREQUENCY: e’ la meta’ della frequenza di campionamento <math id="S4.I1.i2.p1.m1" class="ltx_Math" alttext="\frac{f_{s}}{2}" display="inline"><semantics><mfrac><msub><mi>f</mi><mi>s</mi></msub><mn>2</mn></mfrac></semantics></math>.</p>
+</div>
+</li>
+</ul>
+</div>
+<section id="S4.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.4.1</span> Ricostruire un segnale</h3>
+
+<div id="S4.SS1.p1" class="ltx_para">
+<p class="ltx_p">Ma effettivamente cosa vuol dire ricostruire un segnale?
+Se vogliamo capire la seconda parte del teorema di Shannon dobbiamo capire cosa si intende con kernel di ricostruzione.
+Partiamo ripassando cosa significa interpolazione in linguaggio matematico. Significa trovare una funzione che passa da certi punti. Esistono molti modi di fare un’interpolazione, ad esempio lineare (colleghiamo linearmente due punti).
+Nell’esempio in figura vediamo due tipi di interpolazione dati tre punti:</p>
+</div>
+<figure id="S4.SS1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-interpolazione.webp" width="735" height="471" loading="lazy" alt="Grafico con tre punti neri y1, y2, y3 agli istanti t1, t2, t3, con temperature 5 °C (8:00), 12 °C (12:00) e 10 °C (18:00). Una spezzata verde unisce i punti, mentre segmenti arancioni orizzontali ne mostrano un'altra interpolazione. Una linea rossa verticale a 15:00 è indicata come t con tilde."></div>
+</figure>
+<div id="S4.SS1.p2" class="ltx_para">
+<p class="ltx_p">Ricostruire un segnale e’ come fare un interpolazione, abbiamo dei campioni e dobbiamo ”collegare” i vari campioni per ricostruire un segnale quanto piu’ possibile fedele all’originale.</p>
+</div>
+<div id="S4.SS1.p3" class="ltx_para">
+<p class="ltx_p">Abbiamo vari modi di fare la ricostruzione, ad esempio esiste la ricostruzione di <span class="ltx_text ltx_framed ltx_framed_underline">ordine zero (Z.0.H)</span>, in cui decido che il segnale negli intervalli e’ costante.
+Il Kernel di ricostruzione in questo caso e’ il rettangolo di altezza 1 in basso in figura, che e’ come se prendessi e mettessi centrato per ogni campione e lo uso per ricostruire il segnale.</p>
+</div>
+<figure id="S4.SS1.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-ordineZero.webp" width="870" height="587" loading="lazy" alt="In alto, grafico in funzione di n con una funzione a gradini formata da rettangoli adiacenti in rosso, arancione e verde, centrati negli indici i-1, i, i+1, con punti blu e l'etichetta x[i-1]; è segnato anche i+2. In basso a sinistra il rettangolo di altezza 1 tra -Ts/2 e Ts/2 con frecce azzurre che lo collegano a ciascun campione, e la scritta &quot;kernel di ricostruzione&quot;."></div>
+</figure>
+<div id="S4.SS1.p4" class="ltx_para">
+<p class="ltx_p">Potremmo fare anche una ricostruzione lineare di primo grado, ovvero tracciamo una retta tra i vari campioni. In questo caso il kernel di ricostruzione e’ un triangolo con base <math id="S4.SS1.p4.m1" class="ltx_Math" alttext="-T,T" display="inline"><semantics><mrow><mrow><mo>−</mo><mi>T</mi></mrow><mo>,</mo><mi>T</mi></mrow></semantics></math> ed alto 1, che prendiamo e posizioniamo su ogni campione, e sommiamo tutti i triangoli. Ovviamente come si nota dal grafico ci sono delle sovrapposizioni tra i trinagoli:</p>
+</div>
+<figure id="S4.SS1.fig3" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-lineare.webp" width="703" height="301" loading="lazy" alt="Grafico con tre triangoli sovrapposti: rosso centrato in i (vertice x[i]), arancione centrato in i+1 (vertice x[i+1]), verde centrato in i+2 (vertice x[i+2]); sull'asse anche i-1. Una linea blu spessa unisce i vertici x[i] e x[i+2] passando per x[i+1]; alcuni punti blu sono segnati sui lati dei triangoli e x[i] e i sono evidenziati in giallo."></div>
+</figure>
+<section id="S4.SS1.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Dimostrazione ricostruzione lineare</h4>
+
+<div id="S4.SS1.SSSx1.p1" class="ltx_para">
+<p class="ltx_p">Dimostriamo che effettivamente la ricostruzione lineare funziona.
+Inizialmente abbiamo un grafico in cui sono presenti due punti:</p>
+</div>
+<figure id="S4.SS1.SSSx1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-linearePartenza.webp" width="595" height="446" loading="lazy" alt="Grafico con asse n e asse t sotto, con indici i, i+1, i+2 corrispondenti a iTs, (i+1)Ts, (i+2)Ts. Un segmento blu f(t) unisce il punto rosso x_i al punto x_{i+1}, mentre x_{i+2} è un punto nero isolato."></div>
+</figure>
+<div id="S4.SS1.SSSx1.p2" class="ltx_para">
+<p class="ltx_p">noi dato che stiamo ricostruendo linearmente dobbiamo tracciare una linea retta tra i due punti, e quello che otteniamo la chiamiamo <math id="S4.SS1.SSSx1.p2.m1" class="ltx_Math" alttext="f(t)" display="inline"><semantics><mrow><mi>f</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow></semantics></math>, che e’ l’equazione della retta che passa dai due punti:</p>
+</div>
+<div id="S4.SS1.SSSx1.p3" class="ltx_para">
+<div id="Ex25" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex25.m1" class="ltx_Math" alttext="f(t)=(t-iT_{s})\frac{x_{i+1}-x_{i}}{(i+1)T_{s}-iT_{s}}+x_{i}" display="block" tabindex="0"><semantics><mrow><mrow><mi>f</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mo stretchy="false">(</mo><mrow><mi>t</mi><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mfrac><mrow><msub><mi>x</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>−</mo><msub><mi>x</mi><mi>i</mi></msub></mrow><mrow><mrow><mrow><mo stretchy="false">(</mo><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow></mrow></mfrac></mrow><mo>+</mo><msub><mi>x</mi><mi>i</mi></msub></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S4.SS1.SSSx1.p4" class="ltx_para">
+<p class="ltx_p">Facciamo due verifiche per capire che l’equazione e’ corretta:</p>
+</div>
+<div id="S4.SS1.SSSx1.p5" class="ltx_para">
+<div id="Ex26" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex26.m1" class="ltx_Math" alttext="\begin{split}f(iT_{s})&amp;{}=(iT_{s}-iT_{s})\frac{x_{i+1}-x_{i}}{(i+1)T_{s}-iT_{s%
+}}+x_{1}=x_{i}\\
+f((i+1)T_{s})&amp;{}=((i+1)T_{s}-iT_{s})\frac{x_{i+1}-x_{i}}{(i+1)T_{s}-iT_{s}}+x_%
+{i}=x_{i+1}\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>f</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mrow><mo stretchy="false">(</mo><mrow><mrow><mi>i</mi><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mfrac><mrow><msub><mi>x</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>−</mo><msub><mi>x</mi><mi>i</mi></msub></mrow><mrow><mrow><mrow><mo stretchy="false">(</mo><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow></mrow></mfrac></mrow><mo>+</mo><msub><mi>x</mi><mn>1</mn></msub></mrow><mo>=</mo><msub><mi>x</mi><mi>i</mi></msub></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>f</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mo stretchy="false">(</mo><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mrow><mo stretchy="false">(</mo><mrow><mrow><mrow><mo stretchy="false">(</mo><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mfrac><mrow><msub><mi>x</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>−</mo><msub><mi>x</mi><mi>i</mi></msub></mrow><mrow><mrow><mrow><mo stretchy="false">(</mo><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow></mrow></mfrac></mrow><mo>+</mo><msub><mi>x</mi><mi>i</mi></msub></mrow><mo>=</mo><msub><mi>x</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S4.SS1.SSSx1.p6" class="ltx_para">
+<p class="ltx_p">Verificato che l’equazione passa effettivamente per quei punti, portiamo tutti i termini (dell’equazione della retta) che dipendono da <math id="S4.SS1.SSSx1.p6.m1" class="ltx_Math" alttext="x_{i}" display="inline"><semantics><msub><mi>x</mi><mi>i</mi></msub></semantics></math> a sinistra e tutti quelli che dipendono da <math id="S4.SS1.SSSx1.p6.m2" class="ltx_Math" alttext="x_{i+1}" display="inline"><semantics><msub><mi>x</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub></semantics></math> a destra:</p>
+</div>
+<div id="S4.SS1.SSSx1.p7" class="ltx_para">
+<div id="Ex27" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex27.m1" class="ltx_Math" alttext="x(t)=-\frac{x_{i}}{T_{s}}(t-iT_{s})+x_{i}+\frac{x_{i+1}}{T_{s}}(t-iT_{s})" display="block" tabindex="0"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mrow><mo>−</mo><mrow><mfrac><msub><mi>x</mi><mi>i</mi></msub><msub><mi>T</mi><mi>s</mi></msub></mfrac><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>t</mi><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow><mo>+</mo><msub><mi>x</mi><mi>i</mi></msub><mo>+</mo><mrow><mfrac><msub><mi>x</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub><msub><mi>T</mi><mi>s</mi></msub></mfrac><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>t</mi><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>T</mi><mi>s</mi></msub></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S4.SS1.SSSx1.p8" class="ltx_para">
+<p class="ltx_p">E notiamo che la parte sinistra dell’equazione e’ la retta che parte dal punto <math id="S4.SS1.SSSx1.p8.m1" class="ltx_Math" alttext="x_{i}" display="inline"><semantics><msub><mi>x</mi><mi>i</mi></msub></semantics></math> ed arriva a <math id="S4.SS1.SSSx1.p8.m2" class="ltx_Math" alttext="i+1" display="inline"><semantics><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></semantics></math>, mentre la parte di destra e’ la retta che parte da <math id="S4.SS1.SSSx1.p8.m3" class="ltx_Math" alttext="x_{i+1}" display="inline"><semantics><msub><mi>x</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub></semantics></math> ed arriva ad <math id="S4.SS1.SSSx1.p8.m4" class="ltx_Math" alttext="i" display="inline"><semantics><mi>i</mi></semantics></math>. Quindi la retta che passa tra i due punti e’ la somma dei segmenti ottenuti precedentemente.
+E se ripetiamo questo procedimento utilizzando la parte sinistra per il punto <math id="S4.SS1.SSSx1.p8.m5" class="ltx_Math" alttext="x_{i+1}" display="inline"><semantics><msub><mi>x</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub></semantics></math> e la parte destra per il punto <math id="S4.SS1.SSSx1.p8.m6" class="ltx_Math" alttext="x_{i}" display="inline"><semantics><msub><mi>x</mi><mi>i</mi></msub></semantics></math>, notiamo che si ottiene un triangolo, che e’ il kernel di ricostruzione.</p>
+</div>
+<figure id="S4.SS1.SSSx1.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez10-lineareDimostrazione.webp" width="1188" height="617" loading="lazy" alt="In alto la formula x(t) = -x_i/Ts (t - iTs) + x_i + x_{i+1}/Ts (t - iTs), divisa in due riquadri, uno verde per i primi due termini e uno azzurro per l'ultimo, con Ts cerchiato. In basso un grafico con indici i-1, i, i+1, i+2: la retta verde scende da x_i a 0 in i+1 e la retta azzurra sale da 0 in i a x_{i+1}, mentre il segmento blu unisce x_i e x_{i+1}."></div>
+</figure>
+</div>
+</section>
+</div>
+</section>
+<section id="S4.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.4.2</span> Funzionamento kernel ottimo</h3>
+
+<div id="S4.SS2.p1" class="ltx_para">
+<p class="ltx_p">Il kernel di interpolazione ottimo previsto da Shannon ricordiamo essere:</p>
+</div>
+<div id="S4.SS2.p2" class="ltx_para">
+<div id="Ex28" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex28.m1" class="ltx_Math" alttext="\begin{split}P(t)=\begin{cases}\frac{\sin\pi tF_{s}}{\pi tF_{s}}\text{ se }t%
+\neq 0\\
+1\text{ se }t=0\\
+\end{cases}=sinc\pi tF_{s}\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" displaystyle="true"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mi>P</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mo>{</mo><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mstyle displaystyle="false"><mfrac><mrow><mi>sin</mi><mo lspace="0.167em">⁡</mo><mrow><mi>π</mi><mo>⁢</mo><mi>t</mi><mo>⁢</mo><msub><mi>F</mi><mi>s</mi></msub></mrow></mrow><mrow><mi>π</mi><mo>⁢</mo><mi>t</mi><mo>⁢</mo><msub><mi>F</mi><mi>s</mi></msub></mrow></mfrac></mstyle><mo>⁢</mo><mtext> se </mtext><mo>⁢</mo><mi>t</mi></mrow><mo>≠</mo><mn>0</mn></mrow></mtd><mtd></mtd></mtr><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mn>1</mn><mo>⁢</mo><mtext> se </mtext><mo>⁢</mo><mi>t</mi></mrow><mo>=</mo><mn>0</mn></mrow></mtd><mtd></mtd></mtr></mtable></mrow><mo>=</mo><mrow><mi>s</mi><mo>⁢</mo><mi>i</mi><mo>⁢</mo><mi>n</mi><mo>⁢</mo><mi>c</mi><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>t</mi><mo>⁢</mo><msub><mi>F</mi><mi>s</mi></msub></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<figure id="S4.SS2.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez12-kernelOttimo.webp" width="1090" height="195" loading="lazy" alt="Grafico di una funzione rossa oscillante a forma di seno cardinale in funzione di t. Vale 1 in t = 0 e passa per zero in ±Ts, ±2Ts, ±3Ts, punti segnati con evidenziatore verde e due frecce verdi sui punti Ts e 2Ts. Le oscillazioni si smorzano; a destra c'è &quot;va a zero ~ 1/t&quot;."></div>
+</figure>
+<div id="S4.SS2.p3" class="ltx_para">
+<p class="ltx_p">Ma come funziona? E’ una funzione che oscilla da meno a piu’ infinito, pari e si rastrema all’infinito come <math id="S4.SS2.p3.m1" class="ltx_Math" alttext="\frac{1}{T}" display="inline"><semantics><mfrac><mn>1</mn><mi>T</mi></mfrac></semantics></math>, come un iperbole, che va a zero lentamente. Inoltre passa per zero tutte le volte che <math id="S4.SS2.p3.m2" class="ltx_Math" alttext="\pi tf_{s}=k\pi,k\in\mathbf{Z}" display="inline"><semantics><mrow><mrow><mrow><mi>π</mi><mo>⁢</mo><mi>t</mi><mo>⁢</mo><msub><mi>f</mi><mi>s</mi></msub></mrow><mo>=</mo><mrow><mi>k</mi><mo>⁢</mo><mi>π</mi></mrow></mrow><mo>,</mo><mrow><mi>k</mi><mo>∈</mo><mi>𝐙</mi></mrow></mrow></semantics></math>, ovvero <math id="S4.SS2.p3.m3" class="ltx_Math" alttext="t=\frac{1}{f_{s}}k=k\cdot T_{s}" display="inline"><semantics><mrow><mi>t</mi><mo>=</mo><mrow><mfrac><mn>1</mn><msub><mi>f</mi><mi>s</mi></msub></mfrac><mo>⁢</mo><mi>k</mi></mrow><mo>=</mo><mrow><mi>k</mi><mo lspace="0.222em" rspace="0.222em">⋅</mo><msub><mi>T</mi><mi>s</mi></msub></mrow></mrow></semantics></math>.
+E’ zero in tutti i campioni (dove passa la griglia di campionamento) eccetto lo zero, dove vale 1.
+Quello che dobbiamo fare e’ prendere questo kernel e giustapporrlo ad ogni campione e poi sommarli.</p>
+</div>
+<div id="S4.SS2.p4" class="ltx_para">
+<p class="ltx_p">Esempio:</p>
+</div>
+<figure id="S4.SS2.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez12-usoKernelOttimo.webp" width="1270" height="549" loading="lazy" alt="In alto, grafico di x(t) (curva nera sinusoidale) con campioni x[n] segnati da punti rossi e la relazione t = n/fs = n Ts. In basso, grafico di x[n] con più kernel a seno cardinale (verde, azzurro, giallo) centrati su campioni consecutivi e sommati, con frecce verso -∞ e +∞ e Ts segnato sull'asse."></div>
+</figure>
+<div id="S4.SS2.p5" class="ltx_para">
+<p class="ltx_p">dobbiamo prendere il kernel di ricostruzione e modularlo su ogni punto, non possiamo fermarci da <math id="S4.SS2.p5.m1" class="ltx_Math" alttext="-T_{s},T_{s}" display="inline"><semantics><mrow><mrow><mo>−</mo><msub><mi>T</mi><mi>s</mi></msub></mrow><mo>,</mo><msub><mi>T</mi><mi>s</mi></msub></mrow></semantics></math> ma va fatto per tutti i campioni, fino ad infinito.</p>
+</div>
+<div id="S4.SS2.p6" class="ltx_para">
+<p class="ltx_p">Ma dato che nella realta’ abbiamo un numero di campioni finito lo possiamo usare.
+Ora ipotizzando una canzone di 4 minuti ed ipotizzando di campionarla a 44100 campioni al secondo (che e’ quello che si fa nella realta’), per ricostruire perfettamente il segnale dovremmo avere 10584000 kernel. Quindi capiamo che per un problema di prestazioni raramente si usa questo kernel per ricostruire i segnali, ma ci accontentiamo del fatto che un segnale rispetti il teorema di Shannon e poi usiamo un kernel piu’ facile (ad esempio lineare, 0, quadratico).</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>

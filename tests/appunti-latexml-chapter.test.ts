@@ -154,3 +154,23 @@ test('a tabular inside a paragraph keeps its line without nesting tables in a <p
     assert.deepEqual([...line.matchAll(/<table\b|alttext="([^"]*)"/g)].map((match) => match[1] ?? 'table'), ['table', '\\cdot', 'table', '=', 'table']);
   }
 });
+
+/** A display equation of `tokens` symbols, as LaTeXML writes it (its TeX annotation included). */
+const displayMath = (id: string, tokens: number): string =>
+  `<math id="${id}" class="ltx_Math" alttext="x" display="block"><semantics><mrow>${'<mi>x</mi>'.repeat(tokens)}</mrow><annotation encoding="application/x-tex">x</annotation></semantics></math>`;
+
+test('a display equation wide enough to scroll can be reached with the keyboard, a short one adds no tab stop', () => {
+  const page = fixture('mini-Ch2.html').replace('<div id="p1"', `<div id="eq">${displayMath('long', 60)}${displayMath('short', 5)}</div>\n<div id="p1"`);
+  const { html } = processChapter(page, LINKS);
+  assert.match(html, /<math id="long"[^>]*tabindex="0"/);
+  assert.doesNotMatch(html, /<math id="short"[^>]*tabindex/);
+});
+
+test('a heading with math lists its text once in the table of contents, without the TeX annotation or invisible operators', () => {
+  const math =
+    '<math id="S1.m1" class="ltx_Math" alttext="2\\pi" display="inline"><semantics><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow><annotation encoding="application/x-tex">2\\pi</annotation></semantics></math>';
+  const page = fixture('mini-Ch1.html').replace(/(<span class="ltx_tag ltx_tag_section header-section-number">1\.1<\/span>) Densità/, `$1 Periodo ${math}`);
+  const { sezioni, html } = processChapter(page, LINKS);
+  assert.equal(sezioni[0]?.titolo, 'Periodo 2π');
+  assert.match(html, /<annotation|<math/, 'the page keeps the math itself');
+});
