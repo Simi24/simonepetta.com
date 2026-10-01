@@ -223,6 +223,11 @@
   display: none;
 }
 
+/* The title of a tcolorbox, kept from the source as a heading of its content. */
+.prose .tcbtitle {
+  font-weight: 700;
+}
+
 /* Code listings: plain text on the surface color, line numbers from a counter. */
 .prose pre.listing {
   counter-reset: ln;

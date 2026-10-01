@@ -41,6 +41,10 @@ export interface ProcessedChapter extends ChapterHead {
   hasMath: boolean;
   /** How many figures were replaced by the "pending" marker (figures are ticket #37). */
   figurePending: number;
+  /** How many tcolorbox environments the stand-in binding marked (the markers are removed from `html`). */
+  tcolorboxes: number;
+  /** The plain text of each tcolorbox `title=`, which stays in `html` as a heading. */
+  tcolorboxTitles: string[];
 }
 
 const FIGURE_PENDING = '<p class="figura-pending">Figura in attesa di conversione.</p>';
@@ -122,6 +126,37 @@ function dropElements(tokens: readonly Token[], predicate: (token: Token) => boo
   return kept;
 }
 
+const isTcolorboxMarker = (token: Token): boolean =>
+  token.type === 'open' && token.name === 'span' && hasClass(token, 'tcolorbox');
+
+function tcolorboxTitlesOf(tokens: readonly Token[]): string[] {
+  const titles: string[] = [];
+  tokens.forEach((token, i) => {
+    if (token.type === 'open' && token.name === 'p' && hasClass(token, 'tcbtitle')) {
+      titles.push(decodeEntities(textOf(tokens, i, elementEnd(tokens, i))).replace(/\s+/g, ' ').trim());
+    }
+  });
+  return titles;
+}
+
+/** `<p class="ltx_p">` and `<div class="ltx_para">` with nothing but blanks inside, e.g. what a removed marker leaves behind. */
+function dropEmptyParagraphs(tokens: readonly Token[]): Token[] {
+  const out: Token[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i]!;
+    const isParagraph = token.type === 'open' && ((token.name === 'p' && hasClass(token, 'ltx_p')) || (token.name === 'div' && hasClass(token, 'ltx_para')));
+    if (token.type === 'open' && isParagraph) {
+      const end = elementEnd(tokens, i);
+      if (tokens.slice(i + 1, end).every((inner) => inner.type === 'text' && inner.raw.trim() === '')) {
+        i = end;
+        continue;
+      }
+    }
+    out.push(token);
+  }
+  return out;
+}
+
 /** Replaces every element matching `predicate`, with its content, by `markup`. */
 function replaceElements(tokens: readonly Token[], predicate: (token: Token) => boolean, markup: string): Token[] {
   const out: Token[] = [];
@@ -191,6 +226,10 @@ export function processChapter(page: string, links: LinkTargets): ProcessedChapt
 
   const sezioni = readSections(tokens);
 
+  const tcolorboxes = tokens.filter((t) => t.type === 'open' && isTcolorboxMarker(t)).length;
+  const tcolorboxTitles = tcolorboxTitlesOf(tokens);
+  tokens = dropElements(tokens, isTcolorboxMarker);
+  tokens = dropEmptyParagraphs(tokens);
   tokens = replaceElements(tokens, (t) => t.type === 'open' && t.name === 'svg', FIGURE_PENDING);
   tokens = dropElements(tokens, (t) => t.type === 'open' && (t.name === 'button' || t.name === 'annotation' || hasClass(t, 'ltx_listing_data')));
   tokens = flattenCodeListings(tokens);
@@ -211,5 +250,5 @@ export function processChapter(page: string, links: LinkTargets): ProcessedChapt
   });
 
   const html = serialize(tokens).trim();
-  return { ...head, sezioni, html, hasMath: /<math[\s>]/.test(html), figurePending };
+  return { ...head, sezioni, html, hasMath: /<math[\s>]/.test(html), figurePending, tcolorboxes, tcolorboxTitles };
 }

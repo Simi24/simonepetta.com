@@ -481,65 +481,73 @@
 <span class="ltx_tag ltx_tag_item">•</span><div id="S4.I1.i3.p1" class="ltx_para"><p class="ltx_p">Il training funziona tipo:</p>
 <div class="ltx_logical-block">
                 
-<figure id="algorithm3" class="ltx_float ltx_minipage ltx_align_center ltx_align_middle">
+<div class="ltx_logical-block ltx_minipage ltx_align_center ltx_align_middle">
+                  
+<div id="S4.I1.i3.p1.p1" class="ltx_para">
+
+</div>
+                  
+<figure id="algorithm3" class="ltx_float ltx_algorithm">
 <div class="bml_listing"><div class="ltx_listing ltx_lst_numbers_left ltx_listing">
 <div class="ltx_listingline">
-                        <span class="ltx_tag ltx_tag_listingline">1</span>
-                      <code>
+                          <span class="ltx_tag ltx_tag_listingline">1</span>
+                        <code>
 <span class="ltx_text ltx_font_bold">for</span> <em class="ltx_emph ltx_font_italic"><math id="algorithm3.m1" class="ltx_Math" alttext="n" display="inline"><semantics><mi>n</mi></semantics></math> epoche</em> <span class="ltx_text ltx_font_bold">do</span></code>
 </div>
 <div class="ltx_listingline">
-                        <span class="ltx_tag ltx_tag_listingline">2</span>
-                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+                          <span class="ltx_tag ltx_tag_listingline">2</span>
+                        <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
 <span class="ltx_text ltx_font_typewriter">dividi dataset in batch</span>;</code>
 </div>
 <div class="ltx_listingline">
-                        <span class="ltx_tag ltx_tag_listingline">3</span>
-                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+                          <span class="ltx_tag ltx_tag_listingline">3</span>
+                        <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
 <span class="ltx_text ltx_font_bold">foreach</span> <em class="ltx_emph ltx_font_typewriter ltx_font_italic">every batch</em> <span class="ltx_text ltx_font_bold">do</span></code>
 </div>
 <div class="ltx_listingline">
-                        <span class="ltx_tag ltx_tag_listingline">4</span>
-                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+                          <span class="ltx_tag ltx_tag_listingline">4</span>
+                        <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
 <span class="ltx_text ltx_font_bold">foreach</span> <em class="ltx_emph ltx_font_typewriter ltx_font_italic">every sample</em> <span class="ltx_text ltx_font_bold">do</span></code>
 </div>
 <div class="ltx_listingline">
-                        <span class="ltx_tag ltx_tag_listingline">5</span>
-                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+                          <span class="ltx_tag ltx_tag_listingline">5</span>
+                        <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
 <span class="ltx_text ltx_font_typewriter">valutazione del modello</span>;</code>
 </div>
 <div class="ltx_listingline">
-                        <span class="ltx_tag ltx_tag_listingline">6</span>
-                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+                          <span class="ltx_tag ltx_tag_listingline">6</span>
+                        <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
 <span class="ltx_text ltx_font_typewriter">calcolo della loss</span>;</code>
 </div>
 <div class="ltx_listingline">
-                        <span class="ltx_tag ltx_tag_listingline">7</span>
-                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+                          <span class="ltx_tag ltx_tag_listingline">7</span>
+                        <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
 <span class="ltx_text ltx_font_typewriter">gradient backpropagation</span>;</code>
 </div>
 <div class="ltx_listingline">
-                        <span class="ltx_tag ltx_tag_listingline">8</span>
-                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+                          <span class="ltx_tag ltx_tag_listingline">8</span>
+                        <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
 </code>
 </div>
 <div class="ltx_listingline">
-                        <span class="ltx_tag ltx_tag_listingline">9</span>
-                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   <span class="ltx_text ltx_font_typewriter">update del modello</span>;</code>
+                          <span class="ltx_tag ltx_tag_listingline">9</span>
+                        <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   <span class="ltx_text ltx_font_typewriter">update del modello</span>;</code>
 </div>
 <div class="ltx_listingline">
-                        <span class="ltx_tag ltx_tag_listingline">10</span>
-                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+                          <span class="ltx_tag ltx_tag_listingline">10</span>
+                        <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
 </code>
 </div>
 <div class="ltx_listingline">
-                        <span class="ltx_tag ltx_tag_listingline">11</span>
-                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>   </code>
+                          <span class="ltx_tag ltx_tag_listingline">11</span>
+                        <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>   </code>
 </div>
 <div class="ltx_listingline"><code></code></div>
 </div></div>
 <figcaption class="ltx_caption"><span class="ltx_tag ltx_tag_float"><span class="ltx_text ltx_font_bold">Algorithm 3</span> </span>Training Process</figcaption>
 </figure>
+                
+</div>
               
 </div>
 </div>

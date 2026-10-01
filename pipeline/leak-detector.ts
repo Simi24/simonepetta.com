@@ -1,3 +1,5 @@
+import { elementEnd, hasClass, tokenize } from './html-tokens.ts';
+
 /**
  * The leak detector (SPEC.md §7.5): conversion fails silently, so the source is compared with
  * the output on everything that can vanish without an error. Any leak fails the conversion and
@@ -10,6 +12,8 @@ export interface ReportedChapter {
   titolo: string;
   html: string;
   figurePending: number;
+  tcolorboxes?: number;
+  tcolorboxTitles?: readonly string[];
 }
 
 export interface ConversionReport {
@@ -31,6 +35,47 @@ const count = (text: string, pattern: RegExp): number => text.match(pattern)?.le
 
 function theoremNames(source: string): string[] {
   return [...source.matchAll(/\\newtheorem\*?\{([^}]+)\}/g)].map((match) => match[1]!);
+}
+
+/**
+ * Top-level display equations in a chapter: an aligned group is one equation however many rows
+ * it has, so rows inside a group are not counted again.
+ */
+export function countDisplayEquations(html: string): number {
+  const tokens = tokenize(html);
+  let total = 0;
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i]!;
+    if (token.type !== 'open' || (!hasClass(token, 'ltx_equation') && !hasClass(token, 'ltx_equationgroup'))) continue;
+    total++;
+    if (hasClass(token, 'ltx_equationgroup')) i = elementEnd(tokens, i);
+  }
+  return total;
+}
+
+/** The `title=` of each `\begin{tcolorbox}[...]` in the source, braces balanced. */
+function tcolorboxTitlesInSource(source: string): string[] {
+  const titles: string[] = [];
+  for (const match of source.matchAll(/\\begin\{tcolorbox\}\s*\[/g)) {
+    let depth = 0;
+    let end = match.index + match[0].length;
+    for (; end < source.length; end++) {
+      const char = source[end];
+      if (char === '{') depth++;
+      else if (char === '}') depth--;
+      else if (char === ']' && depth === 0) break;
+    }
+    const options = source.slice(match.index + match[0].length, end);
+    const title = /(?:^|,)\s*title\s*=\s*(\{(?:[^{}]|\{[^{}]*\})*\}|[^,]*)/.exec(options)?.[1];
+    if (title !== undefined) titles.push(title.replace(/^\{(.*)\}$/s, '$1').trim());
+  }
+  return titles;
+}
+
+/** The title as plain words, or `undefined` when it has math or macros beyond simple font switches (only the count is checked then). */
+function plainWords(title: string): string | undefined {
+  const stripped = title.replace(/\\(?:bf|it|em|sc|tt|textbf|textit|emph|texttt)\b/g, '').replace(/[{}]/g, '');
+  return /[\\$]/.test(stripped) ? undefined : stripped.replace(/\s+/g, ' ').trim();
 }
 
 function describeMismatch(label: string, expected: number, actual: number, relation: 'exactly' | 'at least'): string | undefined {
@@ -71,7 +116,20 @@ export function detectLeaks(report: ConversionReport): string[] {
     count(source, /\\begin\{(?:equation|align|alignat|flalign|gather|multline|eqnarray)\*?\}/g) +
     count(source, /\\\[/g) +
     Math.floor(count(source, /\$\$/g) / 2);
-  check(describeMismatch('display equation(s)', equations, count(output, /class="ltx_equation(?:group)?[ "]/g), 'at least'));
+  const outputEquations = report.chapters.reduce((sum, chapter) => sum + countDisplayEquations(chapter.html), 0);
+  check(describeMismatch('display equation(s)', equations, outputEquations, 'exactly'));
+
+  const boxes = count(source, /\\begin\{tcolorbox\}/g);
+  check(describeMismatch('tcolorbox(es)', boxes, report.chapters.reduce((sum, chapter) => sum + (chapter.tcolorboxes ?? 0), 0), 'exactly'));
+  const sourceTitles = tcolorboxTitlesInSource(source);
+  const outputTitles = report.chapters.flatMap((chapter) => chapter.tcolorboxTitles ?? []);
+  check(describeMismatch('tcolorbox title(s)', sourceTitles.length, outputTitles.length, 'exactly'));
+  for (const title of sourceTitles) {
+    const plain = plainWords(title);
+    if (plain !== undefined && !outputTitles.some((out) => out.replace(/\s+/g, ' ') === plain)) {
+      leaks.push(`the tcolorbox title "${plain}" of the source is not in the output`);
+    }
+  }
 
   const markers = new Map<string, number>();
   for (const match of output.matchAll(/ltx_ERROR|ltx_missing[\w-]*/g)) markers.set(match[0], (markers.get(match[0]) ?? 0) + 1);

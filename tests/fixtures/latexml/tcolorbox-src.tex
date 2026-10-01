@@ -1,0 +1,22 @@
+\documentclass{report}
+\usepackage{tcolorbox}
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\begin{document}
+\chapter{Uno}
+\begin{center}
+\begin{minipage}{.8\textwidth}
+\begin{tcolorbox}[colback=white, sharp corners, title=Il mio {\bf titolo}, boxrule=.3mm]
+\begin{algorithm}[H]
+\caption{Algo}
+$x \leftarrow 1$;
+\end{algorithm}
+\end{tcolorbox}
+\end{minipage}
+\end{center}
+\begin{tcolorbox}[title={Altro, con virgola}]
+Solo testo nel box.
+\end{tcolorbox}
+\begin{tcolorbox}
+Senza titolo.
+\end{tcolorbox}
+\end{document}

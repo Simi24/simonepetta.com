@@ -119,3 +119,20 @@ test('a TikZ picture LaTeXML drew as inline SVG is marked pending too: its color
   assert.match(result.html, /Figura in attesa di conversione/);
   assert.match(result.html, /<figcaption/);
 });
+
+test('a tcolorbox keeps its content and its title, which becomes a heading; the pipeline markers are gone', () => {
+  const result = processChapter(fixture('tcolorbox-Ch1.html'), LINKS);
+  assert.equal(result.tcolorboxes, 3);
+  assert.deepEqual(result.tcolorboxTitles, ['Il mio titolo', 'Altro, con virgola']);
+  assert.match(result.html, /<p class="ltx_p tcbtitle">Il mio <span class="ltx_text ltx_font_bold">titolo<\/span><\/p>/);
+  assert.match(result.html, /Solo testo nel box\./);
+  assert.match(result.html, /<math[^>]*alttext="x\\leftarrow 1"/);
+  assert.doesNotMatch(result.html, /class="ltx_text tcolorbox"/);
+  assert.doesNotMatch(result.html, /<p class="ltx_p">\s*<\/p>/);
+});
+
+test('a paragraph block left empty by a removed marker is dropped too', () => {
+  const page = fixture('mini-Ch2.html').replace('<div id="p1"', '<div id="empty" class="ltx_para">\n\n</div>\n<div id="p1"');
+  assert.match(page, /id="empty"/);
+  assert.doesNotMatch(processChapter(page, LINKS).html, /id="empty"/);
+});
