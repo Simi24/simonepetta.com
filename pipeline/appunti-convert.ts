@@ -4,8 +4,9 @@ import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { APPUNTI_CONTENT_DIR } from '../src/config/appunti-content-dir.ts';
-import { buildFromLatexml, LeakError, parseLatexmlErrors } from './appunti-build.ts';
-import { writeCorsoMeta } from './appunti-meta.ts';
+import { LeakError, parseLatexmlErrors, prepareBuild } from './appunti-build.ts';
+import { installConversion } from './appunti-install.ts';
+import { recoverInterruptedSwap } from './course-swap.ts';
 
 /**
  * Converts one course (SPEC.md §7.4), outside the site build:
@@ -16,7 +17,8 @@ import { writeCorsoMeta } from './appunti-meta.ts';
  * image `simonepetta-appunti`) on a temporary copy of `appunti/<slug>/src/`, then:
  *   1. post-processes the chapters into `build/` fragments (`appunti-build.ts`),
  *      after the leak detector found nothing;
- *   2. copies the PDF compiled from the same source to `<slug>.pdf` and refreshes `meta.json`.
+ *   2. counts the pages of the PDF compiled from the same source, then swaps `build/`, `<slug>.pdf`
+ *      and `meta.json` in together (`course-swap.ts`).
  * If anything leaks or fails, nothing in the course folder changes.
  */
 
@@ -50,6 +52,7 @@ function convert(contentDir: string, slug: string, keepWorkdir: boolean): void {
     throw new Error(`${relative('.', srcDir)}/${MAIN}.tex not found: copy the course's LaTeX sources into src/ first (SPEC.md §7.4)`);
   }
 
+  recoverInterruptedSwap(courseDir);
   ensureImage();
   const work = mkdtempSync(join(tmpdir(), `appunti-${slug}-`));
   try {
@@ -65,7 +68,7 @@ function convert(contentDir: string, slug: string, keepWorkdir: boolean): void {
     if (!existsSync(pdf)) throw new Error('the PDF was not produced: the course does not compile');
     const latexmlErrors = parseLatexmlErrors(readFileSync(join(work, 'auxdir/latexmlaux', `${MAIN}.latexml.log`), 'utf8'));
 
-    const meta = buildFromLatexml({
+    const prepared = prepareBuild({
       htmlDir: join(work, 'auxdir/html', MAIN),
       courseDir,
       corso: slug,
@@ -73,8 +76,8 @@ function convert(contentDir: string, slug: string, keepWorkdir: boolean): void {
       latexmlErrors,
     });
 
-    copyFileSync(pdf, join(courseDir, `${slug}.pdf`));
-    const { pagine } = writeCorsoMeta(contentDir, slug);
+    const pagine = installConversion({ courseDir, corso: slug, prepared, pdfPath: pdf });
+    const { meta } = prepared;
     console.log(`${slug}: ${meta.capitoli.length} chapter(s), ${meta.figureInAttesa} figure(s) pending, PDF ${pagine} page(s)`);
   } finally {
     if (keepWorkdir) console.log(`Work directory kept: ${work}`);

@@ -27,11 +27,14 @@ export function pageCount(pdfPath: string): number {
   return parsePdfinfoPages(output);
 }
 
+/** The text of a course's `meta.json`. */
+export const serializeCorsoMeta = (meta: CorsoMeta): string => `${JSON.stringify(meta, null, 2)}\n`;
+
 /** Computes and writes one course's `meta.json` from its `<slug>.pdf`, and returns it. */
 export function writeCorsoMeta(contentDir: string, slug: string): CorsoMeta {
   const pdfPath = join(contentDir, slug, `${slug}.pdf`);
   const meta: CorsoMeta = { pagine: pageCount(pdfPath) };
-  writeFileSync(join(contentDir, slug, 'meta.json'), `${JSON.stringify(meta, null, 2)}\n`);
+  writeFileSync(join(contentDir, slug, 'meta.json'), serializeCorsoMeta(meta));
   return meta;
 }
 

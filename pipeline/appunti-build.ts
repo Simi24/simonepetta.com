@@ -1,5 +1,6 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { swapIn, type Staged } from './course-swap.ts';
 import { assignChapterSlugs, type RecordedChapter } from './chapter-slugs.ts';
 import { detectLeaks } from './leak-detector.ts';
 import { processChapter, readChapterHead, type ProcessedChapter, type Sezione } from './latexml-chapter.ts';
@@ -56,31 +57,34 @@ function readPreviousSlugs(courseDir: string): RecordedChapter[] {
   return (meta.capitoli ?? []).map(({ numero, titolo, slug }) => ({ numero, titolo, slug }));
 }
 
-/** Replaces `<courseDir>/build` with `files` in one rename, so a failure never leaves a half-written build. */
-function swapBuild(courseDir: string, files: ReadonlyMap<string, string>): void {
-  const next = join(courseDir, 'build.next');
-  const current = join(courseDir, 'build');
-  const old = join(courseDir, 'build.old');
-  rmSync(next, { recursive: true, force: true });
-  rmSync(old, { recursive: true, force: true });
-  mkdirSync(next, { recursive: true });
-  for (const [name, content] of files) writeFileSync(join(next, name), content);
-  if (existsSync(current)) renameSync(current, old);
-  renameSync(next, current);
-  rmSync(old, { recursive: true, force: true });
+/** The `build/` folder as a staged entry for `swapIn`. */
+export function stagedBuild(files: ReadonlyMap<string, string>): Staged {
+  return {
+    name: 'build',
+    write: (path) => {
+      mkdirSync(path, { recursive: true });
+      for (const [name, content] of files) writeFileSync(join(path, name), content);
+    },
+  };
+}
+
+export interface PreparedBuild {
+  meta: BuildMeta;
+  /** File name to content, for `build/`. */
+  files: ReadonlyMap<string, string>;
 }
 
 /**
- * The Docker-free half of a conversion: LaTeXML's chapter pages in, committed `build/` out.
- * Everything is computed and checked in memory first; `build/` is only replaced when the leak
- * detector (SPEC.md §7.5) finds nothing, so a course keeps its last good build.
+ * The Docker-free half of a conversion: LaTeXML's chapter pages in, the new `build/` out, in
+ * memory. Nothing is written; this throws a `LeakError` when the leak detector (SPEC.md §7.5)
+ * finds anything, so a course keeps its last good build.
  */
-export function buildFromLatexml(input: BuildInput): BuildMeta {
-  const files = readdirSync(input.htmlDir);
-  const chapterFiles = files
+export function prepareBuild(input: BuildInput): PreparedBuild {
+  const outputFiles = readdirSync(input.htmlDir);
+  const chapterFiles = outputFiles
     .filter((file) => CHAPTER_FILE.test(file))
     .sort((a, b) => Number(CHAPTER_FILE.exec(a)![1]) - Number(CHAPTER_FILE.exec(b)![1]));
-  const extraOutputFiles = files.filter((file) => file.endsWith('.html') && file !== 'index.html' && !CHAPTER_FILE.test(file));
+  const extraOutputFiles = outputFiles.filter((file) => file.endsWith('.html') && file !== 'index.html' && !CHAPTER_FILE.test(file));
 
   const pages = chapterFiles.map((file) => ({ file, html: readFileSync(join(input.htmlDir, file), 'utf8') }));
   const heads = pages.map((page) => readChapterHead(page.html));
@@ -103,8 +107,14 @@ export function buildFromLatexml(input: BuildInput): BuildMeta {
     figureInAttesa: chapters.reduce((sum, chapter) => sum + chapter.figurePending, 0),
   };
 
-  const out = new Map<string, string>(chapters.map((chapter, i) => [`${slugs[i]}.html`, `${chapter.html}\n`]));
-  out.set('meta.json', `${JSON.stringify(meta, null, 2)}\n`);
-  swapBuild(input.courseDir, out);
+  const files = new Map<string, string>(chapters.map((chapter, i) => [`${slugs[i]}.html`, `${chapter.html}\n`]));
+  files.set('meta.json', `${JSON.stringify(meta, null, 2)}\n`);
+  return { meta, files };
+}
+
+/** `prepareBuild`, then replaces `build/` alone (the PDF and page count are `installConversion`'s). */
+export function buildFromLatexml(input: BuildInput): BuildMeta {
+  const { meta, files } = prepareBuild(input);
+  swapIn(input.courseDir, [stagedBuild(files)]);
   return meta;
 }
