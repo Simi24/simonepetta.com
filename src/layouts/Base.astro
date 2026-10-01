@@ -74,6 +74,7 @@ const beaconData = JSON.stringify({ token: beaconToken });
       )
     }
     {jsonLdScript && <script type="application/ld+json" set:html={jsonLdScript} />}
+    <slot name="head" />
   </head>
   <body>
     <div class="site">

@@ -1,0 +1,70 @@
+\documentclass[a4paper,12pt]{report}
+\usepackage[left=2.5cm, right=2.5cm, top=3cm, bottom=3cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage[table]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{calc,arrows.meta,trees}
+\usepackage{subcaption}
+\usepackage{tcolorbox}
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+
+\title{GPU computing}
+\author{Simone Petta}
+\date{A.A. 2024/2025}
+
+\lstdefinestyle{mystyle}{
+    language=C,            % Linguaggio predefinito
+    backgroundcolor=\color{gray!10}, % Sfondo leggermente grigio
+    basicstyle=\ttfamily\footnotesize, % Font monospace piccolo
+    keywordstyle=\color{blue},   % Parole chiave in blu
+    stringstyle=\color{red},     % Stringhe in rosso
+    commentstyle=\color{green!50!black}, % Commenti in verde scuro
+    numberstyle=\tiny\color{gray}, % Numeri di riga in grigio piccolo
+    numbers=left,                % Numerazione di riga a sinistra
+    stepnumber=1,                 % Numerazione per ogni riga
+    showspaces=false,             % Non mostrare spazi
+    showstringspaces=false,       % Non mostrare spazi nelle stringhe
+    frame=single,                 % Bordo intorno al codice
+    tabsize=4,                    % Dimensione del tab
+    breaklines=true,              % Abilita il ritorno a capo automatico
+    breakatwhitespace=true,       % Va a capo solo sugli spazi
+    captionpos=b                  % Posizione della didascalia (b = bottom)
+}
+
+\lstset{style=mystyle}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\chapter{Introduzione}
+\include{chapters/intro}
+
+\chapter{Modello di programmazione CUDA}
+\include{chapters/CUDA}
+
+\chapter{Architetture delle GPU}
+\include{chapters/architettureGPU}
+
+\chapter{Memorie}
+\include{chapters/memorie}
+
+\chapter{Ottimizzazione delle prestazioni}
+\include{chapters/ottimizzazionePrestazioni}
+
+\chapter{Numba}
+\include{chapters/numba}
+
+\chapter{Pattern Paralleli}
+\include{chapters/patternParalleli}
+
+\chapter{PyTorch}
+\include{chapters/torch}
+
+
+\end{document}

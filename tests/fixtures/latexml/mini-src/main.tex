@@ -1,0 +1,33 @@
+\documentclass{report}
+\usepackage{amsmath,amsthm}
+\newtheorem{theorem}{Teorema}[chapter]
+\newtheorem{definition}[theorem]{Definizione}
+\theoremstyle{definition}
+\newtheorem{example}[theorem]{Esempio}
+\title{Mini}
+\begin{document}
+\chapter{Variabili aleatorie continue}
+\section{Densità}
+Una variabile $X$ è \emph{continua} se esiste $f\ge 0$.\footnote{Per questo gli estremi non contano.}
+\begin{definition}
+Sia $f$ una densità.
+\end{definition}
+\begin{theorem}[Disuguaglianza di Čebyšëv]\label{thm:c}
+Per ogni $k>0$
+\begin{equation}
+P(|X-\mu|\ge k\sigma)\le \frac1{k^2}.
+\end{equation}
+\end{theorem}
+\begin{proof}
+Si spezza l'integrale. Vedi il Teorema~\ref{thm:c}.
+\end{proof}
+\begin{example}
+Esponenziale.
+\end{example}
+\section{Allineamenti}
+\begin{align*}
+a &= b\\ c &= d
+\end{align*}
+\chapter{Secondo}
+Testo con riferimento al capitolo~\ref{thm:c}.
+\end{document}

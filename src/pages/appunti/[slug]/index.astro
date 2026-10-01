@@ -3,6 +3,7 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import CoursePage from '../../../components/corso/CoursePage.astro';
 import Base from '../../../layouts/Base.astro';
 import { APPUNTI_CONTENT_DIR } from '../../../config/appunti-content-dir.ts';
+import { readCorsoBuild } from '../../../lib/corso-build.ts';
 import { corsoJsonLd } from '../../../lib/corso-json-ld.ts';
 import { readCorsoMeta } from '../../../lib/corso-meta.ts';
 import { isPublished } from '../../../lib/corso-published.ts';
@@ -22,6 +23,7 @@ const { entry } = Astro.props;
 const corso = entry.data;
 const stato = deriveStato({ fonte: corso.fonte, hasValidBuild: hasValidBuild(APPUNTI_CONTENT_DIR, entry.id) });
 const meta = readCorsoMeta(APPUNTI_CONTENT_DIR, entry.id);
+const capitoli = stato === 'html' ? readCorsoBuild(APPUNTI_CONTENT_DIR, entry.id)?.capitoli : undefined;
 const pdfHref = `/appunti/${entry.id}/${entry.id}.pdf`;
 const pageUrl = new URL(`/appunti/${entry.id}/`, Astro.site).toString();
 const description = corsoDescription(corso);
@@ -33,5 +35,5 @@ const description = corsoDescription(corso);
   og={{ image: '/og/appunti.png', description, type: 'article' }}
   jsonLd={corsoJsonLd(corso, pageUrl)}
 >
-  <CoursePage corso={corso} stato={stato} meta={meta} pdfHref={pdfHref} />
+  <CoursePage corso={corso} stato={stato} meta={meta} pdfHref={pdfHref} capitoli={capitoli} slug={entry.id} />
 </Base>

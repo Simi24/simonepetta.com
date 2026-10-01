@@ -1,5 +1,6 @@
 ---
 import { site } from '../../config/site.ts';
+import type { Capitolo } from '../../lib/corso-build.ts';
 import type { CorsoMeta } from '../../lib/corso-meta.ts';
 import { corsoNotice, degreeProgramme } from '../../lib/corso-presentation.ts';
 import type { StatoCorso } from '../../lib/corso-stato.ts';
@@ -10,9 +11,12 @@ interface Props {
   stato: StatoCorso;
   meta?: CorsoMeta | undefined;
   pdfHref: string;
+  /** The chapters of a converted course (SPEC.md §7.3); absent for a PDF-only one. */
+  capitoli?: readonly Capitolo[] | undefined;
+  slug: string;
 }
 
-const { corso, stato, meta, pdfHref } = Astro.props;
+const { corso, stato, meta, pdfHref, capitoli, slug } = Astro.props;
 const annoLabel = corso.tipo === 'tesi' ? 'Anno di discussione' : 'Anno accademico';
 const pdfLinkText = meta ? `Scarica il PDF (${meta.pagine} pagine)` : 'Scarica il PDF';
 const fonti = corso.fonti ?? [];
@@ -66,6 +70,22 @@ const fonti = corso.fonti ?? [];
       {pdfLinkText}
     </a>
   </div>
+  {
+    capitoli && capitoli.length > 0 && (
+      <section class="capitoli">
+        <h2>Capitoli</h2>
+        <ol>
+          {capitoli.map((capitolo) => (
+            <li>
+              <a href={`/appunti/${slug}/${capitolo.slug}/`}>
+                <span class="num">{capitolo.numero}</span> {capitolo.titolo}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    )
+  }
   <section class="fonti">
     <h2>Fonti</h2>
     {
@@ -100,7 +120,7 @@ const fonti = corso.fonti ?? [];
     grid-column: 5 / span 7;
   }
 
-  .corso-head {
+  .corso > .corso-head {
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -136,12 +156,41 @@ const fonti = corso.fonti ?? [];
     margin: 0;
   }
 
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
   .stato-nota {
     color: var(--muted);
     font-size: 0.95rem;
   }
 
   .download a {
+    font-weight: 600;
+  }
+
+  .capitoli {
+    border-top: 2px solid var(--ink);
+    padding-top: 0.8rem;
+    margin-top: 1rem;
+  }
+
+  .capitoli h2 {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+  }
+
+  .capitoli ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .capitoli li {
+    padding-block: 0.15rem;
+  }
+
+  .capitoli a {
     font-weight: 600;
   }
 
@@ -175,6 +224,7 @@ const fonti = corso.fonti ?? [];
     }
 
     .corso > *,
+    .corso > .corso-head,
     .corso-head > * {
       grid-column: 1;
     }

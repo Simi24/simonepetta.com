@@ -1,0 +1,108 @@
+L'obiettivo del corso e' di affrontare il problema del high performance computing.
+Affronteremo anche il tema delle GPU e del loro utilizzo nel calcolo ad alte prestazioni. Inoltre useremo il framework CUDA per sviluppare applicazioni parallele utilizzando il linguaggio CUDA-c che e' un estensione del linguaggio c.
+Introdurremo anche alcune librerie di python, andando a focalizzarci su elementi a basso livello.
+
+Il parallel computing e' la necessita' di accellerare le computazioni avvalendosi di un numero molteplice di processori. Quando ho un processo di grande dimensioni devo essere in grado di dividere il processo in parti e assegnarlo a vari processi. E' fondamentale la progettazione del problema per spezzettarlo in problemi autonomi.
+
+La CPU ha degli aspetti critici, sono decenni che non vediamo crescere il clock (quante operazioni puo' fare al secondo) si e' andati incontro a misure fisiche che non possono essere superate, come la potenza dissipata.
+Una naturale estensione e' stata aumentare il numero di core, da multi core a many many core dando vita a device diversi, le GPU, che riscono a mantenere la legge di Moore e a fare si che a costi bassi una workstation diventi una macchina ad alte prestazioni. Bisogna dare credito a Nvidia che ha creato le general purpose GPU, che sono delle GPU che possono essere utilizzate per calcoli generali e non solo per il rendering grafico.
+
+Il parallel computing e' indipendenza, comunicazione e scalabilita' dei processi.
+
+Le motivazioni che portano all'utilizzo della GPU, un esempio e' la riflessione, rifrazone e ombra, la cosa che si fa e' avere un calcolo semplice che si fa per ogni pixel, quindi calcoli semplici ripetuti un numero esorbitante di volte.
+Vengono anche usate per il deeplearning. Perche' le CNN sono di interesse per la GPU? fanno un'operazione basilare da ripetere un numero esorbitante di volte, fanno la convoluzione, prendono un immagine ed un kernel e scandiscono l'immagine sottostante estraendone matrici della dimensione del kernel e fare la somma.
+Un altro esempio e' il calcolo matriciale, vengono fatti due prodotti interni tra i vettori riga e colonna delle matrici, questo puo' essere parallelizzato pensando che gruppi di thread distinti possono occuparsi di ogni entry, fare questa cosa in sincrono costerebbe $o(n^3)$.
+
+\section{GP-GPU}
+In sistemi eterogenei, le GPU possono essere utilizzate insieme alle CPU per ottenere prestazioni superiori. La chiave per sfruttare al meglio queste architetture eterogenee e' la suddivisione del lavoro tra le diverse unità di elaborazione, in modo che ogni tipo di processore possa occuparsi delle operazioni per cui e' piu' adatto. E' importante notare che questa architettura e' di tipo master-slave, dove la CPU funge da master e le GPU da slave.
+Una funzione gpu e' scritta per sfruttare il parallelismo e CUDA ci permette di pensare il sequenziale nonostante poi i calcoli vengano eseguiti in parallelo, l'obiettivo e' aumentare la potenza di calcolo.
+
+\section{Architetture eterogenee}
+C'e' la GPU e la CPU, la cpu ha un numero di core. C'e' un bus di ci per la comunicazione tra CPU e GPU.
+
+Quando si crea codice per queste architetture ci si trova con un eseguibile con blocchi di codice che devono essere eseguiti dalla CPU e blocchi dalla GPU.
+
+Le due parti sono destinate a compiti diversi, se i dati sono piccoli e il parellelismo e' basso siamo nel dominio della CPU ed e' quasi inutile fare il parallelismo con la GPU (solo l'overhead del setup iniziale costa di piu') viceversa se i dati sono grandi e il parallelismo e' alto, allora ha senso utilizzare la GPU.
+
+\subsection{Parallelismo delle istruzioni}
+Il parallelismo delle istruzioni e' importante (meno di quello dei dati), nel momento in cui il problema puo' essere suddiviso in diverse istruzioni queste vengono eseguite in parallelo. Ci vuole una dotazione hardware adeguata per gestire questo tipo di parallelismo, come ad esempio un numero sufficiente di unità di esecuzione e una gestione della comunicazione tra processi.
+
+\subsection{Parallelismo dei dati}
+Noi lavoreremo in una logica sequenziale ma si estende ad una grossa mole di dati. In questo caso, il parallelismo dei dati diventa cruciale, poiché consente di elaborare simultaneamente grandi volumi di informazioni. Utilizzando tecniche di parallelizzazione, possiamo suddividere i dati in blocchi più piccoli e distribuirli su più unità di elaborazione, massimizzando così l'efficienza e riducendo i tempi di calcolo.
+
+\section{Parallelismo di task}
+Il fatto di poter avere gruppi di operazioni distinti, ci porta ad un problema non banale di identificazioni di task indipendenti dall'altri, spesso ci si avvale di strumenti come i grafi. Due task sono indipendenti se le operazioni che li compongono non sono dipendenti tra di loro. Questo problema in termini piu' formali e' di colorazione del grado, ogni colore individua un gruppo di nodi indipendnti tra di loro.
+Non e' un problema banale, perche' e' irrisolvibile NP-hard, quindi ci si accontenta di soluzioni approssimative.
+
+\section{Tassonomia di Flynn}
+Si evidenzia i modelli \textbf{SISD} single instruction single data dove non c'e' nessun parallelismo e le operazioni vengono eseguite sequenzialmente.
+In contrapposizione abbiamo il \textbf{SIMD} (single instruction multiple data) dove abbiamo un'istruzione che viene eseguita su piu' dati, sono spesso dotate di librerie e hardware consistente che possono svolgere operazioni parallele, in questo caso c'e' l'accesso ad una memoria globale.
+\textbf{MISD} (multiple instruction single data) e' un modello in cui piu' istruzioni vengono eseguite su un singolo dato, mentre il \textbf{MIMD} (multiple instruction multiple data) consente l'esecuzione di piu' istruzioni su piu' dati, rappresentando il massimo livello di parallelismo.
+
+Il modello \textbf{SIMT} e' interessante e viene introdotto da CUDA, qui ci sono tanti thread che svolgono tante operazioni su thread distinti, deve esserci un sistema book treading. C'e' un evoluzione del modello SIMD perche' lo cambia con il modello multithreading, decade il vincolo della singola istruzione, questo e' dato dalla presenza di branch nel codice. Questo modello e' molto utile perche' ci permette di pensare in modo sequenziale anche se complica un po' l'architettura perche' bisogna fare comunicare i thread. Questo e' il modello implementato dai processori GPU.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/simtvssimd.png}
+    \caption{Confronto tra SIMT e SIMD}
+\end{figure}
+
+Nel simt si fissano gli operandi, mentre nel simd no.
+
+\section{GPU Nvidia}
+CUDA e' una libreria che permette di fare applicazioni sulle GPU
+
+Ogni scheda e' composta da streaming multi processor, ogni streaming contiene dei core che costituiscono l'architettura della scheda, ci sono gli elementi di memoria shared e global.
+
+\subsection{Cuda core}
+Un core ha una logica di processazione vettoriale, piu' dati insieme che possono essere caratterizzati da diverse unita' di calcolo (floating point).
+
+\subsection{CUDA}
+E' la piattaforma che ci permette di dare luogo ad un modello di programmazione per le schede Nvidia.
+Guardando a CUDA nello specifico per progettare delle applicazioni accellerate per le GPU useremo delle libreria gia' accellerate per GPU (come il compilatore).
+
+Ci sono due famiglie di api:
+\begin{itemize}
+    \item CUDA Runtime
+    \item CUDA Driver: sono a basso livello e sono piu' difficili da utilizzare perche' non astraggono determinate cose
+\end{itemize}
+
+\subsubsection{Programma CUDA}
+Un programma cuda e' composto da due parti:
+\begin{itemize}
+    \item codice host eseguito su CPU
+    \item codice device eseguito su GPU
+\end{itemize}
+
+Il compilatore separa il codice host dal codice device in fase di compilazione, generando un file eseguibile che contiene entrambe le parti.
+
+\subsection{Hello world in cuda}
+
+Per scrivere programmi cuda va modificata la sintassi del c, si scrivono delle funzioni che sono destinate al kernel cuda:
+\begin{lstlisting}
+    __global__ void hello_world() {
+        printf("Hello, World from GPU!\n");
+    }
+\end{lstlisting}
+
+Per invocarla va utilizzata questa sintassi in cui specifichiamo il numero di blocchi e il numero di thread per ogni blocco:
+\begin{lstlisting}
+    hello_world<<<num_blocks, threads_per_block>>>();
+\end{lstlisting}
+
+Il risultato finale e':
+\begin{lstlisting}
+    __global__ void hello_world() {
+        printf("Hello, World from GPU!\n");
+    }
+
+    int main(void) {
+        hello_world<<<1, 10>>>();
+        cudaDeviceReset();
+        return 0;
+    }
+\end{lstlisting}
+
+In questa funzione stamperemo 10 volte "Hello, World from GPU!".
+
+La funzione cudaDeviceReset serve a ripristinare lo stato del dispositivo GPU. Viene utilizzata per liberare le risorse allocate sulla GPU e riportare il dispositivo a uno stato pulito. È buona norma chiamare questa funzione alla fine di un programma CUDA per garantire che tutte le risorse siano correttamente rilasciate.

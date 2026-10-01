@@ -1,0 +1,9 @@
+# Facts from the LaTeX source (title, academic year) and SPEC.md §7.1 (source: the GitHub repo).
+# TO CONFIRM BY THE AUTHOR: `livello` and `anno` are inferred, not stated in the source.
+titolo: "GPU Computing"
+tipo: corso
+livello: magistrale
+anno: 1
+aa: "2024/25"
+fonte: github
+pubblicato: true

@@ -1,0 +1,503 @@
+\section{Stream e concorrenza}
+Ci sono vari gradi di concorrenza in CUDA:
+\begin{itemize}
+    \item CPU/GPU concurrency: poiche' sono dispositivi distinti, la CPU e la GPU possono operare indipendentemente una dall'altra
+    \item Memcpy/kernel processing concurrency: grazie al DMA il trasferimento tra host e device puo' avere luogo mentre gli SMs processano i kernel
+    \item Kernel concurrency: piu' kernel possono essere eseguiti simultaneamente sulla GPU, a patto che ci siano risorse sufficienti disponibili, fino a 32 kernel in parallelo
+    \item Grid-level-concurrency: piu' griglie di thread possono essere eseguite simultaneamente sulla GPU, a patto che ci siano risorse sufficienti disponibili. Uso di stream multipli per operazioni indipendenti
+    \item Multi-GPU concurrency: piu' GPU possono essere utilizzate simultaneamente per eseguire kernel diversi o la stessa operazione su dati diversi. Si distribuisce il processo su diverse GPU che eseguono in parallelo.
+\end{itemize}
+
+Il motto della lezione e' muoversi in maniera asincrona, bisogna utilizzare delle specifiche API che garantiscono l'asincronia dando garanzie:
+\begin{itemize}
+    \item Lancio dei kernel
+    \item Memory copies tra due indirizzi allo stesso device
+    \item Memory copies da host a device 
+    \item Memory copies fatte da funzioni con il suffisso Async
+    \item Memory set function call con il suffisso Async
+\end{itemize}
+
+L'atomo fondamentale nelle GPU e' il warp e le operazioni dentro sono sincrone. I warp sono suddivisioni di blocchi ed e' possibile sincronizzare a livello di blocco i thread. Dal punto di vista della CPU sappiamo quali sono le operazioni sincrone e il comportamento del kernel (asincrono) e come forzare la sincronizzazione dell'host.
+
+\subsection{CUDA Stream}
+Uno stream CUDA e' riferito a sequenze di operazioni CUDA asincrone che vengono eseguite sul device nell'ordine stabilito dal codice host. Lo stream gia' esiste senza che lo sapessimo, se non definiamo niente esiste uno stream di default.
+Le operazioni tipiche includono il trasferimento dati host-device, lancio di kernel, gestioni di eventi verranno demandate agli stream con il grande vantaggio che tutto diventa asincrono e indipendente tra di loro, come se avessimo dei thread diversi sull'host ed ognuno fa la sua cosa.
+Questo introduce ad un parallelismo a livello di griglia.
+
+\paragraph{Tipi di stream}
+    Gli stream CUDA possono essere classificati in tre categorie principali:
+    \begin{itemize}
+        \item \textbf{Stream di default}: se non viene creato uno stream specifico, tutte le operazioni CUDA vengono eseguite nello stream di default. Questo stream è implicito e non richiede alcuna gestione da parte del programmatore.
+        \item \textbf{Stream dichiarati esplicitamente}
+    \end{itemize}
+    
+    In generale e' meglio usare stram non nulli quando:
+   \begin{itemize}
+    \item Si vuole introdurre concorrenza per sovrapporre operazioni articolate tra host e device (si possono spezzare le operazioni)
+    \item Sovrapporre computazioni host e trasferimento dati host-device
+    \item Sovrapporre trasferimento dati host-device e computazioni device
+    \item Computazioni concorrenti su device
+   \end{itemize} 
+
+\subsubsection{Default Stream}
+Quando vengono lanciate delle API CUDA senza specificare uno stream, queste operazioni vengono automaticamente assegnate allo stream di default. Questo significa che tutte le operazioni eseguite nello stream di default sono serializzate, ovvero vengono eseguite una dopo l'altra, senza sovrapposizioni. Sebbene questo possa semplificare la programmazione, può anche portare a un utilizzo inefficiente delle risorse della GPU, poiché non si sfruttano appieno le capacità di parallelismo offerte da CUDA.
+E' tutto bloccante sia per host che per device.
+\begin{lstlisting}
+    cudaMemcpy(d_out, d_in, size, cudaMemcpyDeviceToDevice);
+    //bloccato
+    kernel_1<<<grid, block, 0, stream>>>(d_out);
+    //bloccato
+    function_A()
+    //bloccante
+    cudaMemcpy(d_out, d_in, size, cudaMemcpyDeviceToDevice);
+\end{lstlisting}
+
+La GPU vede sequenze di operazioni che gli vengono mandate dall'host e non fa altro che accodare queste operazioni ed eseguirle, mentre la CPU puo' continuare a lavorare su altre funzioni.
+
+\subsubsection{Stream Espliciti}
+Quando si desidera avere un controllo più fine sull'ordine di esecuzione delle operazioni CUDA, è possibile creare e utilizzare stream espliciti. Gli stream espliciti consentono di eseguire operazioni in parallelo e di sovrapporre trasferimenti di dati e computazioni. Per creare uno stream esplicito, si utilizza la funzione \texttt{cudaStreamCreate()} e si specifica lo stream desiderato durante il lancio delle operazioni CUDA:
+\begin{lstlisting}
+    cudaError_t cudaStreamCreate(cudaStream_t *pStream);
+    kernel_name<<<grid, block, sharedMemSize, pStream>>>(argument list)
+    cudaError_t cudaStreamDestroy(cudaStream_t pStream);
+\end{lstlisting}
+Passiamo un handle al kernel con cui gestisce lo stream.
+
+Siccome stiamo parlando di operazioni asincrone guardiamolo anche dal punto di vista della memoria, diciamo che vogliamo l'impiego della memoria asincrona, vogliamo la memoria pinned:
+\begin{lstlisting}
+    cudaError_t cudaMallocHost(void **ptr, size_t size);
+    cudaError_t cudaHostAlloc(void **ptr, size_t size, unsigned int flags);
+\end{lstlisting}
+Alloca su host memoria non paginabile, se flag = 0 il comportamento delle due API e' uguale.
+
+Questo fa la copia asincrona dei dati tra host e device:
+\begin{lstlisting}
+    cudaError_t cudaMemcpyAsync(void *dst, const void *src, size_t count, cudaMemcpyKind kind, cudaStream_t stream);
+\end{lstlisting}
+
+Si ha ancora bisogno di sincronizzare le operazioni in uno stream. Il blocco dell'host su un determinato stream si fa:
+\begin{lstlisting}
+    cudaError_t cudaStreamSynchronize(cudaStream_t stream);
+\end{lstlisting}
+Forza il blocco dell'host fino a che tutte le operazioni nello stream sono state completate.
+
+Lo stream puo' essere anche monitorato rispetto al suo livello di esecuzione, possiamo controllare se le operazioni sono completate ma non forziamo il blocco dell'host in caso negativo, ritorna cudaSuccess se le operazioni sono completate e cudaErrorNotReady altrimenti (mettiamo nella coda FIFO la cudaStreamQuery):
+\begin{lstlisting}
+    cudaError_t cudaStreamQuery(cudaStream_t stream);
+\end{lstlisting}
+
+\subsubsection{Sovrapporre kernel e trasferimento dati}
+Il device e' capace di avere copie ed esecuzioni concorrenti, questo puo' essere indagato con il campo deviceOverlap della struct cudaDeviceProp.
+Per fare questo e' necessario che il kernel e il trasferimento appartengano a differenti non-default stream e dobbiamo usare la pinned memory.
+Un uso tipico e' se abbiamo un arrai di N elementi, possiamo spezzarlo in gruppi da M elementi, se il kernel opera indipendentemente su tutti gli elementi ognu gruppo puo' essere elaborato a parte, il numero di $nStreams = \frac{N}{M}$.
+%immagine schema di sovrapposizione
+
+\subsubsection{Default Stream prima di CUDA 7}
+Hanno introdotto uno stream di default per ogni processo host dopo la 7, prima invece c'era un solo stream di default per ogni processo e questo fa una sincronizzazione implicita tra tutte le operazioni. Questo addirittura rende sincrone operazioni anche di thread host diversi.
+
+\subsubsection{Sincronizzazione rispetto a NULL-stream}
+Il NULL-stream e' sempre bloccante, anche all'interno dello stesso host (nella nostra applicazione) e' particolarmente bloccante, e' in mutex con gli altri stream. A meno che non si dica che ogni stream non null prodotto sia non bloccante, e' quindi possibile specificare il comportamento di uno stream non di default rispetto a quello di default rispetto al blocco.
+Dal punto di vista dell'host ogni kernel e' asincrono e non bloccante, ma in questo caso kernel2 non parte finche' kernel1 e' completato e cosi' fa 3 con 2, questo perche' si ha il comportamento di default con il NULL-stream:
+\begin{lstlisting}
+    kernel_1<<<1, 1, 0, stream_1>>>();
+    kernel_2<<<1, 1>>>();
+    kernel_3<<<1, 1, 0, stream_2>>>();
+\end{lstlisting}
+
+\subsubsection{Concorrenza tra stream}
+Non c'e' nessuna garanzia che due kernel vadano in simultanea, non siamo mai certi di cosa sta accadendo in reale concorrenza sulla GPU, sappiamo pero' per certo che due kernel sullo stesso stream vengono eseguiti in sequenza. La stessa cosa se abbiamo stream bloccanti. Cosa diversa succede se abbiamo cudaStreamNonBlocking.
+
+\subsubsection{Priorita' negli stream}
+Una grid con piu' alta priorita' puo' soppiantare un'altra con meno priorita'.
+Si possono creare stream con priorità (da CC 3.5). Una grid con più alta priorità può prelazionare il lavoro già in esecuzione con più bassa priorità. 
+
+Hanno effetto solo su kernel e non su data transfer. Priorità al di fuori del range vengono riportate automaticamente nel range.
+
+Per creare e gestire uno stream con priorità si usano le funzioni:
+\begin{lstlisting}
+cudaError_t cudaStreamCreateWithPriority(
+    cudaStream_t* pStream, unsigned int flags, int priority);
+\end{lstlisting}
+
+Crea un nuovo stream con priorità intera e ritorna l'handle in \texttt{pStream}.
+
+\begin{lstlisting}
+cudaError_t cudaDeviceGetStreamPriorityRange(
+    int *leastPriority, int *greatestPriority);
+\end{lstlisting}
+
+Restituisce la minima e massima priorità del device (la più alta è la minima).
+
+\paragraph{Host Functions (Callback):} Si ha la possibilità di inserire una funzione host, senza introdurre sincronizzazione o interrompere il flusso dello stream. Questa funzione viene eseguita sull'host una volta che tutti i comandi forniti allo stream prima della chiamata sono stati eseguiti.
+
+\subsubsection{Chiamare un kernel su più Stream}
+
+Il vantaggio dell'usare gli stream risiede nella possibilità di dividere le (stesse) operazioni in "batch", aumentando il parallelismo con la possibilità di avere trasferimenti di memoria (sia H2D che D2H) concorrenti all'esecuzione del kernel stesso. 
+
+Vogliamo dividere i dati in blocchi e rendere i trasferimenti paralleli all'esecuzione, aumentando l'occupancy. Sono possibili due schemi di versioni asincrone: 
+
+\begin{minipage}{.4\linewidth}
+	Schema 1: 
+	\begin{itemize}
+		\item loop che chiama, per ogni stream: copia H2D, kernel, copia D2H
+	\end{itemize}
+\end{minipage}
+\hfill 
+\begin{minipage}{.4\linewidth}
+	Schema 2:
+	\begin{itemize}
+		\item loop per copie H2D
+		
+		\item loop per kernel
+		
+		\item loop per copie D2H
+	\end{itemize} 
+\end{minipage}
+
+Le due versioni sono funzionalmente la stessa cosa. A livello di kernel, l'unica cosa che cambia (come per tutte le volte in cui si suddivide) è da tenere conto dell'offset per considerare la "zona" assegnata a quel kernel in quello stream.
+
+\subsection{CUDA event}
+Un evento e' un marker all'interno di uno stream associato ad un punto del flusso delle operazioni. Serve per controllare se l'esecuzione di uno stream ha raggiunto un dato punto o anche per la sincronizzazione inter-stream.
+Puo' essere usato per due scopi base:
+\begin{itemize}
+    \item Sincronizzare l'esecuzione di stream
+    \item Monitorare il progresso del device
+\end{itemize}
+
+Le API CUDA forniscono funzioni che consentono di inserire eventi in qualsiasi punto dello stream. Oppure effettuare delle query per sapere se lo stream e' stato completato. Quindi questo evento ha un duplice stato, e' accaduto oppure no.
+
+Per creare un evento bisogna usare una primitiva di create:
+\begin{lstlisting}
+    cudaEvent_t event;
+    cudaError_t cudaEventCreate(cudaEvent_t *event);
+    cudaError_t cudaEventDestroy(cudaEvent_t event);
+\end{lstlisting}
+Gli eventi nello stream zero vengono completati dopo che tutti i precedenti comandi in tutti gli altri stream sono stati completati.
+Gli eventi hanno uno stato booleano che indica se l'evento è stato completato o meno.
+
+\subsubsection{Sincronizzazione via CUDA event}
+Una volta creato l'evento si puo' associare ad uno stream, se non specifico niente viene associato allo stream zero.
+\begin{lstlisting}
+    cudaError_t cudaEventRecord(cudaEvent_t event, cudaStream_t stream);
+\end{lstlisting}
+
+Si puo' usare l'evento per sincronizzare con l'host fino a che l'evento non si verifica:
+\begin{lstlisting}
+    cudaError_t cudaEventSynchronize(cudaEvent_t event);
+\end{lstlisting}
+
+L'attivita' non bloccante e' quella di fare una query su un evento:
+\begin{lstlisting}
+    cudaError_t cudaEventQuery(cudaEvent_t event);
+\end{lstlisting}
+
+Si puo' sincronizzare anche tra stream ed eventi, considerando bloccante l'attesa su uno stream:
+\begin{lstlisting}
+    cudaError_t cudaStreamWaitEvent(cudaStream_t stream, cudaEvent_t event, unsigned int flags);
+\end{lstlisting}
+
+\paragraph{Sincronizzazione Esplicita:} CUDA runtime supporta diversi modi di sincronizzazione esplicita a livello di grid in un programma CUDA, si può sincronizzare rispetto
+\begin{itemize}
+	\item al device
+	
+	\item a uno stream
+	
+	\item a un evento all'interno di uno stream
+	
+	\item a diversi stream (tra loro), usando un evento
+\end{itemize}
+
+Si può bloccare l'host fino a che il device non ha completato i task precedenti:
+\begin{lstlisting}
+cudaError_t cudaDeviceSynchronize();
+\end{lstlisting}
+
+Si puo bloccare l'host fino a che tutte le operazioni in uno stream sono completate (\texttt{cudaStreamSynchronize()}) oppure eseguire un test non-bloccante (\texttt{cudaStreamQuery()}):
+
+\begin{lstlisting}
+cudaError_t cudaStreamSynchronize(cudaStream_t stream);
+cudaError_t cudaStreamQuery(cudaStream_t stream);
+\end{lstlisting}
+
+Un CUDA event può anche essere usato per sincronizzare host e device:
+\begin{lstlisting}
+cudaError_t cudaEventSynchronize(cudaEvent_t event);
+cudaError_t cudaEventQuery(cudaEvent_t event);
+\end{lstlisting}
+
+\subsubsection{Eventi per misurare il tempo}
+Esiste una primitava per misurare il tempo intercorso tra due eventi:
+\begin{lstlisting}
+    cudaError_t cudaEventElapsedTime(float *ms, cudaEvent_t start, cudaEvent_t end);
+\end{lstlisting}
+
+\section{Librerie CUDA}
+Tutte le computazioni implementate nelle librerie CUDA sono accelerate dalla GPU. Per molte applicazioni offrono un buon bilanciamento tra usabilita' e prestazioni. Il vantaggio e' il minimo sforzo per il porting delle applicazioni su GPU, senza dover scrivere codice CUDA. Le librerie sono ottimizzate per le architetture NVIDIA e sono progettate per essere facili da usare. Inoltre noi non abbiamo nessun costo di mantenimento.
+
+Esempi di librerie CUDA:
+\begin{center}
+	\resizebox{\linewidth}{!}{\begin{tabular}{@{} ll @{}}
+			\hline
+			\textbf{Libreria}                     & \textbf{Dominio}                                    \\ \hline
+			cuFFT (NVIDIA)                        & Fast Fourier Transforms Linear                      \\
+			cuBLAS (NVIDIA)                       & Linear Algebra (BLAS Library)                       \\
+			cuSPARSE (NVIDIA)                     & Sparse Linear Algebra                               \\
+			cuRAND (NVIDIA)                       & Random Number Generation                            \\
+			NPP (NVIDIA)                          & Image and Signal Processing                         \\
+			CUSP (NVIDIA)                         & Sparse Linear Algebra and Graph Computations        \\
+			CUDA Math Library (NVIDIA)            & Mathematics                                         \\
+			Trust (terze parti)                   & Parallel Algorithms and Data Structures             \\
+			MAGMA (terze parti)                   & Next generation Linear Algebra                      \\ \hline
+	\end{tabular}}
+\end{center}
+
+\subsection{Workflow tipico}
+\begin{itemize}
+    \item Creare un handle specifico della libreria, un riferimento che consente di accedere alle funzioni della libreria.
+    \item Allocare la device memory per gli input e output alle funzioni della libreria, se necessario, convertire gli input al formato specifico di uso della libreria (numeri complessi)
+    \item Popolare con i dati nel formato specifico
+    \item Configurare le computazioni per l'esecuzione
+    \item Eseguire la chiamata della funzione di libreria che avvia la computazione sulla GPU
+    \item Recuperare i risultati della device memory
+    \item Se necessario, convertire i dati nel formato specifico o nativo dell'applicazione
+    \item Rilasciare le risorse CUDA allocate per la data libreria
+\end{itemize}
+
+\subsection{Libreria cuBLAS}
+Sono disponibili diverse funzioni per l'algebra lineare, tra cui:
+\begin{itemize}
+    \item Operazioni tra vettori
+    \item Operazioni tra matrici e vettori
+    \item Operazioni tra matrici
+\end{itemize}
+
+Questi sono le basi per lo sviuluppo delle LAPACK, che sono librerie di algebra lineare un po' piu' complesse, che implementano algoritmi per la risoluzione di sistemi lineari, decomposizioni e altro.
+Tutte le interfaccie messe a disposizione sono asincrone sulla GPU.
+
+Usa \textbf{column-major order} (leggo le colonne dall'alto verso il basso) perché chiunque ha scritto la libreria è stronzo (colpa di Fortran). Esempio: 
+$$
+\left[
+\begin{array}{c c c}
+	1 & 2 & 3 \\
+	4 & 5 & 6 \\
+	7 & 8 & 9
+\end{array}
+\right]
+\rightarrow \left[\begin{array}{c c c c c c c c c}
+	1 & 4 & 7 & 2 & 5 & 8 & 3 & 6  & 9
+\end{array}\right]
+\quad I(r,c) = c \cdot M  + r 
+$$
+
+Dove $(r,c)$ sono le coordinate del valore cercato e $M$ è l'altezza della matrice (dimensioni $M \times N$).
+
+\subsubsection{Operare con cuBLAS}
+\begin{itemize}
+    \item Creare un handle cublasCreateHandle
+    \item Allocare la memoria per gli input e output usando cudaMalloc
+    \item Popolare i dati di input nella memoria device usando cublasSetVector e cublasSetMatrix
+    \item Eseguire le operazioni desiderate usando le funzioni cuBLAS, ad esempio cublasSgemv
+    \item Recuperare i risultati dalla memoria device usando cublasGetVector e cublasGetMatrix
+    \item Rilasciare le risorse allocate usando cublasDestroy e cudaFree
+\end{itemize}
+
+\subsubsection{Funzioni all'interno di cuBLAS}
+Le prime funzioni che vediamo sono quelle per trasferire righe e colonne da una matrice A nella memoria del device ad una matrice B nella GPU memory space:
+\begin{lstlisting}
+    cublasSetMatrix(int rows, int cols, const float *A, int lda, float *B, int ldb)
+\end{lstlisting}
+
+I parametri sono:
+\begin{itemize}
+    \item \texttt{rows}: numero di righe della matrice A
+    \item \texttt{cols}: numero di colonne della matrice A
+    \item \texttt{A}: puntatore alla matrice A nella memoria del host
+    \item \texttt{lda}: leading dimension della matrice A
+    \item \texttt{B}: puntatore alla matrice B nella memoria del device
+    \item \texttt{ldb}: leading dimension della matrice B
+\end{itemize}
+
+Le funzioni inverse per trasferire i dati dalla memoria del device alla memoria del host sono:
+\begin{lstlisting}
+    cublasGetMatrixAsynch(int rows, int cols, const float *A, int lda, float *B, int ldb, cudaStream_t stream)
+\end{lstlisting}
+
+Danno la possibilita' di lavorare in asincrono specificando uno stream.
+
+Se volessi fare la copia di un vettore, potrei usare le seguenti funzioni:
+\begin{lstlisting}
+    cublasSetVector(int n, const float *A, int incx, float *B, int incy)
+    cublasGetVector(int n, const float *A, int incx, float *B, int incy)
+\end{lstlisting}
+
+Per gestire la libreria serve un \textbf{handle}, il quale si può generare tramite
+\begin{lstlisting}
+cublasCreate(cublasHandle_t* handle)
+\end{lstlisting}
+
+Viene passato ad ogni chiamata di funzione della libreria successiva. Al termine
+\begin{lstlisting}
+cublasDestroy(cublasHandle_t* handle)
+\end{lstlisting}
+per distruggerlo. Il tipo dell'handle è \texttt{cublasHandle\_t}. Esiste un tipo \texttt{cublasStatus\_t} usato per il report degli errori.
+
+Per trasferimenti device-device: copia \texttt{n} elementi da \texttt{x} a \texttt{y}:
+\begin{lstlisting}
+cublasScopy(handle, n, x, incx, y, incy)
+\end{lstlisting}
+
+In generale la libreria segue una naming convention \texttt{cublas<T>operation}, dove \texttt{<T>} può essere: 
+\begin{itemize}
+	\item \texttt{S} per parametri di tipo \texttt{float}
+
+	\item \texttt{D} per \texttt{double}
+
+	\item \texttt{C} per \texttt{complex  floats}
+
+	\item \texttt{Z} per \texttt{complex double}
+\end{itemize}
+Ad esempio, per l'operazione \texttt{axpy} le funzioni disponibili sono \texttt{cublasSaxpy}, \texttt{cublasDaxpy}, \texttt{cublasCaxpy}, \texttt{cublasZaxpy}.
+
+Si usa un valore di tipo \texttt{cublasOperation\_t} per indicare operazioni su matrici all'interno di funzioni: 
+\begin{itemize}
+	\item \texttt{CUBLAS\_OP\_N} per non-transpose
+
+	\item \texttt{CUBLAS\_OP\_T} per transpose
+
+	\item \texttt{CUBLAS\_OP\_C} per conjugate transpose
+\end{itemize}
+
+Per fare
+$$ result = \sum_{i=1}^{n} x[k] \cdot y[j], \quad k = 1 + (i-1) \cdot incx, \quad j = 1 + (i-1) \cdot incy $$
+tra vettori \texttt{x} e \texttt{y} di \texttt{n} elementi (dimensione dei tali nella naming convention) e mettere il risultato in \texttt{result}
+\begin{lstlisting}
+cublasStatus_t cublasSdot(cublasHandle_t handle, int n, 
+    const float *x, int incx, const float *y, 
+    int incy, float result)
+\end{lstlisting}
+
+Per fare 
+$$ y[i] = \alpha \cdot x[i] + y[i] \quad \forall i \in n $$
+con vettori \texttt{x} e \texttt{y} di dimensione \texttt{n}, risultato nel secondo vettore \texttt{y}
+\begin{lstlisting}
+cublasStatus_t cublasSaxpy(cublasHandle_t handle, int n,
+    const float *alpha, const float *x, int incx, 
+    const float *y, int incy)
+\end{lstlisting}
+
+Per fare 
+$$ y = \alpha Ax + \beta y$$
+dove $\alpha$ e $\beta$ sono scalari, $A$ è una matrice, $x$ e $y$ sono vettori
+\begin{lstlisting}
+cublasStatus_t cublasSgemv(cublasHandle_t handle, 
+    cublasOperation_t trans, int m, int n, 
+    const float *alpha, const float *A, 
+    int lda, const float *x, int incx, 
+    const float *beta, float *y, int incy)
+\end{lstlisting}
+
+Per fare
+$$ C = \alpha AB + \beta C$$
+dove $\alpha$ e $\beta$ scalari, $A$, $B$ e $C$ matrici
+\begin{lstlisting}
+cublasStatus_t cublasSgemm(cublasHandle_t handle,
+    cublasOperation_t transa, cublasOperation_t transb,
+    int m, int n, int k, const float *alpha,
+    const float *A, int lda,
+    const float *B, int ldb,
+    const float *beta, float *C, int ldc)
+\end{lstlisting}
+
+\subsection{cuRAND}
+Vuol dire generare numeri a caso, la storia dei generatori pseudo-casuale di numeri e' infinita. 
+Permette sequenze: 
+\begin{itemize}
+	\item Pseudo-random: soddisfa proprietà statistiche di una vera sequenza random, ma generata da un algoritmo deterministico
+	
+	\item Quasi-random: sequenza di punti $n$-dimensionali uniformemente generati secondo un algoritmo deterministico
+\end{itemize}
+
+Si compone di due parti:
+\begin{itemize}
+    \item curand.h per l'host
+    \item curand\_kernel.h per il device
+\end{itemize}
+
+\paragraph{Host API:} Dalla \href{https://docs.nvidia.com/cuda/curand/index.html}{\texttt{documentazione}}, passaggi:
+\begin{enumerate}
+	\item Crea un \textbf{nuovo generatore} del tipo desiderato con \texttt{curandCreateGenerator()}
+	
+	\item Setta i \textbf{parametri} del generatore; ad esempio: per settare il seed \texttt{curandSetPseudoRandomGeneratorSeed()}
+	
+	\item Alloca la memoria device con \texttt{cudaMalloc()}
+	
+	\item Genera i valori casuali necessari con \texttt{curandGenerate()} (o altre funzioni)
+	
+	\item Usa i valori
+	
+	\item Quando non serve più il generatore va distrutto con \texttt{curandDestroyGenerator()}
+\end{enumerate}
+
+Alcune funzioni per l'host: 
+\begin{itemize}
+	\item Per creare il generatore
+	\begin{lstlisting}
+curandCreateGenerator(&g, GEN_TYPE)
+	\end{lstlisting}
+	Dove il parametro \texttt{GEN\_TYPE} può essere \texttt{CURAND\_RNG\_PSEUDO\_DEFAULT}, oppure \texttt{CURAND\_RNG\_PSEUDO\_XORWOW} (differenze trascurabili)
+	
+	\item Per impostare il seed
+	\begin{lstlisting}
+curandSetRandomGeneratorSeed(g, SEED)
+	\end{lstlisting}
+	ma importa poco, uno qualunque va bene (e.g, \texttt{time(NULL)})
+	
+	\item Per generare una distribuzione
+	\begin{lstlisting}
+curandGenerate______(...)
+	\end{lstlisting}
+	dipende dalla distribuzione che si vuole generare, ad esempio: \texttt{curandGenerateUniform(g, src, n)} oppure \texttt{curandGenerateNormal(g, src, n, mean, stddev)}. 
+
+	\item Per distruggere il generatore
+	\begin{lstlisting}
+curandDestroyGenerator(g)
+	\end{lstlisting}
+\end{itemize}
+
+La funzione \texttt{curandGenerate()} permette di generare valori in maniera asincrona, molto più veloce per quantità elevate di valori. Usare questa libreria richiederebbe poi di dover passare i dati generati alla GPU (\texttt{src} all'interno della funzione è un puntatore host), introducendo overhead. Per risolvere si può usare la Device API.
+
+\paragraph{Device API:} Per generare valori sul device: 
+\begin{enumerate}
+	\item Pre-allocare un set di cuRAND state objects nella device memory per ogni thread (gestiscono lo stato)
+
+	\item Opzionale, pre-allocare device memory per tenere i valori generati (se devono poi essere passati all'host o essere mantenuti per kernel successivi)
+
+	\item Inizializzare lo stato di tutti gli state objects con una kernal call
+
+	\item Chiamare una funzione cuRAND per generare valori casuali usando gli state objects allocati
+
+	\item Opzionale, trasferire i valori all'host (se è stata allocata la memoria in precedenza)
+\end{enumerate}
+
+Il vantaggio di generare valori sul device e' che non dobbiamo trasferire i numeri al device, ma li generiamo in loco e i thread li consumano li'.
+
+\subsection{cuFFT}
+La libreria cuFFT (CUDA Fast Fourier Transform) permette di eseguire trasformate di Fourier in modo efficiente sulla GPU. Supporta sia segnali unidimensionali che multidimensionali e offre diverse opzioni per la pianificazione e l'esecuzione delle trasformate.
+
+La libreria prevede che venga definito un piano cufftPlan1d() per le trasformate unidimensionali, cufftPlan2d() per le trasformate bidimensionali e cufftPlan3d() per le trasformate tridimensionali. Questi piani contengono informazioni sulla dimensione del segnale e sul tipo di trasformata da eseguire.
+
+\begin{lstlisting}
+    cufftResult cufftPlan1d(cufftHandle *plan, int nx, cufftType type, int batch);
+\end{lstlisting}
+C'e' la versione batched per lavorare su piu' batch distinti e lavorare in parallelo facendo sovrapposizioni.
+
+\subsubsection{Workflow}
+\begin{itemize}
+    \item creare e configurare il piano cuFFT plan
+    \item Allocare la memoria con cudaMalloc
+    \item Poplare la memoria con i campioni del segnale di input con cudaMemcpy
+    \item Eseguire il piano usando la funzione cufftExec*
+    \item Recuperare i risultati dalla memoria device con cudaMemcpy
+    \item Rilasciare le risorse allocate con cufftDestroy e cudaFree
+\end{itemize}
+

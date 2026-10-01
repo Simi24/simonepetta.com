@@ -234,7 +234,7 @@ Contract: [`docs/prototype/scrivania.html`](https://github.com/Simi24/simonepett
 ### 7.3 Pages
 - **Index** `/appunti/`: bound theses on top, notebook piles by year, a full list below, the student-notes notice.
 - **Course page** `/appunti/<slug>/` exists in **every** state, so neither state looks like a leftover: metadata, the PDF download, the sources and removal contact, and for converted courses the chapter list (and in v2 the chat link).
-- **Chapters** `/appunti/<slug>/<chapter>/`: one page per chapter, sticky TOC, LaTeX conventions (§5.4). **Chapter slugs** are `<number>-<kebab-title>` (e.g. `3-variabili-aleatorie-continue`), computed at the first conversion and recorded in `build/meta.json`; later conversions reuse them, so URLs never change. LaTeXML output is post-processed by the pipeline into HTML fragments (body only), which Astro wraps in the site layout.
+- **Chapters** `/appunti/<slug>/<chapter>/`: one page per chapter, sticky TOC, LaTeX conventions (§5.4). **Chapter slugs** are `<number>-<kebab-title>` (e.g. `3-variabili-aleatorie-continue`), computed at the first conversion and recorded in `build/meta.json`; later conversions reuse them, so URLs never change. A later run matches each chapter to its recorded slug by title, then by number: a renamed chapter keeps its URL, and a chapter replaced by a different one at the same number gets a new slug only if its title differs from every recorded one (otherwise it takes over the old URL); the pipeline does not warn about a takeover, and the old slug is dropped from `build/meta.json` when no chapter claims it, so its URL disappears. LaTeXML output is post-processed by the pipeline into HTML fragments (body only), which Astro wraps in the site layout.
 - **Excluded** courses (`pubblicato: false`) are skipped entirely: no page, no PDF in the assets.
 - **Scanned** courses stay PDF forever.
 - **Search**: Pagefind, run after `astro build`, indexing readings and notes pages (not PDF contents). The UI lives on its own page, `/cerca/`, linked from the nav from v1; no search JS loads on any other page.
@@ -251,6 +251,10 @@ Contract: [`docs/prototype/scrivania.html`](https://github.com/Simi24/simonepett
 - **pandoc is rejected**: it loses silently (drops TikZ, ignores `\NewDocumentCommand`, overrides custom macros with builtins).
 - **Canonical source**: when a course is converted, its sources are copied from `Simi24/appunti-sorgenti` into `src/`; from then on the `.tex` in `src/` is canonical.
 - **Expected cost**: weeks; roughly 1 course in 4 needs real manual intervention. The cost scales with courses, not with the pipeline.
+- **How it runs** (S8, [#36](https://github.com/Simi24/simonepetta.com/issues/36)): `npm run appunti:convert -- <slug>` is the "or equivalent" of `make appunti`. It builds `pipeline/Dockerfile` on first use (TeX Live, Debian's LaTeXML 0.8.8, BookML 0.31.11), runs BookML's `make SPLITAT=chapter` on a temporary copy of `src/` (entry point `main.tex`), and takes only the per-chapter HTML and the PDF out of it: BookML's GitBook shell (its JS, search, navigation) is discarded. `pipeline/latexml-chapter.ts` turns each page into a body-only fragment: no scripts, no inline styles, no TeX annotations, code listings as plain `<pre>`, links rewritten to site URLs (an unresolvable link fails the conversion). Fragments and `build/meta.json` (`capitoli`: number, slug, title, sections and subsections, whether the chapter has math; `figureInAttesa`) are written only after the leak detector passes, in one rename.
+- **Slug reuse**: a chapter finds its recorded slug by title, then by number, so renaming or inserting a chapter never changes an existing URL.
+- **`tcolorbox`** is replaced during conversion by a stand-in binding (`pipeline/bindings/`): LaTeXML 0.8.8 loads the raw expl3 of the installed TeX Live for it, which never finishes (BookML's own image pins TeX Live 2021 for this reason). The PDF still uses the real package. Any other package that pulls in expl3 hits the same wall and needs the same treatment.
+- **Until figures are converted** ([#37](https://github.com/Simi24/simonepetta.com/issues/37)) every figure, raster or TikZ (LaTeXML draws TikZ as inline SVG with hard black strokes, unusable in the dark theme), is replaced by a visible "Figura in attesa di conversione" marker with its caption kept; the detector requires one marker per `\includegraphics` and `tikzpicture` in the source. The alt-text check arrives with the figures.
 
 ### 7.5 Leak detector
 Conversion fails silently, so verification cannot be the human eye. The detector compares source and output on `\includegraphics` vs produced images, `tikzpicture` vs produced SVGs, theorem environments, equations, and LaTeXML error counts, and checks that every figure has alt text. **Any mismatch fails the conversion and `build/` is not updated.** It runs locally and in CI ([§11](#11-build-and-deploy)). **A course that stops compiling keeps its last good `build/`**; the red stays in the pipeline workflow and never reaches the deploy.
@@ -386,7 +390,7 @@ v0 + v1: **$0 on Cloudflare** ([#3](https://github.com/Simi24/simonepetta.com/is
 | Declared JS exceptions | Pagefind's own files (`/pagefind/*`) on `/cerca/` only, asset by asset: any other JS on that page, like its init script, still counts against the cap. Preact island on chat pages only |
 | HTML per page | 50 KB; 150 KB for notes chapters |
 | CSS per page | 20 KB |
-| Fonts | Host Grotesk Latin subset (roman + italic); Fira Math only on math pages |
+| Fonts | Host Grotesk Latin subset (roman + italic); Fira Math only on math pages (a notes chapter whose HTML contains MathML, which links `/fonts/fira-math.css`) |
 
 Raising a cap requires an explicit commit to the budget config.
 

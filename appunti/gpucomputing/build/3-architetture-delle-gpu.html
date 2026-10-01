@@ -1,0 +1,181 @@
+<div class="section level1">
+
+
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.1</span> Loop Unrolling</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">L’idea e’ di ottimizzare i loop ripetendo le istruzioni nel corpo del loop. Invece di eseguire un’iterazione alla volta, il compilatore o il programmatore espande il loop per eseguire più iterazioni in un singolo passaggio. Questo riduce l’overhead del controllo del loop e può migliorare l’uso della pipeline della CPU o della GPU.
+Come esempio vediamo il for della parallel reduction vista in precedenza:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    for (int stride = blockDim.x / 2; stride &gt; 0; stride /= 2) {</span>
+<span class="ltx_listingline">        if (threadIdx.x &lt; stride) {</span>
+<span class="ltx_listingline">            thisBlock[threadIdx.x] += thisBlock[threadIdx.x + stride];</span>
+<span class="ltx_listingline">        }</span>
+<span class="ltx_listingline">        __syncthreads();</span>
+<span class="ltx_listingline">    }</span></code></pre></div>
+</div>
+<div id="S1.p2" class="ltx_para">
+<p class="ltx_p">Per farlo e’ possibile aggiungere un descrittore volatile che implica che ogni volta che l’istruzione viene eseguita va direttamente alla shared memory, evitando ottimizzazioni indesiderate da parte del compilatore passando per la cache:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    if (tid &lt; 32) {</span>
+<span class="ltx_listingline">        volatile int *vmem = thisBlock;</span>
+<span class="ltx_listingline">        vmem[tid] += vmem[tid + 32];</span>
+<span class="ltx_listingline">        vmem[tid] += vmem[tid + 16];</span>
+<span class="ltx_listingline">        vmem[tid] += vmem[tid + 8];</span>
+<span class="ltx_listingline">        vmem[tid] += vmem[tid + 4];</span>
+<span class="ltx_listingline">        vmem[tid] += vmem[tid + 2];</span>
+<span class="ltx_listingline">        vmem[tid] += vmem[tid + 1];</span>
+<span class="ltx_listingline">    }</span></code></pre></div>
+<p class="ltx_p">32 non e’ un numero casuale ma stiamo facendo l’unrolling a livello di warp:</p>
+</div>
+<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figure 3.1</span>: </span><span class="ltx_text">Uso dei thread del warp per il loop unrolling</span></figcaption>
+</figure>
+<section id="S1.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.1.1</span> Block unrolling</h3>
+
+<div id="S1.SS1.p1" class="ltx_para">
+<p class="ltx_p">Possiamo estendere l’idea di loop unrolling anche a livello di block. In questo caso, invece di unrollare le operazioni all’interno di un singolo warp, possiamo unrollare le operazioni su più thread all’interno di un block. Questo approccio può portare a un utilizzo più efficiente delle risorse della GPU e a una riduzione del numero di sincronizzazioni necessarie.</p>
+</div>
+<figure id="F2" class="ltx_figure"><div class="bml-overflow-wrapper"><p class="figura-pending">Figura in attesa di conversione.</p></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figure 3.2</span>: </span><span class="ltx_text">Block unrolling</span></figcaption>
+</figure>
+</div>
+</section>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.2</span> Architetture delle GPU</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Il PCI Express sono i bus che permettono di unire CPU e GPU ed e’ normalmente il collo di bottiglia del sistema. Ci sono dei controller da entrambe le parti che permettono di parlare con il BUS, all’interno di CPU e GPU ci sono bus per comunicazione interna molto piu’ veloci.</p>
+</div>
+<div id="S2.p2" class="ltx_para">
+<p class="ltx_p">Il PCI Express BUS parla con dei controller che a loro volta si interfacciano con i livello di cache piu’ basso dell’architettura.</p>
+</div>
+<section id="S2.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.2.1</span> Compute Capability</h3>
+
+<div id="S2.SS1.p1" class="ltx_para">
+<p class="ltx_p">E’ il termine usato per descrivere la versione hw degli acceleratori GPU che appartengono alle famiglie di dispositivi e che hanno una data architettura interna. E’ un parametro che va passato al comiplatore, dobbiamo tenere in considerazione questi cambiamenti generazionali delle GPU per scrivere degli algoritmi efficienti per l’architettura che abbiamo a disposizione.
+Non c’e’ grande compatibilita’ tra versioni.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.2.2</span> Architettura interna GPU</h3>
+
+<div id="S2.SS2.p1" class="ltx_para">
+<p class="ltx_p">Ci sono i vari straming multi processors che comunicano usando una shared memory che e’ una memoria cache, poi ci sono i vari bus e controllori che parlano con la CPU.</p>
+</div>
+<section id="S2.SS2.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Host interface</h4>
+
+<div id="S2.SS2.SSSx1.p1" class="ltx_para">
+<p class="ltx_p">E’ un controller interno alla GPU che si interfaccia verso bus PCie. Consente alla GPU di trasferire dati da e per la CPU. Ha due tipi di memorie cache: una L1 interna al sm e una L2 condivisa tra SM. Ogni cache l1 e’ parallela e combina attivita’ con le unita’ load/store. Un memory controller dedicato trasporta dati dentro e fuori dalla GDDR5 global memory.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS2.SSSx2" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Giga-thread scheduler</h4>
+
+<div id="S2.SS2.SSSx2.p1" class="ltx_para">
+<p class="ltx_p">Si occupa di assegnare ai vari SM disponibili ti blocchi del kernel con una politica di round robin.
+L’assegnamento di blocchi a SM e’ un attivita’ veloce, l’esecuzione molto piu’ lenta.
+La variabili gridDim, blockIdx e blockDim sono pasate dal giga thread scheduler ad ogni core della GPU che eseguira’ il corrispondente blocco.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S2.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.2.3</span> Scheduler di warp</h3>
+
+<div id="S2.SS3.p1" class="ltx_para">
+<p class="ltx_p">Ogni blocco e’ assegnato a un SM. Ogni SM contiene 2 warp scheduler e 2 instruction dispatch unit. I due scheduler selezionano 2 warp da eseguire in parallelo e distribuiscono un’istruzione a ognuno dei 16 core o alle 16 unita’ o alle 4 fpu. L’archittura fermi puo’ trattare simultaneamente 8 blocchi = 48 warp per SM per un totale di 1536 thread alla volta residenti su un singolo SM.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS4" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.2.4</span> Transparent scalability</h3>
+
+<div id="S2.SS4.p1" class="ltx_para">
+<p class="ltx_p">E’ la capacita’ di eseguire lo stesso codice applicativo su diverse architetture, numero variabile di compute core e di SM.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS5" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.2.5</span> Parallelizzazione dinamica</h3>
+
+<div id="S2.SS5.p1" class="ltx_para">
+<p class="ltx_p">Potremmo voler lanciare un kern da un kernel, il kernel padre puo’ consumare l’output prodotto dal figlio tutto senza la CPU:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    __global__ void kernel_figlio() {</span>
+<span class="ltx_listingline">        // Codice del kernel figlio</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    __global__ void kernel_padre() {</span>
+<span class="ltx_listingline">        // Codice del kernel padre</span>
+<span class="ltx_listingline">        kernel_figlio&lt;&lt;&lt;1, 1&gt;&gt;&gt;();</span>
+<span class="ltx_listingline">    }</span></code></pre></div>
+</div>
+<div id="S2.SS5.p2" class="ltx_para">
+<p class="ltx_p">Ci siamo mai chiesti se si può lanciare un kernel all’interno di un kernel? Not really, ma potrebbe essere utile (come ad esempio per la ricorsione). Nuova feature introdotta dalle CC 3.5: ogni kernel può lanciare un altro kernel e gestire dipendenze inter-kernel.</p>
+</div>
+<div id="S2.SS5.p3" class="ltx_para">
+<p class="ltx_p">Elimina la necessità di comunicare con la CPU, rende più semplice creare e ottimizzare pattern di esecuzione ricorsivi e data-dependent. Senza parallelismo dinamico la CPU deve occuparsi di lanciare ogni kernel.</p>
+</div>
+<div id="S2.SS5.p4" class="ltx_para">
+<p class="ltx_p">L’idea dietro il parallelismo dinamico è generare dinamicamente kernel in base ai dati: se ci sono elementi diversi/zone della matrice di lavoro che richiedono sforzi diversi possiamo fare in modo che i kernel siano <span class="ltx_text ltx_font_italic">ad hoc</span> per migliorare l’efficienza.</p>
+</div>
+<div id="S2.SS5.p5" class="ltx_para">
+<p class="ltx_p">Senza permettere al kernel di lanciare altri kernel il modello di esecuzione è inefficiente: la CPU non può essere conscia dei dati, ma è lei che deve lanciare <span class="ltx_text ltx_font_italic">tutti</span> i kernel. In questo modo la GPU può valutare se è necessario lanciare nuovi kernel (in base ai dati) e tali informazioni vanno passate nuovamente alla CPU per lanciare nuovi kernel.</p>
+</div>
+<div id="S2.SS5.p6" class="ltx_para">
+<p class="ltx_p">La soluzione è il <span class="ltx_text ltx_font_bold">parallelismo dinamico</span>: la GPU può lanciare nuovi kernel, permettendo di ridurre la dipendenza dalla CPU e migliorare il throughput del kernel (se fatto bene). Consente carichi di lavoro dinamici senza penalizzare le prestazioni.</p>
+</div>
+<div id="S2.SS5.p7" class="ltx_para">
+<p class="ltx_p">Vogliamo mettere carico di lavoro dove serve e scegliere la granularità del lavoro in base ai dati. Possiamo posporre la decisione delle dimensioni di blocchi e griglia fino a runtime. Possiamo adattare il lavoro in base a <span class="ltx_text ltx_font_bold">decisioni data-driven</span>, non da schemi fissi come visto fino ad ora.</p>
+</div>
+<div id="S2.SS5.p8" class="ltx_para">
+<p class="ltx_p">Sarebbe da limitare un attimo l’annidamento: se ogni thread facesse una chiamata a kernel figlio <span class="ltx_text ltx_font_italic">potrebbero</span> diventare tanti kernel lanciati; sarebbe carino inserire <span class="ltx_text ltx_font_bold">control flow attorno ai lanci</span>, per esempio limitando il lancio ad 1 per blocco del padre (<span class="ltx_text ltx_font_typewriter">threadIdx.x == 0</span>).</p>
+</div>
+<section id="S2.SS5.SSS0.Px1" class="ltx_paragraph normal">
+<div class="section level5">
+<h5 class="ltx_title ltx_title_paragraph">Sincronizzazione:</h5>
+
+<div id="S2.SS5.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">Si ha una <span class="ltx_text ltx_font_bold">sincronizzazione implicita</span>, il padre non può terminare prima dei figlio, un kernel non è considerato completato finché ha figli attivi. Rimane la possibilità di avere sincronizzazione esplicita, altrimenti il kernel padre non ha garanzie di poter vedere i dati elaborati dal figlio.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS5.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Bilanciare il lavoro</h4>
+
+<div id="S2.SS5.SSSx1.p1" class="ltx_para">
+<p class="ltx_p">Se mi accorgo che un blocco di dati e’ molto grande e richiede tanto tempo potrei dividere questo blocco in altri blocchi e dividere il lavoro con altri thread. Questo e’ utile per evitare che un singolo blocco di dati rallenti l’intero processo di calcolo.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>

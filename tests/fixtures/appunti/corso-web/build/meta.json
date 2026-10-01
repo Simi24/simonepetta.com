@@ -1,3 +1,97 @@
 {
-  "capitoli": []
+  "capitoli": [
+    {
+      "numero": 1,
+      "slug": "1-variabili-aleatorie-continue",
+      "titolo": "Variabili aleatorie continue",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "1.1",
+          "titolo": "Densità",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "1.2",
+          "titolo": "Allineamenti",
+          "sottosezioni": []
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 2,
+      "slug": "2-secondo",
+      "titolo": "Secondo",
+      "sezioni": [],
+      "math": false
+    },
+    {
+      "numero": 3,
+      "slug": "3-introduzione",
+      "titolo": "Introduzione",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "3.1",
+          "titolo": "GP-GPU",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "3.2",
+          "titolo": "Architetture eterogenee",
+          "sottosezioni": [
+            {
+              "id": "S2.SS1",
+              "numero": "1.2.1",
+              "titolo": "Parallelismo delle istruzioni"
+            },
+            {
+              "id": "S2.SS2",
+              "numero": "1.2.2",
+              "titolo": "Parallelismo dei dati"
+            }
+          ]
+        },
+        {
+          "id": "S3",
+          "numero": "3.3",
+          "titolo": "Parallelismo di task",
+          "sottosezioni": []
+        },
+        {
+          "id": "S4",
+          "numero": "3.4",
+          "titolo": "Tassonomia di Flynn",
+          "sottosezioni": []
+        },
+        {
+          "id": "S5",
+          "numero": "3.5",
+          "titolo": "GPU Nvidia",
+          "sottosezioni": [
+            {
+              "id": "S5.SS1",
+              "numero": "1.5.1",
+              "titolo": "Cuda core"
+            },
+            {
+              "id": "S5.SS2",
+              "numero": "1.5.2",
+              "titolo": "CUDA"
+            },
+            {
+              "id": "S5.SS3",
+              "numero": "1.5.3",
+              "titolo": "Hello world in cuda"
+            }
+          ]
+        }
+      ],
+      "math": true
+    }
+  ],
+  "figureInAttesa": 1
 }

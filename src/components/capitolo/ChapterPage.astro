@@ -1,0 +1,89 @@
+---
+import type { Capitolo } from '../../lib/corso-build.ts';
+import { corsoNotice } from '../../lib/corso-presentation.ts';
+import type { Corso } from '../../schemas/corso.ts';
+import '../../styles/chapter.css';
+import ChapterNav from './ChapterNav.astro';
+import ChapterToc from './ChapterToc.astro';
+
+interface Props {
+  corso: Corso;
+  corsoSlug: string;
+  capitolo: Capitolo;
+  previous?: Capitolo | undefined;
+  next?: Capitolo | undefined;
+  /** The pipeline's body-only HTML fragment (SPEC.md §7.3). */
+  fragment: string;
+}
+
+const { corso, corsoSlug, capitolo, previous, next, fragment } = Astro.props;
+---
+
+<article class="capitolo" data-pagefind-body>
+  <header class="capitolo-head">
+    <p class="crumbs" data-pagefind-ignore>
+      <a href="/appunti/">Appunti</a> / <a href={`/appunti/${corsoSlug}/`}>{corso.titolo}</a>
+    </p>
+    <h1>{capitolo.titolo}</h1>
+    <p class="notice" data-pagefind-ignore>{corsoNotice(corso)}</p>
+  </header>
+  <ChapterToc capitolo={capitolo} />
+  <div class="prose">
+    <Fragment set:html={fragment} />
+    <ChapterNav corsoSlug={corsoSlug} previous={previous} next={next} />
+  </div>
+</article>
+
+<style>
+  .capitolo {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 1.5rem;
+  }
+
+  .capitolo-head {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .capitolo-head > * {
+    grid-column: 5 / span 7;
+  }
+
+  .capitolo-head h1 {
+    grid-column: 1 / -1;
+    font-size: clamp(2.4rem, 6vw, 5rem);
+  }
+
+  .crumbs {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .notice {
+    color: var(--muted);
+    font-size: 0.95rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 0.6rem;
+  }
+
+  .prose {
+    grid-column: 5 / span 7;
+    min-width: 0;
+  }
+
+  @media (max-width: 860px) {
+    .capitolo,
+    .capitolo-head {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .capitolo-head > *,
+    .prose {
+      grid-column: 1;
+    }
+  }
+</style>

@@ -1,0 +1,359 @@
+/*
+ * A converted chapter (SPEC.md §5.4, §7.3): the pipeline's HTML fragment is LaTeXML's output,
+ * so it is styled by LaTeXML's class names. Plain tokens only, every color from tokens.css.
+ */
+
+.prose {
+  --mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5 {
+  text-wrap: balance;
+}
+
+.prose h3 {
+  margin: 1.8em 0 0.4em;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.prose h4,
+.prose h5 {
+  margin: 1.4em 0 0.4em;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.prose .ltx_tag_section,
+.prose .ltx_tag_subsection,
+.prose .ltx_tag_subsubsection,
+.prose .ltx_tag_paragraph {
+  margin-right: 0.6em;
+  font-variant-numeric: tabular-nums;
+}
+
+.prose .ltx_p {
+  margin: 0 0 1em;
+}
+
+.prose .ltx_font_bold {
+  font-weight: 700;
+}
+
+.prose .ltx_font_italic,
+.prose .ltx_emph {
+  font-style: italic;
+}
+
+.prose .ltx_font_typewriter,
+.prose code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
+
+.prose .ltx_font_smallcaps {
+  font-variant: small-caps;
+}
+
+.prose .ltx_centering,
+.prose .ltx_align_center {
+  text-align: center;
+}
+
+/* Lists: the tag span ("•", "1.") is part of the item, so the browser's own marker is off. */
+.prose ul,
+.prose ol {
+  list-style: none;
+  margin: 0 0 1em;
+  padding: 0;
+}
+
+.prose .ltx_item {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.prose .ltx_tag_item {
+  flex: none;
+  min-width: 1.4rem;
+  text-align: right;
+}
+
+.prose .ltx_item > .ltx_para {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Math: native MathML in Fira Math (SPEC.md §5.2). The font file is linked only by pages with math. */
+.prose math {
+  font-family: 'Fira Math', 'STIX Two Math', 'Cambria Math', math;
+  font-size: 1.08em;
+}
+
+.prose .ltx_equation {
+  display: flex;
+  align-items: center;
+  margin: 0.4em 0 1em;
+}
+
+.prose .ltx_equation .ltx_Math {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.35em;
+  text-align: center;
+}
+
+.prose .ltx_eqn_eqno {
+  order: 2;
+  margin-left: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Aligned equations (align, eqnarray): the rows dissolve into one grid, so every row's left
+ * half and right half line up on the alignment point, and the number sits in a third column.
+ */
+.prose .ltx_equationgroup {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  justify-content: center;
+  margin: 0.4em 0 1em;
+}
+
+.prose .ltx_equationgroup .ltx_equation {
+  display: contents;
+}
+
+.prose .ltx_equationgroup .ltx_td {
+  padding-block: 0.2em;
+}
+
+.prose .ltx_equationgroup .ltx_align_right {
+  grid-column: 1;
+  text-align: right;
+}
+
+.prose .ltx_equationgroup .ltx_align_left {
+  grid-column: 2;
+  text-align: left;
+}
+
+.prose .ltx_equationgroup .ltx_eqn_eqno {
+  grid-column: 3;
+  align-self: center;
+  margin-left: 2rem;
+}
+
+.prose .bml_sr_only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Theorems: "Teorema 1.2 (Name)." in bold, the statement upright (SPEC.md §5.4). */
+.prose .ltx_theorem,
+.prose .ltx_proof {
+  margin: 1.3em 0;
+}
+
+.prose .ltx_theorem {
+  font-weight: 500;
+}
+
+.prose .ltx_theorem .ltx_font_italic {
+  font-style: normal;
+}
+
+.prose .ltx_title_theorem,
+.prose .ltx_title_proof {
+  font-weight: 400;
+}
+
+.prose .ltx_title_theorem .ltx_font_bold {
+  font-weight: 700;
+}
+
+/* "Proof." in italics; the ∎ LaTeXML puts at the end of the last paragraph closes it. */
+.prose .ltx_title_proof {
+  font-style: italic;
+}
+
+.prose .ltx_runin {
+  display: inline;
+  margin-right: 0.35em;
+}
+
+.prose .ltx_runin + .ltx_para {
+  display: inline;
+}
+
+.prose .ltx_runin + .ltx_para > .ltx_p:first-child {
+  display: inline;
+}
+
+.prose .ltx_runin + .ltx_para > .ltx_p:first-child::after {
+  content: '';
+  display: block;
+  margin-bottom: 1em;
+}
+
+/* Notes: an indented block with a rule, right after the line they belong to (SPEC.md §5.4). */
+.prose .ltx_note_outer {
+  display: block;
+  margin: 0.6em 0 0.3em;
+  padding-left: 0.8rem;
+  border-left: 2px solid var(--ink);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.prose .ltx_note_content > .ltx_note_mark {
+  margin-right: 0.3em;
+}
+
+.prose .ltx_tag_note {
+  display: none;
+}
+
+/* The title of a tcolorbox, kept from the source as a heading of its content. */
+.prose .tcbtitle {
+  font-weight: 700;
+}
+
+/* Code listings: plain text on the surface color, line numbers from a counter. */
+.prose pre.listing {
+  counter-reset: ln;
+  margin: 1em 0;
+  padding: 0.8rem 1rem;
+  overflow-x: auto;
+  background: var(--surface);
+  font: 0.85rem/1.5 var(--mono);
+  tab-size: 4;
+}
+
+.prose pre.listing code {
+  font: inherit;
+}
+
+.prose pre.listing .ltx_listingline::before {
+  counter-increment: ln;
+  content: counter(ln);
+  display: inline-block;
+  width: 2.2em;
+  margin-right: 1em;
+  color: var(--muted);
+  text-align: right;
+  user-select: none;
+}
+
+/* Algorithms (algorithm2e): numbered lines, the vertical bars of nesting drawn as rules. */
+.prose .ltx_listing:not(.ltx_lstlisting) {
+  margin: 1em 0;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  overflow-x: auto;
+}
+
+.prose .ltx_listingline {
+  white-space: pre-wrap;
+}
+
+.prose .ltx_tag_listingline {
+  display: inline-block;
+  min-width: 1.6em;
+  margin-right: 0.8em;
+  color: var(--muted);
+  font-size: 0.85em;
+  text-align: right;
+}
+
+.prose .ltx_listingline code {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.prose .ltx_rule.bml_vrule {
+  display: inline-block;
+  width: 0;
+  height: 1.2em;
+  margin: 0 0.6em;
+  border-left: 1px solid currentColor;
+  vertical-align: text-bottom;
+}
+
+/* Tables: the border classes say where the rules are. */
+.prose .bml-overflow-wrapper {
+  overflow-x: auto;
+}
+
+.prose .ltx_tabular {
+  margin: 0.8em auto;
+  border-collapse: collapse;
+}
+
+.prose .ltx_td {
+  padding: 0.25em 0.7em;
+}
+
+.prose .ltx_border_t {
+  border-top: 1px solid var(--ink);
+}
+
+.prose .ltx_border_b {
+  border-bottom: 1px solid var(--ink);
+}
+
+.prose .ltx_border_l {
+  border-left: 1px solid var(--ink);
+}
+
+.prose .ltx_border_r {
+  border-right: 1px solid var(--ink);
+}
+
+.prose .ltx_align_left {
+  text-align: left;
+}
+
+.prose .ltx_align_right {
+  text-align: right;
+}
+
+/* Figures: a visible placeholder until the figures ticket converts them (#37). */
+.prose figure {
+  margin: 1.4em 0;
+}
+
+.prose figcaption {
+  margin-top: 0.4em;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.prose .figura-pending {
+  margin: 0;
+  padding: 1.2rem 1rem;
+  border: 1px dashed var(--muted);
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+}
+
+.prose .ltx_flex_figure {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.prose .ltx_flex_cell {
+  flex: 1 1 12rem;
+}

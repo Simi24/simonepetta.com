@@ -1,0 +1,34 @@
+# -*- mode: Perl -*-
+# Stand-in for tcolorbox, used by the conversion only (never by the PDF build).
+# LaTeXML 0.8.8's own binding loads the raw expl3 of the installed TeX Live, which
+# is too new for it and never finishes. The box styling (colors, frames) is print
+# decoration and is dropped; the content is kept, and so is the `title=` text, shown
+# as a heading. Each box leaves an empty marker the pipeline counts (and removes), so
+# the leak detector can check every box and title of the source reached the output.
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# The text of a `title=...` option: braced (balanced one level of nesting) or up to the next comma.
+sub tcbTitle {
+  my ($options) = @_;
+  return undef unless defined $options;
+  my $text = UnTeX($options);
+  if ($text =~ /(?:^|,)\s*title\s*=\s*(\{(?:[^{}]|\{[^{}]*\})*\}|[^,]*)/) {
+    my $title = $1;
+    $title =~ s/^\{(.*)\}$/$1/s;
+    $title =~ s/^\s+|\s+$//g;
+    return $title eq '' ? undef : $title;
+  }
+  return undef;
+}
+
+DefEnvironment('{tcolorbox} OptionalUndigested',
+  '<ltx:text class="tcolorbox"/>?#title(<ltx:p class="tcbtitle">#title</ltx:p>)#body',
+  properties => sub { my ($stomach, $options) = @_; my $title = tcbTitle($options); (title => defined $title ? Digest(Tokenize($title)) : undef); });
+DefMacro('\tcbset{}', '');
+DefMacro('\tcbuselibrary{}', '');
+DefMacro('\newtcolorbox[]{}[]{}', '');
+
+1;
