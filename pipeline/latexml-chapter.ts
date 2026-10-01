@@ -275,6 +275,23 @@ function keepTabularsOnOneLine(tokens: readonly Token[]): Token[] {
   return out;
 }
 
+/**
+ * A display equation scrolls sideways when it is wider than the page (CSS), and a scrolling
+ * region must be reachable with the keyboard. Width is not known here, so the equations long
+ * enough to overflow a narrow screen (by their visible symbols) get a tab stop; short ones do not.
+ */
+const WIDE_MATH_SYMBOLS = 30;
+const SYMBOL = /<(mi|mn|mo|mtext)\b[^>]*>([^<]*)<\/\1>/g;
+
+function makeWideMathFocusable(tokens: readonly Token[]): Token[] {
+  return tokens.map((token, i): Token => {
+    if (token.type !== 'open' || token.name !== 'math' || attribute(token, 'display') !== 'block') return token;
+    const math = serialize(tokens.slice(i, elementEnd(tokens, i)));
+    const symbols = [...math.matchAll(SYMBOL)].filter(([, , text]) => !/^[\u2061-\u2064]*$/.test(text ?? '')).length;
+    return symbols >= WIDE_MATH_SYMBOLS ? setAttribute(token, 'tabindex', '0') : token;
+  });
+}
+
 function rewriteHref(href: string, links: LinkTargets): string {
   if (href.startsWith('#') || /^(https?:|mailto:)/.test(href)) return href;
   const [file = '', hash] = href.split('#');
@@ -313,6 +330,7 @@ export function processChapter(page: string, links: LinkTargets, figures: Figure
   tokens = renumberAlgorithmLines(tokens);
   tokens = numberListingsPerChapter(tokens, head.numero);
   tokens = keepTabularsOnOneLine(tokens);
+  tokens = makeWideMathFocusable(tokens);
 
   tokens = tokens.map((token): Token => {
     if (token.type === 'text') return { ...token, raw: token.raw.replace(/​/g, '') };

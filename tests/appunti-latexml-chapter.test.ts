@@ -154,3 +154,14 @@ test('a tabular inside a paragraph keeps its line without nesting tables in a <p
     assert.deepEqual([...line.matchAll(/<table\b|alttext="([^"]*)"/g)].map((match) => match[1] ?? 'table'), ['table', '\\cdot', 'table', '=', 'table']);
   }
 });
+
+/** A display equation of `tokens` symbols, as LaTeXML writes it (its TeX annotation included). */
+const displayMath = (id: string, tokens: number): string =>
+  `<math id="${id}" class="ltx_Math" alttext="x" display="block"><semantics><mrow>${'<mi>x</mi>'.repeat(tokens)}</mrow><annotation encoding="application/x-tex">x</annotation></semantics></math>`;
+
+test('a display equation wide enough to scroll can be reached with the keyboard, a short one adds no tab stop', () => {
+  const page = fixture('mini-Ch2.html').replace('<div id="p1"', `<div id="eq">${displayMath('long', 60)}${displayMath('short', 5)}</div>\n<div id="p1"`);
+  const { html } = processChapter(page, LINKS);
+  assert.match(html, /<math id="long"[^>]*tabindex="0"/);
+  assert.doesNotMatch(html, /<math id="short"[^>]*tabindex/);
+});
