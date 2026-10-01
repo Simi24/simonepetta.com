@@ -57,7 +57,11 @@ const { capitolo } = Astro.props;
     padding: 0;
   }
 
-  .toc li {
+  /* Each link is a 24px target (WCAG 2.5.8): a long section title with its subsections shows many at once. */
+  .toc a {
+    display: block;
+    box-sizing: border-box;
+    min-height: 1.5rem;
     padding-block: 0.1rem;
   }
 
