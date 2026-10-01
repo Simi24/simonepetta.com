@@ -33,4 +33,5 @@ Needs `pdfinfo` (poppler) on `PATH` for the page count. Details and limits: `SPE
 ## Setup
 
 - Cloudflare API tokens: `scripts/setup-cloudflare.sh`, a guided wizard (tokens never pass through an agent).
+- Favicon: `npm run favicon:generate` rebuilds `public/favicon.svg`, `favicon.ico` and `apple-touch-icon.png` from the self-hosted font (needs python3 and Docker).
 - Visual contracts: `docs/prototype/visual.html` (site) and `docs/prototype/scrivania.html` (writing desk).

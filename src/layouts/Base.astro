@@ -57,6 +57,9 @@ const beaconData = JSON.stringify({ token: beaconToken });
     {!SITE_INDEXABLE && <meta name="robots" content="noindex" />}
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preload" href="/fonts/host-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
     {hreflang?.map((alt) => <link rel="alternate" hreflang={alt.lang} href={alt.href} />)}
