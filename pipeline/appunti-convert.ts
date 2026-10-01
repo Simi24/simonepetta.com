@@ -5,6 +5,7 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { APPUNTI_CONTENT_DIR } from '../src/config/appunti-content-dir.ts';
 import { LeakError, parseLatexmlErrors, prepareBuild } from './appunti-build.ts';
+import { readSources } from './course-sources.ts';
 import { installConversion } from './appunti-install.ts';
 import { recoverInterruptedSwap } from './course-swap.ts';
 import { makeFigures } from './figures-docker.ts';
@@ -37,15 +38,6 @@ function ensureImage(): void {
   if (present) return;
   console.log(`Building the ${IMAGE} image (TeX Live + LaTeXML + BookML), once...`);
   execFileSync('docker', ['build', '-t', IMAGE, PIPELINE_DIR], { stdio: 'inherit' });
-}
-
-/** Every `.tex` under `dir`, concatenated, for the leak detector. */
-function readSources(dir: string): string {
-  return readdirSync(dir, { recursive: true, encoding: 'utf8' })
-    .filter((file) => file.endsWith('.tex'))
-    .sort()
-    .map((file) => readFileSync(join(dir, file), 'utf8'))
-    .join('\n');
 }
 
 function convert(contentDir: string, slug: string, keepWorkdir: boolean): void {

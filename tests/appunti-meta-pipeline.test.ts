@@ -8,7 +8,7 @@ import { coursesWithPdf, parsePdfinfoPages, writeCorsoMeta } from '../pipeline/a
 
 /**
  * Whether `pdfinfo` (poppler) is on `PATH`. The `site` workflow does not install it (only the
- * `appunti` workflow of #38 will); locally it's at `/opt/homebrew/bin/pdfinfo` on this machine.
+ * `appunti` workflow installs it); locally it's at `/opt/homebrew/bin/pdfinfo` on this machine.
  * Tests that shell out to the real binary are skipped, not failed, when it's missing.
  */
 function hasPdfinfo(): boolean {

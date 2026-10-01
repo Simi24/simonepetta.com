@@ -1,0 +1,97 @@
+name: appunti
+
+# SPEC.md §11. Always runs on PRs and pushes to main and exits early (green) when nothing under
+# `appunti/**` or `pipeline/**` changed, so it can be a required check without ever hanging.
+# The site deploy lives in site.yml and never depends on this workflow.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      course:
+        description: Course slug to re-convert from src/ in Docker and compare with the committed build/
+        required: true
+        type: string
+
+concurrency:
+  group: appunti-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Did the notes or the pipeline change?
+        id: changes
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          # No usable base (a first push, a force push): assume the notes changed.
+          if [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            node scripts/ci/appunti-changed.ts "$BASE" "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+          else
+            echo 'notes=true' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Nothing under appunti/ or pipeline/ changed
+        if: steps.changes.outputs.notes != 'true'
+        run: |
+          echo 'Early exit, no change under appunti/ or pipeline/: nothing to check.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Install poppler (pdfinfo)
+        if: steps.changes.outputs.notes == 'true'
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends poppler-utils
+      - if: steps.changes.outputs.notes == 'true'
+        run: npm ci
+      - name: Unit tests of the pipeline
+        if: steps.changes.outputs.notes == 'true'
+        run: npm run test:pipeline
+      - name: meta.json against its PDF, leak detector on the committed build/
+        if: steps.changes.outputs.notes == 'true'
+        run: node pipeline/appunti-check.ts
+
+  reconvert:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      COURSE: ${{ inputs.course }}
+    steps:
+      - name: Check the slug
+        run: |
+          case "$COURSE" in
+            ''|*[!a-z0-9-]*) echo "::error::'$COURSE' is not a course slug"; exit 1 ;;
+          esac
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install poppler (pdfinfo)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends poppler-utils
+      - run: npm ci
+      - name: Re-convert from src/ in Docker
+        run: npm run appunti:convert -- "$COURSE"
+      - name: Compare with the committed build/
+        # The PDF is left out: LaTeX embeds timestamps, so its bytes never repeat. Its page count
+        # is in meta.json, which is compared.
+        run: |
+          git add -N "appunti/$COURSE/build" "appunti/$COURSE/meta.json"
+          git diff --binary --exit-code -- "appunti/$COURSE/build" "appunti/$COURSE/meta.json" > reconvert.diff
+      - name: Upload the diff
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reconvert-${{ inputs.course }}-diff
+          path: reconvert.diff
+          if-no-files-found: ignore

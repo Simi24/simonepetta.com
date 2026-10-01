@@ -11,6 +11,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "node --test --test-concurrency=1 \"tests/**/*.test.ts\"",
+    "test:pipeline": "node --test --test-concurrency=1 \"tests/appunti-*.test.ts\"",
     "test:browser": "playwright test",
     "test:browser-dev": "playwright test --config playwright.scrivania.config.ts",
     "og:generate": "node scripts/og/generate-og-images.ts",

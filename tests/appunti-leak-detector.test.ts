@@ -160,3 +160,8 @@ test('every tcolorbox title of the source must come out, as the same words', () 
   assert.match(detectLeaks(report({ source, chapters: [boxed(2, [])] })).join('\n'), /2 tcolorbox title.*0/);
   assert.match(detectLeaks(report({ source, chapters: [boxed(2, ['Il mio titolo', 'Altro'])] })).join('\n'), /Altro, con virgola/);
 });
+
+test('a report whose chapters do not record tcolorboxes (a committed build) is not held to their count', () => {
+  const source = '\\chapter{Uno}\n\\begin{tcolorbox}[title=Titolo]\nA\n\\end{tcolorbox}\n';
+  assert.deepEqual(detectLeaks(report({ source })), []);
+});
