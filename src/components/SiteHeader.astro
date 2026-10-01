@@ -18,6 +18,7 @@ const langSwitch = isEn ? { href: '/', label: 'IT', targetLang: 'it' } : { href:
 <header class="site-header">
   <a class="brand" href={isEn ? '/en/' : '/'}>{site.author}</a>
   <div class="site-header__end">
+    <ThemeToggle lang={lang} />
     <nav aria-label={isEn ? 'Sections' : 'Sezioni'}>
       {sections.map((section) => (
         <a href={section.href} aria-current={Astro.url.pathname === section.href ? 'page' : undefined}>
@@ -51,6 +52,11 @@ const langSwitch = isEn ? { href: '/', label: 'IT', targetLang: 'it' } : { href:
     gap: 1.8rem;
   }
 
+  /* Two toggles, one per layout, so Tab follows what is drawn: first in the DOM on phones, last on desktop. */
+  .site-header__end > :global(.theme-toggle:first-child) {
+    display: none;
+  }
+
   .brand,
   nav a {
     text-decoration: none;
@@ -66,6 +72,14 @@ const langSwitch = isEn ? { href: '/', label: 'IT', targetLang: 'it' } : { href:
   @media (max-width: 600px) {
     .site-header__end {
       display: contents;
+    }
+
+    .site-header__end > :global(.theme-toggle:first-child) {
+      display: inline;
+    }
+
+    .site-header__end > :global(.theme-toggle:last-child) {
+      display: none;
     }
 
     nav {
