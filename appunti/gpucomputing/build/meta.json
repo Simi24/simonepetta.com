@@ -1,0 +1,552 @@
+{
+  "capitoli": [
+    {
+      "numero": 1,
+      "slug": "1-introduzione",
+      "titolo": "Introduzione",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "1.1",
+          "titolo": "GP-GPU",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "1.2",
+          "titolo": "Architetture eterogenee",
+          "sottosezioni": [
+            {
+              "id": "S2.SS1",
+              "numero": "1.2.1",
+              "titolo": "Parallelismo delle istruzioni"
+            },
+            {
+              "id": "S2.SS2",
+              "numero": "1.2.2",
+              "titolo": "Parallelismo dei dati"
+            }
+          ]
+        },
+        {
+          "id": "S3",
+          "numero": "1.3",
+          "titolo": "Parallelismo di task",
+          "sottosezioni": []
+        },
+        {
+          "id": "S4",
+          "numero": "1.4",
+          "titolo": "Tassonomia di Flynn",
+          "sottosezioni": []
+        },
+        {
+          "id": "S5",
+          "numero": "1.5",
+          "titolo": "GPU Nvidia",
+          "sottosezioni": [
+            {
+              "id": "S5.SS1",
+              "numero": "1.5.1",
+              "titolo": "Cuda core"
+            },
+            {
+              "id": "S5.SS2",
+              "numero": "1.5.2",
+              "titolo": "CUDA"
+            },
+            {
+              "id": "S5.SS3",
+              "numero": "1.5.3",
+              "titolo": "Hello world in cuda"
+            }
+          ]
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 2,
+      "slug": "2-modello-di-programmazione-cuda",
+      "titolo": "Modello di programmazione CUDA",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "2.1",
+          "titolo": "Modelli per sistemi paralleli",
+          "sottosezioni": [
+            {
+              "id": "S1.SS1",
+              "numero": "2.1.1",
+              "titolo": "SIMD"
+            },
+            {
+              "id": "S1.SS2",
+              "numero": "2.1.2",
+              "titolo": "MIMD"
+            },
+            {
+              "id": "S1.SS3",
+              "numero": "2.1.3",
+              "titolo": "PRAM"
+            },
+            {
+              "id": "S1.SS4",
+              "numero": "2.1.4",
+              "titolo": "Parallelizzazione di algoritmi"
+            }
+          ]
+        },
+        {
+          "id": "S2",
+          "numero": "2.2",
+          "titolo": "CPU multi-core e programmazione multi-threading",
+          "sottosezioni": [
+            {
+              "id": "S2.SS1",
+              "numero": "2.2.1",
+              "titolo": "Thread"
+            }
+          ]
+        },
+        {
+          "id": "S3",
+          "numero": "2.3",
+          "titolo": "Programmazione multi-core",
+          "sottosezioni": []
+        },
+        {
+          "id": "S4",
+          "numero": "2.4",
+          "titolo": "Programmazione CUDA",
+          "sottosezioni": [
+            {
+              "id": "S4.SS1",
+              "numero": "2.4.1",
+              "titolo": "Organizzazione dei thread"
+            },
+            {
+              "id": "S4.SS2",
+              "numero": "2.4.2",
+              "titolo": "Lancio di un kernel CUDA"
+            },
+            {
+              "id": "S4.SS3",
+              "numero": "2.4.3",
+              "titolo": "Kernel concorrenti"
+            },
+            {
+              "id": "S4.SS4",
+              "numero": "2.4.4",
+              "titolo": "Restrizioni del kernel"
+            },
+            {
+              "id": "S4.SS5",
+              "numero": "2.4.5",
+              "titolo": "Memoria"
+            }
+          ]
+        },
+        {
+          "id": "S5",
+          "numero": "2.5",
+          "titolo": "Modello di esecuzione CUDA",
+          "sottosezioni": [
+            {
+              "id": "S5.SS1",
+              "numero": "2.5.1",
+              "titolo": "Panoramica"
+            },
+            {
+              "id": "S5.SS2",
+              "numero": "2.5.2",
+              "titolo": "Warp: architettura SIMT"
+            },
+            {
+              "id": "S5.SS3",
+              "numero": "2.5.3",
+              "titolo": "Latency hiding"
+            },
+            {
+              "id": "S5.SS4",
+              "numero": "2.5.4",
+              "titolo": "Warp divergence"
+            },
+            {
+              "id": "S5.SS5",
+              "numero": "2.5.5",
+              "titolo": "Sincronizzazione"
+            },
+            {
+              "id": "S5.SS6",
+              "numero": "2.5.6",
+              "titolo": "Reduction"
+            },
+            {
+              "id": "S5.SS7",
+              "numero": "2.5.7",
+              "titolo": "Operazioni atomiche"
+            }
+          ]
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 3,
+      "slug": "3-architetture-delle-gpu",
+      "titolo": "Architetture delle GPU",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "3.1",
+          "titolo": "Loop Unrolling",
+          "sottosezioni": [
+            {
+              "id": "S1.SS1",
+              "numero": "3.1.1",
+              "titolo": "Block unrolling"
+            }
+          ]
+        },
+        {
+          "id": "S2",
+          "numero": "3.2",
+          "titolo": "Architetture delle GPU",
+          "sottosezioni": [
+            {
+              "id": "S2.SS1",
+              "numero": "3.2.1",
+              "titolo": "Compute Capability"
+            },
+            {
+              "id": "S2.SS2",
+              "numero": "3.2.2",
+              "titolo": "Architettura interna GPU"
+            },
+            {
+              "id": "S2.SS3",
+              "numero": "3.2.3",
+              "titolo": "Scheduler di warp"
+            },
+            {
+              "id": "S2.SS4",
+              "numero": "3.2.4",
+              "titolo": "Transparent scalability"
+            },
+            {
+              "id": "S2.SS5",
+              "numero": "3.2.5",
+              "titolo": "Parallelizzazione dinamica"
+            }
+          ]
+        }
+      ],
+      "math": false
+    },
+    {
+      "numero": 4,
+      "slug": "4-memorie",
+      "titolo": "Memorie",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "4.1",
+          "titolo": "Registri",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "4.2",
+          "titolo": "Local Memory",
+          "sottosezioni": []
+        },
+        {
+          "id": "S3",
+          "numero": "4.3",
+          "titolo": "Constant Memory",
+          "sottosezioni": []
+        },
+        {
+          "id": "S4",
+          "numero": "4.4",
+          "titolo": "Texture Memory",
+          "sottosezioni": []
+        },
+        {
+          "id": "S5",
+          "numero": "4.5",
+          "titolo": "Shared Memory",
+          "sottosezioni": [
+            {
+              "id": "S5.SS1",
+              "numero": "4.5.1",
+              "titolo": "Organizzazione"
+            },
+            {
+              "id": "S5.SS2",
+              "numero": "4.5.2",
+              "titolo": "SMEM runtime"
+            },
+            {
+              "id": "S5.SS3",
+              "numero": "4.5.3",
+              "titolo": "Pattern di accesso"
+            },
+            {
+              "id": "S5.SS4",
+              "numero": "4.5.4",
+              "titolo": "Conflitto di accesso"
+            },
+            {
+              "id": "S5.SS5",
+              "numero": "4.5.5",
+              "titolo": "Configurazione SMEM / cache L1"
+            },
+            {
+              "id": "S5.SS6",
+              "numero": "4.5.6",
+              "titolo": "Osservazioni"
+            },
+            {
+              "id": "S5.SS7",
+              "numero": "4.5.7",
+              "titolo": "Allocazione statica delle SMEM"
+            },
+            {
+              "id": "S5.SS8",
+              "numero": "4.5.8",
+              "titolo": "Allocazione dinamica della SMEM"
+            },
+            {
+              "id": "S5.SS9",
+              "numero": "4.5.9",
+              "titolo": "Uso tipico"
+            },
+            {
+              "id": "S5.SS10",
+              "numero": "4.5.10",
+              "titolo": "Prodotto matriciale con SMEM"
+            },
+            {
+              "id": "S5.SS11",
+              "numero": "4.5.11",
+              "titolo": "Prodotto convolutivo con SMEM"
+            }
+          ]
+        },
+        {
+          "id": "S6",
+          "numero": "4.6",
+          "titolo": "Global Memory",
+          "sottosezioni": [
+            {
+              "id": "S6.SS1",
+              "numero": "4.6.1",
+              "titolo": "Pinned memory"
+            },
+            {
+              "id": "S6.SS2",
+              "numero": "4.6.2",
+              "titolo": "Unified Virtual Addressing UVA"
+            },
+            {
+              "id": "S6.SS3",
+              "numero": "4.6.3",
+              "titolo": "Pattern di Accesso alla Global Memory"
+            }
+          ]
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 5,
+      "slug": "5-ottimizzazione-delle-prestazioni",
+      "titolo": "Ottimizzazione delle prestazioni",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "5.1",
+          "titolo": "Stream e concorrenza",
+          "sottosezioni": [
+            {
+              "id": "S1.SS1",
+              "numero": "5.1.1",
+              "titolo": "CUDA Stream"
+            },
+            {
+              "id": "S1.SS2",
+              "numero": "5.1.2",
+              "titolo": "CUDA event"
+            }
+          ]
+        },
+        {
+          "id": "S2",
+          "numero": "5.2",
+          "titolo": "Librerie CUDA",
+          "sottosezioni": [
+            {
+              "id": "S2.SS1",
+              "numero": "5.2.1",
+              "titolo": "Workflow tipico"
+            },
+            {
+              "id": "S2.SS2",
+              "numero": "5.2.2",
+              "titolo": "Libreria cuBLAS"
+            },
+            {
+              "id": "S2.SS3",
+              "numero": "5.2.3",
+              "titolo": "cuRAND"
+            },
+            {
+              "id": "S2.SS4",
+              "numero": "5.2.4",
+              "titolo": "cuFFT"
+            }
+          ]
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 6,
+      "slug": "6-numba",
+      "titolo": "Numba",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "6.1",
+          "titolo": "Numba",
+          "sottosezioni": [
+            {
+              "id": "S1.SS1",
+              "numero": "6.1.1",
+              "titolo": "Numba for CPU"
+            },
+            {
+              "id": "S1.SS2",
+              "numero": "6.1.2",
+              "titolo": "Numba for GPU"
+            },
+            {
+              "id": "S1.SS3",
+              "numero": "6.1.3",
+              "titolo": "Gestione della memoria"
+            },
+            {
+              "id": "S1.SS4",
+              "numero": "6.1.4",
+              "titolo": "Atomic Operations"
+            },
+            {
+              "id": "S1.SS5",
+              "numero": "6.1.5",
+              "titolo": "Streams"
+            }
+          ]
+        }
+      ],
+      "math": false
+    },
+    {
+      "numero": 7,
+      "slug": "7-pattern-paralleli",
+      "titolo": "Pattern Paralleli",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "7.1",
+          "titolo": "Pattern Paralleli",
+          "sottosezioni": [
+            {
+              "id": "S1.SS1",
+              "numero": "7.1.1",
+              "titolo": "Scan (Prefix-sum)"
+            },
+            {
+              "id": "S1.SS2",
+              "numero": "7.1.2",
+              "titolo": "Grafi"
+            },
+            {
+              "id": "S1.SS3",
+              "numero": "7.1.3",
+              "titolo": "Graph Coloring"
+            },
+            {
+              "id": "S1.SS4",
+              "numero": "7.1.4",
+              "titolo": "Insieme Indipendente Massimale MIS"
+            },
+            {
+              "id": "S1.SS5",
+              "numero": "7.1.5",
+              "titolo": "Sorting"
+            }
+          ]
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 8,
+      "slug": "8-pytorch",
+      "titolo": "PyTorch",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "8.1",
+          "titolo": "Tensori",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "8.2",
+          "titolo": "Operazioni",
+          "sottosezioni": [
+            {
+              "id": "S2.SS1",
+              "numero": "8.2.1",
+              "titolo": "Spostare sulla GPU"
+            }
+          ]
+        },
+        {
+          "id": "S3",
+          "numero": "8.3",
+          "titolo": "Linear Neural Networks",
+          "sottosezioni": [
+            {
+              "id": "S3.SS1",
+              "numero": "8.3.1",
+              "titolo": "Discesa del gradiente"
+            },
+            {
+              "id": "S3.SS2",
+              "numero": "8.3.2",
+              "titolo": "Autograd"
+            }
+          ]
+        },
+        {
+          "id": "S4",
+          "numero": "8.4",
+          "titolo": "Multi Layer Perceptron MLP",
+          "sottosezioni": [
+            {
+              "id": "S4.SS1",
+              "numero": "8.4.1",
+              "titolo": "Modulo nn"
+            }
+          ]
+        }
+      ],
+      "math": true
+    }
+  ],
+  "figureInAttesa": 19
+}

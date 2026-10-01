@@ -1,0 +1,98 @@
+\section{Loop Unrolling}
+L'idea e' di ottimizzare i loop ripetendo le istruzioni nel corpo del loop. Invece di eseguire un'iterazione alla volta, il compilatore o il programmatore espande il loop per eseguire più iterazioni in un singolo passaggio. Questo riduce l'overhead del controllo del loop e può migliorare l'uso della pipeline della CPU o della GPU.
+Come esempio vediamo il for della parallel reduction vista in precedenza:
+\begin{lstlisting}
+    for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
+        if (threadIdx.x < stride) {
+            thisBlock[threadIdx.x] += thisBlock[threadIdx.x + stride];
+        }
+        __syncthreads();
+    }
+\end{lstlisting}
+
+Per farlo e' possibile aggiungere un descrittore volatile che implica che ogni volta che l'istruzione viene eseguita va direttamente alla shared memory, evitando ottimizzazioni indesiderate da parte del compilatore passando per la cache:
+\begin{lstlisting}
+    if (tid < 32) {
+        volatile int *vmem = thisBlock;
+        vmem[tid] += vmem[tid + 32];
+        vmem[tid] += vmem[tid + 16];
+        vmem[tid] += vmem[tid + 8];
+        vmem[tid] += vmem[tid + 4];
+        vmem[tid] += vmem[tid + 2];
+        vmem[tid] += vmem[tid + 1];
+    }
+\end{lstlisting}
+32 non e' un numero casuale ma stiamo facendo l'unrolling a livello di warp:
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{images/architetture/threadWarp.png}
+    \caption{Uso dei thread del warp per il loop unrolling}
+    \label{fig:warp_unrolling}
+\end{figure}
+
+\subsection{Block unrolling}
+Possiamo estendere l'idea di loop unrolling anche a livello di block. In questo caso, invece di unrollare le operazioni all'interno di un singolo warp, possiamo unrollare le operazioni su più thread all'interno di un block. Questo approccio può portare a un utilizzo più efficiente delle risorse della GPU e a una riduzione del numero di sincronizzazioni necessarie.
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.5\textwidth]{images/architetture/blockUnroll.png}
+    \caption{Block unrolling}
+    \label{fig:block_unrolling}
+\end{figure}
+
+\section{Architetture delle GPU}
+Il PCI Express sono i bus che permettono di unire CPU e GPU ed e' normalmente il collo di bottiglia del sistema. Ci sono dei controller da entrambe le parti che permettono di parlare con il BUS, all'interno di CPU e GPU ci sono bus per comunicazione interna molto piu' veloci.
+
+Il PCI Express BUS parla con dei controller che a loro volta si interfacciano con i livello di cache piu' basso dell'architettura.
+
+\subsection{Compute Capability}
+E' il termine usato per descrivere la versione hw degli acceleratori GPU che appartengono alle famiglie di dispositivi e che hanno una data architettura interna. E' un parametro che va passato al comiplatore, dobbiamo tenere in considerazione questi cambiamenti generazionali delle GPU per scrivere degli algoritmi efficienti per l'architettura che abbiamo a disposizione.
+Non c'e' grande compatibilita' tra versioni.
+
+\subsection{Architettura interna GPU}
+Ci sono i vari straming multi processors che comunicano usando una shared memory che e' una memoria cache, poi ci sono i vari bus e controllori che parlano con la CPU.
+
+\subsubsection{Host interface}
+E' un controller interno alla GPU che si interfaccia verso bus PCie. Consente alla GPU di trasferire dati da e per la CPU. Ha due tipi di memorie cache: una L1 interna al sm e una L2 condivisa tra SM. Ogni cache l1 e' parallela e combina attivita' con le unita' load/store. Un memory controller dedicato trasporta dati dentro e fuori dalla GDDR5 global memory.
+
+\subsubsection{Giga-thread scheduler}
+Si occupa di assegnare ai vari SM disponibili ti blocchi del kernel con una politica di round robin. 
+L'assegnamento di blocchi a SM e' un attivita' veloce, l'esecuzione molto piu' lenta.
+La variabili gridDim, blockIdx e blockDim sono pasate dal giga thread scheduler ad ogni core della GPU che eseguira' il corrispondente blocco.
+
+\subsection{Scheduler di warp}
+Ogni blocco e' assegnato a un SM. Ogni SM contiene 2 warp scheduler e 2 instruction dispatch unit. I due scheduler selezionano 2 warp da eseguire in parallelo e distribuiscono un'istruzione a ognuno dei 16 core o alle 16 unita' o alle 4 fpu. L'archittura fermi puo' trattare simultaneamente 8 blocchi = 48 warp per SM per un totale di 1536 thread alla volta residenti su un singolo SM.
+
+\subsection{Transparent scalability}
+E' la capacita' di eseguire lo stesso codice applicativo su diverse architetture, numero variabile di compute core e di SM.
+
+\subsection{Parallelizzazione dinamica}
+Potremmo voler lanciare un kern da un kernel, il kernel padre puo' consumare l'output prodotto dal figlio tutto senza la CPU:
+\begin{lstlisting}
+    __global__ void kernel_figlio() {
+        // Codice del kernel figlio
+    }
+
+    __global__ void kernel_padre() {
+        // Codice del kernel padre
+        kernel_figlio<<<1, 1>>>();
+    }
+\end{lstlisting}
+
+Ci siamo mai chiesti se si può lanciare un kernel all'interno di un kernel? Not really, ma potrebbe essere utile (come ad esempio per la ricorsione). Nuova feature introdotta dalle CC 3.5: ogni kernel può lanciare un altro kernel e gestire dipendenze inter-kernel. 
+
+Elimina la necessità di comunicare con la CPU, rende più semplice creare e ottimizzare pattern di esecuzione ricorsivi e data-dependent. Senza parallelismo dinamico la CPU deve occuparsi di lanciare ogni kernel.
+
+L'idea dietro il parallelismo dinamico è generare dinamicamente kernel in base ai dati: se ci sono elementi diversi/zone della matrice di lavoro che richiedono sforzi diversi possiamo fare in modo che i kernel siano \textit{ad hoc} per migliorare l'efficienza.
+
+Senza permettere al kernel di lanciare altri kernel il modello di esecuzione è inefficiente: la CPU non può essere conscia dei dati, ma è lei che deve lanciare \textit{tutti} i kernel. In questo modo la GPU può valutare se è necessario lanciare nuovi kernel (in base ai dati) e tali informazioni vanno passate nuovamente alla CPU per lanciare nuovi kernel.
+
+La soluzione è il \textbf{parallelismo dinamico}: la GPU può lanciare nuovi kernel, permettendo di ridurre la dipendenza dalla CPU e migliorare il throughput del kernel (se fatto bene). Consente carichi di lavoro dinamici senza penalizzare le prestazioni.
+
+Vogliamo mettere carico di lavoro dove serve e scegliere la granularità del lavoro in base ai dati. Possiamo posporre la decisione delle dimensioni di blocchi e griglia fino a runtime. Possiamo adattare il lavoro in base a \textbf{decisioni data-driven}, non da schemi fissi come visto fino ad ora.
+
+Sarebbe da limitare un attimo l'annidamento: se ogni thread facesse una chiamata a kernel figlio \textit{potrebbero} diventare tanti kernel lanciati; sarebbe carino inserire \textbf{control flow attorno ai lanci}, per esempio limitando il lancio ad 1 per blocco del padre (\texttt{threadIdx.x == 0}).
+
+\paragraph{Sincronizzazione:} Si ha una \textbf{sincronizzazione implicita}, il padre non può terminare prima dei figlio, un kernel non è considerato completato finché ha figli attivi. Rimane la possibilità di avere sincronizzazione esplicita, altrimenti il kernel padre non ha garanzie di poter vedere i dati elaborati dal figlio.
+
+\subsubsection{Bilanciare il lavoro}
+Se mi accorgo che un blocco di dati e' molto grande e richiede tanto tempo potrei dividere questo blocco in altri blocchi e dividere il lavoro con altri thread. Questo e' utile per evitare che un singolo blocco di dati rallenti l'intero processo di calcolo.

@@ -1,0 +1,832 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">Esiste una gerarchia di memoria, partono da memorie molto veloci come i registri, le cache arriviamo poi alla main memory e alla disk memory, sempre piu’ lente e sempre piu’ grandi.</p>
+</div>
+<div id="p2" class="ltx_para">
+<p class="ltx_p">Ci sono i principi di localita’ e gerarchia di memorie. Il principio di localita’ spaziale afferma che i programmi tendono ad accedere a una porzione ristretta di memoria in un dato momento, se accedo ad i e’ molto probabile che acceda ad un indirizzo li’ vicino (delta i), il che rende vantaggioso mantenere i dati frequentemente utilizzati nelle memorie piu’ veloci. La gerarchia di memorie sfrutta questo principio organizzando le memorie in livelli, con memorie piu’ veloci e costose in alto e memorie piu’ lente e economiche in basso.
+Mentre la localita’ temporale si riferisce alla tendenza ad eseguire la stessa istruzione piu’ volte in un breve intervallo di tempo.</p>
+</div>
+<div id="p3" class="ltx_para">
+<p class="ltx_p">Il modello di memoria CUDA, abbiamo visto che esistono delle memorie programmabili che hanno pattern di accesso utilizzabili con le API di sistema e devono essere gestite direttamente, devono essere gestite in maniera diversa per la lettura e la scrittura. Poi ci sono delle memorie non programmabili, le cache L1 e L2.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.1</span> Registri</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">Sono le memorie piu’ veloci e piu’ piccole. Sono ripartiti tra i warp attivi (assegnati ad ogni thread). Le variabili locali sono quelle che vengono assegante ai registri senza che sia specificato nessuno dei qualificatori generalmente risiede in un registro.
+Meno registri usa il kernel, piu’ blocchi di thread e’ probabile che risiedano sul multiprocessore, quindi meno ne usiamo meglio e’.</p>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.2</span> Local Memory</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">E’ una memoria lenta come la global memory. E’ una memoria locale ai thread ed e’ usata per contenere le variabili automatiche (grandi) non contenute nei registri:</p>
+<ul id="S2.I1" class="ltx_itemize">
+<li id="S2.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i1.p1" class="ltx_para"><p class="ltx_p">Array locali i cui indici non possono essere determinati a compile-trasferimento</p>
+</div>
+</li>
+<li id="S2.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i2.p1" class="ltx_para"><p class="ltx_p">Strutture locali grandi che consumano troppo spazio registro</p>
+</div>
+</li>
+<li id="S2.I1.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i3.p1" class="ltx_para"><p class="ltx_p">Ogni variabile che non puo’ essere allocata nei registri a causa numero limitato (register spilling)</p>
+</div>
+</li>
+</ul>
+<p class="ltx_p">Risiede nella device memory, pertanto gli accessi hanno stessa latenza e ampiezza di banda della global memory e sono soggetti anche agli stessi vincoli di di coalescenza.
+Il compilatore nvcc si preoccupa della sua allocazione e non e’ controllata dal programmatore.</p>
+</div>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.3</span> Constant Memory</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">Risiede in device memory ed ha una cache dedicata in ogni SM. E’ ideale per ospitare dati a cui si accede in modo uniforme e in sola lettura.
+Una variabile dichiarata come <span class="ltx_text ltx_font_typewriter">__constant__</span> viene dichiarata con scope globale, ad di fuori di qualsiasi kernel.
+L’utilizzo migliore come dice il nome e’ allocarci dati che devono essere distribuiti tra tanti kernel.</p>
+</div>
+<div id="S3.p2" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cudaError_t cudaMemcpyToSymbol(const void *symbol, const void *src, size_t count);</span></code></pre></div>
+</div>
+<div id="S3.p3" class="ltx_para">
+<p class="ltx_p">E’ pari a 64KB per tutte le compute capability.</p>
+</div>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.4</span> Texture Memory</h2>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">E’ una memoria in sola lettura, dotata di cache e risiede in device memory. E’ particolarmente utile perche’ include un supporto hw efficiente per filtraggio o interpolazione floating-point nel processo di lettura dei dati. E’ ottimizzata per la localita’ spaziale 2D, quindi dati espressi sotto forma di matrici.
+I thread di un warp che usano la texture memory per accedere a dati 2D hanno migliori prestazioni rispetto a quelle standard.</p>
+</div>
+</div>
+</section>
+<section id="S5" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.5</span> Shared Memory</h2>
+
+<div id="S5.p1" class="ltx_para">
+<p class="ltx_p">E’ una memoria programmabile on-chip con un bandwidth molto piu’ alto e minor latenza della local o global memory. E’ suddivisa in moduli della stessa ampizza, chiamati bank che possono essere acceduti da un thread alla volta.
+Abbiamo 32 banchi di memoria che devono essere utilizzati in maniera opportuna per essere acceduti simultaneamente.
+Ogni SM ha una quantita’ limitata di shared memory che viene ripartita tra i blocchi di thread.
+Bisogna farne un uso parco ancora una volta per non limitare il numero di warp attivi.
+Con i blocchi di thread condivide anche lifetime e scope.
+E’ fondamentale per la comunicazione inter-thread di un blocco, poiche’ permette di scambiare dati in modo rapido e con bassa latenza.
+L’accesso deve essere sincronizzato per mezzo delle seguente CUDA runtime call:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    __syncthreads();</span></code></pre></div>
+</div>
+<section id="S5.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.5.1</span> Organizzazione</h3>
+
+<div id="S5.SS1.p1" class="ltx_para">
+<p class="ltx_p">La SMEM dell’arch Fermi sono suddivisi in blocchi da 4 byte (chiamate word) da 32 bit (0 64). Ogni word puo’ contenere tipi base (1 int, 1 float, 2 short, 4 char).
+la bandwitdth e’ di 32 bit ogni 2 cicli di clock.
+Nei 32 banchi andiamo ad accedere simultaneamente a 32 word, ed e’ l’accesso piu’ veloce che possiamo avere:</p>
+</div>
+</div>
+</section>
+<section id="S5.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.5.2</span> SMEM runtime</h3>
+
+<div id="S5.SS2.p1" class="ltx_para">
+<p class="ltx_p">Viene ripartita tra tutti i blocchi residenti in un SM. Maggiore e’ la shared memory richiesta da un kernel, minore e’ il numero di blocchi attivi concorrenti. Il contenuto della shared memory ha lo stesso lifetime del blocco cui e’ stata assegnata. L’accesso e’ per warp: caso migliore 1 transazione x 32 thread, caso peggiore 32 transazioni.</p>
+</div>
+</div>
+</section>
+<section id="S5.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.5.3</span> Pattern di accesso</h3>
+
+<div id="S5.SS3.p1" class="ltx_para">
+<p class="ltx_p">Se un’operazione di load o store eseguita da un warp richiede al piu’ un accesso per bank, si puo’ effettuare in una sola transizione il traferimento dati dalla shared memory al warp.</p>
+</div>
+<div id="S5.SS3.p2" class="ltx_para">
+<ul id="S5.I1" class="ltx_itemize">
+<li id="S5.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I1.i1.p1" class="ltx_para"><p class="ltx_p">Caso broadcast: un singolo valore letto da tutti i thread in un warp da un singolo bank</p>
+</div>
+</li>
+<li id="S5.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I1.i2.p1" class="ltx_para"><p class="ltx_p">Caso parallelo: un singolo valore letto da un singolo bank. In questo caso le cose vanno bene, per ogni thread accediamo al corrispondente banco di memoria.</p>
+</div>
+</li>
+<li id="S5.I1.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I1.i3.p1" class="ltx_para"><p class="ltx_p">Conflitto doppio: tutti i thread di un warp richiedono una word di indice doppio il threadId.x</p>
+</div>
+</li>
+<li id="S5.I1.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I1.i4.p1" class="ltx_para"><p class="ltx_p">Nessun conflitto: strutture di 3 word come, ad esempio, le terne di punti nello spazio.</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="S5.SS4" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.5.4</span> Conflitto di accesso</h3>
+
+<div id="S5.SS4.p1" class="ltx_para">
+<p class="ltx_p">Il bank conflit e’ quando diversi indirizzi di shared memory insistono sullo stesso bank. L’hw effettua tante transizioni quante ne sono necessarie per risolvere il conflitto, riducendo le prestazioni.</p>
+</div>
+</div>
+</section>
+<section id="S5.SS5" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.5.5</span> Configurazione SMEM / cache L1</h3>
+
+<div id="S5.SS5.p1" class="ltx_para">
+<p class="ltx_p">Ogni SM ha 64 Kb di memoria on-chip, la sherd memory e L1 cache condividono questa risorsa HW.
+Cuda fornisce due metodi per configurare la L1 cache e la shared memory:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">   cudaError_t cudaDeviceSetCacheConfig(cudaFuncCache cacheConfig);</span></code></pre></div>
+</div>
+<div id="S5.SS5.p2" class="ltx_para">
+<p class="ltx_p">Dove l’argomento cacheConfig specifica come deve essere ripartita la memoria:</p>
+<ul id="S5.I2" class="ltx_itemize">
+<li id="S5.I2.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I2.i1.p1" class="ltx_para"><p class="ltx_p">cudaFuncCachePreferNone: no preference</p>
+</div>
+</li>
+<li id="S5.I2.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I2.i2.p1" class="ltx_para"><p class="ltx_p">cudaFuncCachePreferShared: prefer shared memory 48KB shared e 16 Kb L1</p>
+</div>
+</li>
+<li id="S5.I2.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I2.i3.p1" class="ltx_para"><p class="ltx_p">cudaFuncCachePreferL1: prefer L1 cache</p>
+</div>
+</li>
+<li id="S5.I2.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I2.i4.p1" class="ltx_para"><p class="ltx_p">cudaFuncCachePreferEqual: equal preference</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="S5.SS6" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.5.6</span> Osservazioni</h3>
+
+<div id="S5.SS6.p1" class="ltx_para">
+<p class="ltx_p">Il latency hiding e’ sempre una cosa indesiderata, il ritardo che puo’ incorrere alla SMEM e all’ottenimento dei dati non e’ in generale un problema anche in caso di conflitti di banchi, perche’ se si riesce a tenere alto il numero di warp attivi, thread in esecuzione e blocchi letti in esecuzione si ha sempre un sostituto nel momento in cui un warp va in attesa.
+Inter-block conflict, non esiste un conflitto tra thread appartenenti a blocchi differenti, il problema sussite solo a livello di warp dello stesso blocco.
+Il modo piu’ semplice per avere prestazioni elevate e’ quello di fare in modo che un warp acceda a word consecutive in memoria shared.
+Caching: con lo scheduling efficace le prestazioni anche in presenza di conflitti a livello di SMEM sono di gran lunga migliori se paragonate a quelle in cui il cammino che i dati percorrono passa attraverso la cache L2 o peggio, arriva in global memory.</p>
+</div>
+</div>
+</section>
+<section id="S5.SS7" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.5.7</span> Allocazione statica delle SMEM</h3>
+
+<div id="S5.SS7.p1" class="ltx_para">
+<p class="ltx_p">Una variabile in shared memory puo’ anche essere dichiarata sia locale a un kernel sia globale in un file sorgente.
+E’ dichiarata con il qualificatore <span class="ltx_text ltx_font_typewriter">__shared__</span>.
+Puo’ essere dichiarata sia staticamente sia dinamicamente.</p>
+</div>
+</div>
+</section>
+<section id="S5.SS8" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.5.8</span> Allocazione dinamica della SMEM</h3>
+
+<div id="S5.SS8.p1" class="ltx_para">
+<p class="ltx_p">Se la dimensione non e’ nota a tempo di compilazione e’ possibile dichiarare una variabile adimensionale con la keyword extern:</p>
+<ul id="S5.I3" class="ltx_itemize">
+<li id="S5.I3.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I3.i1.p1" class="ltx_para"><p class="ltx_p">Dinamicamente si possono allocare solo array 1D</p>
+</div>
+</li>
+<li id="S5.I3.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I3.i2.p1" class="ltx_para"><p class="ltx_p">puo’ essere sia internal al kernel sia esterna</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="S5.SS9" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.5.9</span> Uso tipico</h3>
+
+<div id="S5.SS9.p1" class="ltx_para">
+<ul id="S5.I4" class="ltx_itemize">
+<li id="S5.I4.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I4.i1.p1" class="ltx_para"><p class="ltx_p">Caricare i dati dalla device memory alla shared memory</p>
+</div>
+</li>
+<li id="S5.I4.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I4.i2.p1" class="ltx_para"><p class="ltx_p">Sincronizzare i thread del blocco al termine della copia che ognuno effettua sulla shared memory (cosi’ che ogni thread possa elaborare dati certi nel prosieguo)</p>
+</div>
+</li>
+<li id="S5.I4.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I4.i3.p1" class="ltx_para"><p class="ltx_p">Elabora i dati in shared memory</p>
+</div>
+</li>
+<li id="S5.I4.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I4.i4.p1" class="ltx_para"><p class="ltx_p">Sincronizza per essere certi che la shared memory contenga i risultati aggiornati</p>
+</div>
+</li>
+<li id="S5.I4.i5" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I4.i5.p1" class="ltx_para"><p class="ltx_p">Scrivi i risultati dalla device memory alla host memory</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="S5.SS10" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.5.10</span> Prodotto matriciale con SMEM</h3>
+
+<div id="S5.SS10.p1" class="ltx_para">
+<p class="ltx_p">Nella versione senza memoria shared ogni thread e’ responsabile del calcolo di un elemento della matrice prodotto. Dobbiamo tenere conto che abbiamo una suddivisione logica dei thread che stanno in un blocco e degli elementi in memoria corrispondenti.
+Passi con shared memory:</p>
+<ul id="S5.I5" class="ltx_itemize">
+<li id="S5.I5.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I5.i1.p1" class="ltx_para"><p class="ltx_p">Occorre caricare in memoria shared i dati relativi ad ogni blocco prima di svolgere le somme e i prodotti</p>
+</div>
+</li>
+<li id="S5.I5.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I5.i2.p1" class="ltx_para"><p class="ltx_p">Ogni thread accumula i risultati di ognuno di questi prodotti (scandendo tutti i blocchi) in un registro</p>
+</div>
+</li>
+<li id="S5.I5.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I5.i3.p1" class="ltx_para"><p class="ltx_p">Alla fine scrive su global memory</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S5.SS10.p2" class="ltx_para">
+<p class="ltx_p">Qui l’idea e’ di trasferire gli elementi di riga e colonna delle due matrici in shared memory perche’ dobbiamo accedere ad ogni elemento tante volte e quindi l’accesso a quella memoria sarebbe piu’ veloce.</p>
+</div>
+<div id="S5.SS10.p3" class="ltx_para">
+<p class="ltx_p">L’idea e’:</p>
+<ul id="S5.I6" class="ltx_itemize">
+<li id="S5.I6.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I6.i1.p1" class="ltx_para"><p class="ltx_p">Caricare il primo tile</p>
+</div>
+</li>
+<li id="S5.I6.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I6.i2.p1" class="ltx_para"><p class="ltx_p">Effettuare le somme parziali per ogni cella</p>
+</div>
+</li>
+<li id="S5.I6.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I6.i3.p1" class="ltx_para"><p class="ltx_p">Riptere per il numero di tile contenuti nelle zone delle matrici da caricare</p>
+</div>
+</li>
+<li id="S5.I6.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I6.i4.p1" class="ltx_para"><p class="ltx_p">Scrivere i risultati dalla shared memory alla global memory</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="S5.SS11" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.5.11</span> Prodotto convolutivo con SMEM</h3>
+
+<div id="S5.SS11.p1" class="ltx_para">
+<p class="ltx_p">La convoluzione e’ un prodotto tra due vettori, tendenzialmente un vettore piu’ grande ed uno piu’ piccolo chiamato kernel o maschera.</p>
+</div>
+<div id="S5.SS11.p2" class="ltx_para">
+<p class="ltx_p">Una volta che abbiamo la scrittura matematica l’istanziazione e’ con vettori, nell’esempio vediamo il segnale e la maschera, viene evidenziato il segnale centrale perche’ e’ quello in output della convoluzione:
+Occorre fare shiftare la maschera con uno stride = 1 e calcolare prodotti e somme.</p>
+</div>
+<div id="S5.SS11.p3" class="ltx_para">
+<p class="ltx_p">Da notare che ci sono casi particolari, nell’esempio partiamo dal terzo elemento perche’ c’e’ corrispondenza reale con la maschera, si potrebbe anche adottare approcci diversi relativamente a dati mancanti.</p>
+</div>
+<div id="S5.SS11.p4" class="ltx_para">
+<p class="ltx_p">Questa cosa si estende naturalmente a piu’ dimensioni, questo e’ l’esempio del 2D:</p>
+</div>
+<div id="S5.SS11.p5" class="ltx_para">
+<p class="ltx_p">Ha senso pensare all’uso della shared memory perche’ alcune celle della matrice di input vengono riutilizzate più volte durante il calcolo della convoluzione (tutte quelle sotto la maschera sicuramente).</p>
+</div>
+<div id="S5.SS11.p6" class="ltx_para">
+<p class="ltx_p">Questo e’ un problema ideale per il parallel computing:</p>
+<ul id="S5.I7" class="ltx_itemize">
+<li id="S5.I7.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I7.i1.p1" class="ltx_para"><p class="ltx_p">Determinare la mappa tra thread ed elementi di output</p>
+</div>
+</li>
+<li id="S5.I7.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I7.i2.p1" class="ltx_para"><p class="ltx_p">Semplice approccio nei casi 1D e 2D e’ organizzare i thread in grid corrispondenti in modo tale che ogni thread calcoli un elemento della matrice di convoluzione</p>
+</div>
+</li>
+<li id="S5.I7.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S5.I7.i3.p1" class="ltx_para"><p class="ltx_p">Problema: non soddisfa per inefficienza negli accessi alla global memory</p>
+</div>
+</li>
+</ul>
+</div>
+<section id="S5.SS11.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Tiling</h4>
+
+<div id="S5.SS11.SSSx1.p1" class="ltx_para">
+<p class="ltx_p">Divido i dati in blocchi (ad esempio, 16 elementi in 4 blocchi da 4 thread), ogni thread nel blocco fa un prodotto della convoluzione. Per ridurre l’accesso alla global memory, in cache/memoria condivisa si tengono i dati a cui l’accesso è fatto più frequentemente, ovvero i valori del "blocco di dati" assegnato al block (tutti i thread devono calcolare sullo stesso insieme di dati, o quasi), tenendo conto della dimensione della maschera (serve avere i dati "adiacenti" al blocco, quelli che sbordano (sarebbe molto utile un’immagine, si capirebbe subito)).</p>
+</div>
+<div id="S5.SS11.SSSx1.p2" class="ltx_para">
+<p class="ltx_p">I dati da caricare in smem sono più dei thread nel blocco ("alone" che va al di fuori del blocco di dati stesso); in smem carico tutti i possibili dati a cui il blocco deve fare l’accesso.</p>
+</div>
+<div id="S5.SS11.SSSx1.p3" class="ltx_para">
+<p class="ltx_p">Chi carica che dati in memoria? I dati esterni al blocco potrebbero essere anche più del blocco stesso (maschera "grossa"). La soluzione è dare un ordine ai thread e dividere il più equamente possibile i caricamenti in memoria tra i thread del blocco. Si può fare facendo un tiling dei dati da caricare: il blocco viene "ripetuto" sui dati da caricare, secondo un ordine dei thread.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+<section id="S6" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.6</span> Global Memory</h2>
+
+<div id="S6.p1" class="ltx_para">
+<p class="ltx_p">Nei computer moderni esiste una gerarchia di memorie per minimizzare latenze e massimizzare throughput. In genere, si ha l’illusione virtuale di una grande memoria, tutta a bassa latenza, anche se la memoria con effettivamente bassa latenza è poca e si ha una memoria ad alta capacità e alta latenza.</p>
+</div>
+<div id="S6.p2" class="ltx_para">
+<p class="ltx_p">All’interno delle GPU abbiamo, dalla latenza più alta alla più bassa:</p>
+<ul id="S6.I1" class="ltx_itemize">
+<li id="S6.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I1.i1.p1" class="ltx_para"><p class="ltx_p">Device Memory</p>
+</div>
+</li>
+<li id="S6.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I1.i2.p1" class="ltx_para"><p class="ltx_p">L2 Cache</p>
+</div>
+</li>
+<li id="S6.I1.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I1.i3.p1" class="ltx_para"><p class="ltx_p">L1/shared</p>
+</div>
+</li>
+<li id="S6.I1.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I1.i4.p1" class="ltx_para"><p class="ltx_p">Registers</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S6.p3" class="ltx_para">
+<p class="ltx_p">Le gerarchie di memorie, comprese quelle CUDA, fanno fede ai principi di:</p>
+<ul id="S6.I2" class="ltx_itemize">
+<li id="S6.I2.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I2.i1.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_bold">Località spaziale</span>: se l’istruzione all’indirizzo <math id="S6.I2.i1.p1.m1" class="ltx_Math" alttext="i" display="inline"><semantics><mi>i</mi></semantics></math> viene eseguita, probabilmente dopo verrà eseguita quella all’indirizzo <math id="S6.I2.i1.p1.m2" class="ltx_Math" alttext="i+\Delta i" display="inline"><semantics><mrow><mi>i</mi><mo>+</mo><mrow><mi mathvariant="normal">Δ</mi><mo>⁢</mo><mi>i</mi></mrow></mrow></semantics></math></p>
+</div>
+</li>
+<li id="S6.I2.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I2.i2.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_bold">Località temporale</span>: se un’istruzione viene eseguita al tempo <math id="S6.I2.i2.p1.m1" class="ltx_Math" alttext="t" display="inline"><semantics><mi>t</mi></semantics></math>, probabilmente verrà eseguita anche al tempo <math id="S6.I2.i2.p1.m2" class="ltx_Math" alttext="t+\Delta t" display="inline"><semantics><mrow><mi>t</mi><mo>+</mo><mrow><mi mathvariant="normal">Δ</mi><mo>⁢</mo><mi>t</mi></mrow></mrow></semantics></math> (dove <math id="S6.I2.i2.p1.m3" class="ltx_Math" alttext="\Delta t" display="inline"><semantics><mrow><mi mathvariant="normal">Δ</mi><mo>⁢</mo><mi>t</mi></mrow></semantics></math> è piccolo)</p>
+</div>
+</li>
+</ul>
+</div>
+<section id="S6.SS0.SSS0.Px1" class="ltx_paragraph normal">
+<div class="section level5">
+<h5 class="ltx_title ltx_title_paragraph">Registers:</h5>
+
+<div id="S6.SS0.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">Le memorie più veloci in assoluto, con lifetime del kernel. Vengono ripartiti tra i warp attivi, le variabili dichiarate nel codice device senza qualificatori generalmente risiedono in un registro.</p>
+</div>
+<div id="S6.SS0.SSS0.Px1.p2" class="ltx_para">
+<p class="ltx_p">Meno registri usa il kernel, più blocchi di thread è probabile che risiedano sull’SM (il compilatore usa un’euristica per ottimizzare questo parametro). <span class="ltx_text ltx_font_bold">Register spilling</span>: se si usano più registri di quelli consentiti le variabili si riversano nella local memory.</p>
+</div>
+</div>
+</section>
+<section id="S6.SS0.SSS0.Px2" class="ltx_paragraph normal">
+<div class="section level5">
+<h5 class="ltx_title ltx_title_paragraph">Local Memory:</h5>
+
+<div id="S6.SS0.SSS0.Px2.p1" class="ltx_para">
+<p class="ltx_p">Si tratta di una memoria <span class="ltx_text ltx_font_italic">lenta</span> (collocata off-chip, alta latenza, bassa bandwidth). Si tratta di una memoria locale ai thread.</p>
+</div>
+<div id="S6.SS0.SSS0.Px2.p2" class="ltx_para">
+<p class="ltx_p">Usata per contenere le variabili automatiche (grandi) non contenute nei registri, o per le variabili al di fuori causa spilling. La local memory risiede nella device memory, pertanto gli accessi hanno stessa latenza e ampiezza di banda della global memory e sono soggetti anche agli stessi vincoli di coalescenza.</p>
+</div>
+<div id="S6.SS0.SSS0.Px2.p3" class="ltx_para">
+<p class="ltx_p">Da CC 2.0 ci sono parti poste in cache L1 a livello di SM e in cache L2 a livello di device. Il compilatore <span class="ltx_text ltx_font_typewriter">nvcc</span> si preoccupa della sua allocazione e non è controllata dal programmatore.</p>
+</div>
+</div>
+</section>
+<section id="S6.SS0.SSS0.Px3" class="ltx_paragraph normal">
+<div class="section level5">
+<h5 class="ltx_title ltx_title_paragraph">Constant Memory:</h5>
+
+<div id="S6.SS0.SSS0.Px3.p1" class="ltx_para">
+<p class="ltx_p">Risiede nella device memory (64K per tutte le CC) ed ha una cache dedicata in ogni SM (8K). Definibile tramite l’attributo <span class="ltx_text ltx_font_typewriter">__constant__</span>.</p>
+</div>
+<div id="S6.SS0.SSS0.Px3.p2" class="ltx_para">
+<p class="ltx_p">Ospita dati in sola lettura, ideale per accessi uniformi. Ha scope globale, va dichiarata al di fuori di qualsiasi kernel e viene dichiarata staticamente, quindi è visibile a tutti i kernel nella stessa unità di compilazione.</p>
+</div>
+<div id="S6.SS0.SSS0.Px3.p3" class="ltx_para">
+<p class="ltx_p">La constant memory può essere inizializzata dall’host usando:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cudaError_t cudaMemcpyToSymbol(const void* symbol,</span>
+<span class="ltx_listingline">    const void* src, size_t count)</span></code></pre></div>
+</div>
+<div id="S6.SS0.SSS0.Px3.p4" class="ltx_para">
+<p class="ltx_p">Lavora bene quando tutti i thread di un warp leggono dallo stesso indirizzo di memoria (raggiunge l’efficienza dei registri); se i thread di un warp leggono da indirizzi diversi allora le letture vengono serializzate, riducendo l’efficienza.</p>
+</div>
+</div>
+</section>
+<section id="S6.SS0.SSS0.Px4" class="ltx_paragraph normal">
+<div class="section level5">
+<h5 class="ltx_title ltx_title_paragraph">Texture Memory:</h5>
+
+<div id="S6.SS0.SSS0.Px4.p1" class="ltx_para">
+<p class="ltx_p">Risiede nella device memory e (può avere) una read-only cache per-SM ed è acceduta solo attraverso di essa. La cache include un supporto hardware efficiente per filtraggio o interpolazione floating-point nel processo di lettura dei dati.</p>
+</div>
+<div id="S6.SS0.SSS0.Px4.p2" class="ltx_para">
+<p class="ltx_p">Ottimizzata per la località spaziale 2D, quindi dati espressi sotto forma di matrici. I thread in un warp che usano la texture memory per accedere a dati 2D hanno migliori prestazioni rispetto a quelle standard, quindi è adatta per applicazioni in cui servono classiche elaborazioni di immagini/video. Per altre applicazioni l’uso della texture memory potrebbe essere più lento della global memory.</p>
+</div>
+</div>
+</section>
+<section id="S6.SS0.SSS0.Px5" class="ltx_paragraph normal">
+<div class="section level5">
+<h5 class="ltx_title ltx_title_paragraph">Global Memory:</h5>
+
+<div id="S6.SS0.SSS0.Px5.p1" class="ltx_para">
+<p class="ltx_p">La più grande, con più alta latenza e più comunemente usata memoria su GPU. Ha scope e lifetime globale (da qui il nome). Dichiarazione (codice host):</p>
+<div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_right ltx_border_r"><span class="ltx_text ltx_font_bold">Statica</span></td>
+<td class="ltx_td ltx_align_left ltx_border_t"><span class="ltx_text ltx_font_typewriter">__device__ int a[N];</span></td>
+<td class="ltx_td ltx_border_r ltx_border_t"></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_right ltx_border_r"><span class="ltx_text ltx_font_bold">Dinamica</span></td>
+<td class="ltx_td ltx_align_left ltx_border_b"><span class="ltx_text ltx_font_typewriter">cudaMalloc((void **)&amp;d_a, N);</span></td>
+<td class="ltx_td ltx_align_right ltx_border_b ltx_border_r"><span class="ltx_text ltx_font_typewriter">cudaFree(d_a);</span></td>
+</tr>
+</table>
+</div>
+</div>
+<div id="S6.SS0.SSS0.Px5.p2" class="ltx_para">
+<p class="ltx_p">Corrisponde alla memoria fisica, con "global" si intende una divisione logica. L’accesso da parte di thread appartenenti a blocchi distinti può potenzialmente portare a modifiche incoerenti. La global memory è accessibile attraverso transazioni da 32, 64, o 128 byte; le transazioni avvengono solo per gruppi di valori, non si può accedere a un valore singolo.</p>
+</div>
+<div id="S6.SS0.SSS0.Px5.p3" class="ltx_para">
+<p class="ltx_p">I valori contenuti nella memoria allocata non sono inizializzati, ma si possono inizializzare con dati provenienti dall’host (<span class="ltx_text ltx_font_typewriter">cudaMemcpy()</span>) oppure con un valore specifico</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cudaError_t cudaMemset(void* devPtr, int value, size_t count)</span></code></pre></div>
+</div>
+<div id="S6.SS0.SSS0.Px5.p4" class="ltx_para">
+<p class="ltx_p">Assegna il valore <span class="ltx_text ltx_font_typewriter">value</span> a tutti gli indirizzi contenuti nel blocco di memoria.</p>
+</div>
+<div id="S6.SS0.SSS0.Px5.p5" class="ltx_para">
+<p class="ltx_p">La memoria allocata e’ opportunamente allineata per ogni tipo di variabile. La <span class="ltx_text ltx_font_typewriter">cudaMalloc()</span> restituisce <span class="ltx_text ltx_font_typewriter">cudaErrorMemoryAllocation</span> in caso di fallimento.</p>
+</div>
+<div id="S6.SS0.SSS0.Px5.p6" class="ltx_para">
+<p class="ltx_p">Lo <span class="ltx_text ltx_font_bold">specificatore <span class="ltx_text ltx_font_typewriter">__device__</span></span> indica una variabile che risiede unicamente sul device. Risiede nella memoria globale (e quindi oggetti distinti per device diversi), ha il lifetime del contesto CUDA in cui è stata creata. Può essere acceduta da tutti i thread e dall’host tramite la libreria runtime:</p>
+<ul id="S6.I3" class="ltx_itemize">
+<li id="S6.I3.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I3.i1.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">cudaGetSymbolAddress()</span>, <span class="ltx_text ltx_font_typewriter">cudaGetSymbolSize()</span>: per ottenere indirizzo e dimensione di una variabile, rispettivamente</p>
+</div>
+</li>
+<li id="S6.I3.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I3.i2.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">cudaMemcpyToSymbol()</span>, <span class="ltx_text ltx_font_typewriter">cudaMemcpyFromSymbol()</span>: per copiare verso e da una variabile, rispettivamente</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S6.SS0.SSS0.Px5.p7" class="ltx_para">
+<p class="ltx_p">Riassunto dichiarazione di variabili:</p>
+<div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_bold">QUALIFIER</span></td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_bold">VARIABLE</span></td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_bold">MEMORY</span></td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_bold">SCOPE</span></td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_bold">LIFESPAN</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_border_l ltx_border_r ltx_border_t"></td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">float var</span></td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t">Register</td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t">Local</td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t">Thread</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_border_l ltx_border_r ltx_border_t"></td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">float var[100]</span></td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t">Local</td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t">Local</td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t">Thread</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">__shared__</span></td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">float var</span></td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t">Shared</td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t">Block</td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t">Block</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">__device__</span></td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">float var</span></td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t">Global</td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t">Global</td>
+<td class="ltx_td ltx_align_left ltx_border_r ltx_border_t">Application</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_b ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">__constant__</span></td>
+<td class="ltx_td ltx_align_left ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">float var</span></td>
+<td class="ltx_td ltx_align_left ltx_border_b ltx_border_r ltx_border_t">Constant</td>
+<td class="ltx_td ltx_align_left ltx_border_b ltx_border_r ltx_border_t">Global</td>
+<td class="ltx_td ltx_align_left ltx_border_b ltx_border_r ltx_border_t">Application</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="S6.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.6.1</span> Pinned memory</h3>
+
+<div id="S6.SS1.p1" class="ltx_para">
+<p class="ltx_p">La pinned memory (o page-locked memory) in CUDA è una tecnica che serve per ottimizzare il trasferimento dei dati tra la memoria del sistema (RAM) e la memoria della GPU (VRAM).</p>
+</div>
+<div id="S6.SS1.p2" class="ltx_para">
+<p class="ltx_p">Si vuole evitare il page fault della virtual memory (CPU, di default la memoria host allocata è paginabile). Esistono delle primitive per definire una memoria pinned, ovvero viene tolta la pagina dal meccanismo di virtualizzazione in modo che l’host non possa "toglierla" mentre il device la deve usare. Blocca la memoria in modo da poter fare trasferimenti asincroni al device.</p>
+</div>
+<div id="S6.SS1.p3" class="ltx_para">
+<p class="ltx_p">Una volta "pinnata", la memoria non sparirà dal sistema di virtualizzazione automatico della memoria host, quindi si può lavorare su quella memoria in maniera asincrona. La pinned memory può essere acceduta direttamente dal device, in modalità asincrona. Può essere letta e scritta con una bandwidth più alta rispetto alla memoria paginabile.</p>
+</div>
+<div id="S6.SS1.p4" class="ltx_para">
+<p class="ltx_p">Da notare che eccessi di allocazione di pinned memory potrebbero far degradare le prestazioni dell’host (ridurre la memoria paginabile inficia l’uso della virtual memory), Per allocare esplicitamente memoria pinned:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cudaError_t cudaMallocHost(void **devPtr, size_t count);</span></code></pre></div>
+</div>
+<div id="S6.SS1.p5" class="ltx_para">
+<p class="ltx_p">E per deallocarla:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cudaError_t cudaFreeHost(void *devPtr);</span></code></pre></div>
+</div>
+<div id="S6.SS1.p6" class="ltx_para">
+<p class="ltx_p">Questa allocazione sostituisce la malloc "normale", su host. Rende i trasferimenti host-device significativamente più veloci, al costo di un tempo più alto di allocazione.</p>
+</div>
+</div>
+</section>
+<section id="S6.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.6.2</span> Unified Virtual Addressing UVA</h3>
+
+<div id="S6.SS2.p1" class="ltx_para">
+<p class="ltx_p">Si vuole avere un unico spazio di indirizzamento tra CPU e tutte le GPU. Tutti i puntatori (CPU e GPU) appartengono allo stesso spazio di indirizzi virtuali, di conseguenza è possibile passare un puntatore da host a device e viceversa senza ambiguità, entrambi possono "capire" a cosa punta quell’indirizzo.</p>
+</div>
+<div id="S6.SS2.p2" class="ltx_para">
+<p class="ltx_p">La unified memory è una memoria "<span class="ltx_text ltx_font_italic">comoda</span>", fornisce un puntatore unico per tutte le CPU e GPU presenti nel sistema. Spazio di indirizzamento unico per CPU e GPU.</p>
+</div>
+<div id="S6.SS2.p3" class="ltx_para">
+<p class="ltx_p">Con "<span class="ltx_text ltx_font_bold">Managed Memory</span>" si fa riferimento ad allocazioni della unified memory. All’interno di un kernel si possono usare entrambi i tipi di memoria:</p>
+<ul id="S6.I4" class="ltx_itemize">
+<li id="S6.I4.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I4.i1.p1" class="ltx_para"><p class="ltx_p">managed memory, controllata dal sistema</p>
+</div>
+</li>
+<li id="S6.I4.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I4.i2.p1" class="ltx_para"><p class="ltx_p">un-managed memory, controllata esplicitamente dall’applicazione</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S6.SS2.p4" class="ltx_para">
+<p class="ltx_p">Tutte le operazioni CUDA valide sulla memoria del dispositivo sono valide anche sulla memoria managed.</p>
+</div>
+<div id="S6.SS2.p5" class="ltx_para">
+<p class="ltx_p">Per fare allocazione dinamica:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline"></span>
+<span class="ltx_listingline">cudaError_t cudaMallocManaged(void **devPtr, size_t size,</span>
+<span class="ltx_listingline">    unsigned int flags=0)</span></code></pre></div>
+</div>
+<div id="S6.SS2.p6" class="ltx_para">
+<p class="ltx_p">"rimpiazza" <span class="ltx_text ltx_font_typewriter">cudaMalloc</span>, la <span class="ltx_text ltx_font_typewriter">flag</span> indica chi condivide il puntatore con il device:</p>
+<ul id="S6.I5" class="ltx_itemize">
+<li id="S6.I5.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I5.i1.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">cudaMemAttachHost</span>: solo la CPU</p>
+</div>
+</li>
+<li id="S6.I5.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I5.i2.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">cudaMemAttachGlobal</span>: anche tutte le altre GPU</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S6.SS2.p7" class="ltx_para">
+<p class="ltx_p">Nuova <span class="ltx_text ltx_font_bold">keyword</span>: <span class="ltx_text ltx_font_typewriter ltx_font_bold">__managed__</span>, si tratta di un qualifier che denota scope globale, accessibile da CPU e GPU.</p>
+</div>
+<div id="S6.SS2.p8" class="ltx_para">
+<p class="ltx_p">Con l’uso "misto" di memoria bisogna porre attenzione alla sincronizzazione tra CPU e GPU, onde evitare problemi.</p>
+</div>
+</div>
+</section>
+<section id="S6.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.6.3</span> Pattern di Accesso alla Global Memory</h3>
+
+<div id="S6.SS3.p1" class="ltx_para">
+<p class="ltx_p">Gli accessi alla memoria del dispositivo possono avvenire in transazioni da 32, 64 o 128 byte. Le applicazioni GPU tendono (a volte) ad essere limitate dalla memory bandwidth, quindi massimizzare il throughput effettivo è importante.</p>
+</div>
+<div id="S6.SS3.p2" class="ltx_para">
+<p class="ltx_p">In generale, per rendere efficienti le transazioni in memoria:</p>
+<ul id="S6.I6" class="ltx_itemize">
+<li id="S6.I6.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I6.i1.p1" class="ltx_para"><p class="ltx_p">minimizzare il numero di transazioni per servire il massimo numero di accessi</p>
+</div>
+</li>
+<li id="S6.I6.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I6.i2.p1" class="ltx_para"><p class="ltx_p">considerare che il numero di transazioni e throughput ottenuto variano con la CC</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S6.SS3.p3" class="ltx_para">
+<p class="ltx_p">Per migliorare le prestazioni in lettura e scrittura occorre ricordare che:</p>
+<ul id="S6.I7" class="ltx_itemize">
+<li id="S6.I7.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I7.i1.p1" class="ltx_para"><p class="ltx_p">le istruzioni vengono eseguite a livello di warp e gli accessi in memoria dipendono dalle operazioni svolte nel warp</p>
+</div>
+</li>
+<li id="S6.I7.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I7.i2.p1" class="ltx_para"><p class="ltx_p">per un dato indirizzo si esegue un’operazione di loading o storing (gestione diversa)</p>
+</div>
+</li>
+<li id="S6.I7.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I7.i3.p1" class="ltx_para"><p class="ltx_p">i 32 thread presentano una singola richiesta di accesso, che viene servita da una o più transazioni in memoria</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S6.SS3.p4" class="ltx_para">
+<p class="ltx_p">In base a come sono distribuiti gli indirizzi di memoria, gli accessi alla stessa possono essere classificati in pattern distinti. Tutti gli accessi a memoria globale passano dalla cache L2, molti passano anche dalla L1. Se entrambe le memorie vengono usate gli accessi sono da 128 byte, altrimenti, se viene usata solo la L2, gli accessi sono a 32 byte.</p>
+</div>
+<div id="S6.SS3.p5" class="ltx_para">
+<p class="ltx_p">Per le architetture che usano cache L1, queste possono essere esplicitamente abilitate o disabilitate a compile time.</p>
+</div>
+<div id="S6.SS3.p6" class="ltx_para">
+<p class="ltx_p">Bisogna rispettare allineamento e coalescenza per sfruttare al meglio le transazioni di memoria; per avere accessi in memoria efficienti è necessario combinare in un unica transazione accessi multipli a memoria allineati e coalescenti.</p>
+</div>
+<div id="S6.SS3.p7" class="ltx_para">
+<p class="ltx_p">Accesso <span class="ltx_text ltx_font_bold">allineato</span>: quando il primo indirizzo della transazione è un multiplo pari della granularità della cache che viene usata per servire la transazione (32 byte per la cache L2 o 128 byte per la cache L1).</p>
+</div>
+<div id="S6.SS3.p8" class="ltx_para">
+<p class="ltx_p">Accesso <span class="ltx_text ltx_font_bold">coalescente:</span> quando tutti i 32 thread in un warp accedono a un blocco contiguo di memoria.</p>
+</div>
+<div id="S6.SS3.p9" class="ltx_para">
+<p class="ltx_p">In un SM i dati seguono pipeline attraverso i seguenti tre cache/buffer paths dipendentemente da quale tipo di device memory si accede:</p>
+<ul id="S6.I8" class="ltx_itemize">
+<li id="S6.I8.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I8.i1.p1" class="ltx_para"><p class="ltx_p">L1/L2 cache</p>
+</div>
+</li>
+<li id="S6.I8.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I8.i2.p1" class="ltx_para"><p class="ltx_p">Constant cache</p>
+</div>
+</li>
+<li id="S6.I8.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I8.i3.p1" class="ltx_para"><p class="ltx_p">Read-only cache</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S6.SS3.p10" class="ltx_para">
+<p class="ltx_p">L1/L2 cache rappresenta il default path. Il fatto che un’operazione di <span class="ltx_text ltx_font_typewriter">load</span> in global memory passi attraverso la cache L1 dipende da CC e compiler options.</p>
+</div>
+<section id="S6.SS3.SSS0.Px1" class="ltx_paragraph normal">
+<div class="section level5">
+<h5 class="ltx_title ltx_title_paragraph">Scritture:</h5>
+
+<div id="S6.SS3.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">Le write vengono servite in modo diverso, non viene usata la cache L1, ma le <span class="ltx_text ltx_font_typewriter">store</span> sono cachate solo in L2, prima di essere inviate alla device memory in segmenti da 32 byte; vengono trasferiti 1,2 o 4 segmenti alla volta.</p>
+</div>
+<div id="S6.SS3.SSS0.Px1.p2" class="ltx_para">
+<p class="ltx_p">Quando forzati a fare accessi (letture/scritture) non coalescenti si può usare la shared memory come "passaggio" per rendere le operazioni effettive in memoria coalescenti.</p>
+</div>
+</div>
+</section>
+<section id="S6.SS3.SSS0.Px2" class="ltx_paragraph normal">
+<div class="section level5">
+<h5 class="ltx_title ltx_title_paragraph">AoS vs SoA:</h5>
+
+<div id="S6.SS3.SSS0.Px2.p1" class="ltx_para">
+<p class="ltx_p">I dati possono essere divisi in:</p>
+<ul id="S6.I9" class="ltx_itemize">
+<li id="S6.I9.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I9.i1.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_bold">Array of Structures AoS</span>:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">struct Particle { float x, y, z; };</span>
+<span class="ltx_listingline">Particle* P;</span>
+<span class="ltx_listingline">float x = P[idx].x;  // stride = sizeof(Particle)</span></code></pre></div>
+<p class="ltx_p">Questo porta a distanza tra accessi (stride) alta, rompendo la coalescenza</p>
+</div>
+</li>
+<li id="S6.I9.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I9.i2.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_bold">Structure of Arrays SoA</span>:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">float *Px, *Py, *Pz;</span>
+<span class="ltx_listingline">float x = Px[idx];   // stride = 1</span></code></pre></div>
+<p class="ltx_p">In questo modo lo stride è ridotto, riducendo così il numero di transazioni necessarie</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="S6.SS3.SSS0.Px3" class="ltx_paragraph normal">
+<div class="section level5">
+<h5 class="ltx_title ltx_title_paragraph">TL;DR:</h5>
+
+<div id="S6.SS3.SSS0.Px3.p1" class="ltx_para">
+<p class="ltx_p">Un warp può effettuare accessi</p>
+<ul id="S6.I10" class="ltx_itemize">
+<li id="S6.I10.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I10.i1.p1" class="ltx_para"><p class="ltx_p">coalescenti: i 32 thread leggono dati contigui, massima efficienza</p>
+</div>
+</li>
+<li id="S6.I10.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I10.i2.p1" class="ltx_para"><p class="ltx_p">non coalescenti/strided: dati a distanza <math id="S6.I10.i2.p1.m1" class="ltx_Math" alttext="&gt;1" display="inline"><semantics><mrow><mi></mi><mo>&gt;</mo><mn>1</mn></mrow></semantics></math>, possono servire più transazioni per la stessa quantità di dati, fino a 32 diverse</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S6.SS3.SSS0.Px3.p2" class="ltx_para">
+<p class="ltx_p">In generale (per CC superiori a 2) le transazioni coprono 128 byte. All’interno di un singolo segmento da 128 byte, la memoria è organizzata in "banks" (4 da 32 byte solitamente), anche se un thread legge solo 4 byte, dovrà trasferire l’intero bank.</p>
+</div>
+<div id="S6.SS3.SSS0.Px3.p3" class="ltx_para">
+<p class="ltx_p">La cache L1 serve load/store anche con granularità a 32 byte.</p>
+</div>
+</div>
+</section>
+<section id="S6.SS3.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Matrice trasposta con SMEM</h4>
+
+<div id="S6.SS3.SSSx1.p1" class="ltx_para">
+<p class="ltx_p">Il problema del parallelizzare l’operazione di trasposizione di una matrice è che in lettura gli accessi sono per riga, quindi coalescenti, mentre le scritture sulla matrice trasposta sono per colonna, quindi non coalescenti.</p>
+</div>
+<div id="S6.SS3.SSSx1.p2" class="ltx_para">
+<p class="ltx_p">Un’idea per risolvere il problema può essere:</p>
+<ul id="S6.I11" class="ltx_itemize">
+<li id="S6.I11.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I11.i1.p1" class="ltx_para"><p class="ltx_p">Caricare dalla global memory alla smem le celle che il blocco corrente deve trasporre, riga per riga</p>
+</div>
+</li>
+<li id="S6.I11.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S6.I11.i2.p1" class="ltx_para"><p class="ltx_p">Leggere una colonna in smem e scrivere una riga in global memory</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S6.SS3.SSSx1.p3" class="ltx_para">
+<p class="ltx_p">Esempio:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">__shared__ float tile[BDIMY][BDIMX];</span>
+<span class="ltx_listingline">// Coordinate originali</span>
+<span class="ltx_listingline">int y = blockIdx.y * blockDim.y + threadIdx.y;</span>
+<span class="ltx_listingline">int x = blockIdx.x * blockDim.x + threadIdx.x;</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">// ...</span>
+<span class="ltx_listingline">// Trasferimento in smem e sincronizzazione</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">// Nuovi indici</span>
+<span class="ltx_listingline">int y = blockIdx.x * blockDim.x + threadIdx.y;</span>
+<span class="ltx_listingline">int x = blockIdx.y * blockDim.y + threadIdx.x;</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">// ...</span>
+<span class="ltx_listingline">// Scrivere sulla matrice output,</span>
+<span class="ltx_listingline">//      controlli invertiti tra riga e colonna</span></code></pre></div>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>

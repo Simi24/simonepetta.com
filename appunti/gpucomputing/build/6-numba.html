@@ -1,0 +1,393 @@
+<div class="section level1">
+
+
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.1</span> Numba</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">L’idea è quella di avere codice python che sfrutta runtime CUDA per sfruttare il parallelismo esposto dalla GPU.</p>
+</div>
+<section id="S1.SS0.SSS0.Px1" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">pyCUDA:</h4>
+
+<div id="S1.SS0.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">L’idea di PyCUDA è di fare un "wrap" del codice C.</p>
+</div>
+</div>
+</section>
+<section id="S1.SS0.SSS0.Px2" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">PyTorch:</h4>
+
+<div id="S1.SS0.SSS0.Px2.p1" class="ltx_para">
+<p class="ltx_p">Uno dei più usati, spesso per il ML, orientato anche a non programmatori CUDA (generalmente chi lo usa lo fa in modo trasparente, senza sapere il funzionamento della GPU sottostante). L’idea è quella di replicare librerie all’interno di torch, usando CUDA (e.g., NumPy).</p>
+</div>
+</div>
+</section>
+<section id="S1.SS0.SSS0.Px3" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Rapids:</h4>
+
+<div id="S1.SS0.SSS0.Px3.p1" class="ltx_para">
+<p class="ltx_p">Azienda che produce molteplici software, include alcune librerie come CuPy (NumPy e SciPy su GPU).</p>
+</div>
+</div>
+</section>
+<section id="S1.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.1.1</span> Numba for CPU</h3>
+
+<div id="S1.SS1.p1" class="ltx_para">
+<p class="ltx_p">Per la CPU, Numba nasce con l’idea di accelerare tramite parallelismo su CPU. Numba è un package compilato Just-In-Time, non richiede uno step di compilazione dedicato, compila solo le funzioni che servono, usa LLVM per la traduzione a linguaggio macchina. Numba si integra con l’ecosistema python (NumPy, Pandas, …) e permette di usare solo codice Python per fare <span class="ltx_text ltx_font_italic">tutto</span>.</p>
+</div>
+<section id="S1.SS1.SSS0.Px1" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Decoratori in Python:</h4>
+
+<div id="S1.SS1.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">Un decoratore è un oggetto usato per modificare una funzione, metodo o classe per trasformarla. Per Numba, si usa il decoratore <span class="ltx_text ltx_font_typewriter">@numba.jit</span> prima della funzione.</p>
+</div>
+</div>
+</section>
+<section id="S1.SS1.SSS0.Px2" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Ufuncs:</h4>
+
+<div id="S1.SS1.SSS0.Px2.p1" class="ltx_para">
+<p class="ltx_p">Le funzioni universali sono un concetto introdotto da NumPy per indicare funzioni che operano elemento per elemento su un array NumPy. Permettono di eliminare la necessità di scrivere esplicitamente i cicli <span class="ltx_text ltx_font_typewriter">for</span> e sono (solitamente) compilate in C per efficienza.</p>
+</div>
+</div>
+</section>
+<section id="S1.SS1.SSS0.Px3" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Vectorize Decorator:</h4>
+
+<div id="S1.SS1.SSS0.Px3.p1" class="ltx_para">
+<p class="ltx_p">Le operazioni vettorizzate eliminano i loop espliciti e permettono:</p>
+<ul id="S1.I1" class="ltx_itemize">
+<li id="S1.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I1.i1.p1" class="ltx_para"><p class="ltx_p">maggiore velocità: non bisogna interpretare più volte la stessa operazione e le computazioni possono avvenire in parallelo</p>
+</div>
+</li>
+<li id="S1.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I1.i2.p1" class="ltx_para"><p class="ltx_p">minore overhead di memoria: minimizzando le variabili temporanea ed effettuando gli scambi in place, con conseguente miglior utilizzo della cache (e quindi performance)</p>
+</div>
+</li>
+<li id="S1.I1.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I1.i3.p1" class="ltx_para"><p class="ltx_p">miglior uso del modello SIMD della CPU</p>
+</div>
+</li>
+<li id="S1.I1.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I1.i4.p1" class="ltx_para"><p class="ltx_p">si può anche avere accelerazione GPU</p>
+</div>
+</li>
+</ul>
+<p class="ltx_p">Per usare il decoratore:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">@vectorize([int64(int64,int64), float32(float32,float32)])</span>
+<span class="ltx_listingline">def numba_dtype_sum(x, y):</span>
+<span class="ltx_listingline">    return x + y</span></code></pre></div>
+</div>
+</div>
+</section>
+<section id="S1.SS1.SSS0.Px4" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Chiamare una funzione <span class="ltx_text ltx_font_typewriter">@jit</span>:</h4>
+
+<div id="S1.SS1.SSS0.Px4.p1" class="ltx_para">
+<ul id="S1.I2" class="ltx_itemize">
+<li id="S1.I2.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I2.i1.p1" class="ltx_para"><p class="ltx_p">determinare il tipo degli argomenti forniti</p>
+</div>
+</li>
+<li id="S1.I2.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I2.i2.p1" class="ltx_para"><p class="ltx_p">controllare se esiste una versione compilata a codice macchina e, nel caso, utilizzarla</p>
+</div>
+</li>
+<li id="S1.I2.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I2.i3.p1" class="ltx_para"><p class="ltx_p">compilare, se necessario, una versione in linguaggio macchina ottimizzata</p>
+</div>
+</li>
+<li id="S1.I2.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I2.i4.p1" class="ltx_para"><p class="ltx_p">convertire i parametri, questi vengono convertiti in valori compatibili con il codice macchina</p>
+</div>
+</li>
+<li id="S1.I2.i5" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I2.i5.p1" class="ltx_para"><p class="ltx_p">eseguire il codice ottimizzato, viene chiamata direttamente la funzione compilata</p>
+</div>
+</li>
+<li id="S1.I2.i6" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I2.i6.p1" class="ltx_para"><p class="ltx_p">convertire il risultato in una valore compatibile con Python</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S1.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.1.2</span> Numba for GPU</h3>
+
+<div id="S1.SS2.p1" class="ltx_para">
+<p class="ltx_p">Anche qui si possono costruire funzioni universali e usare vettorizzazione, per poi dire che il target è CUDA, "dirottando" la compilazione verso CUDA tramite un semplice decoratore. Si tratta però di un modello piuttosto rigido.</p>
+</div>
+<div id="S1.SS2.p2" class="ltx_para">
+<p class="ltx_p">Ma si possono anche definire kernel sulla GPU con <span class="ltx_text ltx_font_typewriter">@cuda.jit</span>. Si possono lanciare kernel con <span class="ltx_text ltx_font_typewriter">kernel[nBlocks, nThreads](args)</span>, supportano shared, pinned e local memory. Viene usato <span class="ltx_text ltx_font_typewriter">nvcc</span> per compilare.</p>
+</div>
+<section id="S1.SS2.SSS0.Px1" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Dichiarazione dei kernel:</h4>
+
+<div id="S1.SS2.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">Non possono tornare esplicitamente valori, quindi tutti i dati devono essere scritti su array passati alla funzione. Va dichiarata esplicitamente la thread hierarchy (numero di grid e blocchi). Una funzione può essere chiamata più volte, con diversi parametri e thread hierarchy, ma viene compilata una sola volta.</p>
+</div>
+</div>
+</section>
+<section id="S1.SS2.SSS0.Px2" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Thread Hierarchy:</h4>
+
+<div id="S1.SS2.SSS0.Px2.p1" class="ltx_para">
+<p class="ltx_p">I valori della gerarchia possono essere ottenuti con:</p>
+<ul id="S1.I3" class="ltx_itemize">
+<li id="S1.I3.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I3.i1.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">numba.cuda.threadIdx</span>: indice del thread all’interno del blocco, da <span class="ltx_text ltx_font_typewriter">0</span> a <span class="ltx_text ltx_font_typewriter">numba.cuda.blockDim-1</span></p>
+</div>
+</li>
+<li id="S1.I3.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I3.i2.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">numba.cuda.blockDim</span>: dimensione del blocco di thread, per come dichiarato per l’istanza del kernel</p>
+</div>
+</li>
+<li id="S1.I3.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I3.i3.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">numba.cuda.blockIdx</span>: indice del blocco all’interno della griglia di thread, da <span class="ltx_text ltx_font_typewriter">0</span> a <span class="ltx_text ltx_font_typewriter">numba.cuda.gridDim-1</span></p>
+</div>
+</li>
+<li id="S1.I3.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I3.i4.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">numba.cuda.gridDim</span>: dimensione della griglia di blocchi, numero totale di blocchi lanciati per l’istanza del kernel</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S1.SS2.SSS0.Px2.p2" class="ltx_para">
+<p class="ltx_p">Mentre le posizioni assolute si possono ottenere con:</p>
+<ul id="S1.I4" class="ltx_itemize">
+<li id="S1.I4.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I4.i1.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">numba.cuda.grid(ndim)</span>: torna la posizione assoluta del thread all’interno dell’intera griglia di blocchi; <span class="ltx_text ltx_font_typewriter">ndim</span> deve corrispondere al numero di dimensioni dichiarate per l’istanza del kernel, se i<span class="ltx_text ltx_font_typewriter">=1</span> torna un solo intero, altrimenti una tupla contenente quel numero di interi</p>
+</div>
+</li>
+<li id="S1.I4.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I4.i2.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">numba.cuda.gridsize(ndim)</span>: torna la dimensione assoluta ("forma") in thread dell’intera griglia di blocchi</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S1.SS2.SSS0.Px2.p3" class="ltx_para">
+<p class="ltx_p">Vale la pena ricordare che in Python il tipo di default è <span class="ltx_text ltx_font_typewriter">f64</span> (o qualcosa di simile, idk), quindi senza specificare il tipo anche la libreria userà quello. Se tale precisione non è richiesta (in genere in CUDA non si lavora con <span class="ltx_text ltx_font_typewriter">f64</span>) bisogna specificare esplicitamente il tipo. Ad esempio usando <span class="ltx_text ltx_font_typewriter">.astype(np.float32)</span>.</p>
+</div>
+</div>
+</section>
+<section id="S1.SS2.SSS0.Px3" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Funzioni device:</h4>
+
+<div id="S1.SS2.SSS0.Px3.p1" class="ltx_para">
+<p class="ltx_p">Si possono scrivere funzioni richiamabili solo dall’interno del device, con il decoratore <span class="ltx_text ltx_font_typewriter">@cuda.jit(device=True)</span>, ad esempio:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">@cuda.jit(device=True)</span>
+<span class="ltx_listingline">def a_device_function(a, b):</span>
+<span class="ltx_listingline">    return a + b</span></code></pre></div>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S1.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.1.3</span> Gestione della memoria</h3>
+
+<div id="S1.SS3.p1" class="ltx_para">
+<p class="ltx_p">Numba trasferisce automaticamente gli array NumPy quando viene invocato il kernel, ma lo può fare solo in modo "conservativo", quindi trasferisce sempre la memoria device <span class="ltx_text ltx_font_italic">back to the host</span> quando finisce. Si possono gestire manualmente i trasferimenti per evitare di passare inutilmente array read-only.</p>
+</div>
+<div id="S1.SS3.p2" class="ltx_para">
+<p class="ltx_p">Api per allocare e trasferire:</p>
+<ul id="S1.I5" class="ltx_itemize">
+<li id="S1.I5.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I5.i1.p1" class="ltx_para"><p class="ltx_p">Alloca un ndarray device (similmente a <span class="ltx_text ltx_font_typewriter">numpy.empty()</span>)</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">numba.cuda.device_array(shape, dtype=...,</span>
+<span class="ltx_listingline">    strides=..., stream=0)</span></code></pre></div>
+</div>
+</li>
+<li id="S1.I5.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I5.i2.p1" class="ltx_para"><p class="ltx_p">Chiama <span class="ltx_text ltx_font_typewriter">device_array()</span> con informazioni dall’array</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">numba.cuda.device_array_like(ary, stream=0)</span></code></pre></div>
+</div>
+</li>
+<li id="S1.I5.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I5.i3.p1" class="ltx_para"><p class="ltx_p">Alloca e trasferisce un ndarray numpy o uno scalare strutturato al device</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">numba.cuda.to_device(obj, stream=0, copy=True, to=None)</span></code></pre></div>
+</div>
+</li>
+</ul>
+</div>
+<section id="S1.SS3.SSS0.Px1" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Pinned e mapped memory:</h4>
+
+<div id="S1.SS3.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">La memoria pinned a mapped si può gestire tramite:</p>
+<ul id="S1.I6" class="ltx_itemize">
+<li id="S1.I6.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I6.i1.p1" class="ltx_para"><p class="ltx_p">Un context manager per pinnare temporaneamente una sequenza di ndarray host</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">numba.cuda.pinned(*arylist)</span></code></pre></div>
+</div>
+</li>
+<li id="S1.I6.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I6.i2.p1" class="ltx_para"><p class="ltx_p">Alloca un ndarray con un buffer pinnato (pagelocked)</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">numba.cuda.pinned_array(shape, dtype=...,</span>
+<span class="ltx_listingline">    strides=..., order=’C’)</span></code></pre></div>
+</div>
+</li>
+<li id="S1.I6.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I6.i3.p1" class="ltx_para"><p class="ltx_p">Chiama un array pinned con le informazioni dall’array</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">numba.cuda.pinned_array_like(ary)</span></code></pre></div>
+</div>
+</li>
+<li id="S1.I6.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I6.i4.p1" class="ltx_para"><p class="ltx_p">Un context manager per mappare temporaneamente una sequenza di ndarray host</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">numba.cuda.mapped(*arylist, **kws)</span></code></pre></div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="S1.SS3.SSS0.Px2" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Deallocazione:</h4>
+
+<div id="S1.SS3.SSS0.Px2.p1" class="ltx_para">
+<p class="ltx_p">In generale, la deallocazione è gestita in modo automatico, tracciata per-contex. Nei casi di gestione asincrona la deallocazione automatica potrebbe causare problemi, quindi <span class="ltx_text ltx_font_typewriter">numba.cuda.defer_cleanup()</span> permette di fermare la deallocazione (usata tramite blocco with).</p>
+</div>
+<div id="S1.SS3.SSS0.Px2.p2" class="ltx_para">
+<p class="ltx_p">Esempio:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">with defer_cleanup():</span>
+<span class="ltx_listingline">    # all cleanup is deferred in here</span>
+<span class="ltx_listingline">    do_speed_critical_code()</span>
+<span class="ltx_listingline"># cleanup can occur here</span></code></pre></div>
+</div>
+</div>
+</section>
+<section id="S1.SS3.SSS0.Px3" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Static shared memory:</h4>
+
+<div id="S1.SS3.SSS0.Px3.p1" class="ltx_para">
+<ul id="S1.I7" class="ltx_itemize">
+<li id="S1.I7.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I7.i1.p1" class="ltx_para"><p class="ltx_p">Alloca un array shared della dimensione e tipo specificato; la funzione deve essere chiamata dall’interno del device</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">numba.cuda.shared.array(shape, type)</span></code></pre></div>
+<p class="ltx_p"><span class="ltx_text ltx_font_typewriter">shape</span> può essere un intero o una tupla di interi, rappresenta le dimensioni del’array; deve essere una espressione semplice</p>
+</div>
+</li>
+<li id="S1.I7.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I7.i2.p1" class="ltx_para"><p class="ltx_p">Sincronizza tutti i thread all’interno dello stesso blocco</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">numba.cuda.syncthreads()</span></code></pre></div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="S1.SS3.SSS0.Px4" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Dynamic shared memory:</h4>
+
+<div id="S1.SS3.SSS0.Px4.p1" class="ltx_para">
+<p class="ltx_p">Per usare la memoria shared dinamica, nel kernel va dichiarato un array shared di dimensione <span class="ltx_text ltx_font_typewriter">0</span>; esempio:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">@cuda.jit</span>
+<span class="ltx_listingline">def kernel_func(x):</span>
+<span class="ltx_listingline">    dyn_arr = cuda.shared.array(0, dtype=np.float32)</span></code></pre></div>
+</div>
+<div id="S1.SS3.SSS0.Px4.p2" class="ltx_para">
+<p class="ltx_p">Durante la chiamata a kernel va specificata la dimensione in byte della shared memory:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">kernel_func[32, 32, 0, 128](x)</span></code></pre></div>
+<p class="ltx_p">L’ultimo parametro è la shared memory.</p>
+</div>
+<div id="S1.SS3.SSS0.Px4.p3" class="ltx_para">
+<p class="ltx_p">Tutta la memoria dinamica diventa un alias allo stesso array; dichiarando più array dinamici quello che succede sarà che ci saranno solamente più puntatori ad uno stesso array, con interpretazioni differenti (stessi dati).</p>
+</div>
+<div id="S1.SS3.SSS0.Px4.p4" class="ltx_para">
+<p class="ltx_p">Una soluzione al problema può essere invertire un array, raddoppiando la dimensione totale durante la chiamata:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">f32_arr = cuda.shared.array(0, dtype=np.float32)</span>
+<span class="ltx_listingline">i32_arr = cuda.shared.array(0, dtype=np.int32)[1:]</span></code></pre></div>
+</div>
+<div id="S1.SS3.SSS0.Px4.p5" class="ltx_para">
+<p class="ltx_p">In questo modo uno viene letto dall’inizio, uno dal fondo. Servono visioni disgiunte degli array.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S1.SS4" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.1.4</span> Atomic Operations</h3>
+
+<div id="S1.SS4.p1" class="ltx_para">
+<p class="ltx_p">Si possono usare operazioni atomiche per evitare race conditions, le quali possono accadere nei casi di <span class="ltx_text ltx_font_bold">read-after-write</span> (un thread prova a leggere una cella di memoria nello stesso momento in cui un altro sta scrivendo) oppure <span class="ltx_text ltx_font_bold">write-after-write</span> (due thread provano a scrivere nello stesso momento).</p>
+</div>
+<div id="S1.SS4.p2" class="ltx_para">
+<p class="ltx_p">Il namespace per le operazioni atomiche è la classe <span class="ltx_text ltx_font_typewriter">numba.cuda.atomic</span>. Ad esempio, <span class="ltx_text ltx_font_typewriter">add(ary, idx, val)</span> svolge l’operazione atomica <span class="ltx_text ltx_font_typewriter">ary[idx] += val</span>; supportata su <span class="ltx_text ltx_font_typewriter">i32</span>, <span class="ltx_text ltx_font_typewriter">f32</span> e <span class="ltx_text ltx_font_typewriter">f64</span>.</p>
+</div>
+</div>
+</section>
+<section id="S1.SS5" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.1.5</span> Streams</h3>
+
+<div id="S1.SS5.p1" class="ltx_para">
+<p class="ltx_p">Gli <span class="ltx_text ltx_font_bold">stream</span> possono essere passati alle funzioni, vengono usati durante la configurazione per il lancio del kernel, in modo che le operazioni siano eseguite in maniera asincrona.</p>
+</div>
+<div id="S1.SS5.p2" class="ltx_para">
+<p class="ltx_p">La funzione</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">numba.cuda.stream()</span></code></pre></div>
+<p class="ltx_p">crea uno stream CUDA, il quale rappresenta la coda dei comandi per il dispositivo.</p>
+</div>
+<div id="S1.SS5.p3" class="ltx_para">
+<p class="ltx_p">La funzione</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">numba.cuda.default_stream()</span></code></pre></div>
+<p class="ltx_p">restituisce lo stream di default. Solitamente, il default stream si comporta in maniera legacy o per-thread on base alla API CUDA in uso.</p>
+</div>
+<div id="S1.SS5.p4" class="ltx_para">
+<p class="ltx_p">La funzione</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">Stream.synchronize()</span></code></pre></div>
+<p class="ltx_p">permette la sincronizzazione all’interno dello stream, i.e., aspetta che tutti i comandi all’interno dello stream vengano eseguiti.</p>
+</div>
+<div id="S1.SS5.p5" class="ltx_para">
+<p class="ltx_p">Esempio di uso degli stream:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline"># Crea gli stream</span>
+<span class="ltx_listingline">stream1 = cuda.stream()</span>
+<span class="ltx_listingline">stream2 = cuda.stream()</span>
+<span class="ltx_listingline"># Partizione e copia dei dati, per ogni stream</span>
+<span class="ltx_listingline"># ...</span>
+<span class="ltx_listingline"># Lancio del kernel, per ogni stream</span>
+<span class="ltx_listingline">kernel[blocks_per_grid, threads_per_block, stream1]()</span>
+<span class="ltx_listingline">kernel[blocks_per_grid, threads_per_block, stream2]()</span>
+<span class="ltx_listingline"># Porta i dati sull’host</span>
+<span class="ltx_listingline"># ...</span>
+<span class="ltx_listingline"># Aspetta il termine degli stream</span>
+<span class="ltx_listingline">stream1.synchronize()</span>
+<span class="ltx_listingline">stream2.synchronize()’</span></code></pre></div>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>

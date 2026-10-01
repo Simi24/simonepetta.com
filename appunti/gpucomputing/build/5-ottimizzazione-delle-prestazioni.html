@@ -1,0 +1,912 @@
+<div class="section level1">
+
+
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">5.1</span> Stream e concorrenza</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">Ci sono vari gradi di concorrenza in CUDA:</p>
+<ul id="S1.I1" class="ltx_itemize">
+<li id="S1.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I1.i1.p1" class="ltx_para"><p class="ltx_p">CPU/GPU concurrency: poiche’ sono dispositivi distinti, la CPU e la GPU possono operare indipendentemente una dall’altra</p>
+</div>
+</li>
+<li id="S1.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I1.i2.p1" class="ltx_para"><p class="ltx_p">Memcpy/kernel processing concurrency: grazie al DMA il trasferimento tra host e device puo’ avere luogo mentre gli SMs processano i kernel</p>
+</div>
+</li>
+<li id="S1.I1.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I1.i3.p1" class="ltx_para"><p class="ltx_p">Kernel concurrency: piu’ kernel possono essere eseguiti simultaneamente sulla GPU, a patto che ci siano risorse sufficienti disponibili, fino a 32 kernel in parallelo</p>
+</div>
+</li>
+<li id="S1.I1.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I1.i4.p1" class="ltx_para"><p class="ltx_p">Grid-level-concurrency: piu’ griglie di thread possono essere eseguite simultaneamente sulla GPU, a patto che ci siano risorse sufficienti disponibili. Uso di stream multipli per operazioni indipendenti</p>
+</div>
+</li>
+<li id="S1.I1.i5" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I1.i5.p1" class="ltx_para"><p class="ltx_p">Multi-GPU concurrency: piu’ GPU possono essere utilizzate simultaneamente per eseguire kernel diversi o la stessa operazione su dati diversi. Si distribuisce il processo su diverse GPU che eseguono in parallelo.</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S1.p2" class="ltx_para">
+<p class="ltx_p">Il motto della lezione e’ muoversi in maniera asincrona, bisogna utilizzare delle specifiche API che garantiscono l’asincronia dando garanzie:</p>
+<ul id="S1.I2" class="ltx_itemize">
+<li id="S1.I2.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I2.i1.p1" class="ltx_para"><p class="ltx_p">Lancio dei kernel</p>
+</div>
+</li>
+<li id="S1.I2.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I2.i2.p1" class="ltx_para"><p class="ltx_p">Memory copies tra due indirizzi allo stesso device</p>
+</div>
+</li>
+<li id="S1.I2.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I2.i3.p1" class="ltx_para"><p class="ltx_p">Memory copies da host a device</p>
+</div>
+</li>
+<li id="S1.I2.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I2.i4.p1" class="ltx_para"><p class="ltx_p">Memory copies fatte da funzioni con il suffisso Async</p>
+</div>
+</li>
+<li id="S1.I2.i5" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I2.i5.p1" class="ltx_para"><p class="ltx_p">Memory set function call con il suffisso Async</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S1.p3" class="ltx_para">
+<p class="ltx_p">L’atomo fondamentale nelle GPU e’ il warp e le operazioni dentro sono sincrone. I warp sono suddivisioni di blocchi ed e’ possibile sincronizzare a livello di blocco i thread. Dal punto di vista della CPU sappiamo quali sono le operazioni sincrone e il comportamento del kernel (asincrono) e come forzare la sincronizzazione dell’host.</p>
+</div>
+<section id="S1.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.1.1</span> CUDA Stream</h3>
+
+<div id="S1.SS1.p1" class="ltx_para">
+<p class="ltx_p">Uno stream CUDA e’ riferito a sequenze di operazioni CUDA asincrone che vengono eseguite sul device nell’ordine stabilito dal codice host. Lo stream gia’ esiste senza che lo sapessimo, se non definiamo niente esiste uno stream di default.
+Le operazioni tipiche includono il trasferimento dati host-device, lancio di kernel, gestioni di eventi verranno demandate agli stream con il grande vantaggio che tutto diventa asincrono e indipendente tra di loro, come se avessimo dei thread diversi sull’host ed ognuno fa la sua cosa.
+Questo introduce ad un parallelismo a livello di griglia.</p>
+</div>
+<section id="S1.SS1.SSS0.Px1" class="ltx_paragraph normal">
+<div class="section level5">
+<h5 class="ltx_title ltx_title_paragraph">Tipi di stream</h5>
+
+<div id="S1.SS1.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">Gli stream CUDA possono essere classificati in tre categorie principali:</p>
+<ul id="S1.I3" class="ltx_itemize">
+<li id="S1.I3.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I3.i1.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_bold">Stream di default</span>: se non viene creato uno stream specifico, tutte le operazioni CUDA vengono eseguite nello stream di default. Questo stream è implicito e non richiede alcuna gestione da parte del programmatore.</p>
+</div>
+</li>
+<li id="S1.I3.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I3.i2.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_bold">Stream dichiarati esplicitamente</span></p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S1.SS1.SSS0.Px1.p2" class="ltx_para">
+<p class="ltx_p">In generale e’ meglio usare stram non nulli quando:</p>
+<ul id="S1.I4" class="ltx_itemize">
+<li id="S1.I4.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I4.i1.p1" class="ltx_para"><p class="ltx_p">Si vuole introdurre concorrenza per sovrapporre operazioni articolate tra host e device (si possono spezzare le operazioni)</p>
+</div>
+</li>
+<li id="S1.I4.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I4.i2.p1" class="ltx_para"><p class="ltx_p">Sovrapporre computazioni host e trasferimento dati host-device</p>
+</div>
+</li>
+<li id="S1.I4.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I4.i3.p1" class="ltx_para"><p class="ltx_p">Sovrapporre trasferimento dati host-device e computazioni device</p>
+</div>
+</li>
+<li id="S1.I4.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I4.i4.p1" class="ltx_para"><p class="ltx_p">Computazioni concorrenti su device</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="S1.SS1.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Default Stream</h4>
+
+<div id="S1.SS1.SSSx1.p1" class="ltx_para">
+<p class="ltx_p">Quando vengono lanciate delle API CUDA senza specificare uno stream, queste operazioni vengono automaticamente assegnate allo stream di default. Questo significa che tutte le operazioni eseguite nello stream di default sono serializzate, ovvero vengono eseguite una dopo l’altra, senza sovrapposizioni. Sebbene questo possa semplificare la programmazione, può anche portare a un utilizzo inefficiente delle risorse della GPU, poiché non si sfruttano appieno le capacità di parallelismo offerte da CUDA.
+E’ tutto bloccante sia per host che per device.</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cudaMemcpy(d_out, d_in, size, cudaMemcpyDeviceToDevice);</span>
+<span class="ltx_listingline">    //bloccato</span>
+<span class="ltx_listingline">    kernel_1&lt;&lt;&lt;grid, block, 0, stream&gt;&gt;&gt;(d_out);</span>
+<span class="ltx_listingline">    //bloccato</span>
+<span class="ltx_listingline">    function_A()</span>
+<span class="ltx_listingline">    //bloccante</span>
+<span class="ltx_listingline">    cudaMemcpy(d_out, d_in, size, cudaMemcpyDeviceToDevice);</span></code></pre></div>
+</div>
+<div id="S1.SS1.SSSx1.p2" class="ltx_para">
+<p class="ltx_p">La GPU vede sequenze di operazioni che gli vengono mandate dall’host e non fa altro che accodare queste operazioni ed eseguirle, mentre la CPU puo’ continuare a lavorare su altre funzioni.</p>
+</div>
+</div>
+</section>
+<section id="S1.SS1.SSSx2" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Stream Espliciti</h4>
+
+<div id="S1.SS1.SSSx2.p1" class="ltx_para">
+<p class="ltx_p">Quando si desidera avere un controllo più fine sull’ordine di esecuzione delle operazioni CUDA, è possibile creare e utilizzare stream espliciti. Gli stream espliciti consentono di eseguire operazioni in parallelo e di sovrapporre trasferimenti di dati e computazioni. Per creare uno stream esplicito, si utilizza la funzione <span class="ltx_text ltx_font_typewriter">cudaStreamCreate()</span> e si specifica lo stream desiderato durante il lancio delle operazioni CUDA:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cudaError_t cudaStreamCreate(cudaStream_t *pStream);</span>
+<span class="ltx_listingline">    kernel_name&lt;&lt;&lt;grid, block, sharedMemSize, pStream&gt;&gt;&gt;(argument list)</span>
+<span class="ltx_listingline">    cudaError_t cudaStreamDestroy(cudaStream_t pStream);</span></code></pre></div>
+<p class="ltx_p">Passiamo un handle al kernel con cui gestisce lo stream.</p>
+</div>
+<div id="S1.SS1.SSSx2.p2" class="ltx_para">
+<p class="ltx_p">Siccome stiamo parlando di operazioni asincrone guardiamolo anche dal punto di vista della memoria, diciamo che vogliamo l’impiego della memoria asincrona, vogliamo la memoria pinned:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cudaError_t cudaMallocHost(void **ptr, size_t size);</span>
+<span class="ltx_listingline">    cudaError_t cudaHostAlloc(void **ptr, size_t size, unsigned int flags);</span></code></pre></div>
+<p class="ltx_p">Alloca su host memoria non paginabile, se flag = 0 il comportamento delle due API e’ uguale.</p>
+</div>
+<div id="S1.SS1.SSSx2.p3" class="ltx_para">
+<p class="ltx_p">Questo fa la copia asincrona dei dati tra host e device:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cudaError_t cudaMemcpyAsync(void *dst, const void *src, size_t count, cudaMemcpyKind kind, cudaStream_t stream);</span></code></pre></div>
+</div>
+<div id="S1.SS1.SSSx2.p4" class="ltx_para">
+<p class="ltx_p">Si ha ancora bisogno di sincronizzare le operazioni in uno stream. Il blocco dell’host su un determinato stream si fa:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cudaError_t cudaStreamSynchronize(cudaStream_t stream);</span></code></pre></div>
+<p class="ltx_p">Forza il blocco dell’host fino a che tutte le operazioni nello stream sono state completate.</p>
+</div>
+<div id="S1.SS1.SSSx2.p5" class="ltx_para">
+<p class="ltx_p">Lo stream puo’ essere anche monitorato rispetto al suo livello di esecuzione, possiamo controllare se le operazioni sono completate ma non forziamo il blocco dell’host in caso negativo, ritorna cudaSuccess se le operazioni sono completate e cudaErrorNotReady altrimenti (mettiamo nella coda FIFO la cudaStreamQuery):</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cudaError_t cudaStreamQuery(cudaStream_t stream);</span></code></pre></div>
+</div>
+</div>
+</section>
+<section id="S1.SS1.SSSx3" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Sovrapporre kernel e trasferimento dati</h4>
+
+<div id="S1.SS1.SSSx3.p1" class="ltx_para">
+<p class="ltx_p">Il device e’ capace di avere copie ed esecuzioni concorrenti, questo puo’ essere indagato con il campo deviceOverlap della struct cudaDeviceProp.
+Per fare questo e’ necessario che il kernel e il trasferimento appartengano a differenti non-default stream e dobbiamo usare la pinned memory.
+Un uso tipico e’ se abbiamo un arrai di N elementi, possiamo spezzarlo in gruppi da M elementi, se il kernel opera indipendentemente su tutti gli elementi ognu gruppo puo’ essere elaborato a parte, il numero di <math id="S1.SS1.SSSx3.p1.m1" class="ltx_Math" alttext="nStreams=\frac{N}{M}" display="inline"><semantics><mrow><mrow><mi>n</mi><mo>⁢</mo><mi>S</mi><mo>⁢</mo><mi>t</mi><mo>⁢</mo><mi>r</mi><mo>⁢</mo><mi>e</mi><mo>⁢</mo><mi>a</mi><mo>⁢</mo><mi>m</mi><mo>⁢</mo><mi>s</mi></mrow><mo>=</mo><mfrac><mi>N</mi><mi>M</mi></mfrac></mrow></semantics></math>.</p>
+</div>
+</div>
+</section>
+<section id="S1.SS1.SSSx4" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Default Stream prima di CUDA 7</h4>
+
+<div id="S1.SS1.SSSx4.p1" class="ltx_para">
+<p class="ltx_p">Hanno introdotto uno stream di default per ogni processo host dopo la 7, prima invece c’era un solo stream di default per ogni processo e questo fa una sincronizzazione implicita tra tutte le operazioni. Questo addirittura rende sincrone operazioni anche di thread host diversi.</p>
+</div>
+</div>
+</section>
+<section id="S1.SS1.SSSx5" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Sincronizzazione rispetto a NULL-stream</h4>
+
+<div id="S1.SS1.SSSx5.p1" class="ltx_para">
+<p class="ltx_p">Il NULL-stream e’ sempre bloccante, anche all’interno dello stesso host (nella nostra applicazione) e’ particolarmente bloccante, e’ in mutex con gli altri stream. A meno che non si dica che ogni stream non null prodotto sia non bloccante, e’ quindi possibile specificare il comportamento di uno stream non di default rispetto a quello di default rispetto al blocco.
+Dal punto di vista dell’host ogni kernel e’ asincrono e non bloccante, ma in questo caso kernel2 non parte finche’ kernel1 e’ completato e cosi’ fa 3 con 2, questo perche’ si ha il comportamento di default con il NULL-stream:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    kernel_1&lt;&lt;&lt;1, 1, 0, stream_1&gt;&gt;&gt;();</span>
+<span class="ltx_listingline">    kernel_2&lt;&lt;&lt;1, 1&gt;&gt;&gt;();</span>
+<span class="ltx_listingline">    kernel_3&lt;&lt;&lt;1, 1, 0, stream_2&gt;&gt;&gt;();</span></code></pre></div>
+</div>
+</div>
+</section>
+<section id="S1.SS1.SSSx6" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Concorrenza tra stream</h4>
+
+<div id="S1.SS1.SSSx6.p1" class="ltx_para">
+<p class="ltx_p">Non c’e’ nessuna garanzia che due kernel vadano in simultanea, non siamo mai certi di cosa sta accadendo in reale concorrenza sulla GPU, sappiamo pero’ per certo che due kernel sullo stesso stream vengono eseguiti in sequenza. La stessa cosa se abbiamo stream bloccanti. Cosa diversa succede se abbiamo cudaStreamNonBlocking.</p>
+</div>
+</div>
+</section>
+<section id="S1.SS1.SSSx7" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Priorita’ negli stream</h4>
+
+<div id="S1.SS1.SSSx7.p1" class="ltx_para">
+<p class="ltx_p">Una grid con piu’ alta priorita’ puo’ soppiantare un’altra con meno priorita’.
+Si possono creare stream con priorità (da CC 3.5). Una grid con più alta priorità può prelazionare il lavoro già in esecuzione con più bassa priorità.</p>
+</div>
+<div id="S1.SS1.SSSx7.p2" class="ltx_para">
+<p class="ltx_p">Hanno effetto solo su kernel e non su data transfer. Priorità al di fuori del range vengono riportate automaticamente nel range.</p>
+</div>
+<div id="S1.SS1.SSSx7.p3" class="ltx_para">
+<p class="ltx_p">Per creare e gestire uno stream con priorità si usano le funzioni:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cudaError_t cudaStreamCreateWithPriority(</span>
+<span class="ltx_listingline">    cudaStream_t* pStream, unsigned int flags, int priority);</span></code></pre></div>
+</div>
+<div id="S1.SS1.SSSx7.p4" class="ltx_para">
+<p class="ltx_p">Crea un nuovo stream con priorità intera e ritorna l’handle in <span class="ltx_text ltx_font_typewriter">pStream</span>.</p>
+</div>
+<div id="S1.SS1.SSSx7.p5" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cudaError_t cudaDeviceGetStreamPriorityRange(</span>
+<span class="ltx_listingline">    int *leastPriority, int *greatestPriority);</span></code></pre></div>
+</div>
+<div id="S1.SS1.SSSx7.p6" class="ltx_para">
+<p class="ltx_p">Restituisce la minima e massima priorità del device (la più alta è la minima).</p>
+</div>
+<section id="S1.SS1.SSSx7.Px1" class="ltx_paragraph normal">
+<div class="section level5">
+<h5 class="ltx_title ltx_title_paragraph">Host Functions (Callback):</h5>
+
+<div id="S1.SS1.SSSx7.Px1.p1" class="ltx_para">
+<p class="ltx_p">Si ha la possibilità di inserire una funzione host, senza introdurre sincronizzazione o interrompere il flusso dello stream. Questa funzione viene eseguita sull’host una volta che tutti i comandi forniti allo stream prima della chiamata sono stati eseguiti.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S1.SS1.SSSx8" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Chiamare un kernel su più Stream</h4>
+
+<div id="S1.SS1.SSSx8.p1" class="ltx_para">
+<p class="ltx_p">Il vantaggio dell’usare gli stream risiede nella possibilità di dividere le (stesse) operazioni in "batch", aumentando il parallelismo con la possibilità di avere trasferimenti di memoria (sia H2D che D2H) concorrenti all’esecuzione del kernel stesso.</p>
+</div>
+<div id="S1.SS1.SSSx8.p2" class="ltx_para">
+<p class="ltx_p">Vogliamo dividere i dati in blocchi e rendere i trasferimenti paralleli all’esecuzione, aumentando l’occupancy. Sono possibili due schemi di versioni asincrone:</p>
+</div>
+<div class="ltx_logical-block ltx_minipage ltx_align_middle">
+            
+<div id="S1.SS1.SSSx8.p3" class="ltx_para">
+<p class="ltx_p">Schema 1:</p>
+<ul id="S1.I5" class="ltx_itemize">
+<li id="S1.I5.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I5.i1.p1" class="ltx_para"><p class="ltx_p">loop che chiama, per ogni stream: copia H2D, kernel, copia D2H</p>
+</div>
+</li>
+</ul>
+</div>
+          
+</div>
+<div class="ltx_logical-block ltx_minipage ltx_align_middle">
+            
+<div id="S1.SS1.SSSx8.p4" class="ltx_para">
+<p class="ltx_p">Schema 2:</p>
+<ul id="S1.I6" class="ltx_itemize">
+<li id="S1.I6.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I6.i1.p1" class="ltx_para"><p class="ltx_p">loop per copie H2D</p>
+</div>
+</li>
+<li id="S1.I6.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I6.i2.p1" class="ltx_para"><p class="ltx_p">loop per kernel</p>
+</div>
+</li>
+<li id="S1.I6.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I6.i3.p1" class="ltx_para"><p class="ltx_p">loop per copie D2H</p>
+</div>
+</li>
+</ul>
+</div>
+          
+</div>
+<div id="S1.SS1.SSSx8.p5" class="ltx_para">
+<p class="ltx_p">Le due versioni sono funzionalmente la stessa cosa. A livello di kernel, l’unica cosa che cambia (come per tutte le volte in cui si suddivide) è da tenere conto dell’offset per considerare la "zona" assegnata a quel kernel in quello stream.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S1.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.1.2</span> CUDA event</h3>
+
+<div id="S1.SS2.p1" class="ltx_para">
+<p class="ltx_p">Un evento e’ un marker all’interno di uno stream associato ad un punto del flusso delle operazioni. Serve per controllare se l’esecuzione di uno stream ha raggiunto un dato punto o anche per la sincronizzazione inter-stream.
+Puo’ essere usato per due scopi base:</p>
+<ul id="S1.I7" class="ltx_itemize">
+<li id="S1.I7.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I7.i1.p1" class="ltx_para"><p class="ltx_p">Sincronizzare l’esecuzione di stream</p>
+</div>
+</li>
+<li id="S1.I7.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I7.i2.p1" class="ltx_para"><p class="ltx_p">Monitorare il progresso del device</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S1.SS2.p2" class="ltx_para">
+<p class="ltx_p">Le API CUDA forniscono funzioni che consentono di inserire eventi in qualsiasi punto dello stream. Oppure effettuare delle query per sapere se lo stream e’ stato completato. Quindi questo evento ha un duplice stato, e’ accaduto oppure no.</p>
+</div>
+<div id="S1.SS2.p3" class="ltx_para">
+<p class="ltx_p">Per creare un evento bisogna usare una primitiva di create:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cudaEvent_t event;</span>
+<span class="ltx_listingline">    cudaError_t cudaEventCreate(cudaEvent_t *event);</span>
+<span class="ltx_listingline">    cudaError_t cudaEventDestroy(cudaEvent_t event);</span></code></pre></div>
+<p class="ltx_p">Gli eventi nello stream zero vengono completati dopo che tutti i precedenti comandi in tutti gli altri stream sono stati completati.
+Gli eventi hanno uno stato booleano che indica se l’evento è stato completato o meno.</p>
+</div>
+<section id="S1.SS2.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Sincronizzazione via CUDA event</h4>
+
+<div id="S1.SS2.SSSx1.p1" class="ltx_para">
+<p class="ltx_p">Una volta creato l’evento si puo’ associare ad uno stream, se non specifico niente viene associato allo stream zero.</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cudaError_t cudaEventRecord(cudaEvent_t event, cudaStream_t stream);</span></code></pre></div>
+</div>
+<div id="S1.SS2.SSSx1.p2" class="ltx_para">
+<p class="ltx_p">Si puo’ usare l’evento per sincronizzare con l’host fino a che l’evento non si verifica:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cudaError_t cudaEventSynchronize(cudaEvent_t event);</span></code></pre></div>
+</div>
+<div id="S1.SS2.SSSx1.p3" class="ltx_para">
+<p class="ltx_p">L’attivita’ non bloccante e’ quella di fare una query su un evento:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cudaError_t cudaEventQuery(cudaEvent_t event);</span></code></pre></div>
+</div>
+<div id="S1.SS2.SSSx1.p4" class="ltx_para">
+<p class="ltx_p">Si puo’ sincronizzare anche tra stream ed eventi, considerando bloccante l’attesa su uno stream:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cudaError_t cudaStreamWaitEvent(cudaStream_t stream, cudaEvent_t event, unsigned int flags);</span></code></pre></div>
+</div>
+<section id="S1.SS2.SSSx1.Px1" class="ltx_paragraph normal">
+<div class="section level5">
+<h5 class="ltx_title ltx_title_paragraph">Sincronizzazione Esplicita:</h5>
+
+<div id="S1.SS2.SSSx1.Px1.p1" class="ltx_para">
+<p class="ltx_p">CUDA runtime supporta diversi modi di sincronizzazione esplicita a livello di grid in un programma CUDA, si può sincronizzare rispetto</p>
+<ul id="S1.I8" class="ltx_itemize">
+<li id="S1.I8.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I8.i1.p1" class="ltx_para"><p class="ltx_p">al device</p>
+</div>
+</li>
+<li id="S1.I8.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I8.i2.p1" class="ltx_para"><p class="ltx_p">a uno stream</p>
+</div>
+</li>
+<li id="S1.I8.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I8.i3.p1" class="ltx_para"><p class="ltx_p">a un evento all’interno di uno stream</p>
+</div>
+</li>
+<li id="S1.I8.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I8.i4.p1" class="ltx_para"><p class="ltx_p">a diversi stream (tra loro), usando un evento</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S1.SS2.SSSx1.Px1.p2" class="ltx_para">
+<p class="ltx_p">Si può bloccare l’host fino a che il device non ha completato i task precedenti:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cudaError_t cudaDeviceSynchronize();</span></code></pre></div>
+</div>
+<div id="S1.SS2.SSSx1.Px1.p3" class="ltx_para">
+<p class="ltx_p">Si puo bloccare l’host fino a che tutte le operazioni in uno stream sono completate (<span class="ltx_text ltx_font_typewriter">cudaStreamSynchronize()</span>) oppure eseguire un test non-bloccante (<span class="ltx_text ltx_font_typewriter">cudaStreamQuery()</span>):</p>
+</div>
+<div id="S1.SS2.SSSx1.Px1.p4" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cudaError_t cudaStreamSynchronize(cudaStream_t stream);</span>
+<span class="ltx_listingline">cudaError_t cudaStreamQuery(cudaStream_t stream);</span></code></pre></div>
+</div>
+<div id="S1.SS2.SSSx1.Px1.p5" class="ltx_para">
+<p class="ltx_p">Un CUDA event può anche essere usato per sincronizzare host e device:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cudaError_t cudaEventSynchronize(cudaEvent_t event);</span>
+<span class="ltx_listingline">cudaError_t cudaEventQuery(cudaEvent_t event);</span></code></pre></div>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S1.SS2.SSSx2" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Eventi per misurare il tempo</h4>
+
+<div id="S1.SS2.SSSx2.p1" class="ltx_para">
+<p class="ltx_p">Esiste una primitava per misurare il tempo intercorso tra due eventi:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cudaError_t cudaEventElapsedTime(float *ms, cudaEvent_t start, cudaEvent_t end);</span></code></pre></div>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">5.2</span> Librerie CUDA</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Tutte le computazioni implementate nelle librerie CUDA sono accelerate dalla GPU. Per molte applicazioni offrono un buon bilanciamento tra usabilita’ e prestazioni. Il vantaggio e’ il minimo sforzo per il porting delle applicazioni su GPU, senza dover scrivere codice CUDA. Le librerie sono ottimizzate per le architetture NVIDIA e sono progettate per essere facili da usare. Inoltre noi non abbiamo nessun costo di mantenimento.</p>
+</div>
+<div id="S2.p2" class="ltx_para">
+<p class="ltx_p">Esempi di librerie CUDA:</p>
+<div class="ltx_inline-block ltx_align_center ltx_transformed_outer"><span class="ltx_transformed_inner"><div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t"><span class="ltx_text ltx_font_bold">Libreria</span></td>
+<td class="ltx_td ltx_nopad_r ltx_align_left ltx_border_t"><span class="ltx_text ltx_font_bold">Dominio</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">cuFFT (NVIDIA)</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left ltx_border_t">Fast Fourier Transforms Linear</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">cuBLAS (NVIDIA)</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left">Linear Algebra (BLAS Library)</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">cuSPARSE (NVIDIA)</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left">Sparse Linear Algebra</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">cuRAND (NVIDIA)</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left">Random Number Generation</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">NPP (NVIDIA)</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left">Image and Signal Processing</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">CUSP (NVIDIA)</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left">Sparse Linear Algebra and Graph Computations</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">CUDA Math Library (NVIDIA)</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left">Mathematics</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">Trust (terze parti)</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left">Parallel Algorithms and Data Structures</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_b">MAGMA (terze parti)</td>
+<td class="ltx_td ltx_nopad_r ltx_align_left ltx_border_b">Next generation Linear Algebra</td>
+</tr>
+</table>
+</div>
+</span></div>
+</div>
+<section id="S2.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.2.1</span> Workflow tipico</h3>
+
+<div id="S2.SS1.p1" class="ltx_para">
+<ul id="S2.I1" class="ltx_itemize">
+<li id="S2.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i1.p1" class="ltx_para"><p class="ltx_p">Creare un handle specifico della libreria, un riferimento che consente di accedere alle funzioni della libreria.</p>
+</div>
+</li>
+<li id="S2.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i2.p1" class="ltx_para"><p class="ltx_p">Allocare la device memory per gli input e output alle funzioni della libreria, se necessario, convertire gli input al formato specifico di uso della libreria (numeri complessi)</p>
+</div>
+</li>
+<li id="S2.I1.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i3.p1" class="ltx_para"><p class="ltx_p">Popolare con i dati nel formato specifico</p>
+</div>
+</li>
+<li id="S2.I1.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i4.p1" class="ltx_para"><p class="ltx_p">Configurare le computazioni per l’esecuzione</p>
+</div>
+</li>
+<li id="S2.I1.i5" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i5.p1" class="ltx_para"><p class="ltx_p">Eseguire la chiamata della funzione di libreria che avvia la computazione sulla GPU</p>
+</div>
+</li>
+<li id="S2.I1.i6" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i6.p1" class="ltx_para"><p class="ltx_p">Recuperare i risultati della device memory</p>
+</div>
+</li>
+<li id="S2.I1.i7" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i7.p1" class="ltx_para"><p class="ltx_p">Se necessario, convertire i dati nel formato specifico o nativo dell’applicazione</p>
+</div>
+</li>
+<li id="S2.I1.i8" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i8.p1" class="ltx_para"><p class="ltx_p">Rilasciare le risorse CUDA allocate per la data libreria</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="S2.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.2.2</span> Libreria cuBLAS</h3>
+
+<div id="S2.SS2.p1" class="ltx_para">
+<p class="ltx_p">Sono disponibili diverse funzioni per l’algebra lineare, tra cui:</p>
+<ul id="S2.I2" class="ltx_itemize">
+<li id="S2.I2.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I2.i1.p1" class="ltx_para"><p class="ltx_p">Operazioni tra vettori</p>
+</div>
+</li>
+<li id="S2.I2.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I2.i2.p1" class="ltx_para"><p class="ltx_p">Operazioni tra matrici e vettori</p>
+</div>
+</li>
+<li id="S2.I2.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I2.i3.p1" class="ltx_para"><p class="ltx_p">Operazioni tra matrici</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S2.SS2.p2" class="ltx_para">
+<p class="ltx_p">Questi sono le basi per lo sviuluppo delle LAPACK, che sono librerie di algebra lineare un po’ piu’ complesse, che implementano algoritmi per la risoluzione di sistemi lineari, decomposizioni e altro.
+Tutte le interfaccie messe a disposizione sono asincrone sulla GPU.</p>
+</div>
+<div id="S2.SS2.p3" class="ltx_para">
+<p class="ltx_p">Usa <span class="ltx_text ltx_font_bold">column-major order</span> (leggo le colonne dall’alto verso il basso) perché chiunque ha scritto la libreria è stronzo (colpa di Fortran). Esempio:</p>
+<div id="Ex1" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex1.m1" class="ltx_Math" alttext="\left[\begin{array}[]{c c c}1&amp;2&amp;3\\
+4&amp;5&amp;6\\
+7&amp;8&amp;9\end{array}\right]\rightarrow\left[\begin{array}[]{c c c c c c c c c}1&amp;4&amp;%
+7&amp;2&amp;5&amp;8&amp;3&amp;6&amp;9\end{array}\right]\quad I(r,c)=c\cdot M+r" display="block"><semantics><mrow><mrow><mrow><mo>[</mo><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd><mn>1</mn></mtd><mtd><mn>2</mn></mtd><mtd><mn>3</mn></mtd></mtr><mtr><mtd><mn>4</mn></mtd><mtd><mn>5</mn></mtd><mtd><mn>6</mn></mtd></mtr><mtr><mtd><mn>7</mn></mtd><mtd><mn>8</mn></mtd><mtd><mn>9</mn></mtd></mtr></mtable><mo>]</mo></mrow><mo stretchy="false">→</mo><mrow><mo>[</mo><mtable columnspacing="5pt" displaystyle="true"><mtr><mtd><mn>1</mn></mtd><mtd><mn>4</mn></mtd><mtd><mn>7</mn></mtd><mtd><mn>2</mn></mtd><mtd><mn>5</mn></mtd><mtd><mn>8</mn></mtd><mtd><mn>3</mn></mtd><mtd><mn>6</mn></mtd><mtd><mn>9</mn></mtd></mtr></mtable><mo>]</mo></mrow></mrow><mspace width="1.2em"></mspace><mrow><mrow><mi>I</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>r</mi><mo>,</mo><mi>c</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mrow><mi>c</mi><mo lspace="0.222em" rspace="0.222em">⋅</mo><mi>M</mi></mrow><mo>+</mo><mi>r</mi></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S2.SS2.p4" class="ltx_para">
+<p class="ltx_p">Dove <math id="S2.SS2.p4.m1" class="ltx_Math" alttext="(r,c)" display="inline"><semantics><mrow><mo stretchy="false">(</mo><mi>r</mi><mo>,</mo><mi>c</mi><mo stretchy="false">)</mo></mrow></semantics></math> sono le coordinate del valore cercato e <math id="S2.SS2.p4.m2" class="ltx_Math" alttext="M" display="inline"><semantics><mi>M</mi></semantics></math> è l’altezza della matrice (dimensioni <math id="S2.SS2.p4.m3" class="ltx_Math" alttext="M\times N" display="inline"><semantics><mrow><mi>M</mi><mo lspace="0.222em" rspace="0.222em">×</mo><mi>N</mi></mrow></semantics></math>).</p>
+</div>
+<section id="S2.SS2.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Operare con cuBLAS</h4>
+
+<div id="S2.SS2.SSSx1.p1" class="ltx_para">
+<ul id="S2.I3" class="ltx_itemize">
+<li id="S2.I3.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I3.i1.p1" class="ltx_para"><p class="ltx_p">Creare un handle cublasCreateHandle</p>
+</div>
+</li>
+<li id="S2.I3.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I3.i2.p1" class="ltx_para"><p class="ltx_p">Allocare la memoria per gli input e output usando cudaMalloc</p>
+</div>
+</li>
+<li id="S2.I3.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I3.i3.p1" class="ltx_para"><p class="ltx_p">Popolare i dati di input nella memoria device usando cublasSetVector e cublasSetMatrix</p>
+</div>
+</li>
+<li id="S2.I3.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I3.i4.p1" class="ltx_para"><p class="ltx_p">Eseguire le operazioni desiderate usando le funzioni cuBLAS, ad esempio cublasSgemv</p>
+</div>
+</li>
+<li id="S2.I3.i5" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I3.i5.p1" class="ltx_para"><p class="ltx_p">Recuperare i risultati dalla memoria device usando cublasGetVector e cublasGetMatrix</p>
+</div>
+</li>
+<li id="S2.I3.i6" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I3.i6.p1" class="ltx_para"><p class="ltx_p">Rilasciare le risorse allocate usando cublasDestroy e cudaFree</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="S2.SS2.SSSx2" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Funzioni all’interno di cuBLAS</h4>
+
+<div id="S2.SS2.SSSx2.p1" class="ltx_para">
+<p class="ltx_p">Le prime funzioni che vediamo sono quelle per trasferire righe e colonne da una matrice A nella memoria del device ad una matrice B nella GPU memory space:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cublasSetMatrix(int rows, int cols, const float *A, int lda, float *B, int ldb)</span></code></pre></div>
+</div>
+<div id="S2.SS2.SSSx2.p2" class="ltx_para">
+<p class="ltx_p">I parametri sono:</p>
+<ul id="S2.I4" class="ltx_itemize">
+<li id="S2.I4.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I4.i1.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">rows</span>: numero di righe della matrice A</p>
+</div>
+</li>
+<li id="S2.I4.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I4.i2.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">cols</span>: numero di colonne della matrice A</p>
+</div>
+</li>
+<li id="S2.I4.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I4.i3.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">A</span>: puntatore alla matrice A nella memoria del host</p>
+</div>
+</li>
+<li id="S2.I4.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I4.i4.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">lda</span>: leading dimension della matrice A</p>
+</div>
+</li>
+<li id="S2.I4.i5" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I4.i5.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">B</span>: puntatore alla matrice B nella memoria del device</p>
+</div>
+</li>
+<li id="S2.I4.i6" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I4.i6.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">ldb</span>: leading dimension della matrice B</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S2.SS2.SSSx2.p3" class="ltx_para">
+<p class="ltx_p">Le funzioni inverse per trasferire i dati dalla memoria del device alla memoria del host sono:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cublasGetMatrixAsynch(int rows, int cols, const float *A, int lda, float *B, int ldb, cudaStream_t stream)</span></code></pre></div>
+</div>
+<div id="S2.SS2.SSSx2.p4" class="ltx_para">
+<p class="ltx_p">Danno la possibilita’ di lavorare in asincrono specificando uno stream.</p>
+</div>
+<div id="S2.SS2.SSSx2.p5" class="ltx_para">
+<p class="ltx_p">Se volessi fare la copia di un vettore, potrei usare le seguenti funzioni:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cublasSetVector(int n, const float *A, int incx, float *B, int incy)</span>
+<span class="ltx_listingline">    cublasGetVector(int n, const float *A, int incx, float *B, int incy)</span></code></pre></div>
+</div>
+<div id="S2.SS2.SSSx2.p6" class="ltx_para">
+<p class="ltx_p">Per gestire la libreria serve un <span class="ltx_text ltx_font_bold">handle</span>, il quale si può generare tramite</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cublasCreate(cublasHandle_t* handle)</span></code></pre></div>
+</div>
+<div id="S2.SS2.SSSx2.p7" class="ltx_para">
+<p class="ltx_p">Viene passato ad ogni chiamata di funzione della libreria successiva. Al termine</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cublasDestroy(cublasHandle_t* handle)</span></code></pre></div>
+<p class="ltx_p">per distruggerlo. Il tipo dell’handle è <span class="ltx_text ltx_font_typewriter">cublasHandle_t</span>. Esiste un tipo <span class="ltx_text ltx_font_typewriter">cublasStatus_t</span> usato per il report degli errori.</p>
+</div>
+<div id="S2.SS2.SSSx2.p8" class="ltx_para">
+<p class="ltx_p">Per trasferimenti device-device: copia <span class="ltx_text ltx_font_typewriter">n</span> elementi da <span class="ltx_text ltx_font_typewriter">x</span> a <span class="ltx_text ltx_font_typewriter">y</span>:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cublasScopy(handle, n, x, incx, y, incy)</span></code></pre></div>
+</div>
+<div id="S2.SS2.SSSx2.p9" class="ltx_para">
+<p class="ltx_p">In generale la libreria segue una naming convention <span class="ltx_text ltx_font_typewriter">cublas&lt;T&gt;operation</span>, dove <span class="ltx_text ltx_font_typewriter">&lt;T&gt;</span> può essere:</p>
+<ul id="S2.I5" class="ltx_itemize">
+<li id="S2.I5.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I5.i1.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">S</span> per parametri di tipo <span class="ltx_text ltx_font_typewriter">float</span></p>
+</div>
+</li>
+<li id="S2.I5.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I5.i2.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">D</span> per <span class="ltx_text ltx_font_typewriter">double</span></p>
+</div>
+</li>
+<li id="S2.I5.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I5.i3.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">C</span> per <span class="ltx_text ltx_font_typewriter">complex floats</span></p>
+</div>
+</li>
+<li id="S2.I5.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I5.i4.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">Z</span> per <span class="ltx_text ltx_font_typewriter">complex double</span></p>
+</div>
+</li>
+</ul>
+<p class="ltx_p">Ad esempio, per l’operazione <span class="ltx_text ltx_font_typewriter">axpy</span> le funzioni disponibili sono <span class="ltx_text ltx_font_typewriter">cublasSaxpy</span>, <span class="ltx_text ltx_font_typewriter">cublasDaxpy</span>, <span class="ltx_text ltx_font_typewriter">cublasCaxpy</span>, <span class="ltx_text ltx_font_typewriter">cublasZaxpy</span>.</p>
+</div>
+<div id="S2.SS2.SSSx2.p10" class="ltx_para">
+<p class="ltx_p">Si usa un valore di tipo <span class="ltx_text ltx_font_typewriter">cublasOperation_t</span> per indicare operazioni su matrici all’interno di funzioni:</p>
+<ul id="S2.I6" class="ltx_itemize">
+<li id="S2.I6.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I6.i1.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">CUBLAS_OP_N</span> per non-transpose</p>
+</div>
+</li>
+<li id="S2.I6.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I6.i2.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">CUBLAS_OP_T</span> per transpose</p>
+</div>
+</li>
+<li id="S2.I6.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I6.i3.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">CUBLAS_OP_C</span> per conjugate transpose</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S2.SS2.SSSx2.p11" class="ltx_para">
+<p class="ltx_p">Per fare</p>
+<div id="Ex2" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex2.m1" class="ltx_Math" alttext="result=\sum_{i=1}^{n}x[k]\cdot y[j],\quad k=1+(i-1)\cdot incx,\quad j=1+(i-1)%
+\cdot incy" display="block"><semantics><mrow><mrow><mrow><mi>r</mi><mo>⁢</mo><mi>e</mi><mo>⁢</mo><mi>s</mi><mo>⁢</mo><mi>u</mi><mo>⁢</mo><mi>l</mi><mo>⁢</mo><mi>t</mi></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mi>y</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>j</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow><mo rspace="1.367em">,</mo><mrow><mrow><mi>k</mi><mo>=</mo><mrow><mn>1</mn><mo>+</mo><mrow><mrow><mrow><mo stretchy="false">(</mo><mrow><mi>i</mi><mo>−</mo><mn>1</mn></mrow><mo rspace="0.055em" stretchy="false">)</mo></mrow><mo rspace="0.222em">⋅</mo><mi>i</mi></mrow><mo>⁢</mo><mi>n</mi><mo>⁢</mo><mi>c</mi><mo>⁢</mo><mi>x</mi></mrow></mrow></mrow><mo rspace="1.367em">,</mo><mrow><mi>j</mi><mo>=</mo><mrow><mn>1</mn><mo>+</mo><mrow><mrow><mrow><mo stretchy="false">(</mo><mrow><mi>i</mi><mo>−</mo><mn>1</mn></mrow><mo rspace="0.055em" stretchy="false">)</mo></mrow><mo rspace="0.222em">⋅</mo><mi>i</mi></mrow><mo>⁢</mo><mi>n</mi><mo>⁢</mo><mi>c</mi><mo>⁢</mo><mi>y</mi></mrow></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+<p class="ltx_p">tra vettori <span class="ltx_text ltx_font_typewriter">x</span> e <span class="ltx_text ltx_font_typewriter">y</span> di <span class="ltx_text ltx_font_typewriter">n</span> elementi (dimensione dei tali nella naming convention) e mettere il risultato in <span class="ltx_text ltx_font_typewriter">result</span></p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cublasStatus_t cublasSdot(cublasHandle_t handle, int n,</span>
+<span class="ltx_listingline">    const float *x, int incx, const float *y,</span>
+<span class="ltx_listingline">    int incy, float result)</span></code></pre></div>
+</div>
+<div id="S2.SS2.SSSx2.p12" class="ltx_para">
+<p class="ltx_p">Per fare</p>
+<div id="Ex3" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex3.m1" class="ltx_Math" alttext="y[i]=\alpha\cdot x[i]+y[i]\quad\forall i\in n" display="block"><semantics><mrow><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>i</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mi>α</mi><mo lspace="0.222em" rspace="0.222em">⋅</mo><mi>x</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>i</mi><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>i</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow><mspace width="1.367em"></mspace><mrow><mrow><mo rspace="0.167em">∀</mo><mi>i</mi></mrow><mo>∈</mo><mi>n</mi></mrow></mrow></semantics></math></div>
+</div>
+<p class="ltx_p">con vettori <span class="ltx_text ltx_font_typewriter">x</span> e <span class="ltx_text ltx_font_typewriter">y</span> di dimensione <span class="ltx_text ltx_font_typewriter">n</span>, risultato nel secondo vettore <span class="ltx_text ltx_font_typewriter">y</span></p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cublasStatus_t cublasSaxpy(cublasHandle_t handle, int n,</span>
+<span class="ltx_listingline">    const float *alpha, const float *x, int incx,</span>
+<span class="ltx_listingline">    const float *y, int incy)</span></code></pre></div>
+</div>
+<div id="S2.SS2.SSSx2.p13" class="ltx_para">
+<p class="ltx_p">Per fare</p>
+<div id="Ex4" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex4.m1" class="ltx_Math" alttext="y=\alpha Ax+\beta y" display="block"><semantics><mrow><mi>y</mi><mo>=</mo><mrow><mrow><mi>α</mi><mo>⁢</mo><mi>A</mi><mo>⁢</mo><mi>x</mi></mrow><mo>+</mo><mrow><mi>β</mi><mo>⁢</mo><mi>y</mi></mrow></mrow></mrow></semantics></math></div>
+</div>
+<p class="ltx_p">dove <math id="S2.SS2.SSSx2.p13.m1" class="ltx_Math" alttext="\alpha" display="inline"><semantics><mi>α</mi></semantics></math> e <math id="S2.SS2.SSSx2.p13.m2" class="ltx_Math" alttext="\beta" display="inline"><semantics><mi>β</mi></semantics></math> sono scalari, <math id="S2.SS2.SSSx2.p13.m3" class="ltx_Math" alttext="A" display="inline"><semantics><mi>A</mi></semantics></math> è una matrice, <math id="S2.SS2.SSSx2.p13.m4" class="ltx_Math" alttext="x" display="inline"><semantics><mi>x</mi></semantics></math> e <math id="S2.SS2.SSSx2.p13.m5" class="ltx_Math" alttext="y" display="inline"><semantics><mi>y</mi></semantics></math> sono vettori</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cublasStatus_t cublasSgemv(cublasHandle_t handle,</span>
+<span class="ltx_listingline">    cublasOperation_t trans, int m, int n,</span>
+<span class="ltx_listingline">    const float *alpha, const float *A,</span>
+<span class="ltx_listingline">    int lda, const float *x, int incx,</span>
+<span class="ltx_listingline">    const float *beta, float *y, int incy)</span></code></pre></div>
+</div>
+<div id="S2.SS2.SSSx2.p14" class="ltx_para">
+<p class="ltx_p">Per fare</p>
+<div id="Ex5" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex5.m1" class="ltx_Math" alttext="C=\alpha AB+\beta C" display="block"><semantics><mrow><mi>C</mi><mo>=</mo><mrow><mrow><mi>α</mi><mo>⁢</mo><mi>A</mi><mo>⁢</mo><mi>B</mi></mrow><mo>+</mo><mrow><mi>β</mi><mo>⁢</mo><mi>C</mi></mrow></mrow></mrow></semantics></math></div>
+</div>
+<p class="ltx_p">dove <math id="S2.SS2.SSSx2.p14.m1" class="ltx_Math" alttext="\alpha" display="inline"><semantics><mi>α</mi></semantics></math> e <math id="S2.SS2.SSSx2.p14.m2" class="ltx_Math" alttext="\beta" display="inline"><semantics><mi>β</mi></semantics></math> scalari, <math id="S2.SS2.SSSx2.p14.m3" class="ltx_Math" alttext="A" display="inline"><semantics><mi>A</mi></semantics></math>, <math id="S2.SS2.SSSx2.p14.m4" class="ltx_Math" alttext="B" display="inline"><semantics><mi>B</mi></semantics></math> e <math id="S2.SS2.SSSx2.p14.m5" class="ltx_Math" alttext="C" display="inline"><semantics><mi>C</mi></semantics></math> matrici</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cublasStatus_t cublasSgemm(cublasHandle_t handle,</span>
+<span class="ltx_listingline">    cublasOperation_t transa, cublasOperation_t transb,</span>
+<span class="ltx_listingline">    int m, int n, int k, const float *alpha,</span>
+<span class="ltx_listingline">    const float *A, int lda,</span>
+<span class="ltx_listingline">    const float *B, int ldb,</span>
+<span class="ltx_listingline">    const float *beta, float *C, int ldc)</span></code></pre></div>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S2.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.2.3</span> cuRAND</h3>
+
+<div id="S2.SS3.p1" class="ltx_para">
+<p class="ltx_p">Vuol dire generare numeri a caso, la storia dei generatori pseudo-casuale di numeri e’ infinita.
+Permette sequenze:</p>
+<ul id="S2.I7" class="ltx_itemize">
+<li id="S2.I7.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I7.i1.p1" class="ltx_para"><p class="ltx_p">Pseudo-random: soddisfa proprietà statistiche di una vera sequenza random, ma generata da un algoritmo deterministico</p>
+</div>
+</li>
+<li id="S2.I7.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I7.i2.p1" class="ltx_para"><p class="ltx_p">Quasi-random: sequenza di punti <math id="S2.I7.i2.p1.m1" class="ltx_Math" alttext="n" display="inline"><semantics><mi>n</mi></semantics></math>-dimensionali uniformemente generati secondo un algoritmo deterministico</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S2.SS3.p2" class="ltx_para">
+<p class="ltx_p">Si compone di due parti:</p>
+<ul id="S2.I8" class="ltx_itemize">
+<li id="S2.I8.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I8.i1.p1" class="ltx_para"><p class="ltx_p">curand.h per l’host</p>
+</div>
+</li>
+<li id="S2.I8.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I8.i2.p1" class="ltx_para"><p class="ltx_p">curand_kernel.h per il device</p>
+</div>
+</li>
+</ul>
+</div>
+<section id="S2.SS3.SSS0.Px1" class="ltx_paragraph normal">
+<div class="section level5">
+<h5 class="ltx_title ltx_title_paragraph">Host API:</h5>
+
+<div id="S2.SS3.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">Dalla <a title="" class="ltx_ref ltx_href ltx_font_typewriter" href="https://docs.nvidia.com/cuda/curand/index.html">documentazione</a>, passaggi:</p>
+<ol id="S2.I9" class="ltx_enumerate">
+<li id="S2.I9.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">1.</span><div id="S2.I9.i1.p1" class="ltx_para"><p class="ltx_p">Crea un <span class="ltx_text ltx_font_bold">nuovo generatore</span> del tipo desiderato con <span class="ltx_text ltx_font_typewriter">curandCreateGenerator()</span></p>
+</div>
+</li>
+<li id="S2.I9.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">2.</span><div id="S2.I9.i2.p1" class="ltx_para"><p class="ltx_p">Setta i <span class="ltx_text ltx_font_bold">parametri</span> del generatore; ad esempio: per settare il seed <span class="ltx_text ltx_font_typewriter">curandSetPseudoRandomGeneratorSeed()</span></p>
+</div>
+</li>
+<li id="S2.I9.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">3.</span><div id="S2.I9.i3.p1" class="ltx_para"><p class="ltx_p">Alloca la memoria device con <span class="ltx_text ltx_font_typewriter">cudaMalloc()</span></p>
+</div>
+</li>
+<li id="S2.I9.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">4.</span><div id="S2.I9.i4.p1" class="ltx_para"><p class="ltx_p">Genera i valori casuali necessari con <span class="ltx_text ltx_font_typewriter">curandGenerate()</span> (o altre funzioni)</p>
+</div>
+</li>
+<li id="S2.I9.i5" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">5.</span><div id="S2.I9.i5.p1" class="ltx_para"><p class="ltx_p">Usa i valori</p>
+</div>
+</li>
+<li id="S2.I9.i6" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">6.</span><div id="S2.I9.i6.p1" class="ltx_para"><p class="ltx_p">Quando non serve più il generatore va distrutto con <span class="ltx_text ltx_font_typewriter">curandDestroyGenerator()</span></p>
+</div>
+</li>
+</ol>
+</div>
+<div id="S2.SS3.SSS0.Px1.p2" class="ltx_para">
+<p class="ltx_p">Alcune funzioni per l’host:</p>
+<ul id="S2.I10" class="ltx_itemize">
+<li id="S2.I10.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I10.i1.p1" class="ltx_para"><p class="ltx_p">Per creare il generatore</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">curandCreateGenerator(&amp;g, GEN_TYPE)</span></code></pre></div>
+<p class="ltx_p">Dove il parametro <span class="ltx_text ltx_font_typewriter">GEN_TYPE</span> può essere <span class="ltx_text ltx_font_typewriter">CURAND_RNG_PSEUDO_DEFAULT</span>, oppure <span class="ltx_text ltx_font_typewriter">CURAND_RNG_PSEUDO_XORWOW</span> (differenze trascurabili)</p>
+</div>
+</li>
+<li id="S2.I10.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I10.i2.p1" class="ltx_para"><p class="ltx_p">Per impostare il seed</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">curandSetRandomGeneratorSeed(g, SEED)</span></code></pre></div>
+<p class="ltx_p">ma importa poco, uno qualunque va bene (e.g, <span class="ltx_text ltx_font_typewriter">time(NULL)</span>)</p>
+</div>
+</li>
+<li id="S2.I10.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I10.i3.p1" class="ltx_para"><p class="ltx_p">Per generare una distribuzione</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">curandGenerate______(...)</span></code></pre></div>
+<p class="ltx_p">dipende dalla distribuzione che si vuole generare, ad esempio: <span class="ltx_text ltx_font_typewriter">curandGenerateUniform(g, src, n)</span> oppure <span class="ltx_text ltx_font_typewriter">curandGenerateNormal(g, src, n, mean, stddev)</span>.</p>
+</div>
+</li>
+<li id="S2.I10.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I10.i4.p1" class="ltx_para"><p class="ltx_p">Per distruggere il generatore</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">curandDestroyGenerator(g)</span></code></pre></div>
+</div>
+</li>
+</ul>
+</div>
+<div id="S2.SS3.SSS0.Px1.p3" class="ltx_para">
+<p class="ltx_p">La funzione <span class="ltx_text ltx_font_typewriter">curandGenerate()</span> permette di generare valori in maniera asincrona, molto più veloce per quantità elevate di valori. Usare questa libreria richiederebbe poi di dover passare i dati generati alla GPU (<span class="ltx_text ltx_font_typewriter">src</span> all’interno della funzione è un puntatore host), introducendo overhead. Per risolvere si può usare la Device API.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS3.SSS0.Px2" class="ltx_paragraph normal">
+<div class="section level5">
+<h5 class="ltx_title ltx_title_paragraph">Device API:</h5>
+
+<div id="S2.SS3.SSS0.Px2.p1" class="ltx_para">
+<p class="ltx_p">Per generare valori sul device:</p>
+<ol id="S2.I11" class="ltx_enumerate">
+<li id="S2.I11.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">1.</span><div id="S2.I11.i1.p1" class="ltx_para"><p class="ltx_p">Pre-allocare un set di cuRAND state objects nella device memory per ogni thread (gestiscono lo stato)</p>
+</div>
+</li>
+<li id="S2.I11.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">2.</span><div id="S2.I11.i2.p1" class="ltx_para"><p class="ltx_p">Opzionale, pre-allocare device memory per tenere i valori generati (se devono poi essere passati all’host o essere mantenuti per kernel successivi)</p>
+</div>
+</li>
+<li id="S2.I11.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">3.</span><div id="S2.I11.i3.p1" class="ltx_para"><p class="ltx_p">Inizializzare lo stato di tutti gli state objects con una kernal call</p>
+</div>
+</li>
+<li id="S2.I11.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">4.</span><div id="S2.I11.i4.p1" class="ltx_para"><p class="ltx_p">Chiamare una funzione cuRAND per generare valori casuali usando gli state objects allocati</p>
+</div>
+</li>
+<li id="S2.I11.i5" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">5.</span><div id="S2.I11.i5.p1" class="ltx_para"><p class="ltx_p">Opzionale, trasferire i valori all’host (se è stata allocata la memoria in precedenza)</p>
+</div>
+</li>
+</ol>
+</div>
+<div id="S2.SS3.SSS0.Px2.p2" class="ltx_para">
+<p class="ltx_p">Il vantaggio di generare valori sul device e’ che non dobbiamo trasferire i numeri al device, ma li generiamo in loco e i thread li consumano li’.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S2.SS4" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.2.4</span> cuFFT</h3>
+
+<div id="S2.SS4.p1" class="ltx_para">
+<p class="ltx_p">La libreria cuFFT (CUDA Fast Fourier Transform) permette di eseguire trasformate di Fourier in modo efficiente sulla GPU. Supporta sia segnali unidimensionali che multidimensionali e offre diverse opzioni per la pianificazione e l’esecuzione delle trasformate.</p>
+</div>
+<div id="S2.SS4.p2" class="ltx_para">
+<p class="ltx_p">La libreria prevede che venga definito un piano cufftPlan1d() per le trasformate unidimensionali, cufftPlan2d() per le trasformate bidimensionali e cufftPlan3d() per le trasformate tridimensionali. Questi piani contengono informazioni sulla dimensione del segnale e sul tipo di trasformata da eseguire.</p>
+</div>
+<div id="S2.SS4.p3" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">    cufftResult cufftPlan1d(cufftHandle *plan, int nx, cufftType type, int batch);</span></code></pre></div>
+<p class="ltx_p">C’e’ la versione batched per lavorare su piu’ batch distinti e lavorare in parallelo facendo sovrapposizioni.</p>
+</div>
+<section id="S2.SS4.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Workflow</h4>
+
+<div id="S2.SS4.SSSx1.p1" class="ltx_para">
+<ul id="S2.I12" class="ltx_itemize">
+<li id="S2.I12.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I12.i1.p1" class="ltx_para"><p class="ltx_p">creare e configurare il piano cuFFT plan</p>
+</div>
+</li>
+<li id="S2.I12.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I12.i2.p1" class="ltx_para"><p class="ltx_p">Allocare la memoria con cudaMalloc</p>
+</div>
+</li>
+<li id="S2.I12.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I12.i3.p1" class="ltx_para"><p class="ltx_p">Poplare la memoria con i campioni del segnale di input con cudaMemcpy</p>
+</div>
+</li>
+<li id="S2.I12.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I12.i4.p1" class="ltx_para"><p class="ltx_p">Eseguire il piano usando la funzione cufftExec*</p>
+</div>
+</li>
+<li id="S2.I12.i5" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I12.i5.p1" class="ltx_para"><p class="ltx_p">Recuperare i risultati dalla memoria device con cudaMemcpy</p>
+</div>
+</li>
+<li id="S2.I12.i6" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I12.i6.p1" class="ltx_para"><p class="ltx_p">Rilasciare le risorse allocate con cufftDestroy e cudaFree</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>

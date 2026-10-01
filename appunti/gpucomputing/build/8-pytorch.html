@@ -1,0 +1,595 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">PyTorch è un framework open source per il ML, sviluppato principalmente da Facebook AI, combina un backend accelerato dalla GPU con frontend Python.</p>
+</div>
+<div id="p2" class="ltx_para">
+<p class="ltx_p">Il core di PyTorch viene usato per implementare tensori, strutture dati, operatori CPU e GPU, primitive parallele e calcoli differenziali. Il core è la parte più computazionalmente intensiva, ma può essere implementata in C++ per le performance.</p>
+</div>
+<div id="p3" class="ltx_para">
+<p class="ltx_p">Si ha una separazione netta tra control e data flow: il controllo è solamente Python, il data flow è codice C++ il quale può essere eseguito sia su CPU che GPU.</p>
+</div>
+<div id="p4" class="ltx_para">
+<p class="ltx_p">PyTorch è compatibile con librerie e pacchetti popolari come NumPy, SciPy e Numba.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.1</span> Tensori</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">PyTorch funziona principalmente attraverso i <span class="ltx_text ltx_font_bold">tensori</span>, strutture dati simili ad array e matrici, ma <math id="S1.p1.m1" class="ltx_Math" alttext="n" display="inline"><semantics><mi>n</mi></semantics></math> dimensionali. I tensori vengono usati per codificare input, output e parametri del modello.</p>
+</div>
+<div id="S1.p2" class="ltx_para">
+<p class="ltx_p">In breve, sono "matrici", senza un limite stretto sul numero di dimensioni.</p>
+</div>
+<div id="S1.p3" class="ltx_para">
+<p class="ltx_p">I tensori possono essere inizializzati in diversi modi:</p>
+<ul id="S1.I1" class="ltx_itemize">
+<li id="S1.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I1.i1.p1" class="ltx_para"><p class="ltx_p">Per creare un <span class="ltx_text ltx_font_bold">tensore vuoto</span>:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">t = torch.empty(x, y)</span></code></pre></div>
+<p class="ltx_p">i parametri sono le dimensioni</p>
+</div>
+</li>
+<li id="S1.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I1.i2.p1" class="ltx_para"><p class="ltx_p">Ma spesso li si vuole inizializzare con un <span class="ltx_text ltx_font_bold">valore</span>, tipicamente 0, 1 oppure casuali:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">t = torch.zeros(x, y)</span>
+<span class="ltx_listingline">t = torch.ones(x, y)</span>
+<span class="ltx_listingline">t = torch.rand(x, y)</span></code></pre></div>
+</div>
+</li>
+<li id="S1.I1.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I1.i3.p1" class="ltx_para"><p class="ltx_p">Per inizializzare un tensore con la <span class="ltx_text ltx_font_bold">stessa forma di un altro</span>:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">t = torch.empty_like(another_tensor)</span>
+<span class="ltx_listingline">t = torch.zeros_like(another_tensor)</span>
+<span class="ltx_listingline">t = torch.ones_like(another_tensor)</span>
+<span class="ltx_listingline">t = torch.rand_like(another_tensor)</span></code></pre></div>
+</div>
+</li>
+<li id="S1.I1.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I1.i4.p1" class="ltx_para"><p class="ltx_p">Per creare un tensore inizializzato tramite una <span class="ltx_text ltx_font_bold">struttura dati esistente</span>:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">vector = torch.tensor([7, 7])</span>
+<span class="ltx_listingline">matrix = torch.tensor([[7, 8], [9, 10]])</span></code></pre></div>
+</div>
+</li>
+<li id="S1.I1.i5" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S1.I1.i5.p1" class="ltx_para"><p class="ltx_p">Si può creare un <span class="ltx_text ltx_font_bold">vettore 1D</span> con tutti i valori da <span class="ltx_text ltx_font_typewriter">0</span> a <span class="ltx_text ltx_font_typewriter">end-1</span> tramite <span class="ltx_text ltx_font_typewriter">torch.arange(end)</span>, lo si può poi <span class="ltx_text ltx_font_bold">vedere</span> o <span class="ltx_text ltx_font_bold">ridimensionare</span> con altre forme:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">t = torch.arange(end).view(x, y)</span>
+<span class="ltx_listingline">t = torch.arange(end).reshape(x, y)</span></code></pre></div>
+</div>
+</li>
+</ul>
+</div>
+<div id="S1.p4" class="ltx_para">
+<p class="ltx_p">Il tipo di default è <span class="ltx_text ltx_font_typewriter">f32</span>, ma lo si può sovrascrivere tramite il parametro <span class="ltx_text ltx_font_typewriter">dtype</span>. Ad esempio:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">t = torch.ones((x, y), dtype=torch.int16)</span></code></pre></div>
+</div>
+<div id="S1.p5" class="ltx_para">
+<p class="ltx_p">All’interno della memoria fisica, i tensori sono sempre memorizzati in maniera linearizzata e contigua. Lo si può anche vedere tramite</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">t.storage()</span></code></pre></div>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.2</span> Operazioni</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">All’interno della libreria sono presenti numerose (<math id="S2.p1.m1" class="ltx_Math" alttext="&gt;100" display="inline"><semantics><mrow><mi></mi><mo>&gt;</mo><mn>100</mn></mrow></semantics></math>) operazioni di aritmetica, algebra lineare, operazioni su matrici, …</p>
+</div>
+<div id="S2.p2" class="ltx_para">
+<p class="ltx_p">Permette indicizzamento e slicing in maniera analoga a NumPy. Si può anche indicizzare in più dimensioni tramite il simbolo "<span class="ltx_text ltx_font_typewriter">:</span>"</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">t[:, 0, 0]</span></code></pre></div>
+<p class="ltx_p">restituisce l’elemento in alto a sinistra di ogni elemento presente all’interno del tensore. Ovviamente si possono anche accedere elementi arbitrari in ogni dimensione.</p>
+</div>
+<section id="S2.SS0.SSS0.Px1" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Broadcasting:</h4>
+
+<div id="S2.SS0.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">Da NumPy viene copiato il broadcasting, se le dimensioni non coincidono, il risultato "estende" la dimensione minore.</p>
+</div>
+<div id="S2.SS0.SSS0.Px1.p2" class="ltx_para">
+<p class="ltx_p">Esempi:</p>
+<div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">1</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">2</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">3</span></td>
+</tr>
+</table>
+</div>
+<p class="ltx_p ltx_align_center"><math id="S2.SS0.SSS0.Px1.p2.m1" class="ltx_Math" alttext="\cdot" display="inline"><semantics><mo>⋅</mo></semantics></math>
+
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">2</span></td>
+</tr>
+</table>
+<math id="S2.SS0.SSS0.Px1.p2.m2" class="ltx_Math" alttext="=" display="inline"><semantics><mo>=</mo></semantics></math>
+
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">2</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">4</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">6</span></td>
+</tr>
+</table></p>
+</div>
+<div class="ltx_logical-block">
+          
+<div id="S2.SS0.SSS0.Px1.p3" class="ltx_para">
+<div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">1</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">2</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">3</span></td>
+</tr>
+</table>
+</div>
+<p class="ltx_p ltx_align_center"><math id="S2.SS0.SSS0.Px1.m1" class="ltx_Math" alttext="\cdot" display="inline"><semantics><mo>⋅</mo></semantics></math>
+
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">1</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">2</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">3</span></td>
+</tr>
+</table>
+<math id="S2.SS0.SSS0.Px1.m2" class="ltx_Math" alttext="=" display="inline"><semantics><mo>=</mo></semantics></math>
+
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">1</span></td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">2</span></td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">3</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">2</span></td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">4</span></td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">6</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_l ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">3</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">6</span></td>
+<td class="ltx_td ltx_align_center ltx_border_b ltx_border_r ltx_border_t"><span class="ltx_text ltx_font_typewriter">9</span></td>
+</tr>
+</table></p>
+</div>
+        
+</div>
+</div>
+</section>
+<section id="S2.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.2.1</span> Spostare sulla GPU</h3>
+
+<div id="S2.SS1.p1" class="ltx_para">
+<p class="ltx_p">Gli attributi di un tensore sono: forma, tipo di dato e <span class="ltx_text ltx_font_bold">dispositivo su cui si trova</span>; quest’ultimo può essere CPU o GPU. Di default, i tensori vengono creati sulla CPU. Se disponibile, vorremmo sfruttare il backend più efficiente dato dalla GPU. Vogliamo spostare sulla GPU i tensori in uso.</p>
+</div>
+<div id="S2.SS1.p2" class="ltx_para">
+<p class="ltx_p">Per vedere se una GPU è disponibile ed eventualmente i parametri della GPU in uso:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">torch.cuda.is_available() # Check CUDA availability</span>
+<span class="ltx_listingline">torch.cuda.current_device() # Current CUDA device</span>
+<span class="ltx_listingline">torch.cuda.get_device_name(0) # Name of the device</span></code></pre></div>
+</div>
+<div id="S2.SS1.p3" class="ltx_para">
+<p class="ltx_p">Dopo aver controllato che un device sia disponibile, si possono muovere i tensori su di esso</p>
+<ul id="S2.I1" class="ltx_itemize">
+<li id="S2.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i1.p1" class="ltx_para"><p class="ltx_p">in fase di creazione, tramite il parametro <span class="ltx_text ltx_font_typewriter">device</span></p>
+</div>
+</li>
+<li id="S2.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i2.p1" class="ltx_para"><p class="ltx_p">tramite il metodo <span class="ltx_text ltx_font_typewriter">.to(dst)</span>, dove <span class="ltx_text ltx_font_typewriter">dst</span> è il dispositivo di destinazione</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S2.SS1.p4" class="ltx_para">
+<p class="ltx_p">Esempi:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">cuda = torch.device(’cuda:0’)</span>
+<span class="ltx_listingline"># Per crearlo sulla GPU</span>
+<span class="ltx_listingline">t1 = torch.tensor([1, 2, 3], device=cuda)</span>
+<span class="ltx_listingline"># Per spostarlo</span>
+<span class="ltx_listingline">t2 = torch.tensor([1, 2, 3])</span>
+<span class="ltx_listingline">t_g = t2.to(cuda)</span></code></pre></div>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.3</span> Linear Neural Networks</h2>
+
+<section id="S3.SS0.SSS0.Px1" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Regressione:</h4>
+
+<div id="S3.SS0.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">La regressione lineare vuole modellare il rapporto tra una variabile dipendente <math id="S3.SS0.SSS0.Px1.p1.m1" class="ltx_Math" alttext="y" display="inline"><semantics><mi>y</mi></semantics></math> (output) e una (o più) variabile (/i) indipendenti <math id="S3.SS0.SSS0.Px1.p1.m2" class="ltx_Math" alttext="x" display="inline"><semantics><mi>x</mi></semantics></math> (input). Le assunzioni sono:</p>
+<ul id="S3.I1" class="ltx_itemize">
+<li id="S3.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S3.I1.i1.p1" class="ltx_para"><p class="ltx_p">relazione lineare tra <math id="S3.I1.i1.p1.m1" class="ltx_Math" alttext="x" display="inline"><semantics><mi>x</mi></semantics></math> e <math id="S3.I1.i1.p1.m2" class="ltx_Math" alttext="y" display="inline"><semantics><mi>y</mi></semantics></math></p>
+</div>
+</li>
+<li id="S3.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S3.I1.i2.p1" class="ltx_para"><p class="ltx_p">il rumore segue una distribuzione Gaussiana</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="S3.SS0.SSS0.Px2" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Loss function:</h4>
+
+<div id="S3.SS0.SSS0.Px2.p1" class="ltx_para">
+<p class="ltx_p">L’obiettivo della regressione è minimizzare una funzione di errore, la quale quantifica la distanza tra valore reale <math id="S3.SS0.SSS0.Px2.p1.m1" class="ltx_Math" alttext="y^{(i)}" display="inline"><semantics><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup></semantics></math> e valore predetto dalla regressione ottenuta <math id="S3.SS0.SSS0.Px2.p1.m2" class="ltx_Math" alttext="\hat{y}^{(i)}" display="inline"><semantics><msup><mover accent="true"><mi>y</mi><mo>^</mo></mover><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup></semantics></math>.</p>
+</div>
+<div id="S3.SS0.SSS0.Px2.p2" class="ltx_para">
+<p class="ltx_p">Squared loss: l’errore quadratico si può calcolare su una singola entry <math id="S3.SS0.SSS0.Px2.p2.m1" class="ltx_Math" alttext="i" display="inline"><semantics><mi>i</mi></semantics></math> come:</p>
+<div id="Ex1" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex1.m1" class="ltx_Math" alttext="\ell^{(i)}=(\bm{w},b)=\frac{1}{2}\left(\hat{y}_{i}-y_{i}\right)^{2}" display="block"><semantics><mrow><msup><mi mathvariant="normal">ℓ</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>=</mo><mrow><mo stretchy="false">(</mo><mi>𝒘</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo></mrow><mo>=</mo><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>⁢</mo><msup><mrow><mo>(</mo><mrow><msub><mover accent="true"><mi>y</mi><mo>^</mo></mover><mi>i</mi></msub><mo>−</mo><msub><mi>y</mi><mi>i</mi></msub></mrow><mo>)</mo></mrow><mn>2</mn></msup></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS0.SSS0.Px2.p3" class="ltx_para">
+<p class="ltx_p">Mentre su tutto il dataset:</p>
+<div id="Ex2" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex2.m1" class="ltx_Math" alttext="L(\bm{w},b)=\frac{1}{n}\sum_{i=1}^{n}\ell^{(i)}(\bm{w},b)=\frac{1}{n}\sum_{i=1%
+}^{n}\frac{1}{2}\left(\bm{w}^{T}x_{i}-y_{i}\right)^{2}" display="block"><semantics><mrow><mrow><mi>L</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>𝒘</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><mo>⁢</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><msup><mi mathvariant="normal">ℓ</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>𝒘</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow><mo>=</mo><mrow><mfrac><mn>1</mn><mi>n</mi></mfrac><mo>⁢</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>⁢</mo><msup><mrow><mo>(</mo><mrow><mrow><msup><mi>𝒘</mi><mi>T</mi></msup><mo>⁢</mo><msub><mi>x</mi><mi>i</mi></msub></mrow><mo>−</mo><msub><mi>y</mi><mi>i</mi></msub></mrow><mo>)</mo></mrow><mn>2</mn></msup></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+<section id="S3.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.3.1</span> Discesa del gradiente</h3>
+
+<div id="S3.SS1.p1" class="ltx_para">
+<p class="ltx_p">Si vuole ottimizzare la loss function rispetto ai parametri, utilizzando l’algoritmo di <a title="" class="ltx_ref ltx_href ltx_font_typewriter" href="https://it.wikipedia.org/wiki/Discesa_del_gradiente">gradient descent</a>. L’idea è di calcolare il rate di cambiamento della loss function rispetto a ogni parametro e modificare ciascuno di questi nella direzione che porta a ridurre la loss il più possibile.</p>
+</div>
+<div id="S3.SS1.p2" class="ltx_para">
+<p class="ltx_p">Bisogna decidere un <math id="S3.SS1.p2.m1" class="ltx_Math" alttext="\delta" display="inline"><semantics><mi>δ</mi></semantics></math> che determina "quanto lontano guardare" sulla loss function per determinare la direzione in cui decresce di più. Su pesi e bias si "guarda" <math id="S3.SS1.p2.m2" class="ltx_Math" alttext="\pm\delta" display="inline"><semantics><mrow><mo>±</mo><mi>δ</mi></mrow></semantics></math> per guardare dove la funzione decresce maggiormente.</p>
+</div>
+<div id="S3.SS1.p3" class="ltx_para">
+<p class="ltx_p">Se i parametri variano troppo in fretta rispetto alla loss function potrebbe essere difficile capire in che direzione l’errore si riduce maggiormente.</p>
+</div>
+<div id="S3.SS1.p4" class="ltx_para">
+<p class="ltx_p">Va determinato anche un learning rate <math id="S3.SS1.p4.m1" class="ltx_Math" alttext="\eta" display="inline"><semantics><mi>η</mi></semantics></math> che determina di quanto variare i parametri al termine dell’iterazione, sempre secondo la direzione determinata precedentemente.</p>
+</div>
+<div id="S3.SS1.p5" class="ltx_para">
+<p class="ltx_p">Se vuoi sapere <a title="" class="ltx_ref ltx_href ltx_font_typewriter" href="https://it.wikipedia.org/wiki/Gradiente">come si calcola il gradiente</a>.</p>
+</div>
+<div id="S3.SS1.p6" class="ltx_para">
+<p class="ltx_p">Si vuole calcolare la derivata della loss rispetto a un parametro, per fare ciò si può applicare la chain rule e calcolare la <span class="ltx_text ltx_font_bold">derivata della loss rispetto al suo input moltiplicato la derivata del modello</span> <math id="S3.SS1.p6.m1" class="ltx_Math" alttext="m" display="inline"><semantics><mi>m</mi></semantics></math> (si intende il modello della funzione usata per fare la regressione, in questo caso lineare, quindi <math id="S3.SS1.p6.m2" class="ltx_Math" alttext="wx+b" display="inline"><semantics><mrow><mrow><mi>w</mi><mo>⁢</mo><mi>x</mi></mrow><mo>+</mo><mi>b</mi></mrow></semantics></math>) rispetto al parametro</p>
+<div id="Ex3" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex3.m1" class="ltx_Math" alttext="\nabla_{w,b}=\left(\frac{\partial L}{\partial w},\frac{\partial L}{\partial b}%
+\right)=\left(\frac{\partial L}{\partial m}\cdot\frac{\partial m}{\partial w},%
+\frac{\partial L}{\partial m}\cdot\frac{\partial m}{\partial b}\right)" display="block"><semantics><mrow><msub><mo>∇</mo><mrow><mi>w</mi><mo>,</mo><mi>b</mi></mrow></msub><mo>=</mo><mrow><mo>(</mo><mfrac><mrow><mo rspace="0em">∂</mo><mi>L</mi></mrow><mrow><mo rspace="0em">∂</mo><mi>w</mi></mrow></mfrac><mo>,</mo><mfrac><mrow><mo rspace="0em">∂</mo><mi>L</mi></mrow><mrow><mo rspace="0em">∂</mo><mi>b</mi></mrow></mfrac><mo>)</mo></mrow><mo>=</mo><mrow><mo>(</mo><mrow><mfrac><mrow><mo rspace="0em">∂</mo><mi>L</mi></mrow><mrow><mo rspace="0em">∂</mo><mi>m</mi></mrow></mfrac><mo lspace="0.222em" rspace="0.222em">⋅</mo><mfrac><mrow><mo rspace="0em">∂</mo><mi>m</mi></mrow><mrow><mo rspace="0em">∂</mo><mi>w</mi></mrow></mfrac></mrow><mo>,</mo><mrow><mfrac><mrow><mo rspace="0em">∂</mo><mi>L</mi></mrow><mrow><mo rspace="0em">∂</mo><mi>m</mi></mrow></mfrac><mo lspace="0.222em" rspace="0.222em">⋅</mo><mfrac><mrow><mo rspace="0em">∂</mo><mi>m</mi></mrow><mrow><mo rspace="0em">∂</mo><mi>b</mi></mrow></mfrac></mrow><mo>)</mo></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p7" class="ltx_para">
+<p class="ltx_p">Dopo aver inizializzato i parametri, li si aggiorna finché <math id="S3.SS1.p7.m1" class="ltx_Math" alttext="\bm{w}" display="inline"><semantics><mi>𝒘</mi></semantics></math> e <math id="S3.SS1.p7.m2" class="ltx_Math" alttext="b" display="inline"><semantics><mi>b</mi></semantics></math> non cambiano più (variazione <math id="S3.SS1.p7.m3" class="ltx_Math" alttext="\leq\epsilon" display="inline"><semantics><mrow><mi></mi><mo>≤</mo><mi>ϵ</mi></mrow></semantics></math>), oppure si fissa un numero massimo di iterazioni (ci sono altre termination conditions possibili).</p>
+</div>
+<div id="S3.SS1.p8" class="ltx_para">
+<p class="ltx_p">Se l’aggiornamento dei parametri è troppo grande, si può avere un’oscillazione eccessiva del modello e conseguente divergenza del training.</p>
+</div>
+<section id="S3.SS1.SSS0.Px1" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Normalizzazione:</h4>
+
+<div id="S3.SS1.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">I gradienti di matrice dei pesi e bias sono solitamente su ordini di grandezza diversi, rendendo un solo learning rate inefficace.</p>
+</div>
+<div id="S3.SS1.SSS0.Px1.p2" class="ltx_para">
+<p class="ltx_p">Al posto che usare più learning rate diversi, si <span class="ltx_text ltx_font_bold">normalizzano i valori all’interno di un range</span>.</p>
+</div>
+</div>
+</section>
+<section id="S3.SS1.SSS0.Px2" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Sequential lerning:</h4>
+
+<div id="S3.SS1.SSS0.Px2.p1" class="ltx_para">
+<p class="ltx_p">Al posto che processare l’intero data set assieme, si può considerare un punto per volta, aggiornando i parametri dopo ognuno (<span class="ltx_text ltx_font_bold">online learning</span>).</p>
+</div>
+<div id="S3.SS1.SSS0.Px2.p2" class="ltx_para">
+<p class="ltx_p">Esempio di algoritmo di apprendimento sequenziale è <span class="ltx_text ltx_font_bold">stochastic</span> (<span class="ltx_text ltx_font_bold">sequential</span>) <span class="ltx_text ltx_font_bold">gradient descent</span>.</p>
+</div>
+<div id="S3.SS1.SSS0.Px2.p3" class="ltx_para">
+<p class="ltx_p">I modelli vengono addestrati facendo <span class="ltx_text ltx_font_italic">training</span>: con questo termine si intende un’ottimizzazione iterativa dell’algoritmo che aggiorna i parametri in una direzione che decresce la error function man mano.</p>
+</div>
+</div>
+</section>
+<section id="S3.SS1.SSS0.Px3" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Algoritmo gradient descent:</h4>
+
+<div id="S3.SS1.SSS0.Px3.p1" class="ltx_para">
+<p class="ltx_p">Un possibile algoritmo:</p>
+<ol id="S3.I2" class="ltx_enumerate">
+<li id="S3.I2.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">1.</span><div id="S3.I2.i1.p1" class="ltx_para"><p class="ltx_p">Inizializzazione random dei pesi, scegliere un learning rate <math id="S3.I2.i1.p1.m1" class="ltx_Math" alttext="\eta" display="inline"><semantics><mi>η</mi></semantics></math></p>
+</div>
+</li>
+<li id="S3.I2.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">2.</span><div id="S3.I2.i2.p1" class="ltx_para"><p class="ltx_p">Fino a convergenza ripetere:</p>
+<ul id="S3.I2.i2.I1" class="ltx_itemize">
+<li id="S3.I2.i2.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S3.I2.i2.I1.i1.p1" class="ltx_para"><p class="ltx_p">Calcolare il gradiente</p>
+<div id="Ex4" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex4.m1" class="ltx_Math" alttext="\frac{\partial L(\bm{w})}{\partial\bm{w}}" display="block"><semantics><mfrac><mrow><mo rspace="0em">∂</mo><mrow><mi>L</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>𝒘</mi><mo stretchy="false">)</mo></mrow></mrow></mrow><mrow><mo rspace="0em">∂</mo><mi>𝒘</mi></mrow></mfrac></semantics></math></div>
+</div>
+</div>
+</li>
+<li id="S3.I2.i2.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S3.I2.i2.I1.i2.p1" class="ltx_para"><p class="ltx_p">Aggiornare i pesi</p>
+<div id="Ex5" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex5.m1" class="ltx_Math" alttext="\bm{w}\leftarrow\bm{w}-\eta\frac{\partial L(\bm{w})}{\partial\bm{w}}" display="block"><semantics><mrow><mi>𝒘</mi><mo stretchy="false">←</mo><mrow><mi>𝒘</mi><mo>−</mo><mrow><mi>η</mi><mo>⁢</mo><mfrac><mrow><mo rspace="0em">∂</mo><mrow><mi>L</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>𝒘</mi><mo stretchy="false">)</mo></mrow></mrow></mrow><mrow><mo rspace="0em">∂</mo><mi>𝒘</mi></mrow></mfrac></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li id="S3.I2.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">3.</span><div id="S3.I2.i3.p1" class="ltx_para"><p class="ltx_p">Ritorna i valori <math id="S3.I2.i3.p1.m1" class="ltx_Math" alttext="\bm{w}" display="inline"><semantics><mi>𝒘</mi></semantics></math></p>
+</div>
+</li>
+</ol>
+<p class="ltx_p">Problema: calcolare il gradiente di <math id="S3.SS1.SSS0.Px3.p1.m1" class="ltx_Math" alttext="L" display="inline"><semantics><mi>L</mi></semantics></math> su tutto il training set per un singolo update è troppo costoso.</p>
+</div>
+</div>
+</section>
+<section id="S3.SS1.SSS0.Px4" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Minibatch Stochastic Gradient Descent (SGD):</h4>
+
+<div id="S3.SS1.SSS0.Px4.p1" class="ltx_para">
+<p class="ltx_p">Come prima, ma con piccoli batch:</p>
+<ol id="S3.I3" class="ltx_enumerate">
+<li id="S3.I3.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">1.</span><div id="S3.I3.i1.p1" class="ltx_para"><p class="ltx_p">Inizializza casualmente i valori</p>
+</div>
+</li>
+<li id="S3.I3.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">2.</span><div id="S3.I3.i2.p1" class="ltx_para"><p class="ltx_p">Ripetere fino a convergenza:</p>
+<ul id="S3.I3.i2.I1" class="ltx_itemize">
+<li id="S3.I3.i2.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S3.I3.i2.I1.i1.p1" class="ltx_para"><p class="ltx_p">Scegliere un minibatch <math id="S3.I3.i2.I1.i1.p1.m1" class="ltx_Math" alttext="\beta" display="inline"><semantics><mi>β</mi></semantics></math> (subset degli esempi di training)</p>
+</div>
+</li>
+<li id="S3.I3.i2.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S3.I3.i2.I1.i2.p1" class="ltx_para"><p class="ltx_p">Calcolare il gradiente di <math id="S3.I3.i2.I1.i2.p1.m1" class="ltx_Math" alttext="L" display="inline"><semantics><mi>L</mi></semantics></math> ristretto su <math id="S3.I3.i2.I1.i2.p1.m2" class="ltx_Math" alttext="\beta" display="inline"><semantics><mi>β</mi></semantics></math>:</p>
+<div id="Ex6" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex6.m1" class="ltx_Math" alttext="\partial_{\bm{w},b}\ell^{(i)}(\bm{w},b)" display="block"><semantics><mrow><msub><mo>∂</mo><mrow><mi>𝒘</mi><mo>,</mo><mi>b</mi></mrow></msub><mrow><msup><mi mathvariant="normal">ℓ</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>𝒘</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+</li>
+<li id="S3.I3.i2.I1.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S3.I3.i2.I1.i3.p1" class="ltx_para"><p class="ltx_p">Aggiornare i parametri</p>
+<div id="Ex7" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex7.m1" class="ltx_Math" alttext="(\bm{w},b)\leftarrow(\bm{w},b)-\frac{\eta}{|\beta|}\sum_{i\in\beta}\partial_{%
+\bm{w},b}\ell^{(i)}(\bm{w},b)" display="block"><semantics><mrow><mrow><mo stretchy="false">(</mo><mi>𝒘</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo></mrow><mo stretchy="false">←</mo><mrow><mrow><mo stretchy="false">(</mo><mi>𝒘</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo></mrow><mo>−</mo><mrow><mfrac><mi>η</mi><mrow><mo stretchy="false">|</mo><mi>β</mi><mo stretchy="false">|</mo></mrow></mfrac><mo>⁢</mo><mrow><munder><mo movablelimits="false">∑</mo><mrow><mi>i</mi><mo>∈</mo><mi>β</mi></mrow></munder><mrow><msub><mo lspace="0em" rspace="0em">∂</mo><mrow><mi>𝒘</mi><mo>,</mo><mi>b</mi></mrow></msub><mrow><msup><mi mathvariant="normal">ℓ</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>𝒘</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div id="S3.SS1.SSS0.Px4.p2" class="ltx_para">
+<p class="ltx_p">Come scegliamo learning rate <math id="S3.SS1.SSS0.Px4.p2.m1" class="ltx_Math" alttext="\eta" display="inline"><semantics><mi>η</mi></semantics></math> e dimensione del minibatch <math id="S3.SS1.SSS0.Px4.p2.m2" class="ltx_Math" alttext="|\beta|" display="inline"><semantics><mrow><mo stretchy="false">|</mo><mi>β</mi><mo stretchy="false">|</mo></mrow></semantics></math>? Possono essere specificati manualmente, con poi eventuale tuning.</p>
+</div>
+<div id="S3.SS1.SSS0.Px4.p3" class="ltx_para">
+<p class="ltx_p">In generale, non possono essere troppo piccoli (troppo tempo, workload troppo piccolo) o troppo grandi (oscillazioni, problemi di memoria).</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S3.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.3.2</span> Autograd</h3>
+
+<div id="S3.SS2.p1" class="ltx_para">
+<p class="ltx_p">Autograd di PyTorch è un componente che automatizza il calcolo della discesa del gradiente. Permette backpropagation automatica, ogni tensore "ricorda" lo storico delle sue operazioni; calcolare manualmente le derivate è inutile.</p>
+</div>
+<div id="S3.SS2.p2" class="ltx_para">
+<p class="ltx_p">Per applicare autograd, è necessario riscrivere modello e loss function usando <span class="ltx_text ltx_font_typewriter">requires_grad=True</span> e chiamare <span class="ltx_text ltx_font_typewriter">.backward()</span> on the loss.</p>
+</div>
+<div id="S3.SS2.p3" class="ltx_para">
+<p class="ltx_p">Ogni tensore derivato da uno con <span class="ltx_text ltx_font_typewriter">requires_grad=True</span> manterrà uno storico delle sue computazioni. Si può aggiungere il parametro <span class="ltx_text ltx_font_typewriter">requires_grad=True</span> alla creazione del tensore.</p>
+</div>
+<div id="S3.SS2.p4" class="ltx_para">
+<p class="ltx_p">Dopo aver chiamato <span class="ltx_text ltx_font_typewriter">.backward()</span>, PyTorch calcola automaticamente il gradiente in <span class="ltx_text ltx_font_typewriter">.grad</span> (se differenziabile).</p>
+</div>
+<div id="S3.SS2.p5" class="ltx_para">
+<p class="ltx_p">Esempio:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">loss = loss_function(model(t_u, *params), t_c)</span>
+<span class="ltx_listingline">loss.backward()</span>
+<span class="ltx_listingline">print(params.grad)</span>
+<span class="ltx_listingline"># tensor([4517.2969, 82.6000])</span></code></pre></div>
+</div>
+<section id="S3.SS2.SSS0.Px1" class="ltx_paragraph normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_paragraph">Altri optimizer:</h4>
+
+<div id="S3.SS2.SSS0.Px1.p1" class="ltx_para">
+<p class="ltx_p">Oltre al classico gradient descent, si possono utilizzare altri modelli di ottimizzazione, tramite <span class="ltx_text ltx_font_typewriter">torch.optim</span>.</p>
+</div>
+<div id="S3.SS2.SSS0.Px1.p2" class="ltx_para">
+<p class="ltx_p">Ogni optimizer PyTorch espone due metodi core:</p>
+<ul id="S3.I4" class="ltx_itemize">
+<li id="S3.I4.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S3.I4.i1.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">zero_grad()</span>: elimina tutti i <span class="ltx_text ltx_font_typewriter">.grad</span> gestiti dall’optimizer</p>
+</div>
+</li>
+<li id="S3.I4.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S3.I4.i2.p1" class="ltx_para"><p class="ltx_p"><span class="ltx_text ltx_font_typewriter">step()</span>: aggiorna i parametri dei valori basandosi sull’algoritmo scelto</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S3.SS2.SSS0.Px1.p3" class="ltx_para">
+<p class="ltx_p">Esempio:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">optimizer = torch.optim.SGD(params, lr=learning_rate)</span></code></pre></div>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.4</span> Multi Layer Perceptron MLP</h2>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">Reti neurali con un solo layer sono limitati, usiamo i <a title="" class="ltx_ref ltx_href ltx_font_typewriter" href="https://it.wikipedia.org/wiki/Percettrone_multistrato">Multilayer Perceptrons</a>, per permettere più <span class="ltx_text ltx_font_italic">espressività</span> al modello (non solo lineare). Dai che lo sai come funzionano, non li voglio spiegare.</p>
+</div>
+<div id="S4.p2" class="ltx_para">
+<p class="ltx_p">Le cose importanti sono:</p>
+<ul id="S4.I1" class="ltx_itemize">
+<li id="S4.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S4.I1.i1.p1" class="ltx_para"><p class="ltx_p">Struttura: ingresso, hidden layers, uscita</p>
+</div>
+</li>
+<li id="S4.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S4.I1.i2.p1" class="ltx_para"><p class="ltx_p">I neuroni hanno funzioni di attivazione, solitamente non lineari, possono essere di diverso tipo</p>
+</div>
+</li>
+<li id="S4.I1.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S4.I1.i3.p1" class="ltx_para"><p class="ltx_p">Il training funziona tipo:</p>
+<div class="ltx_logical-block">
+                
+<figure id="algorithm3" class="ltx_float ltx_minipage ltx_align_center ltx_align_middle">
+<div class="bml_listing"><div class="ltx_listing ltx_lst_numbers_left ltx_listing">
+<div class="ltx_listingline">
+                        <span class="ltx_tag ltx_tag_listingline">1</span>
+                      <code>
+<span class="ltx_text ltx_font_bold">for</span> <em class="ltx_emph ltx_font_italic"><math id="algorithm3.m1" class="ltx_Math" alttext="n" display="inline"><semantics><mi>n</mi></semantics></math> epoche</em> <span class="ltx_text ltx_font_bold">do</span></code>
+</div>
+<div class="ltx_listingline">
+                        <span class="ltx_tag ltx_tag_listingline">2</span>
+                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+<span class="ltx_text ltx_font_typewriter">dividi dataset in batch</span>;</code>
+</div>
+<div class="ltx_listingline">
+                        <span class="ltx_tag ltx_tag_listingline">3</span>
+                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+<span class="ltx_text ltx_font_bold">foreach</span> <em class="ltx_emph ltx_font_typewriter ltx_font_italic">every batch</em> <span class="ltx_text ltx_font_bold">do</span></code>
+</div>
+<div class="ltx_listingline">
+                        <span class="ltx_tag ltx_tag_listingline">4</span>
+                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+<span class="ltx_text ltx_font_bold">foreach</span> <em class="ltx_emph ltx_font_typewriter ltx_font_italic">every sample</em> <span class="ltx_text ltx_font_bold">do</span></code>
+</div>
+<div class="ltx_listingline">
+                        <span class="ltx_tag ltx_tag_listingline">5</span>
+                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+<span class="ltx_text ltx_font_typewriter">valutazione del modello</span>;</code>
+</div>
+<div class="ltx_listingline">
+                        <span class="ltx_tag ltx_tag_listingline">6</span>
+                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+<span class="ltx_text ltx_font_typewriter">calcolo della loss</span>;</code>
+</div>
+<div class="ltx_listingline">
+                        <span class="ltx_tag ltx_tag_listingline">7</span>
+                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+<span class="ltx_text ltx_font_typewriter">gradient backpropagation</span>;</code>
+</div>
+<div class="ltx_listingline">
+                        <span class="ltx_tag ltx_tag_listingline">8</span>
+                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+</code>
+</div>
+<div class="ltx_listingline">
+                        <span class="ltx_tag ltx_tag_listingline">9</span>
+                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   <span class="ltx_text ltx_font_typewriter">update del modello</span>;</code>
+</div>
+<div class="ltx_listingline">
+                        <span class="ltx_tag ltx_tag_listingline">10</span>
+                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>     <span class="ltx_rule bml_vrule bml_algo_rule"></span>   
+</code>
+</div>
+<div class="ltx_listingline">
+                        <span class="ltx_tag ltx_tag_listingline">11</span>
+                      <code>  <span class="ltx_rule bml_vrule bml_algo_rule"></span>   </code>
+</div>
+<div class="ltx_listingline"><code></code></div>
+</div></div>
+<figcaption class="ltx_caption"><span class="ltx_tag ltx_tag_float"><span class="ltx_text ltx_font_bold">Algorithm 3</span> </span>Training Process</figcaption>
+</figure>
+              
+</div>
+</div>
+</li>
+</ul>
+</div>
+<section id="S4.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.4.1</span> Modulo <span class="ltx_text ltx_font_typewriter">nn</span>
+</h3>
+
+<div id="S4.SS1.p1" class="ltx_para">
+<p class="ltx_p">PyTorch fornisce un modulo <span class="ltx_text ltx_font_typewriter">nn</span> dedicato alla costruzione di reti neurali.</p>
+</div>
+<div id="S4.SS1.p2" class="ltx_para">
+<p class="ltx_p">Possiamo mantenere invariata la loss function ma ridefinire il modello usando semplici reti neurali. Il nuovo modello include:</p>
+<ul id="S4.I2" class="ltx_itemize">
+<li id="S4.I2.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S4.I2.i1.p1" class="ltx_para"><p class="ltx_p">un modulo lineare</p>
+</div>
+</li>
+<li id="S4.I2.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S4.I2.i2.p1" class="ltx_para"><p class="ltx_p">una funzione di attivazione, generalmente non lineare (hidden layer)</p>
+</div>
+</li>
+<li id="S4.I2.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S4.I2.i3.p1" class="ltx_para"><p class="ltx_p">un altro modulo lineare per produrre l’output</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S4.SS1.p3" class="ltx_para">
+<p class="ltx_p">Anche se input e output sono entrambi scalari, generalmente l’hidden layer ha più di una unità, fornendo maggiori capacità al modello.</p>
+</div>
+<div id="S4.SS1.p4" class="ltx_para">
+<p class="ltx_p">Il layer finale combina le attivazioni linearmente per produrre l’output finale.</p>
+</div>
+<div id="S4.SS1.p5" class="ltx_para">
+<p class="ltx_p">Il modulo <span class="ltx_text ltx_font_typewriter">nn</span> fornisce una maniera semplice per concatenare moduli tramite il container <span class="ltx_text ltx_font_typewriter">nn.Sequential</span>. Esempio:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">seq_model = nn.Sequential(</span>
+<span class="ltx_listingline">    nn.Linear(1, 13),</span>
+<span class="ltx_listingline">    nn.Tanh(),</span>
+<span class="ltx_listingline">    nn.Linear(13, 1))</span></code></pre></div>
+</div>
+<div id="S4.SS1.p6" class="ltx_para">
+<p class="ltx_p">Si può quindi iterare il processo di training della rete.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>
