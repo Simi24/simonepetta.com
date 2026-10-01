@@ -8,7 +8,12 @@ export const NOTES_CHAPTER_HTML_CAP_BYTES = 150 * 1024;
 export const CSS_CAP_BYTES = 20 * 1024;
 export const JS_CAP_BYTES = 1024;
 
-export const ALLOWED_FONT_FAMILIES = ['Host Grotesk', 'Fira Math'] as const;
+/** The only font faces any page may declare, by woff2 file: family, style and subset are pinned together (SPEC.md §12.2). */
+export const ALLOWED_FONT_FACES = [
+  { family: 'Host Grotesk', style: 'normal', file: '/fonts/host-grotesk-latin.woff2' },
+  { family: 'Host Grotesk', style: 'italic', file: '/fonts/host-grotesk-latin-italic.woff2' },
+  { family: 'Fira Math', style: 'normal', file: '/fonts/fira-math.woff2' },
+] as const;
 
 /**
  * The one external script any page may load: the Cloudflare Web Analytics beacon (SPEC.md
@@ -39,13 +44,19 @@ const PAGEFIND_FILE = /^\/pagefind\/[A-Za-z0-9_-][A-Za-z0-9_.-]*$/;
 export const isPagefindAsset = (pagePath: string, src: string): boolean =>
   pagePath === SEARCH_PAGE && PAGEFIND_FILE.test(src);
 
-/** Pages exempt from `JS_CAP_BYTES` as a whole by a declared exception (SPEC.md §3, §12.2). */
-export const JS_CAP_EXCEPTIONS: readonly { pattern: RegExp; reason: string }[] = [
-  { pattern: /^appunti\/[^/]+\/chat\/index\.html$/, reason: 'the Preact chat island (v2)' },
-];
+/** A notes course's chat page, the only page that may load the Preact island (SPEC.md §3, §12.2). */
+const CHAT_PAGE = /^appunti\/[^/]+\/chat\/index\.html$/;
 
-export const isJsExceptionPage = (pagePath: string): boolean =>
-  JS_CAP_EXCEPTIONS.some(({ pattern }) => pattern.test(pagePath));
+/** A file directly under `/_astro/`: the island's Astro-bundled script, no subpath, `..`, query or fragment. */
+const ASTRO_BUNDLE_FILE = /^\/_astro\/[A-Za-z0-9_-][A-Za-z0-9_.-]*\.js$/;
+
+/**
+ * The Preact chat island (v2): like Pagefind, an exception per asset, not per page. Only the
+ * bundled scripts under `/_astro/` on a chat page are exempt from `JS_CAP_BYTES`; inline JS or
+ * any other script on that page is still measured.
+ */
+export const isPreactIslandAsset = (pagePath: string, src: string): boolean =>
+  CHAT_PAGE.test(pagePath) && ASTRO_BUNDLE_FILE.test(src);
 
 /** Pages allowed to load Fira Math: notes chapters that render MathML (SPEC.md §5.2, §12.2). */
 export const isMathPage = (pagePath: string, html: string): boolean =>

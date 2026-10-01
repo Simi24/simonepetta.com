@@ -1,22 +1,23 @@
 import { existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import {
-  ALLOWED_FONT_FAMILIES,
+  ALLOWED_FONT_FACES,
   CLOUDFLARE_BEACON_SCRIPT_SRC,
   CSS_CAP_BYTES,
   HTML_CAP_BYTES,
   JS_CAP_BYTES,
   NON_JS_SCRIPT_TYPES,
   NOTES_CHAPTER_HTML_CAP_BYTES,
-  isJsExceptionPage,
   isPagefindAsset,
+  isPreactIslandAsset,
   isMathPage,
   isNotesChapterPage,
 } from '../../src/config/budget.ts';
-import { buildSite, filesWithExtension, read } from '../../tests/support/built-site.ts';
-import { QUALITY_BUILDS } from '../../tests/support/quality-builds.ts';
+import { filesWithExtension, read } from '../../tests/support/built-site.ts';
+import { qualityDists, shouldBuildFreshDist } from './quality-dists.ts';
 
 export interface Violation {
   page: string;
@@ -27,6 +28,8 @@ interface PageAssets {
   html: string;
   css: string;
   js: string;
+  /** External scripts and stylesheets other than the allowlisted beacon. */
+  undeclaredExternals: { kind: 'script' | 'stylesheet'; url: string }[];
 }
 
 const isExternal = (url: string): boolean => /^(https?:)?\/\//.test(url);
@@ -58,18 +61,21 @@ function scriptTags(html: string): { body: string; src: string | undefined; type
 }
 
 /** Inline and locally-linked CSS/JS for one built page, the way a browser would load it. */
-function collectPageAssets(dist: string, page: string): PageAssets & { undeclaredExternalScripts: string[] } {
+function collectPageAssets(dist: string, page: string): PageAssets {
   const html = read(dist, page);
 
   let css = '';
   for (const match of html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)) css += match[1] ?? '';
+  const undeclaredExternals: PageAssets['undeclaredExternals'] = [];
   for (const href of stylesheetHrefs(html)) {
-    if (isExternal(href)) continue;
+    if (isExternal(href)) {
+      undeclaredExternals.push({ kind: 'stylesheet', url: href });
+      continue;
+    }
     css += read(dist, href.replace(/^\//, ''));
   }
 
   let js = '';
-  const undeclaredExternalScripts: string[] = [];
   for (const { body, src, type } of scriptTags(html)) {
     if (type && (NON_JS_SCRIPT_TYPES as readonly string[]).includes(type)) continue;
     if (src) {
@@ -77,22 +83,54 @@ function collectPageAssets(dist: string, page: string): PageAssets & { undeclare
       // external script is undeclared and fails the budget, rather than silently passing free.
       if (src === CLOUDFLARE_BEACON_SCRIPT_SRC) continue;
       if (isExternal(src)) {
-        undeclaredExternalScripts.push(src);
+        undeclaredExternals.push({ kind: 'script', url: src });
         continue;
       }
-      // Pagefind's own files on /cerca/ are the declared exception, asset by asset (SPEC.md §12.2).
-      if (isPagefindAsset(page, src)) continue;
+      // Pagefind on /cerca/ and the Preact island on chat pages are the declared exceptions,
+      // asset by asset (SPEC.md §12.2).
+      if (isPagefindAsset(page, src) || isPreactIslandAsset(page, src)) continue;
       js += read(dist, src.replace(/^\//, ''));
     } else {
       js += body;
     }
   }
 
-  return { html, css, js, undeclaredExternalScripts };
+  return { html, css, js, undeclaredExternals };
 }
 
-const fontFamiliesIn = (css: string): string[] =>
-  [...css.matchAll(/@font-face\s*{[^}]*font-family:\s*["']?([^"';]+?)["']?\s*;[^}]*}/g)].map((m) => m[1]!.trim());
+interface FontFace {
+  family: string;
+  style: string;
+  src: string | undefined;
+}
+
+/** Every `@font-face` in `css`: its family, style (default `normal`) and first `url()` source. */
+function fontFacesIn(css: string): FontFace[] {
+  return [...css.matchAll(/@font-face\s*{([^}]*)}/g)].map((match) => {
+    const body = match[1] ?? '';
+    return {
+      family: /font-family:\s*["']?([^"';]+?)["']?\s*;/.exec(body + ';')?.[1]?.trim() ?? '',
+      style: /font-style:\s*([a-z]+)/.exec(body)?.[1] ?? 'normal',
+      src: /url\(\s*["']?([^"')]+)["']?\s*\)/.exec(body)?.[1],
+    };
+  });
+}
+
+/** Violations for one declared face: only the exact family + style + woff2 file combinations are allowed. */
+function fontFaceViolations(dist: string, page: string, html: string, face: FontFace): Violation[] {
+  const { family, style, src } = face;
+  const allowedFamily = ALLOWED_FONT_FACES.some((allowed) => allowed.family === family);
+  if (!allowedFamily) return [{ page, message: `loads an undeclared font family "${family}"` }];
+  if (!src) return [{ page, message: `font face "${family}" (${style}) has no woff2 source` }];
+  if (!ALLOWED_FONT_FACES.some((a) => a.family === family && a.style === style && a.file === src)) {
+    return [{ page, message: `font face "${family}" (${style}) loads an undeclared file: ${src}` }];
+  }
+  if (!existsSync(join(dist, src))) return [{ page, message: `font file ${src} is missing from the build` }];
+  if (family === 'Fira Math' && !isMathPage(page, html)) {
+    return [{ page, message: 'loads Fira Math but is not a declared math page' }];
+  }
+  return [];
+}
 
 /** Every quality-budget violation on the built site at `dist` (SPEC.md §12.2). */
 export function checkBudget(dist: string): Violation[] {
@@ -103,10 +141,10 @@ export function checkBudget(dist: string): Violation[] {
     return violations;
   }
   for (const page of pages) {
-    const { html, css, js, undeclaredExternalScripts } = collectPageAssets(dist, page);
+    const { html, css, js, undeclaredExternals } = collectPageAssets(dist, page);
 
-    for (const src of undeclaredExternalScripts) {
-      violations.push({ page, message: `loads an undeclared external script: ${src}` });
+    for (const { kind, url } of undeclaredExternals) {
+      violations.push({ page, message: `loads an undeclared external ${kind}: ${url}` });
     }
 
     const htmlBytes = gzipSync(html).length;
@@ -118,37 +156,15 @@ export function checkBudget(dist: string): Violation[] {
       violations.push({ page, message: `CSS is ${cssBytes} B gzip, over the ${CSS_CAP_BYTES} B cap` });
     }
 
-    if (!isJsExceptionPage(page)) {
-      const jsBytes = gzipSync(js).length;
-      if (jsBytes > JS_CAP_BYTES) {
-        violations.push({ page, message: `JS is ${jsBytes} B gzip, over the ${JS_CAP_BYTES} B cap` });
-      }
+    const jsBytes = gzipSync(js).length;
+    if (jsBytes > JS_CAP_BYTES) {
+      violations.push({ page, message: `JS is ${jsBytes} B gzip, over the ${JS_CAP_BYTES} B cap` });
     }
 
-    for (const family of fontFamiliesIn(css)) {
-      if (!(ALLOWED_FONT_FAMILIES as readonly string[]).includes(family)) {
-        violations.push({ page, message: `loads an undeclared font family "${family}"` });
-      } else if (family === 'Fira Math' && !isMathPage(page, html)) {
-        violations.push({ page, message: 'loads Fira Math but is not a declared math page' });
-      }
-    }
+    for (const face of fontFacesIn(css)) violations.push(...fontFaceViolations(dist, page, html, face));
   }
   return violations;
 }
-
-/**
- * Whether the CLI must (re)build `dist` before checking it. Standalone, it always builds
- * fresh: a stale `dist` from an earlier source tree must never pass silently. Only with
- * `QUALITY_GATE_REUSE_DIST=1` — set by the `site` workflow and the verify commands, right
- * after their own `npm run build` — is an existing `dist` trusted as-is.
- */
-export const shouldBuildFreshDist = ({
-  reuseDist,
-  distExists,
-}: {
-  reuseDist: boolean;
-  distExists: boolean;
-}): boolean => !reuseDist || !distExists;
 
 /** Every violation across several builds, each labeled so a report can tell them apart. */
 function checkBudgets(builds: readonly { label: string; dist: string }[]): Violation[] {
@@ -170,9 +186,7 @@ function report(builds: readonly { label: string; dist: string }[]): void {
 /**
  * With an explicit `dist` argument, checks only that directory (building it first unless
  * reused). Without one — the normal `npm run gate:budget` case — it checks the same builds
- * the axe gate does: production (reusing the `dist` a prior `npm run build` staged, when
- * `QUALITY_GATE_REUSE_DIST=1`) plus the fixture-populated builds, so a page type like the
- * post page is budget-checked even before any real content ships.
+ * the axe gate does (`qualityDists`).
  */
 function main(): void {
   const distArg = process.argv[2];
@@ -186,19 +200,7 @@ function main(): void {
     return;
   }
 
-  const productionDist = 'dist';
-  if (shouldBuildFreshDist({ reuseDist, distExists: existsSync(productionDist) })) {
-    execFileSync('npx', ['astro', 'build', '--outDir', productionDist], { stdio: 'inherit' });
-  }
-
-  const builds = [
-    { label: 'production', dist: productionDist },
-    ...QUALITY_BUILDS.filter((build) => build.label !== 'production').map((build) => ({
-      label: build.label,
-      dist: buildSite(build.env),
-    })),
-  ];
-  report(builds);
+  report(qualityDists(reuseDist));
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();
