@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { buildSite, read } from './support/built-site.ts';
+import { tagsWithClass } from './support/html-tags.ts';
 
 const FIXTURES = { LETTURE_CONTENT_DIR: 'tests/fixtures/letture' };
 const FIXTURES_EMPTY = { LETTURE_CONTENT_DIR: 'tests/fixtures/letture-empty' };
@@ -59,7 +60,7 @@ test('fixture books never enter the production collection', () => {
 test('adding a book makes it appear on the shelf and in the list', () => {
   const html = lettureHtml(FIXTURES);
   assert.match(html, /title="Il nome della rosa, Umberto Eco"/);
-  assert.match(html, /<span class="books__title"[^>]*>Il nome della rosa<\/span>/);
+  assert.ok(tagsWithClass(html, 'book-row__title').some((tag) => tag.text === 'Il nome della rosa'));
 });
 
 test('spine height follows pagine, clamped to 80..1000, with a 250-page default', () => {
@@ -110,8 +111,8 @@ test('a book’s tint does not change when other books are added', () => {
 
 test('grades render as large numerals with an Italian decimal comma', () => {
   const html = lettureHtml(FIXTURES);
-  assert.match(html, /<span class="books__vote"[^>]*>4,5<\/span>/);
-  assert.match(html, /<span class="books__vote"[^>]*>3,5<\/span>/);
+  const votes = tagsWithClass(html, 'book-row__vote').map((tag) => tag.text);
+  assert.ok(votes.includes('4,5') && votes.includes('3,5'));
 });
 
 test('the list groups books as Sto leggendo, Letti, Abbandonati', () => {
@@ -165,7 +166,7 @@ test('the list follows the grid: label in columns 1-4, content from column 5, on
   const html = lettureHtml(FIXTURES);
   assert.match(html, /\.books-group\[[^\]]+\]\{[^}]*grid-template-columns:repeat\(12,minmax\(0,1fr\)\)/);
   assert.match(html, /\.books-group\[[^\]]+\] h2\[[^\]]+\]\{[^}]*grid-column:1\/span 4/);
-  assert.match(html, /\.books\[[^\]]+\]\{[^}]*grid-column:5\/-1/);
+  assert.match(html, /\.books-group\[[^\]]+\] \.book-list\{[^}]*grid-column:5\/-1/);
   assert.match(html, /@media \(width<=860px\)\{[^}]*grid-column:1\/-1/);
 });
 

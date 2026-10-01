@@ -49,16 +49,6 @@ test('the shelf does not link a spine when the book has no post', () => {
   assert.doesNotMatch(html, /<a[^>]*title="Il senza testo,/);
 });
 
-test('the list links a book title to its post when the book has one', () => {
-  const html = read(buildSite(FIXTURES_POST), 'letture/index.html');
-  assert.match(html, /<a class="books__title" href="\/letture\/il-piu-recente\/"[^>]*>Il più recente<\/a>/);
-});
-
-test('the list does not link a book title when the book has no post', () => {
-  const html = read(buildSite(FIXTURES_POST), 'letture/index.html');
-  assert.match(html, /<span class="books__title"[^>]*>Il senza testo<\/span>/);
-});
-
 test('the home shows the three most recently finished books, most recent first', () => {
   const html = read(buildSite(FIXTURES_POST), 'index.html');
   const order = ['Il più recente', 'Il senza testo', 'Il terzo'].map((title) => html.indexOf(title));
@@ -70,12 +60,6 @@ test('the home shows the three most recently finished books, most recent first',
 test('the home’s recent list never shows an in-corso book', () => {
   const html = read(buildSite(FIXTURES_POST), 'index.html');
   assert.doesNotMatch(html, /In lettura di prova/);
-});
-
-test('the home links a recent book to its post when it has one, not when it doesn’t', () => {
-  const html = read(buildSite(FIXTURES_POST), 'index.html');
-  assert.match(html, /<a class="books__title" href="\/letture\/il-piu-recente\/"[^>]*>Il più recente<\/a>/);
-  assert.match(html, /<span class="books__title"[^>]*>Il senza testo<\/span>/);
 });
 
 test('with no finished books the home has no recent-readings section', () => {

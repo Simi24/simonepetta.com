@@ -1,0 +1,67 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatVoto } from '../../lib/lettura-format-it.ts';
+import { metaLine } from '../../lib/lettura-meta.ts';
+import { postHref } from '../../lib/lettura-post.ts';
+
+interface Props {
+  entry: CollectionEntry<'letture'>;
+  compact?: boolean;
+}
+
+const { entry, compact = false } = Astro.props;
+const href = postHref(entry);
+const Title = href ? 'a' : 'span';
+---
+
+<li class:list={['book-row', { 'book-row--compact': compact }]}>
+  <span class="book-row__vote">{entry.data.voto !== undefined ? formatVoto(entry.data.voto) : ''}</span>
+  <Title class="book-row__title" href={href}>{entry.data.titolo}</Title>
+  <span class="book-row__meta">{metaLine(entry)}</span>
+</li>
+
+<style>
+  .book-row {
+    display: grid;
+    grid-template-columns: 5rem minmax(0, 1fr);
+    column-gap: 1.2rem;
+    padding-block: 0.5rem 1rem;
+  }
+
+  .book-row__vote {
+    grid-row: 1 / span 2;
+    font-size: 2.9rem;
+    line-height: 0.9;
+    font-weight: 300;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .book-row__title {
+    grid-column: 2;
+    font-size: 1.45rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-decoration: none;
+  }
+
+  .book-row__meta {
+    grid-column: 2;
+    color: var(--muted);
+  }
+
+  .book-row--compact {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    column-gap: 1rem;
+    padding-block: 0.3rem 0.7rem;
+  }
+
+  .book-row--compact .book-row__vote {
+    font-size: 2.2rem;
+  }
+
+  .book-row--compact .book-row__title {
+    font-size: 1.2rem;
+  }
+</style>
