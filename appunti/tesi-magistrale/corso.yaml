@@ -1,0 +1,9 @@
+titolo: "Progettazione e automazione di una farm di microservizi su AWS: un caso di studio con Terraform e CI/CD"
+tipo: tesi
+livello: magistrale
+aa: "2025"
+fonte: overleaf
+pubblicato: true
+fonti:
+  - "Wang et al., 2018 (figura sulla latenza del cold start)"
+  - "modelcontextprotocol.io (figura del protocollo MCP)"
