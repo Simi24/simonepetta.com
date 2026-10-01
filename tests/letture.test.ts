@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { buildSite, read } from './support/built-site.ts';
+import { buildSite, filesWithExtension, read } from './support/built-site.ts';
 import { openingTagsWithClass, tagsWithClass } from './support/html-tags.ts';
 
 const FIXTURES = { LETTURE_CONTENT_DIR: 'tests/fixtures/letture' };
@@ -34,8 +34,10 @@ test('the lede is a placeholder, not the prototype’s copy', () => {
 });
 
 test('the lede sits at grid-column 5/span 6, per the prototype', () => {
-  const html = lettureHtml();
-  assert.match(html, /\.lede\{[^}]*grid-column:5\/span 6/);
+  // The shared stylesheet is inlined only while it stays under Astro's 4 KB limit, so read the linked sheets too.
+  const dist = buildSite();
+  const css = filesWithExtension(dist, '.css').map((file) => read(dist, file));
+  assert.match([lettureHtml(), ...css].join('\n'), /\.lede\{[^}]*grid-column:5\/span 6/);
 });
 
 test('the shelf does not shrink its spines: it scrolls instead', () => {
