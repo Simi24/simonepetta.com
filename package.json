@@ -11,7 +11,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "node --test --test-concurrency=1 \"tests/**/*.test.ts\"",
-    "test:pipeline": "node --test --test-concurrency=1 tests/appunti-build.test.ts tests/appunti-changed.test.ts tests/appunti-chapter-slugs.test.ts tests/appunti-check.test.ts tests/appunti-figure-sources.test.ts tests/appunti-figures.test.ts tests/appunti-install.test.ts tests/appunti-latexml-chapter.test.ts tests/appunti-leak-detector.test.ts tests/appunti-meta-pipeline.test.ts",
+    "test:pipeline": "node --test --test-concurrency=1 \"tests/appunti-*.test.ts\"",
     "test:browser": "playwright test",
     "test:browser-dev": "playwright test --config playwright.scrivania.config.ts",
     "og:generate": "node scripts/og/generate-og-images.ts",

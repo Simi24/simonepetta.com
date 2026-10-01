@@ -11,6 +11,8 @@ const SIMT = 'images/simtvssimd.png';
 const WEBP = Uint8Array.from([0x52, 0x49, 0x46, 0x46, 1, 2, 3]);
 const SOURCE = `\\chapter{Introduzione}\n\\includegraphics{${SIMT}}\n`;
 
+const MANIFEST = 'titolo: "Fixture"\ntipo: corso\nlivello: triennale\nanno: 1\naa: "2021/22"\nfonte: github\n';
+
 const pages = (count: number) => () => count;
 
 /**
@@ -26,7 +28,7 @@ function convertedCourse(slug = 'gpu'): { contentDir: string; courseDir: string 
   mkdirSync(htmlDir);
   cpSync(join(LATEXML, 'gpu-Ch1.html'), join(htmlDir, 'Ch1.html'));
   writeFileSync(join(courseDir, 'src/main.tex'), SOURCE);
-  writeFileSync(join(courseDir, 'corso.yaml'), 'titolo: "Fixture"\ntipo: corso\npubblicato: true\n');
+  writeFileSync(join(courseDir, 'corso.yaml'), MANIFEST + 'pubblicato: true\n');
   writeFileSync(join(courseDir, `${slug}.pdf`), 'not read: the page count is injected');
   writeFileSync(join(courseDir, 'meta.json'), '{\n  "pagine": 12\n}\n');
   buildFromLatexml({
@@ -100,7 +102,7 @@ test('a published course with a PDF but no build/ only has its meta.json checked
 
 test('an unpublished course is not checked', () => {
   const { contentDir, courseDir } = convertedCourse();
-  writeFileSync(join(courseDir, 'corso.yaml'), 'titolo: "Fixture"\ntipo: corso\npubblicato: false\nmotivo: "in attesa"\n');
+  writeFileSync(join(courseDir, 'corso.yaml'), MANIFEST + 'pubblicato: false\nmotivo: "in attesa"\n');
   const result = checkCourses(contentDir, { pageCount: pages(99) });
   assert.equal(result.checked.length, 0);
   assert.match(result.problems.join('\n'), /no published course/);
@@ -119,4 +121,12 @@ test('a published course with no PDF or no meta.json is a problem', () => {
   const other = convertedCourse();
   rmSync(join(other.courseDir, 'gpu.pdf'));
   assert.match(checkCourses(other.contentDir, { pageCount: pages(12) }).problems.join('\n'), /gpu.*gpu\.pdf/);
+});
+
+test('a manifest the course schema rejects is reported, not skipped, even if the course would be published', () => {
+  const { contentDir, courseDir } = convertedCourse();
+  writeFileSync(join(courseDir, 'corso.yaml'), `${MANIFEST}pubblicato: "true"\n`);
+  const { problems, checked } = checkCourses(contentDir, { pageCount: pages(12) });
+  assert.match(problems.join('\n'), /gpu: corso\.yaml is invalid.*pubblicato/);
+  assert.deepEqual(checked, []);
 });

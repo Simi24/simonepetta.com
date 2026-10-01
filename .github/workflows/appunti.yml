@@ -41,7 +41,7 @@ jobs:
         run: |
           # No usable base (a first push, a force push): assume the notes changed.
           if [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
-            git diff --name-only "$BASE" "$GITHUB_SHA" | node scripts/ci/appunti-changed.ts >> "$GITHUB_OUTPUT"
+            node scripts/ci/appunti-changed.ts "$BASE" "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
           else
             echo 'notes=true' >> "$GITHUB_OUTPUT"
           fi

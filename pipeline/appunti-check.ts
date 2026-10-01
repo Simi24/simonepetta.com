@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { APPUNTI_CONTENT_DIR } from '../src/config/appunti-content-dir.ts';
 import type { BuildMeta } from './appunti-build.ts';
 import { pageCount as pdfPageCount } from './appunti-meta.ts';
+import { readCorsoManifest } from './corso-manifest.ts';
 import { readSources } from './course-sources.ts';
 import { detectLeaks } from './leak-detector.ts';
 
@@ -32,11 +33,6 @@ export interface CheckOptions {
   /** Page count of a PDF; defaults to `pdfinfo`. Injectable so the checks run without poppler. */
   pageCount?: (pdfPath: string) => number;
 }
-
-const isPublished = (courseDir: string): boolean => {
-  const file = join(courseDir, 'corso.yaml');
-  return existsSync(file) && /^pubblicato:\s*true\s*(#.*)?$/m.test(readFileSync(file, 'utf8'));
-};
 
 function checkMeta(courseDir: string, slug: string, pageCount: (pdf: string) => number): string[] {
   const pdf = join(courseDir, `${slug}.pdf`);
@@ -70,11 +66,18 @@ function checkBuild(courseDir: string, slug: string): string[] {
 
 export function checkCourses(contentDir: string, options: CheckOptions = {}): CheckResult {
   const pageCount = options.pageCount ?? pdfPageCount;
-  const slugs = readdirSync(contentDir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && isPublished(join(contentDir, entry.name)))
-    .map((entry) => entry.name)
-    .sort();
   const problems: string[] = [];
+  const slugs: string[] = [];
+  for (const entry of readdirSync(contentDir, { withFileTypes: true }).filter((e) => e.isDirectory()).sort((a, b) => a.name.localeCompare(b.name))) {
+    const manifest = join(contentDir, entry.name, 'corso.yaml');
+    if (!existsSync(manifest)) continue;
+    try {
+      if (readCorsoManifest(readFileSync(manifest, 'utf8')).pubblicato) slugs.push(entry.name);
+    } catch (error) {
+      // A manifest the site cannot read must not silently drop its course from the check.
+      problems.push(`${entry.name}: corso.yaml is invalid: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
   for (const slug of slugs) {
     const courseDir = join(contentDir, slug);
     problems.push(...checkMeta(courseDir, slug, pageCount));
