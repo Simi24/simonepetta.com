@@ -120,7 +120,7 @@ const fonti = corso.fonti ?? [];
     grid-column: 5 / span 7;
   }
 
-  .corso-head {
+  .corso > .corso-head {
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -154,6 +154,10 @@ const fonti = corso.fonti ?? [];
 
   .facts dd {
     margin: 0;
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums;
   }
 
   .stato-nota {
@@ -220,6 +224,7 @@ const fonti = corso.fonti ?? [];
     }
 
     .corso > *,
+    .corso > .corso-head,
     .corso-head > * {
       grid-column: 1;
     }
