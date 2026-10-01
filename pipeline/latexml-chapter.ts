@@ -245,6 +245,8 @@ function numberListingsPerChapter(tokens: readonly Token[], chapter: number): To
  * `div` that lays its children out on one line. LaTeXML also hoists the paragraph's first
  * table into a `bml-overflow-wrapper` just before the `<p>`: it is moved back in.
  */
+const isOpenDiv = (token: Token): boolean => token.type === 'open' && token.name === 'div';
+
 function keepTabularsOnOneLine(tokens: readonly Token[]): Token[] {
   const out: Token[] = [];
   for (let i = 0; i < tokens.length; i++) {
@@ -257,9 +259,10 @@ function keepTabularsOnOneLine(tokens: readonly Token[]): Token[] {
     let hoisted: Token[] = [];
     let before = out.length - 1;
     while (before >= 0 && out[before]!.type === 'text' && out[before]!.raw.trim() === '') before--;
-    if (out[before]?.type === 'close' && out[before]!.name === 'div') {
+    const last = out[before];
+    if (last?.type === 'close' && last.name === 'div') {
       let wrapper = before;
-      while (wrapper >= 0 && !(out[wrapper]!.type === 'open' && out[wrapper]!.name === 'div')) wrapper--;
+      while (wrapper >= 0 && !isOpenDiv(out[wrapper]!)) wrapper--;
       if (wrapper >= 0 && hasClass(out[wrapper]!, 'bml-overflow-wrapper')) {
         hoisted = out.slice(wrapper + 1, before);
         out.length = wrapper;
