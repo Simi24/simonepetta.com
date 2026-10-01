@@ -37,11 +37,21 @@ jobs:
         # instance (see playwright.scrivania.config.ts), never reusing the preview server above.
         run: npm run test:browser-dev
       - name: Quality gates (axe, byte budget)
-        # The byte-budget gate checks the `dist` this job just built (the artifact staged for
-        # deploy/preview), rather than rebuilding a second time.
+        # Both gates check the `dist` this job just built (the one uploaded below for deploy and
+        # preview), rather than rebuilding it.
         env:
           QUALITY_GATE_REUSE_DIST: '1'
         run: npm run test:quality
+      - name: Upload the gated dist
+        # Only reached when every gate above passed. `deploy` and `preview` publish exactly this
+        # directory; they never rebuild it (Pagefind and the notes conversions run once).
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 7
 
   deploy:
     needs: build
@@ -51,14 +61,16 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - name: Download the gated dist
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
       - name: Deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -74,14 +86,16 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - name: Download the gated dist
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
       - name: Upload a version
         id: upload
         env:
