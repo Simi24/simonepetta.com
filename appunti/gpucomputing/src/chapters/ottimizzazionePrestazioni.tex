@@ -377,7 +377,7 @@ cublasStatus_t cublasSdot(cublasHandle_t handle, int n,
 \end{lstlisting}
 
 Per fare 
-$$ y[i] = \alpha \cdot x[i] + y[i] \quad \forall i \in n $$
+$$ y[i] = \alpha \cdot x[i] + y[i] \quad \forall i = 1, \dots, n $$
 con vettori \texttt{x} e \texttt{y} di dimensione \texttt{n}, risultato nel secondo vettore \texttt{y}
 \begin{lstlisting}
 cublasStatus_t cublasSaxpy(cublasHandle_t handle, int n,

@@ -159,10 +159,10 @@ t_g = t2.to(cuda)
 \paragraph{Loss function:} L'obiettivo della regressione è minimizzare una funzione di errore, la quale quantifica la distanza tra valore reale $y^{(i)}$ e valore predetto dalla regressione ottenuta $\hat y^{(i)}$.
 
 Squared loss: l'errore quadratico si può calcolare su una singola entry $i$ come:
-$$ \ell^{(i)} = (\bm w, b) = \frac{1}{2}  \left(\hat y_i - y_i\right)^2 $$
+$$ \ell^{(i)}(\bm w, b) = \frac{1}{2}  \left(\hat y^{(i)} - y^{(i)}\right)^2 $$
 
 Mentre su tutto il dataset:
-$$ L (\bm w, b) = \frac{1}{n} \sum_{i=1}^{n} \ell^{(i)} (\bm w, b) = \frac{1}{n} \sum_{i=1}^{n} \frac{1}{2} \left(\bm w^T x_i - y_i \right)^2 $$
+$$ L (\bm w, b) = \frac{1}{n} \sum_{i=1}^{n} \ell^{(i)} (\bm w, b) = \frac{1}{n} \sum_{i=1}^{n} \frac{1}{2} \left(\bm w^T x^{(i)} + b - y^{(i)} \right)^2 $$
 
 %I parametri saranno scalari PyTorch, il broadcasting farà ottenere tensori.
 
