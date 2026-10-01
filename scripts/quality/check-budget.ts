@@ -1,22 +1,23 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import {
-  ALLOWED_FONT_FAMILIES,
+  ALLOWED_FONT_FACES,
   CLOUDFLARE_BEACON_SCRIPT_SRC,
   CSS_CAP_BYTES,
   HTML_CAP_BYTES,
   JS_CAP_BYTES,
   NON_JS_SCRIPT_TYPES,
   NOTES_CHAPTER_HTML_CAP_BYTES,
-  isJsExceptionPage,
   isPagefindAsset,
+  isPreactIslandAsset,
   isMathPage,
   isNotesChapterPage,
 } from '../../src/config/budget.ts';
-import { buildSite, filesWithExtension, read } from '../../tests/support/built-site.ts';
-import { QUALITY_BUILDS } from '../../tests/support/quality-builds.ts';
+import { filesWithExtension, read } from '../../tests/support/built-site.ts';
+import { qualityDists, shouldBuildFreshDist } from './quality-dists.ts';
 
 export interface Violation {
   page: string;
@@ -27,6 +28,8 @@ interface PageAssets {
   html: string;
   css: string;
   js: string;
+  /** External scripts, stylesheets and other loaded resources, other than the allowlisted beacon. */
+  undeclaredExternals: { kind: 'script' | 'stylesheet' | 'resource'; url: string }[];
 }
 
 const isExternal = (url: string): boolean => /^(https?:)?\/\//.test(url);
@@ -57,19 +60,59 @@ function scriptTags(html: string): { body: string; src: string | undefined; type
   }));
 }
 
+/** `<link rel>` values the browser never fetches: crawler metadata (SPEC.md §8, §12.3). */
+const NON_LOADING_LINK_RELS = ['canonical', 'alternate'];
+
+/**
+ * External URLs of everything a page loads besides scripts and stylesheets (reported elsewhere):
+ * media and frames (`src`, `poster`, `data`, `srcset`) and any other `<link>` that is fetched.
+ * Anchors and non-loading links (canonical, hreflang alternates) are not resources.
+ */
+function externalMediaUrls(html: string): string[] {
+  const urls: string[] = [];
+  for (const match of html.matchAll(/<(img|iframe|source|video|audio|embed|track|input|object|link)\b[^>]*>/g)) {
+    const [tag, name] = [match[0], match[1]];
+    if (name === 'link') {
+      const rel = attr(tag, 'rel')?.split(/\s+/).filter(Boolean) ?? [];
+      const loads = rel.length === 0 || !rel.every((value) => NON_LOADING_LINK_RELS.includes(value));
+      const href = attr(tag, 'href');
+      if (loads && !rel.includes('stylesheet') && href && isExternal(href)) urls.push(href);
+      continue;
+    }
+    for (const value of [attr(tag, 'src'), attr(tag, 'poster'), attr(tag, 'data')]) {
+      if (value && isExternal(value)) urls.push(value);
+    }
+    for (const candidate of attr(tag, 'srcset')?.split(',') ?? []) {
+      const url = candidate.trim().split(/\s+/)[0];
+      if (url && isExternal(url)) urls.push(url);
+    }
+  }
+  return urls;
+}
+
+/** External URLs in CSS: every `url(...)` and every `@import`, whether a font, an image or a stylesheet. */
+function externalCssUrls(css: string): string[] {
+  const urls = [...css.matchAll(/url\(\s*["']?([^"')]+?)["']?\s*\)/g)].map((m) => m[1] ?? '');
+  urls.push(...[...css.matchAll(/@import\s+["']([^"']+)["']/g)].map((m) => m[1] ?? ''));
+  return urls.filter(isExternal);
+}
+
 /** Inline and locally-linked CSS/JS for one built page, the way a browser would load it. */
-function collectPageAssets(dist: string, page: string): PageAssets & { undeclaredExternalScripts: string[] } {
+function collectPageAssets(dist: string, page: string): PageAssets {
   const html = read(dist, page);
 
   let css = '';
   for (const match of html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)) css += match[1] ?? '';
+  const undeclaredExternals: PageAssets['undeclaredExternals'] = [];
   for (const href of stylesheetHrefs(html)) {
-    if (isExternal(href)) continue;
+    if (isExternal(href)) {
+      undeclaredExternals.push({ kind: 'stylesheet', url: href });
+      continue;
+    }
     css += read(dist, href.replace(/^\//, ''));
   }
 
   let js = '';
-  const undeclaredExternalScripts: string[] = [];
   for (const { body, src, type } of scriptTags(html)) {
     if (type && (NON_JS_SCRIPT_TYPES as readonly string[]).includes(type)) continue;
     if (src) {
@@ -77,22 +120,75 @@ function collectPageAssets(dist: string, page: string): PageAssets & { undeclare
       // external script is undeclared and fails the budget, rather than silently passing free.
       if (src === CLOUDFLARE_BEACON_SCRIPT_SRC) continue;
       if (isExternal(src)) {
-        undeclaredExternalScripts.push(src);
+        undeclaredExternals.push({ kind: 'script', url: src });
         continue;
       }
-      // Pagefind's own files on /cerca/ are the declared exception, asset by asset (SPEC.md §12.2).
-      if (isPagefindAsset(page, src)) continue;
+      // Pagefind on /cerca/ and the Preact island on chat pages are the declared exceptions,
+      // asset by asset (SPEC.md §12.2).
+      if (isPagefindAsset(page, src) || isPreactIslandAsset(page, src)) continue;
       js += read(dist, src.replace(/^\//, ''));
     } else {
       js += body;
     }
   }
 
-  return { html, css, js, undeclaredExternalScripts };
+  for (const url of [...externalMediaUrls(html), ...externalCssUrls(css)]) {
+    undeclaredExternals.push({ kind: 'resource', url });
+  }
+
+  return { html, css, js, undeclaredExternals };
 }
 
-const fontFamiliesIn = (css: string): string[] =>
-  [...css.matchAll(/@font-face\s*{[^}]*font-family:\s*["']?([^"';]+?)["']?\s*;[^}]*}/g)].map((m) => m[1]!.trim());
+interface FontFace {
+  family: string;
+  style: string;
+  /** Every `url()` source, in order: the browser may use any of them. */
+  srcs: string[];
+}
+
+/** Every `@font-face` in `css`: its family, style (default `normal`) and `url()` sources. */
+function fontFacesIn(css: string): FontFace[] {
+  return [...css.matchAll(/@font-face\s*{([^}]*)}/g)].map((match) => {
+    const body = match[1] ?? '';
+    return {
+      family: /font-family:\s*["']?([^"';]+?)["']?\s*;/.exec(body + ';')?.[1]?.trim() ?? '',
+      style: /font-style:\s*([a-z]+)/.exec(body)?.[1] ?? 'normal',
+      srcs: [...body.matchAll(/url\(\s*["']?([^"')]+?)["']?\s*\)/g)].map((m) => m[1] ?? ''),
+    };
+  });
+}
+
+/** The woff2 signature every real font file starts with. */
+const WOFF2_MAGIC = 'wOF2';
+
+const isWoff2File = (path: string): boolean => readFileSync(path).subarray(0, 4).toString('latin1') === WOFF2_MAGIC;
+
+/**
+ * Violations for one declared face: every source must be one of the exact family + style + woff2
+ * file combinations, present in `dist` and really woff2. External sources are reported by the
+ * external-resource check, not here.
+ */
+function fontFaceViolations(dist: string, page: string, html: string, face: FontFace): Violation[] {
+  const { family, style, srcs } = face;
+  if (!ALLOWED_FONT_FACES.some((allowed) => allowed.family === family)) {
+    return [{ page, message: `loads an undeclared font family "${family}"` }];
+  }
+  if (srcs.length === 0) return [{ page, message: `font face "${family}" (${style}) has no woff2 source` }];
+  const violations: Violation[] = [];
+  for (const src of srcs.filter((url) => !isExternal(url))) {
+    if (!ALLOWED_FONT_FACES.some((a) => a.family === family && a.style === style && a.file === src)) {
+      violations.push({ page, message: `font face "${family}" (${style}) loads an undeclared file: ${src}` });
+    } else if (!existsSync(join(dist, src))) {
+      violations.push({ page, message: `font file ${src} is missing from the build` });
+    } else if (!isWoff2File(join(dist, src))) {
+      violations.push({ page, message: `font file ${src} is empty or not a woff2 file (no wOF2 signature)` });
+    }
+  }
+  if (family === 'Fira Math' && !isMathPage(page, html)) {
+    violations.push({ page, message: 'loads Fira Math but is not a declared math page' });
+  }
+  return violations;
+}
 
 /** Every quality-budget violation on the built site at `dist` (SPEC.md §12.2). */
 export function checkBudget(dist: string): Violation[] {
@@ -103,10 +199,10 @@ export function checkBudget(dist: string): Violation[] {
     return violations;
   }
   for (const page of pages) {
-    const { html, css, js, undeclaredExternalScripts } = collectPageAssets(dist, page);
+    const { html, css, js, undeclaredExternals } = collectPageAssets(dist, page);
 
-    for (const src of undeclaredExternalScripts) {
-      violations.push({ page, message: `loads an undeclared external script: ${src}` });
+    for (const { kind, url } of undeclaredExternals) {
+      violations.push({ page, message: `loads an undeclared external ${kind}: ${url}` });
     }
 
     const htmlBytes = gzipSync(html).length;
@@ -118,37 +214,15 @@ export function checkBudget(dist: string): Violation[] {
       violations.push({ page, message: `CSS is ${cssBytes} B gzip, over the ${CSS_CAP_BYTES} B cap` });
     }
 
-    if (!isJsExceptionPage(page)) {
-      const jsBytes = gzipSync(js).length;
-      if (jsBytes > JS_CAP_BYTES) {
-        violations.push({ page, message: `JS is ${jsBytes} B gzip, over the ${JS_CAP_BYTES} B cap` });
-      }
+    const jsBytes = gzipSync(js).length;
+    if (jsBytes > JS_CAP_BYTES) {
+      violations.push({ page, message: `JS is ${jsBytes} B gzip, over the ${JS_CAP_BYTES} B cap` });
     }
 
-    for (const family of fontFamiliesIn(css)) {
-      if (!(ALLOWED_FONT_FAMILIES as readonly string[]).includes(family)) {
-        violations.push({ page, message: `loads an undeclared font family "${family}"` });
-      } else if (family === 'Fira Math' && !isMathPage(page, html)) {
-        violations.push({ page, message: 'loads Fira Math but is not a declared math page' });
-      }
-    }
+    for (const face of fontFacesIn(css)) violations.push(...fontFaceViolations(dist, page, html, face));
   }
   return violations;
 }
-
-/**
- * Whether the CLI must (re)build `dist` before checking it. Standalone, it always builds
- * fresh: a stale `dist` from an earlier source tree must never pass silently. Only with
- * `QUALITY_GATE_REUSE_DIST=1` — set by the `site` workflow and the verify commands, right
- * after their own `npm run build` — is an existing `dist` trusted as-is.
- */
-export const shouldBuildFreshDist = ({
-  reuseDist,
-  distExists,
-}: {
-  reuseDist: boolean;
-  distExists: boolean;
-}): boolean => !reuseDist || !distExists;
 
 /** Every violation across several builds, each labeled so a report can tell them apart. */
 function checkBudgets(builds: readonly { label: string; dist: string }[]): Violation[] {
@@ -170,9 +244,7 @@ function report(builds: readonly { label: string; dist: string }[]): void {
 /**
  * With an explicit `dist` argument, checks only that directory (building it first unless
  * reused). Without one — the normal `npm run gate:budget` case — it checks the same builds
- * the axe gate does: production (reusing the `dist` a prior `npm run build` staged, when
- * `QUALITY_GATE_REUSE_DIST=1`) plus the fixture-populated builds, so a page type like the
- * post page is budget-checked even before any real content ships.
+ * the axe gate does (`qualityDists`).
  */
 function main(): void {
   const distArg = process.argv[2];
@@ -186,19 +258,7 @@ function main(): void {
     return;
   }
 
-  const productionDist = 'dist';
-  if (shouldBuildFreshDist({ reuseDist, distExists: existsSync(productionDist) })) {
-    execFileSync('npx', ['astro', 'build', '--outDir', productionDist], { stdio: 'inherit' });
-  }
-
-  const builds = [
-    { label: 'production', dist: productionDist },
-    ...QUALITY_BUILDS.filter((build) => build.label !== 'production').map((build) => ({
-      label: build.label,
-      dist: buildSite(build.env),
-    })),
-  ];
-  report(builds);
+  report(qualityDists(reuseDist));
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

@@ -1,14 +1,26 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// The quality gates (axe, SPEC.md §12.1) build and serve their own pages per test;
-// no shared dev server is needed.
+// The quality gates (axe, SPEC.md §12.1) check the builds `tests/quality/quality-setup.ts` prepares,
+// served by a static server per test; no shared dev server is needed.
 export default defineConfig({
   testDir: 'tests/quality',
   // tests/quality/ also holds budget.test.ts (a node:test file, run by `npm test`): exclude it here.
   testMatch: /.*\.spec\.ts/,
-  // One test walks every page of a build in both themes; with the converted chapters that outgrew the 30 s default on CI.
-  timeout: 120_000,
+  // Builds the quality builds once, before the specs enumerate their pages.
+  globalSetup: './tests/quality/quality-setup.ts',
+  // One worker: the gate is one sequence of pages, and one Chromium keeps its timing predictable.
+  workers: 1,
   forbidOnly: !!process.env['CI'],
   reporter: process.env['CI'] ? 'github' : 'list',
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        // No gate depends on the network: every host except the local static server fails to
+        // resolve, so the analytics beacon (SPEC.md §12.4) never loads, online or offline.
+        launchOptions: { args: ['--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1'] },
+      },
+    },
+  ],
 });

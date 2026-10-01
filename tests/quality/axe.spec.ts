@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { buildSite, filesWithExtension } from '../support/built-site.ts';
+import type { QualityDist } from '../../scripts/quality/quality-dists.ts';
+import { filesWithExtension } from '../support/built-site.ts';
 import { QUALITY_BUILDS } from '../support/quality-builds.ts';
 import { serveStatic, type StaticServer } from '../support/static-server.ts';
 
@@ -28,28 +29,37 @@ async function axeViolations(page: Page) {
   return [...wcag.violations, ...extra.violations];
 }
 
-for (const { label, env } of QUALITY_BUILDS) {
-  test(`every page of the ${label} build passes axe (WCAG 2.2 AA) in light and dark`, async ({ page }) => {
-    const dist = buildSite(env);
-    const pages = filesWithExtension(dist, '.html');
-    expect(pages.length).toBeGreaterThan(0);
+// One test per build, page and scheme: every failing page is reported in one run, and no single
+// test grows with the number of pages (notes chapters will keep adding some).
+const dists = JSON.parse(process.env['QUALITY_DISTS'] ?? '[]') as QualityDist[];
 
-    const server = await serveStatic(dist);
-    try {
-      for (const pagePath of pages) {
-        for (const colorScheme of COLOR_SCHEMES) {
+test('the quality setup produced the builds to check', () => {
+  expect(dists.map(({ label }) => label)).toEqual(['production', ...QUALITY_BUILDS.slice(1).map(({ label }) => label)]);
+});
+
+for (const { label, dist } of dists) {
+  const pages = filesWithExtension(dist, '.html');
+  test(`the ${label} build has pages to check`, () => {
+    expect(pages.length).toBeGreaterThan(0);
+  });
+
+  for (const pagePath of pages) {
+    for (const colorScheme of COLOR_SCHEMES) {
+      test(`[${label}] ${pagePath} passes axe (WCAG 2.2 AA) in ${colorScheme}`, async ({ page }) => {
+        const server = await serveStatic(dist);
+        try {
           await page.emulateMedia({ colorScheme });
           await page.goto(urlFor(server, pagePath));
           const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-          expect(background, `${pagePath}: the ${colorScheme} palette did not apply`).toBe(BODY_BACKGROUND[colorScheme]);
+          expect(background, `the ${colorScheme} palette did not apply`).toBe(BODY_BACKGROUND[colorScheme]);
           const violations = await axeViolations(page);
-          expect(violations, `${pagePath} (${colorScheme}):\n${JSON.stringify(violations, null, 2)}`).toEqual([]);
+          expect(violations, JSON.stringify(violations, null, 2)).toEqual([]);
+        } finally {
+          await server.close();
         }
-      }
-    } finally {
-      await server.close();
+      });
     }
-  });
+  }
 }
 
 test('axe catches low-contrast text (deliberately broken fixture)', async ({ page }) => {

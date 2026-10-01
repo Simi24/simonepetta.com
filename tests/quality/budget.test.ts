@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
-import { checkBudget, shouldBuildFreshDist } from '../../scripts/quality/check-budget.ts';
+import { checkBudget } from '../../scripts/quality/check-budget.ts';
+import { shouldBuildFreshDist } from '../../scripts/quality/quality-dists.ts';
 import { CLOUDFLARE_BEACON_SCRIPT_SRC, isPagefindAsset } from '../../src/config/budget.ts';
 import { buildSite } from '../support/built-site.ts';
 
@@ -153,4 +155,200 @@ test('a path-traversal script on /cerca/ is not exempt from the JS budget', () =
   });
   const violations = checkBudget(dist);
   assert.ok(violations.some((v) => v.page === 'cerca/index.html' && /JS is \d+ B gzip, over/.test(v.message)));
+});
+
+test('an external stylesheet is an undeclared-stylesheet violation, not silently free', () => {
+  const dist = fixtureDist({
+    'index.html': '<!doctype html><html><head><link rel="stylesheet" href="https://cdn.example.com/a.css"></head><body></body></html>',
+  });
+  const violations = checkBudget(dist);
+  assert.ok(
+    violations.some((v) => v.page === 'index.html' && /undeclared external stylesheet: https:\/\/cdn\.example\.com\/a\.css/.test(v.message)),
+  );
+});
+
+const CHAT_PAGE = 'appunti/algebra/chat/index.html';
+const ISLAND = '<script type="module" src="/_astro/Chat.abc123.js"></script>';
+
+test('on a chat page, Astro-bundled island scripts are exempt from the JS budget', () => {
+  const dist = fixtureDist({
+    [CHAT_PAGE]: `<!doctype html><html><head>${ISLAND}</head><body></body></html>`,
+    '_astro/Chat.abc123.js': bigJs(),
+  });
+  assert.deepEqual(checkBudget(dist), []);
+});
+
+test('on a chat page, inline JS still counts against the JS budget', () => {
+  const dist = fixtureDist({
+    [CHAT_PAGE]: `<!doctype html><html><head>${ISLAND}<script>${bigJs()}</script></head><body></body></html>`,
+    '_astro/Chat.abc123.js': bigJs(),
+  });
+  const violations = checkBudget(dist);
+  assert.ok(violations.some((v) => v.page === CHAT_PAGE && /JS is \d+ B gzip, over/.test(v.message)));
+});
+
+test('on a chat page, JS outside /_astro/ still counts against the JS budget', () => {
+  const dist = fixtureDist({
+    [CHAT_PAGE]: '<!doctype html><html><head><script src="/other/big.js"></script></head><body></body></html>',
+    'other/big.js': bigJs(),
+  });
+  const violations = checkBudget(dist);
+  assert.ok(violations.some((v) => v.page === CHAT_PAGE && /JS is \d+ B gzip, over/.test(v.message)));
+});
+
+test('on any other page, /_astro/ scripts are not exempt from the JS budget', () => {
+  const dist = fixtureDist({
+    'index.html': `<!doctype html><html><head>${ISLAND}</head><body></body></html>`,
+    '_astro/Chat.abc123.js': bigJs(),
+  });
+  const violations = checkBudget(dist);
+  assert.ok(violations.some((v) => v.page === 'index.html' && /JS is \d+ B gzip, over/.test(v.message)));
+});
+
+/** A page whose inline CSS declares one @font-face; `files` adds the woff2 files it may reference. */
+function fontDist(face: string, files: Record<string, string> = {}): string {
+  return fixtureDist({
+    'index.html': `<!doctype html><html><head><style>${face}</style></head><body></body></html>`,
+    ...files,
+  });
+}
+
+/** The `wOF2` signature every woff2 file starts with, plus filler. */
+const WOFF2 = 'wOF2\u0000\u0001\u0000\u0000 font data';
+
+const HOST_ROMAN = "@font-face{font-family:'Host Grotesk';font-style:normal;src:url('/fonts/host-grotesk-latin.woff2') format('woff2')}";
+
+test('a declared font face with its declared woff2 file passes', () => {
+  assert.deepEqual(checkBudget(fontDist(HOST_ROMAN, { 'fonts/host-grotesk-latin.woff2': WOFF2 })), []);
+});
+
+test('a font face whose woff2 file is missing from dist is a violation', () => {
+  const violations = checkBudget(fontDist(HOST_ROMAN));
+  assert.ok(violations.some((v) => /host-grotesk-latin\.woff2.*missing/.test(v.message)));
+});
+
+test('an allowed family served from another woff2 file (wrong subset) is a violation', () => {
+  const face = HOST_ROMAN.replace('host-grotesk-latin.woff2', 'host-grotesk-full.woff2');
+  const violations = checkBudget(fontDist(face, { 'fonts/host-grotesk-full.woff2': WOFF2 }));
+  assert.ok(violations.some((v) => /Host Grotesk.*normal.*host-grotesk-full\.woff2/.test(v.message)));
+});
+
+test('the italic face pointing at the roman file is a violation (wrong style)', () => {
+  const face = HOST_ROMAN.replace('normal', 'italic');
+  const violations = checkBudget(fontDist(face, { 'fonts/host-grotesk-latin.woff2': WOFF2 }));
+  assert.ok(violations.some((v) => /Host Grotesk.*italic.*host-grotesk-latin\.woff2/.test(v.message)));
+});
+
+test('a font face from another origin is a violation', () => {
+  const face = HOST_ROMAN.replace("/fonts/host-grotesk-latin.woff2", 'https://fonts.example.com/h.woff2');
+  const violations = checkBudget(fontDist(face));
+  assert.ok(violations.some((v) => /https:\/\/fonts\.example\.com\/h\.woff2/.test(v.message)));
+});
+
+test('an undeclared font family is a violation', () => {
+  const face = "@font-face{font-family:'Comic Sans';src:url('/fonts/c.woff2') format('woff2')}";
+  const violations = checkBudget(fontDist(face, { 'fonts/c.woff2': WOFF2 }));
+  assert.ok(violations.some((v) => /undeclared font family "Comic Sans"/.test(v.message)));
+});
+
+test('Fira Math on a page that is not a declared math page is a violation', () => {
+  const face = "@font-face{font-family:'Fira Math';font-style:normal;src:url('/fonts/fira-math.woff2') format('woff2')}";
+  const violations = checkBudget(fontDist(face, { 'fonts/fira-math.woff2': WOFF2 }));
+  assert.ok(violations.some((v) => /Fira Math but is not a declared math page/.test(v.message)));
+});
+
+test('a font face with no font-style counts as normal', () => {
+  const face = "@font-face{font-family:'Host Grotesk';src:url('/fonts/host-grotesk-latin.woff2') format('woff2')}";
+  assert.deepEqual(checkBudget(fontDist(face, { 'fonts/host-grotesk-latin.woff2': WOFF2 })), []);
+});
+
+/** Runs the gate CLI on an existing fixture `dist` (reuse flag set, so nothing is built). */
+function runBudgetCli(dist: string): { status: number | null; stderr: string; stdout: string } {
+  const result = spawnSync(process.execPath, ['scripts/quality/check-budget.ts', dist], {
+    encoding: 'utf8',
+    env: { ...process.env, QUALITY_GATE_REUSE_DIST: '1' },
+  });
+  return { status: result.status, stderr: result.stderr, stdout: result.stdout };
+}
+
+test('the CLI exits 0 on a dist within budget', () => {
+  const dist = fixtureDist({ 'index.html': '<!doctype html><html><body></body></html>' });
+  const { status, stdout } = runBudgetCli(dist);
+  assert.equal(status, 0);
+  assert.match(stdout, /OK/);
+});
+
+test('the CLI exits 1 and names the page when a CSS cap is exceeded', () => {
+  const oversized = randomBytes(20_000).toString('hex');
+  const dist = fixtureDist({ 'index.html': `<!doctype html><html><head><style>.x{content:"${oversized}"}</style></head><body></body></html>` });
+  const { status, stderr } = runBudgetCli(dist);
+  assert.equal(status, 1);
+  assert.match(stderr, /index\.html: CSS is \d+ B gzip, over/);
+});
+
+test('the CLI exits 1 on an undeclared font file', () => {
+  const dist = fontDist(HOST_ROMAN.replace('host-grotesk-latin.woff2', 'other.woff2'), { 'fonts/other.woff2': WOFF2 });
+  const { status, stderr } = runBudgetCli(dist);
+  assert.equal(status, 1);
+  assert.match(stderr, /undeclared file: \/fonts\/other\.woff2/);
+});
+
+test('a font face with a second, external url() source is a violation', () => {
+  const face = HOST_ROMAN.replace(
+    "format('woff2')}",
+    "format('woff2'),url(https://evil.example/x.woff2)}",
+  );
+  const violations = checkBudget(fontDist(face, { 'fonts/host-grotesk-latin.woff2': WOFF2 }));
+  assert.ok(violations.some((v) => /https:\/\/evil\.example\/x\.woff2/.test(v.message)));
+});
+
+test('a font face with a second, undeclared local url() source is a violation', () => {
+  const face = HOST_ROMAN.replace("format('woff2')}", "format('woff2'),url('/fonts/other.woff2')}");
+  const violations = checkBudget(fontDist(face, { 'fonts/host-grotesk-latin.woff2': WOFF2, 'fonts/other.woff2': WOFF2 }));
+  assert.ok(violations.some((v) => /undeclared file: \/fonts\/other\.woff2/.test(v.message)));
+});
+
+test('an external @import in CSS is a violation, in both url() and string form', () => {
+  for (const rule of ['@import url(https://evil.example/a.css);', "@import 'https://evil.example/a.css';", '@import "//evil.example/a.css";']) {
+    const dist = fixtureDist({ 'index.html': `<!doctype html><html><head><style>${rule}</style></head><body></body></html>` });
+    const violations = checkBudget(dist);
+    assert.ok(violations.some((v) => /evil\.example\/a\.css/.test(v.message)), rule);
+  }
+});
+
+test('a local @import is not a violation', () => {
+  const dist = fixtureDist({ 'index.html': '<!doctype html><html><head><style>@import "/a.css";</style></head><body></body></html>', 'a.css': 'p{}' });
+  assert.deepEqual(checkBudget(dist), []);
+});
+
+test('an external <img>, <iframe> or CSS url() on any build is a violation', () => {
+  const cases: Record<string, string> = {
+    'https://evil.example/i.png': '<img src="https://evil.example/i.png" alt="">',
+    'https://evil.example/frame': '<iframe src="https://evil.example/frame"></iframe>',
+    '//evil.example/css.png': '<style>p{background:url(//evil.example/css.png)}</style>',
+    'https://evil.example/q.png': '<style>p{background:url("https://evil.example/q.png")}</style>',
+  };
+  for (const [url, markup] of Object.entries(cases)) {
+    const dist = fixtureDist({ 'index.html': `<!doctype html><html><head></head><body>${markup}</body></html>` });
+    const violations = checkBudget(dist);
+    assert.ok(violations.some((v) => v.message.includes(url)), url);
+  }
+});
+
+test('links that are not loaded (anchors, canonical, hreflang alternates) are not external-resource violations', () => {
+  const dist = fixtureDist({
+    'index.html':
+      '<!doctype html><html><head><link rel="canonical" href="https://simonepetta.com/"><link rel="alternate" hreflang="en" href="https://simonepetta.com/en/"></head><body><a href="https://example.com/">x</a><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt=""></body></html>',
+  });
+  assert.deepEqual(checkBudget(dist), []);
+});
+
+test('a referenced woff2 that is not woff2 (wrong magic bytes) is a violation', () => {
+  const violations = checkBudget(fontDist(HOST_ROMAN, { 'fonts/host-grotesk-latin.woff2': '<html>not a font</html>' }));
+  assert.ok(violations.some((v) => /host-grotesk-latin\.woff2.*not a woff2/.test(v.message)));
+});
+
+test('a referenced woff2 that is empty is a violation', () => {
+  const violations = checkBudget(fontDist(HOST_ROMAN, { 'fonts/host-grotesk-latin.woff2': '' }));
+  assert.ok(violations.some((v) => /host-grotesk-latin\.woff2.*not a woff2/.test(v.message)));
 });
