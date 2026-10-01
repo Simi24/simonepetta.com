@@ -1,0 +1,1011 @@
+{
+  "capitoli": [
+    {
+      "numero": 1,
+      "slug": "1-introduzione",
+      "titolo": "Introduzione",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "1.1",
+          "titolo": "Segnali tempo continuo e discreto",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "1.2",
+          "titolo": "Sistema",
+          "sottosezioni": []
+        },
+        {
+          "id": "S3",
+          "numero": "1.3",
+          "titolo": "Segnali e Sistemi",
+          "sottosezioni": []
+        },
+        {
+          "id": "S4",
+          "numero": "1.4",
+          "titolo": "Segnale trigonometrico",
+          "sottosezioni": [
+            {
+              "id": "S4.SS1",
+              "numero": "1.4.1",
+              "titolo": "Ampiezza"
+            },
+            {
+              "id": "S4.SS2",
+              "numero": "1.4.2",
+              "titolo": "Frequenza"
+            },
+            {
+              "id": "S4.SS3",
+              "numero": "1.4.3",
+              "titolo": "Pulsazione"
+            },
+            {
+              "id": "S4.SS4",
+              "numero": "1.4.4",
+              "titolo": "Fase"
+            }
+          ]
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 2,
+      "slug": "2-numeri-complessi",
+      "titolo": "Numeri complessi",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "2.1",
+          "titolo": "Rappresentazione cartesiana",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "2.2",
+          "titolo": "Rappresentazione Polare",
+          "sottosezioni": [
+            {
+              "id": "S2.SS1",
+              "numero": "2.2.1",
+              "titolo": "Esercizio"
+            }
+          ]
+        },
+        {
+          "id": "S3",
+          "numero": "2.3",
+          "titolo": "Coniugato Complesso",
+          "sottosezioni": [
+            {
+              "id": "S3.SS1",
+              "numero": "2.3.1",
+              "titolo": "Operazioni"
+            }
+          ]
+        },
+        {
+          "id": "S4",
+          "numero": "2.4",
+          "titolo": "Teorema fondamentale dell’algebra",
+          "sottosezioni": []
+        },
+        {
+          "id": "S5",
+          "numero": "2.5",
+          "titolo": "Formula di Eulero",
+          "sottosezioni": [
+            {
+              "id": "S5.SS1",
+              "numero": "2.5.1",
+              "titolo": "Formule di Eulero inverse"
+            }
+          ]
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 3,
+      "slug": "3-spazi-vettoriali",
+      "titolo": "Spazi vettoriali",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "3.1",
+          "titolo": "Rappresentazione",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "3.2",
+          "titolo": "Prodotto Scalare",
+          "sottosezioni": []
+        },
+        {
+          "id": "S3",
+          "numero": "3.3",
+          "titolo": "Vettori ortogonali",
+          "sottosezioni": []
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 4,
+      "slug": "4-segnali-a-tempo-continuo",
+      "titolo": "Segnali a tempo continuo",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "4.1",
+          "titolo": "Terminologia",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "4.2",
+          "titolo": "Sintesi di segnali co-sinusoidali",
+          "sottosezioni": []
+        },
+        {
+          "id": "S3",
+          "numero": "4.3",
+          "titolo": "Spettro del segnale",
+          "sottosezioni": [
+            {
+              "id": "S3.SS1",
+              "numero": "4.3.1",
+              "titolo": "Proprieta’ dello spettro"
+            }
+          ]
+        },
+        {
+          "id": "S4",
+          "numero": "4.4",
+          "titolo": "Modulazione di ampiezza",
+          "sottosezioni": []
+        },
+        {
+          "id": "S5",
+          "numero": "4.5",
+          "titolo": "Esercizio di sintesi",
+          "sottosezioni": []
+        },
+        {
+          "id": "S6",
+          "numero": "4.6",
+          "titolo": "Terminologia",
+          "sottosezioni": []
+        },
+        {
+          "id": "S7",
+          "numero": "4.7",
+          "titolo": "Teorema della serie di Fourier",
+          "sottosezioni": [
+            {
+              "id": "S7.SS1",
+              "numero": "4.7.1",
+              "titolo": "Spettro di un segnale periodico"
+            },
+            {
+              "id": "S7.SS2",
+              "numero": "4.7.2",
+              "titolo": "Esempio"
+            }
+          ]
+        },
+        {
+          "id": "S8",
+          "numero": "4.8",
+          "titolo": "Condizioni sufficienti di esistenza della serie di Fourier",
+          "sottosezioni": [
+            {
+              "id": "S8.SS1",
+              "numero": "4.8.1",
+              "titolo": "x⁢(t)x(t) assolutamente sommabile"
+            },
+            {
+              "id": "S8.SS2",
+              "numero": "4.8.2",
+              "titolo": "x⁢(t)x(t) ha un numero finito di estremi (massimi e minimi, nel periodo)"
+            },
+            {
+              "id": "S8.SS3",
+              "numero": "4.8.3",
+              "titolo": "x⁢(t)x(t) ha un numero di discontinuita’ finite e dev’essere finito (nel periodo)"
+            }
+          ]
+        },
+        {
+          "id": "S9",
+          "numero": "4.9",
+          "titolo": "Figura di riassunto",
+          "sottosezioni": []
+        },
+        {
+          "id": "S10",
+          "numero": "4.10",
+          "titolo": "Trovare frequenza fondamentale date delle armoniche",
+          "sottosezioni": [
+            {
+              "id": "S10.SS1",
+              "numero": "4.10.1",
+              "titolo": "Esempio 1"
+            },
+            {
+              "id": "S10.SS2",
+              "numero": "4.10.2",
+              "titolo": "Esempio 2"
+            },
+            {
+              "id": "S10.SS3",
+              "numero": "4.10.3",
+              "titolo": "Esempio 3"
+            }
+          ]
+        },
+        {
+          "id": "S11",
+          "numero": "4.11",
+          "titolo": "Esempio condizioni Fourier",
+          "sottosezioni": []
+        },
+        {
+          "id": "S12",
+          "numero": "4.12",
+          "titolo": "Esempio Pulse Wave",
+          "sottosezioni": []
+        },
+        {
+          "id": "S13",
+          "numero": "4.13",
+          "titolo": "Ricostruzione (sintesi o troncamento) parziale della serie di Fourier",
+          "sottosezioni": [
+            {
+              "id": "S13.SS1",
+              "numero": "4.13.1",
+              "titolo": "Errore Massimo"
+            },
+            {
+              "id": "S13.SS2",
+              "numero": "4.13.2",
+              "titolo": "Errore (quadratico) medio"
+            },
+            {
+              "id": "S13.SS3",
+              "numero": "4.13.3",
+              "titolo": "Errore quadratico medio con Parseval"
+            }
+          ]
+        },
+        {
+          "id": "S14",
+          "numero": "4.14",
+          "titolo": "Collocamento",
+          "sottosezioni": []
+        },
+        {
+          "id": "S15",
+          "numero": "4.15",
+          "titolo": "Dualita’ tempo-frequenza",
+          "sottosezioni": []
+        },
+        {
+          "id": "S16",
+          "numero": "4.16",
+          "titolo": "Frequenza Istantanea",
+          "sottosezioni": []
+        },
+        {
+          "id": "S17",
+          "numero": "4.17",
+          "titolo": "Modulazione di frequenza",
+          "sottosezioni": []
+        },
+        {
+          "id": "S18",
+          "numero": "4.18",
+          "titolo": "Prodotto scalare di due funzioni periodiche",
+          "sottosezioni": [
+            {
+              "id": "S18.SS1",
+              "numero": "4.18.1",
+              "titolo": "Esempio"
+            }
+          ]
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 5,
+      "slug": "5-segnali-a-tempo-discreto",
+      "titolo": "Segnali a tempo discreto",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "5.1",
+          "titolo": "Dal tempo continuo al tempo discreto",
+          "sottosezioni": [
+            {
+              "id": "S1.SS1",
+              "numero": "5.1.1",
+              "titolo": "Campionatore"
+            },
+            {
+              "id": "S1.SS2",
+              "numero": "5.1.2",
+              "titolo": "Quantizzatore (quantizzazione)"
+            }
+          ]
+        },
+        {
+          "id": "S2",
+          "numero": "5.2",
+          "titolo": "Osservazioni su segnali discreti",
+          "sottosezioni": [
+            {
+              "id": "S2.SS1",
+              "numero": "5.2.1",
+              "titolo": "La frequenza discreta e’ adimensionale"
+            },
+            {
+              "id": "S2.SS2",
+              "numero": "5.2.2",
+              "titolo": "Segnali diversi campionati a frequenze diverse possono dare lo stesso segnale"
+            },
+            {
+              "id": "S2.SS3",
+              "numero": "5.2.3",
+              "titolo": "Ogni coseno discreto ha infiniti ALIAS SECONDARI, ma uno PRINCIPALE nell’intervallo"
+            }
+          ]
+        },
+        {
+          "id": "S3",
+          "numero": "5.3",
+          "titolo": "Spettro",
+          "sottosezioni": [
+            {
+              "id": "S3.SS1",
+              "numero": "5.3.1",
+              "titolo": "Esempio"
+            }
+          ]
+        },
+        {
+          "id": "S4",
+          "numero": "5.4",
+          "titolo": "Teorema del campionamento (Shannon)",
+          "sottosezioni": [
+            {
+              "id": "S4.SS1",
+              "numero": "5.4.1",
+              "titolo": "Ricostruire un segnale"
+            },
+            {
+              "id": "S4.SS2",
+              "numero": "5.4.2",
+              "titolo": "Funzionamento kernel ottimo"
+            }
+          ]
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 6,
+      "slug": "6-sistemi",
+      "titolo": "Sistemi",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "6.1",
+          "titolo": "Esempio di sistemi, equazione alle differenze",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "6.2",
+          "titolo": "Proprieta’ dei sistemi",
+          "sottosezioni": []
+        },
+        {
+          "id": "S3",
+          "numero": "6.3",
+          "titolo": "Definizione di segnali tempo discreti particolari",
+          "sottosezioni": [
+            {
+              "id": "S3.SS1",
+              "numero": "6.3.1",
+              "titolo": "Delta di Kronecker (impulso discreto)"
+            },
+            {
+              "id": "S3.SS2",
+              "numero": "6.3.2",
+              "titolo": "Gradino causale (step function)"
+            },
+            {
+              "id": "S3.SS3",
+              "numero": "6.3.3",
+              "titolo": "Gradino anticausale"
+            }
+          ]
+        },
+        {
+          "id": "S4",
+          "numero": "6.4",
+          "titolo": "Altre poprieta’ dei sistemi",
+          "sottosezioni": [
+            {
+              "id": "S4.SS1",
+              "numero": "6.4.1",
+              "titolo": "Tempo-Invarianza (invarianza temporale)"
+            },
+            {
+              "id": "S4.SS2",
+              "numero": "6.4.2",
+              "titolo": "Linearita’"
+            }
+          ]
+        },
+        {
+          "id": "S5",
+          "numero": "6.5",
+          "titolo": "Di che sistemi trattiamo",
+          "sottosezioni": [
+            {
+              "id": "S5.SS1",
+              "numero": "6.5.1",
+              "titolo": "Esempio"
+            }
+          ]
+        },
+        {
+          "id": "S6",
+          "numero": "6.6",
+          "titolo": "Scomposizione con delta traslate",
+          "sottosezioni": []
+        },
+        {
+          "id": "S7",
+          "numero": "6.7",
+          "titolo": "Prodotto di convoluzione",
+          "sottosezioni": [
+            {
+              "id": "S7.SS1",
+              "numero": "6.7.1",
+              "titolo": "Proprieta’ del prodotto di convoluzione"
+            },
+            {
+              "id": "S7.SS2",
+              "numero": "6.7.2",
+              "titolo": "Razionalizzando la convoluzione"
+            }
+          ]
+        },
+        {
+          "id": "S8",
+          "numero": "6.8",
+          "titolo": "Risposta in frequenza",
+          "sottosezioni": [
+            {
+              "id": "S8.SS1",
+              "numero": "6.8.1",
+              "titolo": "Chiarimento"
+            },
+            {
+              "id": "S8.SS2",
+              "numero": "6.8.2",
+              "titolo": "Simmetria coniugata"
+            }
+          ]
+        },
+        {
+          "id": "S9",
+          "numero": "6.9",
+          "titolo": "Supporto risposta all’impulso",
+          "sottosezioni": []
+        },
+        {
+          "id": "S10",
+          "numero": "6.10",
+          "titolo": "Equazione alle differenze di un qualunque sistema LTI",
+          "sottosezioni": []
+        },
+        {
+          "id": "S11",
+          "numero": "6.11",
+          "titolo": "Filtraggio (pratico) con sistemi LTI",
+          "sottosezioni": [
+            {
+              "id": "S11.SS1",
+              "numero": "6.11.1",
+              "titolo": "Filtro passa basso (low pass)"
+            },
+            {
+              "id": "S11.SS2",
+              "numero": "6.11.2",
+              "titolo": "Filtro passa alto (High Pass)"
+            },
+            {
+              "id": "S11.SS3",
+              "numero": "6.11.3",
+              "titolo": "Filtro passa banda (Band Pass)"
+            },
+            {
+              "id": "S11.SS4",
+              "numero": "6.11.4",
+              "titolo": "Filtro blocca banda (Band Block)"
+            },
+            {
+              "id": "S11.SS5",
+              "numero": "6.11.5",
+              "titolo": "Esercizio 1"
+            },
+            {
+              "id": "S11.SS6",
+              "numero": "6.11.6",
+              "titolo": "Esercizio 2"
+            },
+            {
+              "id": "S11.SS7",
+              "numero": "6.11.7",
+              "titolo": "Esercizio 3 (Amplificatore Ideale)"
+            },
+            {
+              "id": "S11.SS8",
+              "numero": "6.11.8",
+              "titolo": "Esercizio 4"
+            }
+          ]
+        },
+        {
+          "id": "S12",
+          "numero": "6.12",
+          "titolo": "Sistemi in cascata",
+          "sottosezioni": []
+        },
+        {
+          "id": "S13",
+          "numero": "6.13",
+          "titolo": "Parallelo di due sistemi",
+          "sottosezioni": []
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 7,
+      "slug": "7-dtft",
+      "titolo": "DTFT",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "7.1",
+          "titolo": "Trasformata a tempo discreto di Fourier (DTFT)",
+          "sottosezioni": [
+            {
+              "id": "S1.SS1",
+              "numero": "7.1.1",
+              "titolo": "DTFT e’ periodica di periodo 2⁢π2\\pi"
+            },
+            {
+              "id": "S1.SS2",
+              "numero": "7.1.2",
+              "titolo": "La DTFT gode della proprieta’ si simmetria coniugata se x⁢[n]x[n] e’ reale"
+            },
+            {
+              "id": "S1.SS3",
+              "numero": "7.1.3",
+              "titolo": "La DTFT e’ un operatore lineare"
+            },
+            {
+              "id": "S1.SS4",
+              "numero": "7.1.4",
+              "titolo": "Se esiste la DTFT di x⁢[n]x[n], allora e’ unica"
+            },
+            {
+              "id": "S1.SS5",
+              "numero": "7.1.5",
+              "titolo": "Esempio 1"
+            },
+            {
+              "id": "S1.SS6",
+              "numero": "7.1.6",
+              "titolo": "Esempio 2"
+            }
+          ]
+        },
+        {
+          "id": "S2",
+          "numero": "7.2",
+          "titolo": "Esempi con luce",
+          "sottosezioni": []
+        },
+        {
+          "id": "S3",
+          "numero": "7.3",
+          "titolo": "Esempio",
+          "sottosezioni": []
+        },
+        {
+          "id": "S4",
+          "numero": "7.4",
+          "titolo": "Delta di Dirac (funzione continua)",
+          "sottosezioni": [
+            {
+              "id": "S4.SS1",
+              "numero": "7.4.1",
+              "titolo": "Dimostrazione Empirica"
+            },
+            {
+              "id": "S4.SS2",
+              "numero": "7.4.2",
+              "titolo": "Definizione che ragiona sull’area finita"
+            }
+          ]
+        },
+        {
+          "id": "S5",
+          "numero": "7.5",
+          "titolo": "Condizione sufficiente di esistenza della DTFT (”equivalente” condizioni di Dirichlet)",
+          "sottosezioni": [
+            {
+              "id": "S5.SS1",
+              "numero": "7.5.1",
+              "titolo": "Ulteriori riflessioni su cosa voglia dire analizzare e sintetizzare un segnale x⁢[n]x[n]"
+            }
+          ]
+        },
+        {
+          "id": "S6",
+          "numero": "7.6",
+          "titolo": "Proprieta’ del ritardo temporale",
+          "sottosezioni": []
+        },
+        {
+          "id": "S7",
+          "numero": "7.7",
+          "titolo": "Proprieta’ del ritardo in frequenza",
+          "sottosezioni": []
+        },
+        {
+          "id": "S8",
+          "numero": "7.8",
+          "titolo": "Modulazione d’ampiezza",
+          "sottosezioni": []
+        },
+        {
+          "id": "S9",
+          "numero": "7.9",
+          "titolo": "Spettro di un coseno",
+          "sottosezioni": []
+        },
+        {
+          "id": "S10",
+          "numero": "7.10",
+          "titolo": "Proprieta’ DTFT della convoluzione",
+          "sottosezioni": []
+        },
+        {
+          "id": "S11",
+          "numero": "7.11",
+          "titolo": "Esercizio 1",
+          "sottosezioni": []
+        },
+        {
+          "id": "S12",
+          "numero": "7.12",
+          "titolo": "Esericio 2",
+          "sottosezioni": []
+        },
+        {
+          "id": "S13",
+          "numero": "7.13",
+          "titolo": "Esempio 3",
+          "sottosezioni": []
+        },
+        {
+          "id": "S14",
+          "numero": "7.14",
+          "titolo": "Teorema di Parseval (legge di conservazione) per segnali tempo discreti",
+          "sottosezioni": [
+            {
+              "id": "S14.SS1",
+              "numero": "7.14.1",
+              "titolo": "Passo 1 dimostrazione"
+            },
+            {
+              "id": "S14.SS2",
+              "numero": "7.14.2",
+              "titolo": "Passo 2 dimostrazione"
+            },
+            {
+              "id": "S14.SS3",
+              "numero": "7.14.3",
+              "titolo": "Passo 2 dimostrazione"
+            },
+            {
+              "id": "S14.SS4",
+              "numero": "7.14.4",
+              "titolo": "Passo 4 dimostrazione"
+            }
+          ]
+        },
+        {
+          "id": "S15",
+          "numero": "7.15",
+          "titolo": "Matched Filter",
+          "sottosezioni": []
+        },
+        {
+          "id": "S16",
+          "numero": "7.16",
+          "titolo": "Precisazione cambio di variabile",
+          "sottosezioni": []
+        },
+        {
+          "id": "S17",
+          "numero": "7.17",
+          "titolo": "Risposta in frequenza e DTFT",
+          "sottosezioni": []
+        },
+        {
+          "id": "S18",
+          "numero": "7.18",
+          "titolo": "Filtraggio (LTI) nel tempo vs frequenze",
+          "sottosezioni": []
+        },
+        {
+          "id": "S19",
+          "numero": "7.19",
+          "titolo": "Un primo esempio di sistema LIT IIR",
+          "sottosezioni": []
+        },
+        {
+          "id": "S20",
+          "numero": "7.20",
+          "titolo": "Esercizio",
+          "sottosezioni": []
+        },
+        {
+          "id": "S21",
+          "numero": "7.21",
+          "titolo": "DFT",
+          "sottosezioni": [
+            {
+              "id": "S21.SS1",
+              "numero": "7.21.1",
+              "titolo": "Esercizio"
+            }
+          ]
+        },
+        {
+          "id": "S22",
+          "numero": "7.22",
+          "titolo": "Proprieta’ della DFT",
+          "sottosezioni": [
+            {
+              "id": "S22.SS1",
+              "numero": "7.22.1",
+              "titolo": "Proprieta’ 1: DFT periodica di N punti"
+            },
+            {
+              "id": "S22.SS2",
+              "numero": "7.22.2",
+              "titolo": "Propritea’ 2: DFT e’ simmetrica coniugata se x⁢[n]∈𝐑x[n]\\in\\mathbf{R}"
+            },
+            {
+              "id": "S22.SS3",
+              "numero": "7.22.3",
+              "titolo": "Proprieta’ 4: DFT e’ unica"
+            },
+            {
+              "id": "S22.SS4",
+              "numero": "7.22.4",
+              "titolo": "Proprieta’ 5: ritardo temporale"
+            },
+            {
+              "id": "S22.SS5",
+              "numero": "7.22.5",
+              "titolo": "Proprieta’ 6: convoluzione"
+            }
+          ]
+        },
+        {
+          "id": "S23",
+          "numero": "7.23",
+          "titolo": "Riassuno filtraggio LTI",
+          "sottosezioni": []
+        },
+        {
+          "id": "S24",
+          "numero": "7.24",
+          "titolo": "Fast Fourier Trasnsform FFT",
+          "sottosezioni": [
+            {
+              "id": "S24.SS1",
+              "numero": "7.24.1",
+              "titolo": "Costo computazionale filtraggio nel tempo (convoluzoine) VS frequenza (DFT)"
+            },
+            {
+              "id": "S24.SS2",
+              "numero": "7.24.2",
+              "titolo": "Base ortonormale"
+            },
+            {
+              "id": "S24.SS3",
+              "numero": "7.24.3",
+              "titolo": "Legge di conservazione (Parseval)"
+            }
+          ]
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 8,
+      "slug": "8-trasformata-z",
+      "titolo": "Trasformata Z",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "8.1",
+          "titolo": "Trasformate note",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "8.2",
+          "titolo": "Proprieta’ della trasformata Z",
+          "sottosezioni": [
+            {
+              "id": "S2.SS1",
+              "numero": "8.2.1",
+              "titolo": "Linearita’"
+            },
+            {
+              "id": "S2.SS2",
+              "numero": "8.2.2",
+              "titolo": "Ritardo temporale"
+            },
+            {
+              "id": "S2.SS3",
+              "numero": "8.2.3",
+              "titolo": "Convoluzione"
+            },
+            {
+              "id": "S2.SS4",
+              "numero": "8.2.4",
+              "titolo": "ROC ha sempre simmetria radiale"
+            },
+            {
+              "id": "S2.SS5",
+              "numero": "8.2.5",
+              "titolo": "Nota a margine"
+            }
+          ]
+        },
+        {
+          "id": "S3",
+          "numero": "8.3",
+          "titolo": "Funzione di trasferimento",
+          "sottosezioni": [
+            {
+              "id": "S3.SS1",
+              "numero": "8.3.1",
+              "titolo": "H⁢(z)H(z) per un sistema LTI qualunque"
+            }
+          ]
+        },
+        {
+          "id": "S4",
+          "numero": "8.4",
+          "titolo": "Ripasso dell’algebra polinomiale",
+          "sottosezioni": []
+        },
+        {
+          "id": "S5",
+          "numero": "8.5",
+          "titolo": "Zeri e Poli",
+          "sottosezioni": [
+            {
+              "id": "S5.SS1",
+              "numero": "8.5.1",
+              "titolo": "Esempio di zero"
+            }
+          ]
+        },
+        {
+          "id": "S6",
+          "numero": "8.6",
+          "titolo": "Esempi",
+          "sottosezioni": [
+            {
+              "id": "S6.SS1",
+              "numero": "8.6.1",
+              "titolo": "Esempio 1"
+            },
+            {
+              "id": "S6.SS2",
+              "numero": "8.6.2",
+              "titolo": "Esempio 2"
+            },
+            {
+              "id": "S6.SS3",
+              "numero": "8.6.3",
+              "titolo": "Esempio 3"
+            }
+          ]
+        },
+        {
+          "id": "S7",
+          "numero": "8.7",
+          "titolo": "Dalla H⁢(z)H(z) all’equazione alle differenze",
+          "sottosezioni": []
+        },
+        {
+          "id": "S8",
+          "numero": "8.8",
+          "titolo": "Da H⁢(z)H(z) alla risposta all’impulso",
+          "sottosezioni": []
+        },
+        {
+          "id": "S9",
+          "numero": "8.9",
+          "titolo": "Esempio 4",
+          "sottosezioni": []
+        },
+        {
+          "id": "S10",
+          "numero": "8.10",
+          "titolo": "Esercizio",
+          "sottosezioni": []
+        },
+        {
+          "id": "S11",
+          "numero": "8.11",
+          "titolo": "Esercizio",
+          "sottosezioni": []
+        },
+        {
+          "id": "S12",
+          "numero": "8.12",
+          "titolo": "All zeros, All poles",
+          "sottosezioni": []
+        },
+        {
+          "id": "S13",
+          "numero": "8.13",
+          "titolo": "Esempio",
+          "sottosezioni": []
+        },
+        {
+          "id": "S14",
+          "numero": "8.14",
+          "titolo": "Metodo dei residui",
+          "sottosezioni": []
+        },
+        {
+          "id": "S15",
+          "numero": "8.15",
+          "titolo": "Stabilita’ di un filtro LTI",
+          "sottosezioni": [
+            {
+              "id": "S15.SS1",
+              "numero": "8.15.1",
+              "titolo": "Teorema 1"
+            }
+          ]
+        }
+      ],
+      "math": true
+    }
+  ]
+}

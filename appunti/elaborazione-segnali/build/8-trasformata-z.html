@@ -1,0 +1,1010 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">Grazie allo strumento di analisi (FFT o DFT) abbiamo capito meglio il filtraggio e ci siamo resi conto che e’ algebricamente complicato.
+Dobbiamo quindi trovare degli strumenti piu’ semplici per filtrare un segnale.
+Per fare questo dobbiamo usare un nuovo operatore, che e’ molto importante nell’analisi complessa, ma che a noi non interessa molto a livello teorico ma solamente a livello pratico, per semplificarci la vita.
+L’idea che dobbiamo avere in mente e’ che stiamo aggiungendo una dimensione ulteriore, in modo tale da vedere le cose piu’ da lontano dato che risulteranno piu’ facili.</p>
+</div>
+<div id="p2" class="ltx_para">
+<p class="ltx_p">L’operatore che introduciamo si chiama TRASFORMATA Z, ne diamo subito la definizione:</p>
+</div>
+<div id="p3" class="ltx_para">
+<div id="E1" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id1">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id1"><span class="bml_sr_only">equation </span>(8.1)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(8.1)</span>
+<div class="ltx_Math ltx_math_unparsed bml_eqn_cell ltx_align_center"><math id="E1.m1" class="ltx_math_unparsed" alttext="\in\mathbf{C}\leftarrow X(z)=\sum_{n=-\infty}^{+\infty}x[n]z^{-n}\leftarrow\in%
+\mathbf{Z}" display="block"><semantics><mrow><mo>∈</mo><mi>𝐂</mi><mo stretchy="false">←</mo><mi>X</mi><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo rspace="0.111em">=</mo><munderover><mo movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mi>x</mi><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><msup><mi>z</mi><mrow><mo>−</mo><mi>n</mi></mrow></msup><mo rspace="0em" stretchy="false">←</mo><mo lspace="0em">∈</mo><mi>𝐙</mi></mrow></semantics></math></div>
+</div>
+</div>
+<figure id="fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez26-trasformataZ.webp" width="705" height="272" loading="lazy" alt="Piano complesso con asse verticale Im e asse orizzontale R. Una circonferenza rossa centrata nell'origine, con una freccia rossa dall'etichetta e^{jω̂}, e un'etichetta 1 sul suo bordo. Intorno al cerchio sono tracciati trattini gialli sparsi nel piano esterno e una piccola croce gialla al centro."></div>
+</figure>
+<div id="p4" class="ltx_para">
+<p class="ltx_p">z e’ quello che prima chiamavamo <math id="p4.m1" class="ltx_Math" alttext="e^{j\hat{\omega}}" display="inline"><semantics><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup></semantics></math>, e grazie a questa generalizzazione notiamo che prima con la DTFT potevamo stare solamente sul cerchio unitario, in quanto <math id="p4.m2" class="ltx_Math" alttext="e^{j\hat{\omega}}" display="inline"><semantics><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup></semantics></math> valeva 1 in quei punti, mentre ora posso muovermi lungo tutto il piano (tranne dentro al cerchio).</p>
+</div>
+<section id="S0.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.0.1</span> Esempio 1</h3>
+
+<div id="S0.SS1.p1" class="ltx_para">
+<p class="ltx_p">Consideriamo il seguente segnale e calcoliamone la trasformata Z:</p>
+</div>
+<figure id="S0.SS1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez26-es1TrasZ.webp" width="1600" height="667" loading="lazy" alt="A sinistra un segnale discreto con asse n: campioni rossi di valore 1 in n=-1, 3/2 in n=0, 1/2 in n=1 e -2 in n=2. A destra la trasformata scritta a mano: X(z) = 1·z^1 + 3/2 z^0 + 1/2 z^-1 - 2 z^-2, con sotto i valori n=-1, n=0, n=1, n=2. In basso a destra la scritta 'polinomio / polinomio' con freccia verso z^-1 = 1/z; una freccia arancione collega il campione in -1 al primo termine."></div>
+</figure>
+<div id="S0.SS1.p2" class="ltx_para">
+<p class="ltx_p">Notiamo che abbiamo ottenuto tutti polinomi, diversamente da quanto succedeva con la DTFT dove ottenevamo una sommatoria di esponenziali complessi. Quindi possiamo dire che X(z) E’ SEMPRE UN RAPPORTO DI DUE POLINOMI.</p>
+</div>
+</div>
+</section>
+<section id="S0.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.0.2</span> Esempio 2</h3>
+
+<div id="S0.SS2.p1" class="ltx_para">
+<p class="ltx_p">Ora consideriamo il seguente segnale:</p>
+</div>
+<div id="S0.SS2.p2" class="ltx_para">
+<div id="Ex1" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex1.m1" class="ltx_Math" alttext="x[n]=a^{n}u[n]" display="block"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><msup><mi>a</mi><mi>n</mi></msup><mo>⁢</mo><mi>u</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S0.SS2.p3" class="ltx_para">
+<p class="ltx_p">Che ricordiamo esistere solo se <math id="S0.SS2.p3.m1" class="ltx_Math" alttext="|a|&lt;1" display="inline"><semantics><mrow><mrow><mo stretchy="false">|</mo><mi>a</mi><mo stretchy="false">|</mo></mrow><mo>&lt;</mo><mn>1</mn></mrow></semantics></math>.</p>
+</div>
+<figure id="S0.SS2.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez26-esempio2.webp" width="570" height="290" loading="lazy" alt="Campioni di un segnale a^n u[n] disegnati come punti sopra un asse orizzontale. Punti rossi a sinistra sull'asse e alcuni punti rossi sparsi sopra, con la scritta rossa |a|&lt;1 cerchiata di giallo a destra. Punti blu con la scritta |a|=1 e punti verdi più in alto con la scritta |a|>1 e una freccia verde."></div>
+</figure>
+<div id="S0.SS2.p4" class="ltx_para">
+<p class="ltx_p">Troviamo la trasformata Z:</p>
+</div>
+<div id="S0.SS2.p5" class="ltx_para">
+<div id="Ex2" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex2.m1" class="ltx_Math" alttext="\begin{split}X(z)&amp;{}=\sum_{n=-\infty}^{+\infty}a^{n}u[n]z^{-n}=\sum_{n=0}^{+%
+\infty}(az^{-1})^{n}\\
+&amp;{}\frac{1}{1-az^{-1}}\mbox{ SE }|az^{-1}|&lt;1\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><msup><mi>a</mi><mi>n</mi></msup><mo>⁢</mo><mi>u</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>n</mi></mrow></msup></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false" rspace="0em">∑</mo><mrow><mi>n</mi><mo>=</mo><mn>0</mn></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><msup><mrow><mo stretchy="false">(</mo><mrow><mi>a</mi><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo stretchy="false">)</mo></mrow><mi>n</mi></msup></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><mrow><mi>a</mi><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow></mfrac><mo>⁢</mo><mtext> SE </mtext><mo>⁢</mo><mrow><mo stretchy="false">|</mo><mrow><mi>a</mi><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo stretchy="false">|</mo></mrow></mrow><mo>&lt;</mo><mn>1</mn></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S0.SS2.p6" class="ltx_para">
+<p class="ltx_p"><math id="S0.SS2.p6.m1" class="ltx_Math" alttext="|az^{-1}|=\frac{|a|}{|z|}&lt;1\leftarrow|z|&gt;|a|" display="inline"><semantics><mrow><mrow><mo stretchy="false">|</mo><mrow><mi>a</mi><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo stretchy="false">|</mo></mrow><mo>=</mo><mfrac><mrow><mo stretchy="false">|</mo><mi>a</mi><mo stretchy="false">|</mo></mrow><mrow><mo stretchy="false">|</mo><mi>z</mi><mo stretchy="false">|</mo></mrow></mfrac><mo>&lt;</mo><mn>1</mn><mo stretchy="false">←</mo><mrow><mo stretchy="false">|</mo><mi>z</mi><mo stretchy="false">|</mo></mrow><mo>&gt;</mo><mrow><mo stretchy="false">|</mo><mi>a</mi><mo stretchy="false">|</mo></mrow></mrow></semantics></math> e’ molto importante e si chiama regione di convergenza ROC.</p>
+</div>
+<figure id="S0.SS2.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez26-regioneConvergenza.webp" width="1238" height="858" loading="lazy" alt="In alto la scrittura |a z^-1| = |a|/|z| &lt; 1 e |z| > |a| (sottolineato in rosso). Piano complesso con assi Im e R e una circonferenza di raggio |a|; la zona esterna al cerchio è indicata da molti tratti rosa disposti a raggiera. Scritte: R.O.C. in rosso e, in rosa, 'REGIONE DI CONVERGENZA (DELLA TRASFORMATA Z)', con una graffa rossa."></div>
+</figure>
+<div class="ltx_pagination ltx_role_newpage"></div>
+</div>
+</section>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.1</span> Trasformate note</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">Vediamo due coppie di trasformate z (prese anche dagli esercizi che abbiamo fatto):</p>
+</div>
+<div id="S1.p2" class="ltx_para">
+<div id="Ex3" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math ltx_math_unparsed bml_eqn_cell ltx_align_center"><math id="Ex3.m1" class="ltx_math_unparsed" alttext="\begin{split}x[n]=a^{n}u[n]\leftrightarrow\begin{cases}X(z)=\frac{1}{1-az^{-1}%
+}\\
+R.O.C.:|z|&gt;|a|\\
+\end{cases}\\
+x[n]=-a^{n}u[-n-1]\leftrightarrow\begin{cases}X(z)=\frac{1}{1-az^{-1}}\\
+R.O.C.:|z|&lt;|a|\\
+\end{cases}\\
+\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><msup><mi>a</mi><mi>n</mi></msup><mo>⁢</mo><mi>u</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow><mo stretchy="false">↔</mo><mrow><mo>{</mo><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mstyle displaystyle="false"><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><mrow><mi>a</mi><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow></mfrac></mstyle></mrow></mtd><mtd></mtd></mtr><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mi>R</mi><mo lspace="0em" rspace="0.167em">.</mo><mi>O</mi><mo lspace="0em" rspace="0.167em">.</mo><mi>C</mi><mo lspace="0em" rspace="0.167em">.</mo><mo rspace="0em">:</mo><mo fence="false" rspace="0.167em" stretchy="false">|</mo><mi>z</mi><mo fence="false" stretchy="false">|</mo><mo lspace="0.167em" rspace="0em">&gt;</mo><mo fence="false" rspace="0.167em" stretchy="false">|</mo><mi>a</mi><mo fence="false" stretchy="false">|</mo></mrow></mtd><mtd></mtd></mtr></mtable></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mo>−</mo><mrow><msup><mi>a</mi><mi>n</mi></msup><mo>⁢</mo><mi>u</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mrow><mo>−</mo><mi>n</mi></mrow><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow><mo stretchy="false">↔</mo><mrow><mo>{</mo><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mstyle displaystyle="false"><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><mrow><mi>a</mi><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow></mfrac></mstyle></mrow></mtd><mtd></mtd></mtr><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mi>R</mi><mo lspace="0em" rspace="0.167em">.</mo><mi>O</mi><mo lspace="0em" rspace="0.167em">.</mo><mi>C</mi><mo lspace="0em" rspace="0.167em">.</mo><mo rspace="0em">:</mo><mo fence="false" rspace="0.167em" stretchy="false">|</mo><mi>z</mi><mo fence="false" stretchy="false">|</mo><mo lspace="0.167em" rspace="0em">&lt;</mo><mo fence="false" rspace="0.167em" stretchy="false">|</mo><mi>a</mi><mo fence="false" stretchy="false">|</mo></mrow></mtd><mtd></mtd></mtr></mtable></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S1.p3" class="ltx_para">
+<p class="ltx_p">Il primo e’ chiamato gradino CAUSALE e notiamo che la sua ROC va verso infinito, mentre il secondo e’ chiamato gradino ANTICAUSALE e la sua ROC va verso 0.</p>
+</div>
+<div id="S1.p4" class="ltx_para">
+<p class="ltx_p">E’ importante notare che, a differenza di quello che succedeva con la DTFT, la trasformata z non e’ unica SE non la associamo alla sua ROC.
+Possiamo quindi dire che <math id="S1.p4.m1" class="ltx_Math" alttext="X(z)+ROC" display="inline"><semantics><mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>+</mo><mrow><mi>R</mi><mo>⁢</mo><mi>O</mi><mo>⁢</mo><mi>C</mi></mrow></mrow></semantics></math> e’ unica, quindi esiste un solo segnale di cui e’ la trasformata z.</p>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.2</span> Proprieta’ della trasformata Z</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Vediamo ora tutte le proprieta’ che ci serviranno della trasformata Z:</p>
+</div>
+<section id="S2.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.2.1</span> Linearita’</h3>
+
+<div id="S2.SS1.p1" class="ltx_para">
+<div id="Ex4" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex4.m1" class="ltx_Math" alttext="X(z)=\sum_{n=-\infty}^{+\infty}x[n]z^{-n}" display="block"><semantics><mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>n</mi></mrow></msup></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S2.SS1.p2" class="ltx_para">
+<p class="ltx_p">Notiamo che la trasformata z e’ la composizione lineare di operatori lineari:</p>
+<ul id="S2.I1" class="ltx_itemize">
+<li id="S2.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i1.p1" class="ltx_para"><p class="ltx_p">Somme</p>
+</div>
+</li>
+<li id="S2.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i2.p1" class="ltx_para"><p class="ltx_p">Prodotti</p>
+</div>
+</li>
+<li id="S2.I1.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i3.p1" class="ltx_para"><p class="ltx_p">Costanti</p>
+</div>
+</li>
+</ul>
+<p class="ltx_p">Quindi e’ anch’esso un operatore lineare.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.2.2</span> Ritardo temporale</h3>
+
+<div id="S2.SS2.p1" class="ltx_para">
+<p class="ltx_p">Questa e’ una proprieta’ molto importante per svolgere gli esercizi, vediamo cosa succede alla trasformata z quando ritardiamo il segnale di <math id="S2.SS2.p1.m1" class="ltx_Math" alttext="n_{0}" display="inline"><semantics><msub><mi>n</mi><mn>0</mn></msub></semantics></math> campioni:</p>
+</div>
+<div id="S2.SS2.p2" class="ltx_para">
+<div id="Ex5" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex5.m1" class="ltx_Math" alttext="\begin{split}x[n]&amp;{}\leftrightarrow\begin{cases}X(z)\\
+R.O.C.\\
+\end{cases}\\
+x[n-n_{0}]&amp;{}\leftrightarrow\begin{cases}X(z)\cdot z^{-n_{0}}\\
+R.O.C.\end{cases}\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo stretchy="false">↔</mo><mrow><mo>{</mo><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd></mtd></mtr><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mi>R</mi><mo lspace="0em" rspace="0.167em">.</mo><mi>O</mi><mo lspace="0em" rspace="0.167em">.</mo><mi>C</mi></mrow><mo lspace="0em">.</mo></mrow></mtd><mtd></mtd></mtr></mtable></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><msub><mi>n</mi><mn>0</mn></msub></mrow><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo stretchy="false">↔</mo><mrow><mo>{</mo><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo rspace="0.055em" stretchy="false">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><msup><mi>z</mi><mrow><mo>−</mo><msub><mi>n</mi><mn>0</mn></msub></mrow></msup></mrow></mtd><mtd></mtd></mtr><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mi>R</mi><mo lspace="0em" rspace="0.167em">.</mo><mi>O</mi><mo lspace="0em" rspace="0.167em">.</mo><mi>C</mi></mrow><mo lspace="0em">.</mo></mrow></mtd><mtd></mtd></mtr></mtable></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S2.SS2.p3" class="ltx_para">
+<p class="ltx_p">Vediamo che la trasformata e’ moltiplicata per un fattore <math id="S2.SS2.p3.m1" class="ltx_Math" alttext="z^{-n_{0}}" display="inline"><semantics><msup><mi>z</mi><mrow><mo>−</mo><msub><mi>n</mi><mn>0</mn></msub></mrow></msup></semantics></math>, dimostriamolo:</p>
+</div>
+<div id="S2.SS2.p4" class="ltx_para">
+<div id="Ex6" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex6.m1" class="ltx_Math" alttext="\begin{split}Z\{x[n-n_{0}]\}&amp;{}=\sum_{n=-\infty}^{+\infty}x[n-n_{0}]z^{-n}\\
+\mbox{Cambio di variabile: }m&amp;{}=n-n_{0},n=m+n_{0}\\
+&amp;{}=\sum_{n=-\infty}^{+\infty}x[m]z^{-m-n_{0}}\\
+&amp;{}=z^{-n_{0}}\sum_{m=-\infty}^{+\infty}x[m]z^{-m}=z^{-n_{0}}X(z)\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>Z</mi><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><msub><mi>n</mi><mn>0</mn></msub></mrow><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">}</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><msub><mi>n</mi><mn>0</mn></msub></mrow><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>n</mi></mrow></msup></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mtext>Cambio di variabile: </mtext><mo>⁢</mo><mi>m</mi></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mi></mi><mo>=</mo><mrow><mi>n</mi><mo>−</mo><msub><mi>n</mi><mn>0</mn></msub></mrow></mrow><mo>,</mo><mrow><mi>n</mi><mo>=</mo><mrow><mi>m</mi><mo>+</mo><msub><mi>n</mi><mn>0</mn></msub></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>m</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>z</mi><mrow><mrow><mo>−</mo><mi>m</mi></mrow><mo>−</mo><msub><mi>n</mi><mn>0</mn></msub></mrow></msup></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><msup><mi>z</mi><mrow><mo>−</mo><msub><mi>n</mi><mn>0</mn></msub></mrow></msup><mo>⁢</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>m</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>m</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>m</mi></mrow></msup></mrow></mrow></mrow><mo>=</mo><mrow><msup><mi>z</mi><mrow><mo>−</mo><msub><mi>n</mi><mn>0</mn></msub></mrow></msup><mo>⁢</mo><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+<section id="S2.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.2.3</span> Convoluzione</h3>
+
+<div id="S2.SS3.p1" class="ltx_para">
+<p class="ltx_p">La convoluzione si trasforma in moltiplicazione:</p>
+</div>
+<div id="S2.SS3.p2" class="ltx_para">
+<div id="Ex7" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex7.m1" class="ltx_Math" alttext="x[n]*y[n]\leftrightarrow X(z)\cdot Y(z)" display="block"><semantics><mrow><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mi>y</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">↔</mo><mrow><mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo rspace="0.055em" stretchy="false">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mi>Y</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div class="ltx_pagination ltx_role_newpage"></div>
+</div>
+</section>
+<section id="S2.SS4" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.2.4</span> ROC ha sempre simmetria radiale</h3>
+
+<div id="S2.SS4.p1" class="ltx_para">
+<p class="ltx_p">La trasformata z assume lo stesso valore per ogni <math id="S2.SS4.p1.m1" class="ltx_Math" alttext="|z|=a" display="inline"><semantics><mrow><mrow><mo stretchy="false">|</mo><mi>z</mi><mo stretchy="false">|</mo></mrow><mo>=</mo><mi>a</mi></mrow></semantics></math></p>
+</div>
+<figure id="S2.SS4.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez27-ROCsimmetriaRadiale.webp" width="1220" height="811" loading="lazy" alt="In alto un piano complesso con una circonferenza di raggio a e la scritta 'X(z) assume lo stesso valore per ogni |z| = a' con una freccia. In basso un altro piano complesso con quattro circonferenze concentriche, una con il raggio etichettato a, altre con etichette b, c, d (poco leggibili); due corone circolari sono evidenziate in verde."></div>
+</figure>
+<div id="S2.SS4.p2" class="ltx_para">
+<p class="ltx_p">Questo succede che la il modulo della trasformata z, che e’ una sommatoria non deve divergere, ma notiamo che la trasformata dipende solo dal modulo, non dalla fase che invece puo’ ruotare anche all’infinito ruotando intorno alla circonferenza, ed e’ per questo che il <math id="S2.SS4.p2.m1" class="ltx_Math" alttext="|X(z)|" display="inline"><semantics><mrow><mo stretchy="false">|</mo><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">|</mo></mrow></semantics></math> dipende solo dal modulo di z, che e’ uguale su ogni circonferenza, con centro l’origine. Ne deriviamo quindi la simmetria radiale della ROC:</p>
+</div>
+<div id="S2.SS4.p3" class="ltx_para">
+<div id="Ex8" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex8.m1" class="ltx_Math" alttext="\begin{split}|X(z)|&amp;{}=|\sum_{n=-\infty}^{+\infty}x[n]z^{-n}|\\
+&amp;{}\leq\sum_{n=-\infty}^{+\infty}|x[n]z^{-n}|=\sum_{n=-\infty}^{+\infty}|x[n]|%
+|z^{-n}|\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mo stretchy="false">|</mo><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">|</mo></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mo stretchy="false">|</mo><mrow><munderover><mo lspace="0em" movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>n</mi></mrow></msup></mrow></mrow><mo stretchy="false">|</mo></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo rspace="0.111em">≤</mo><mrow><munderover><mo movablelimits="false" rspace="0em">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mo stretchy="false">|</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>n</mi></mrow></msup></mrow><mo stretchy="false">|</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false" rspace="0em">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mrow><mo stretchy="false">|</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">|</mo></mrow><mo>⁢</mo><mrow><mo stretchy="false">|</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>n</mi></mrow></msup><mo stretchy="false">|</mo></mrow></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div class="ltx_pagination ltx_role_newpage"></div>
+</div>
+</section>
+<section id="S2.SS5" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.2.5</span> Nota a margine</h3>
+
+<div id="S2.SS5.p1" class="ltx_para">
+<p class="ltx_p">Negli schemi circuitali c’e’ un segno particolare che e’ il ritardo di un campione, che ha il simbolo del ritardo della trasformata z, non ha nulla a che vedere con la trasformata z, ma si rifa’ alla sua proprieta’ del ritardo temporale:</p>
+</div>
+<figure id="S2.SS5.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez27-notaMargine.webp" width="718" height="391" loading="lazy" alt="Simbolo a triangolo (blocco di ritardo) con dentro z^-1, ingresso x[n] a sinistra e uscita x[n-1] a destra. Sotto il triangolo la scritta X(z) z^-1; in alto la scritta 'ritardo di un campione' con una freccia verso il triangolo."></div>
+</figure>
+</div>
+</section>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.3</span> Funzione di trasferimento</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">Partiamo ricordando qual’e’ l’output di un sistema LTI:</p>
+</div>
+<figure id="S3.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez27-funzioneTrasferimento.webp" width="1203" height="636" loading="lazy" alt="In alto uno schema a blocchi: ingresso x[n], rettangolo con h[n], uscita y[n] = x[n] * h[n]. Sotto l'equazione y[n] = x[n] * h[n] con tre frecce verso il basso che portano a Y(z) = X(z) H(z); una freccia gialla con la scritta P3 punta al prodotto. Sotto ciascuna trasformata compare la scritta ROC, solo in parte visibile."></div>
+</figure>
+<div id="S3.p2" class="ltx_para">
+<p class="ltx_p">Vediamo che si facciamo la trasformata z di ogni elemento nell’equazione dell’uscita di un sistema LTI, applicando inoltre la proprieta’ della trasformata che trasforma la convoluzione in moltiplicazione e successivamente raccogliamo la trasformata z della risposta all’impulso otteniamo la FUNZIONE DI TRASFERIMENTO:</p>
+</div>
+<div id="S3.p3" class="ltx_para">
+<div id="Ex9" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex9.m1" class="ltx_Math" alttext="Z\{h[n]\}=H(z)=\frac{Y(z)}{X(z)}" display="block"><semantics><mrow><mrow><mi>Z</mi><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">}</mo></mrow></mrow><mo>=</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mfrac><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mfrac></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.p4" class="ltx_para">
+<p class="ltx_p">E’ chiamata funzione di trasferimento perche’ trasferisce l’ingresso sull’uscita.</p>
+</div>
+<section id="S3.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.3.1</span> <math id="S3.SS1.m1" class="ltx_Math" alttext="H(z)" display="inline"><semantics><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></semantics></math> per un sistema LTI qualunque</h3>
+
+<div id="S3.SS1.p1" class="ltx_para">
+<p class="ltx_p">Vediamo ora come trovare la funzione di trasferimento partendo dall’equazione alle differenze di un sistema LTI qualunque, lo facciamo applicando le proprieta’ che abbiamo appena visto:</p>
+</div>
+<div id="S3.SS1.p2" class="ltx_para">
+<div id="Ex10" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex10.m1" class="ltx_Math" alttext="\begin{split}&amp;{}y[n]=\sum_{h=-N_{1},h\neq 0}^{N_{2}}ahy[n-h]+\sum_{k=-M_{1}}^{%
+M_{2}}bkx[n-k]\\
+&amp;{}\mbox{Troviamo la trasformata z di ogni fattore ed applichiamo la proprieta%
+' di linearita'}\\
+&amp;{}Y(z)=\sum_{h=-N_{1},h\neq 0}^{N_{2}}ahZ\{y[n-h]\}+\sum_{k=-M_{1}}^{M_{2}}%
+bkZ\{x[n-k]\}\\
+&amp;{}\mbox{Applichiamo la proprieta' del ritardo temporale per i segnali y e x:}%
+\\
+&amp;{}Y(z)=\sum_{h=-N_{1},h\neq 0}^{N_{2}}ahY(z)z^{-h}+\sum_{k=-M_{1}}^{M_{2}}bkX%
+(z)z^{-k}\\
+&amp;{}\mbox{Portiamo a sinistra i fattori che dipendono dalla trasformata Y:}\\
+&amp;{}Y(z)-Y(z)\sum_{h=-N_{1},h\neq 0}^{N_{2}}ahz^{-h}=X(z)\sum_{k=-M_{1}}^{M_{2}%
+}bkz^{-k}\\
+&amp;{}\frac{Y(z)}{X(z)}=\frac{\sum_{k=-M_{1}}^{M_{2}}bkz^{-k}}{\sum_{h=-N_{1},h%
+\neq 0}^{N_{2}}ahz^{-h}}=H(z)\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mrow><mi>h</mi><mo>=</mo><mrow><mo>−</mo><msub><mi>N</mi><mn>1</mn></msub></mrow></mrow><mo>,</mo><mrow><mi>h</mi><mo>≠</mo><mn>0</mn></mrow></mrow><msub><mi>N</mi><mn>2</mn></msub></munderover><mrow><mi>a</mi><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>h</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo rspace="0.055em">+</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><msub><mi>M</mi><mn>1</mn></msub></mrow></mrow><msub><mi>M</mi><mn>2</mn></msub></munderover><mrow><mi>b</mi><mo>⁢</mo><mi>k</mi><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mtext>Troviamo la trasformata z di ogni fattore ed applichiamo la proprieta’ di linearita’</mtext></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mrow><mi>h</mi><mo>=</mo><mrow><mo>−</mo><msub><mi>N</mi><mn>1</mn></msub></mrow></mrow><mo>,</mo><mrow><mi>h</mi><mo>≠</mo><mn>0</mn></mrow></mrow><msub><mi>N</mi><mn>2</mn></msub></munderover><mrow><mi>a</mi><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mi>Z</mi><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>h</mi></mrow><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">}</mo></mrow></mrow></mrow><mo rspace="0.055em">+</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><msub><mi>M</mi><mn>1</mn></msub></mrow></mrow><msub><mi>M</mi><mn>2</mn></msub></munderover><mrow><mi>b</mi><mo>⁢</mo><mi>k</mi><mo>⁢</mo><mi>Z</mi><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">}</mo></mrow></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mtext>Applichiamo la proprieta’ del ritardo temporale per i segnali y e x:</mtext></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mrow><mi>h</mi><mo>=</mo><mrow><mo>−</mo><msub><mi>N</mi><mn>1</mn></msub></mrow></mrow><mo>,</mo><mrow><mi>h</mi><mo>≠</mo><mn>0</mn></mrow></mrow><msub><mi>N</mi><mn>2</mn></msub></munderover><mrow><mi>a</mi><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>h</mi></mrow></msup></mrow></mrow><mo rspace="0.055em">+</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><msub><mi>M</mi><mn>1</mn></msub></mrow></mrow><msub><mi>M</mi><mn>2</mn></msub></munderover><mrow><mi>b</mi><mo>⁢</mo><mi>k</mi><mo>⁢</mo><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>k</mi></mrow></msup></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mtext>Portiamo a sinistra i fattori che dipendono dalla trasformata Y:</mtext></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>−</mo><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mrow><mi>h</mi><mo>=</mo><mrow><mo>−</mo><msub><mi>N</mi><mn>1</mn></msub></mrow></mrow><mo>,</mo><mrow><mi>h</mi><mo>≠</mo><mn>0</mn></mrow></mrow><msub><mi>N</mi><mn>2</mn></msub></munderover><mrow><mi>a</mi><mo>⁢</mo><mi>h</mi><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>h</mi></mrow></msup></mrow></mrow></mrow></mrow><mo>=</mo><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><msub><mi>M</mi><mn>1</mn></msub></mrow></mrow><msub><mi>M</mi><mn>2</mn></msub></munderover><mrow><mi>b</mi><mo>⁢</mo><mi>k</mi><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>k</mi></mrow></msup></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mfrac><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mfrac><mo>=</mo><mfrac><mrow><msubsup><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><msub><mi>M</mi><mn>1</mn></msub></mrow></mrow><msub><mi>M</mi><mn>2</mn></msub></msubsup><mrow><mi>b</mi><mo>⁢</mo><mi>k</mi><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>k</mi></mrow></msup></mrow></mrow><mrow><msubsup><mo>∑</mo><mrow><mrow><mi>h</mi><mo>=</mo><mrow><mo>−</mo><msub><mi>N</mi><mn>1</mn></msub></mrow></mrow><mo>,</mo><mrow><mi>h</mi><mo>≠</mo><mn>0</mn></mrow></mrow><msub><mi>N</mi><mn>2</mn></msub></msubsup><mrow><mi>a</mi><mo>⁢</mo><mi>h</mi><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>h</mi></mrow></msup></mrow></mrow></mfrac><mo>=</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p3" class="ltx_para">
+<p class="ltx_p">E’ importante notare che la funzione di trasferimento e’ sempre una funzione razionale fratta (frazione tra due polinomi).</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.4</span> Ripasso dell’algebra polinomiale</h2>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">Ricordiamo che un qualsiasi polinomio:</p>
+<div id="Ex11" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex11.m1" class="ltx_Math" alttext="a_{N}z^{N}+a_{N-1}z^{N-1}+...+a_{1}z^{1}+a_{0}=0" display="block"><semantics><mrow><mrow><mrow><msub><mi>a</mi><mi>N</mi></msub><mo>⁢</mo><msup><mi>z</mi><mi>N</mi></msup></mrow><mo>+</mo><mrow><msub><mi>a</mi><mrow><mi>N</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mi>N</mi><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo>+</mo><mi mathvariant="normal">…</mi><mo>+</mo><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><msup><mi>z</mi><mn>1</mn></msup></mrow><mo>+</mo><msub><mi>a</mi><mn>0</mn></msub></mrow><mo>=</mo><mn>0</mn></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S4.p2" class="ltx_para">
+<p class="ltx_p">Lo possiamo caratterizzare in due modi, o con i coefficienti:</p>
+<div id="Ex12" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex12.m1" class="ltx_Math" alttext="a_{0},a_{1},a_{2},...,a_{n}" display="block"><semantics><mrow><msub><mi>a</mi><mn>0</mn></msub><mo>,</mo><msub><mi>a</mi><mn>1</mn></msub><mo>,</mo><msub><mi>a</mi><mn>2</mn></msub><mo>,</mo><mi mathvariant="normal">…</mi><mo>,</mo><msub><mi>a</mi><mi>n</mi></msub></mrow></semantics></math></div>
+</div>
+<p class="ltx_p">Abbiamo quindi N+1 coefficienti.</p>
+</div>
+<div id="S4.p3" class="ltx_para">
+<p class="ltx_p">Oppure fattorizzandolo (lo esprimiamo come prodotto di due o piu’ fattori polinomiali di grado inferiore):</p>
+<div id="Ex13" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex13.m1" class="ltx_Math" alttext="a_{N}(z-z_{1})(z-z_{2})...(z-z_{N})" display="block"><semantics><mrow><msub><mi>a</mi><mi>N</mi></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>z</mi><mo>−</mo><msub><mi>z</mi><mn>1</mn></msub></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>z</mi><mo>−</mo><msub><mi>z</mi><mn>2</mn></msub></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mi mathvariant="normal">…</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>z</mi><mo>−</mo><msub><mi>z</mi><mi>N</mi></msub></mrow><mo stretchy="false">)</mo></mrow></mrow></semantics></math></div>
+</div>
+<p class="ltx_p">Abbiamo quindi N radici appartenenti a C + un coefficiente (<math id="S4.p3.m1" class="ltx_Math" alttext="a_{n}" display="inline"><semantics><msub><mi>a</mi><mi>n</mi></msub></semantics></math>).</p>
+</div>
+<div id="S4.p4" class="ltx_para">
+<p class="ltx_p">Ricordiamo anche il teorema fondamentale dell’algebra che dice che per ogni polinomio di grado N ammette N soluzioni di C. Per ogni polinomio di grado N a coefficienti reali ammette N soluzioni reali o complesse coniugate.</p>
+</div>
+</div>
+</section>
+<section id="S5" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.5</span> Zeri e Poli</h2>
+
+<div id="S5.p1" class="ltx_para">
+<p class="ltx_p">Riscriviamo la funzione di trasferimento di un generico sistema LTI fattorizzando i polinomi al numeratore ed al denominatore, notando che al numeratore abbiamo un polinomio di grado M, dove <math id="S5.p1.m1" class="ltx_Math" alttext="M=M_{1}+M_{2}" display="inline"><semantics><mrow><mi>M</mi><mo>=</mo><mrow><msub><mi>M</mi><mn>1</mn></msub><mo>+</mo><msub><mi>M</mi><mn>2</mn></msub></mrow></mrow></semantics></math>, mentre al denominatore abbiamo un polinomio di grado N, dove <math id="S5.p1.m2" class="ltx_Math" alttext="N=N_{1}+N_{2}" display="inline"><semantics><mrow><mi>N</mi><mo>=</mo><mrow><msub><mi>N</mi><mn>1</mn></msub><mo>+</mo><msub><mi>N</mi><mn>2</mn></msub></mrow></mrow></semantics></math>:</p>
+</div>
+<div id="S5.p2" class="ltx_para">
+<div id="Ex14" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex14.m1" class="ltx_Math" alttext="\begin{split}H(z)&amp;{}=\frac{\sum_{k=-M_{1}}^{M_{2}}bkz^{-k}}{\sum_{h=-N_{1},h%
+\neq 0}^{N_{2}}ahz^{-h}}\\
+&amp;{}=\frac{b_{M}(z-z_{1})(z-z_{2})...(z-z_{M})}{a_{N}(z-p_{1})(z-p_{2})...(z-p_%
+{N})}\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mfrac><mrow><msubsup><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><msub><mi>M</mi><mn>1</mn></msub></mrow></mrow><msub><mi>M</mi><mn>2</mn></msub></msubsup><mrow><mi>b</mi><mo>⁢</mo><mi>k</mi><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>k</mi></mrow></msup></mrow></mrow><mrow><msubsup><mo>∑</mo><mrow><mrow><mi>h</mi><mo>=</mo><mrow><mo>−</mo><msub><mi>N</mi><mn>1</mn></msub></mrow></mrow><mo>,</mo><mrow><mi>h</mi><mo>≠</mo><mn>0</mn></mrow></mrow><msub><mi>N</mi><mn>2</mn></msub></msubsup><mrow><mi>a</mi><mo>⁢</mo><mi>h</mi><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mi>h</mi></mrow></msup></mrow></mrow></mfrac></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mfrac><mrow><msub><mi>b</mi><mi>M</mi></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>z</mi><mo>−</mo><msub><mi>z</mi><mn>1</mn></msub></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>z</mi><mo>−</mo><msub><mi>z</mi><mn>2</mn></msub></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mi mathvariant="normal">…</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>z</mi><mo>−</mo><msub><mi>z</mi><mi>M</mi></msub></mrow><mo stretchy="false">)</mo></mrow></mrow><mrow><msub><mi>a</mi><mi>N</mi></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>z</mi><mo>−</mo><msub><mi>p</mi><mn>1</mn></msub></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>z</mi><mo>−</mo><msub><mi>p</mi><mn>2</mn></msub></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mi mathvariant="normal">…</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>z</mi><mo>−</mo><msub><mi>p</mi><mi>N</mi></msub></mrow><mo stretchy="false">)</mo></mrow></mrow></mfrac></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S5.p3" class="ltx_para">
+<p class="ltx_p">e chiamiamo le radici <math id="S5.p3.m1" class="ltx_Math" alttext="z_{i}" display="inline"><semantics><msub><mi>z</mi><mi>i</mi></msub></semantics></math> del numeratore N(z) ”ZERI”, mentre chiamiamo le <math id="S5.p3.m2" class="ltx_Math" alttext="p_{i}" display="inline"><semantics><msub><mi>p</mi><mi>i</mi></msub></semantics></math> radici del denominatore D(z) ”POLI”.</p>
+</div>
+<section id="S5.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.5.1</span> Esempio di zero</h3>
+
+<div id="S5.SS1.p1" class="ltx_para">
+<p class="ltx_p">Vediamo come si rappresenta una ZERO generico della funzione di trasferimento sul piano.
+Consideriamo una generica trasformata z:</p>
+</div>
+<div id="S5.SS1.p2" class="ltx_para">
+<div id="Ex15" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex15.m1" class="ltx_Math" alttext="\epsilon(z)=|z-z_{i}|,z_{i}\in\mathbf{C}" display="block"><semantics><mrow><mrow><mrow><mi>ϵ</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mo stretchy="false">|</mo><mrow><mi>z</mi><mo>−</mo><msub><mi>z</mi><mi>i</mi></msub></mrow><mo stretchy="false">|</mo></mrow></mrow><mo>,</mo><mrow><msub><mi>z</mi><mi>i</mi></msub><mo>∈</mo><mi>𝐂</mi></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S5.SS1.p3" class="ltx_para">
+<p class="ltx_p">Possiamo inizialmente visualizzare il grafico di questa funzione immaginando che z e <math id="S5.SS1.p3.m1" class="ltx_Math" alttext="z_{i}" display="inline"><semantics><msub><mi>z</mi><mi>i</mi></msub></semantics></math> siano due vettori su un piano cartesiano, il modulo della differenza e’ la distanza tra i due vertici del vettore, quindi possiamo dire che se z e’ simile a <math id="S5.SS1.p3.m2" class="ltx_Math" alttext="z_{i}" display="inline"><semantics><msub><mi>z</mi><mi>i</mi></msub></semantics></math> (quasi coincidono) la funzione epsilon (ovvero il modulo della differenza) tendera’ a 0, mentre se il modulo di z e’ molto maggiore rispetto al modulo di <math id="S5.SS1.p3.m3" class="ltx_Math" alttext="z_{i}" display="inline"><semantics><msub><mi>z</mi><mi>i</mi></msub></semantics></math> possiamo dire che la funzione epsilon crescera’ all’infinito.</p>
+</div>
+<figure id="S5.SS1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez28-zeroBidimensionale.webp" width="220" height="121" loading="lazy" alt="Piano complesso con asse verticale Im e orizzontale R. Due frecce grigie partono dall'origine verso due punti vicini, uno etichettato z e uno con 2i in rosso; una freccia verde corta collega i due punti. Una circonferenza tratteggiata grigia è centrata nel punto 2i."></div>
+</figure>
+<div id="S5.SS1.p4" class="ltx_para">
+<p class="ltx_p">Facciamo ora un ulteriore passo ricordandoci che la trasformata z gode della proprieta’ di simmetria radiale, quindi in realta’ la funzione epsilon sara’ caratterizzata da tutti i punti sulla circonferenza centrata in <math id="S5.SS1.p4.m1" class="ltx_Math" alttext="z_{i}" display="inline"><semantics><msub><mi>z</mi><mi>i</mi></msub></semantics></math> con raggio la distanza tra <math id="S5.SS1.p4.m2" class="ltx_Math" alttext="z_{i}" display="inline"><semantics><msub><mi>z</mi><mi>i</mi></msub></semantics></math> e z.
+Ora se aumentiamo di una dimensione il piano complesso, come avevamo detto avremmo fatto quando abbiamo iniziato a parlare della trasformata z, possiamo vedere che lo ZERO della funzione di trasferimento e’ un cono centrato in <math id="S5.SS1.p4.m3" class="ltx_Math" alttext="z_{i}" display="inline"><semantics><msub><mi>z</mi><mi>i</mi></msub></semantics></math> (lo zero) che si allarga salendo lungo l’asse z (man mano che z aumenta).</p>
+</div>
+<figure id="S5.SS1.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez28-zeroTridimensionale.webp" width="291" height="158" loading="lazy" alt="Grafico 3D con asse verticale ε(z) e assi del piano R e Im. Un cono grigio con la punta in basso, centrata nel punto 2i (scritto in rosso insieme a un altro segno rosso), si allarga salendo, disegnato con anelli concentrici."></div>
+</figure>
+</div>
+</section>
+</div>
+</section>
+<section id="S6" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.6</span> Esempi</h2>
+
+<div id="S6.p1" class="ltx_para">
+<p class="ltx_p">Vediamo adesso una serie di esempi, ma prima diamo la definizione di PRODUTTORIA, che ci serve per poter riscrivere la funzione di trasferimento. Produttoria:</p>
+</div>
+<div id="S6.p2" class="ltx_para">
+<div id="Ex16" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex16.m1" class="ltx_Math" alttext="\prod_{i=1}^{N}x_{i}=x_{1}\cdot x_{2}\cdot x_{3}\cdot x_{4}...\cdot x_{N}" display="block"><semantics><mrow><mrow><munderover><mo movablelimits="false">∏</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></munderover><msub><mi>x</mi><mi>i</mi></msub></mrow><mo>=</mo><mrow><mrow><mrow><msub><mi>x</mi><mn>1</mn></msub><mo lspace="0.222em" rspace="0.222em">⋅</mo><msub><mi>x</mi><mn>2</mn></msub><mo lspace="0.222em" rspace="0.222em">⋅</mo><msub><mi>x</mi><mn>3</mn></msub><mo lspace="0.222em" rspace="0.222em">⋅</mo><msub><mi>x</mi><mn>4</mn></msub></mrow><mo>⁢</mo><mi mathvariant="normal">…</mi></mrow><mo lspace="0.222em" rspace="0.222em">⋅</mo><msub><mi>x</mi><mi>N</mi></msub></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S6.p3" class="ltx_para">
+<div id="Ex17" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex17.m1" class="ltx_Math" alttext="|H(Z)|=|\frac{b_{M}\prod_{i=1}^{M}(z-z_{i})}{a_{N}\prod_{j=1}^{N}(p-p_{j})}|=%
+\frac{|b_{M}|\prod_{i=1}^{M}|z-z_{i}|}{|a_{N}|\prod_{j=1}^{N}|p-p_{j}|}" display="block" tabindex="0"><semantics><mrow><mrow><mo stretchy="false">|</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>Z</mi><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">|</mo></mrow><mo>=</mo><mrow><mo stretchy="false">|</mo><mfrac><mrow><msub><mi>b</mi><mi>M</mi></msub><mo>⁢</mo><mrow><msubsup><mo rspace="0em">∏</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>M</mi></msubsup><mrow><mo stretchy="false">(</mo><mrow><mi>z</mi><mo>−</mo><msub><mi>z</mi><mi>i</mi></msub></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow><mrow><msub><mi>a</mi><mi>N</mi></msub><mo>⁢</mo><mrow><msubsup><mo rspace="0em">∏</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></msubsup><mrow><mo stretchy="false">(</mo><mrow><mi>p</mi><mo>−</mo><msub><mi>p</mi><mi>j</mi></msub></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mfrac><mo stretchy="false">|</mo></mrow><mo>=</mo><mfrac><mrow><mrow><mo stretchy="false">|</mo><msub><mi>b</mi><mi>M</mi></msub><mo stretchy="false">|</mo></mrow><mo>⁢</mo><mrow><msubsup><mo rspace="0em">∏</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>M</mi></msubsup><mrow><mo stretchy="false">|</mo><mrow><mi>z</mi><mo>−</mo><msub><mi>z</mi><mi>i</mi></msub></mrow><mo stretchy="false">|</mo></mrow></mrow></mrow><mrow><mrow><mo stretchy="false">|</mo><msub><mi>a</mi><mi>N</mi></msub><mo stretchy="false">|</mo></mrow><mo>⁢</mo><mrow><msubsup><mo rspace="0em">∏</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></msubsup><mrow><mo stretchy="false">|</mo><mrow><mi>p</mi><mo>−</mo><msub><mi>p</mi><mi>j</mi></msub></mrow><mo stretchy="false">|</mo></mrow></mrow></mrow></mfrac></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S6.p4" class="ltx_para">
+<p class="ltx_p">Da questa definizione possiamo vedere delle caratteristiche degli ZERI, dato che il denominatore sara’ piccolo quando siamo vicini ad uno zero, gli zeri tendono a far diventare piccola la funzione di trasferimento, graficamente possiamo immaginarlo come se schiacciassimo la funzione sul piano orizzontale.
+Mentre per quanto riguarda i POLI, notiamo che NON possono essere nella regione di convergenza, perche’ il denominatore della funzione di convergenza andrebbe a 0, quindi tutto tenderebbe ad infinito, questa cosa graficamente possiamo immaginarla come se i poli alzassero verso infinito la funzione, come un paletto che alza la tenda.</p>
+</div>
+<section id="S6.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.6.1</span> Esempio 1</h3>
+
+<div id="S6.SS1.p1" class="ltx_para">
+<p class="ltx_p">Cominciamo da un esempio semplice, consideriamo:</p>
+</div>
+<div id="S6.SS1.p2" class="ltx_para">
+<div id="Ex18" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex18.m1" class="ltx_Math" alttext="H(z)=1" display="block"><semantics><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mn>1</mn></mrow></semantics></math></div>
+</div>
+</div>
+<div class="ltx_pagination ltx_role_newpage"></div>
+<div id="S6.SS1.p3" class="ltx_para">
+<p class="ltx_p">Vediamo subito il grafico di questa funzione di derivazione:</p>
+</div>
+<figure id="S6.SS1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez28-es1.webp" width="1404" height="756" loading="lazy" alt="Riquadro 'ES 1' con H(z) = 1 evidenziato in giallo. A sinistra un grafico 3D (assi Real, Imag, altezza da 0 a 2) con un piano verde orizzontale a quota 1 e il cerchio unitario tracciato sul piano e proiettato; frecce azzurre per Im e R e frecce gialle sul percorso del cerchio. A destra le formule della trasformata Z, X(z) = somma per n da -∞ a +∞ di x[n] z^-n, e della DTFT, X(e^{jω̂}) = somma di x[n] e^{-jω̂n}, la scritta rossa z = e^{jω̂} ∈ ROC e un grafico di |H(e^{jω̂})| = 1, una retta rossa orizzontale tra -π e π."></div>
+</figure>
+<div id="S6.SS1.p4" class="ltx_para">
+<p class="ltx_p">Vediamo che la funzione di trasferimento e’ il piano verde, che e’ un piano infinito che sta sopra al piano complesso, e’ cosi’ perche’ ad ogni valore questa funzione associa 1.</p>
+</div>
+<div id="S6.SS1.p5" class="ltx_para">
+<p class="ltx_p">Il cerchio invece e’ la proiezione del cerchio unitario (la DTFT), quindi e’ come se avessi trovato la risposta in frequenza del sistema che e’ 1, e poi partendo dal punto 1 sul piano complesso, che corrisponde alla frequenza 0 sul grafico del modulo mi spostassi sul cerchio unitario. Facendo questa cosa posso riportare il movimento sul grafico del modulo dela risposta in frequenza.
+Notiamo che lo possiamo fare perche’ il cerchio unitario appartiene alla ROC della trasformata z.</p>
+</div>
+</div>
+</section>
+<section id="S6.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.6.2</span> Esempio 2</h3>
+
+<div id="S6.SS2.p1" class="ltx_para">
+<p class="ltx_p">Ora vediamo una funzione di trasferimento piu’ complessa:</p>
+</div>
+<div id="S6.SS2.p2" class="ltx_para">
+<div id="Ex19" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex19.m1" class="ltx_Math" alttext="H(z)=z-\frac{1}{2}" display="block"><semantics><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>z</mi><mo>−</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S6.SS2.p3" class="ltx_para">
+<p class="ltx_p">Che notiamo essere nella forma <math id="S6.SS2.p3.m1" class="ltx_Math" alttext="\varepsilon(z)=|z-z_{i}|" display="inline"><semantics><mrow><mrow><mi>ε</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mo stretchy="false">|</mo><mrow><mi>z</mi><mo>−</mo><msub><mi>z</mi><mi>i</mi></msub></mrow><mo stretchy="false">|</mo></mrow></mrow></semantics></math> e sappiamo gia’ che il grafico di questa funzione di trasferimento e’ un cono puntato in <math id="S6.SS2.p3.m2" class="ltx_Math" alttext="z_{i}" display="inline"><semantics><msub><mi>z</mi><mi>i</mi></msub></semantics></math>, in questo caso in <math id="S6.SS2.p3.m3" class="ltx_Math" alttext="\frac{1}{2}" display="inline"><semantics><mfrac><mn>1</mn><mn>2</mn></mfrac></semantics></math>, quindi possiamo dire che <math id="S6.SS2.p3.m4" class="ltx_Math" alttext="\frac{1}{2}" display="inline"><semantics><mfrac><mn>1</mn><mn>2</mn></mfrac></semantics></math> e’ uno ZERO della funzione di trasferimento.</p>
+</div>
+<div id="S6.SS2.p4" class="ltx_para">
+<p class="ltx_p">Ora dato che il cerchio unitario appartiene alla ROC, possiamo sostituire <math id="S6.SS2.p4.m1" class="ltx_Math" alttext="z=e^{j\hat{\omega}}" display="inline"><semantics><mrow><mi>z</mi><mo>=</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup></mrow></semantics></math> per trovare la risposta in frequenza:</p>
+</div>
+<div id="S6.SS2.p5" class="ltx_para">
+<div id="Ex20" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex20.m1" class="ltx_Math" alttext="H(e^{j\hat{\omega}})=e^{j\hat{\omega}}-\frac{1}{2}" display="block"><semantics><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo>−</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S6.SS2.p6" class="ltx_para">
+<p class="ltx_p">Ora per disegnare il grafico del modulo della risposta in frequenza possiamo farlo in modo spannometrico guardando la proiezione del cerchio unitario sulla trasformata z. Ci poniamo inizialmente nel punto 1 sulla proiezione del cerchio unitario, che ricordiamo coincidere alla frequenza 0 nel grafico del modulo della risposta all’impulso, notiamo subito che e’ il punto con altezza minore rispetto al piano complesso, non sappiamo esattamente quant’e’, ma possiamo approssimarlo. Successivamente cominciamo a muoverci sul cerchio di raggio unitario fino ad arrivare al punto -1, che corrisponde alla frequenza <math id="S6.SS2.p6.m1" class="ltx_Math" alttext="\pi" display="inline"><semantics><mi>π</mi></semantics></math>, notiamo che l’altezza dei punti che stiamo percorrendo rispetto al piano complesso aumenta fino al punto -1, e riportiamo questa informazione sul grafico del modulo.
+Per disegnare il modulo da 0 a <math id="S6.SS2.p6.m2" class="ltx_Math" alttext="-\pi" display="inline"><semantics><mrow><mo>−</mo><mi>π</mi></mrow></semantics></math> semplicemente ribaltiamo lungo l’asse y la parte che abbiamo trovato tra 0 e <math id="S6.SS2.p6.m3" class="ltx_Math" alttext="+\pi" display="inline"><semantics><mrow><mo>+</mo><mi>π</mi></mrow></semantics></math>.</p>
+</div>
+<figure id="S6.SS2.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez28-es2.webp" width="1336" height="530" loading="lazy" alt="A sinistra una superficie 3D colorata a forma di conca (assi Real, Imag, altezza da 0 a 3) con minimo vicino al punto 1/2 in rosso; il cerchio unitario è percorso da frecce gialle e il punto 1 è segnato. A destra il grafico di |H(e^{jω̂})| tra -π e π: curva gialla con minimo nell'origine (frequenza 0) che sale verso i lati, collegata da una freccia verde al punto 1 della superficie."></div>
+</figure>
+</div>
+</section>
+<section id="S6.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.6.3</span> Esempio 3</h3>
+
+<div id="S6.SS3.p1" class="ltx_para">
+<p class="ltx_p">Ora consideriamo:</p>
+</div>
+<div id="S6.SS3.p2" class="ltx_para">
+<div id="Ex21" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex21.m1" class="ltx_Math" alttext="H(z)=\frac{1}{z-\frac{1}{3}}" display="block"><semantics><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mfrac><mn>1</mn><mrow><mi>z</mi><mo>−</mo><mfrac><mn>1</mn><mn>3</mn></mfrac></mrow></mfrac></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S6.SS3.p3" class="ltx_para">
+<p class="ltx_p">Notiamo subito che il punto <math id="S6.SS3.p3.m1" class="ltx_Math" alttext="\frac{1}{3}" display="inline"><semantics><mfrac><mn>1</mn><mn>3</mn></mfrac></semantics></math> non appartiene alla ROC, perche’ porterebbe il denominatore a 0, quindi e’ un POLO, sappiamo quindi che il cerchio centrato nell’origine con raggio <math id="S6.SS3.p3.m2" class="ltx_Math" alttext="\frac{1}{3}" display="inline"><semantics><mfrac><mn>1</mn><mn>3</mn></mfrac></semantics></math> non appartiene alla ROC, questo potrebbe essere un problema perche’ dobbiamo capire se il cerchio unitario appartiene alla ROC, in questo caso non abbiamo problemi perche’ la funzione di trasferimento appartiene ad un gradino causale, sappiamo quindi che la ROC esiste per valori di z maggiori di a, quindi si estende da <math id="S6.SS3.p3.m3" class="ltx_Math" alttext="\frac{1}{3}" display="inline"><semantics><mfrac><mn>1</mn><mn>3</mn></mfrac></semantics></math> a <math id="S6.SS3.p3.m4" class="ltx_Math" alttext="+\infty" display="inline"><semantics><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></semantics></math>.
+Comunque possiamo sostituire <math id="S6.SS3.p3.m5" class="ltx_Math" alttext="z=e^{j\hat{\omega}}" display="inline"><semantics><mrow><mi>z</mi><mo>=</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup></mrow></semantics></math> in quanto il cerchio di raggio unitario appartiene alla ROC:</p>
+</div>
+<div id="S6.SS3.p4" class="ltx_para">
+<div id="Ex22" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex22.m1" class="ltx_Math" alttext="H(e^{j\hat{\omega}})=\frac{1}{e^{j\hat{\omega}}-\frac{1}{3}}" display="block"><semantics><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mfrac><mn>1</mn><mrow><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo>−</mo><mfrac><mn>1</mn><mn>3</mn></mfrac></mrow></mfrac></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S6.SS3.p5" class="ltx_para">
+<p class="ltx_p">Per costruire il grafico del modulo della risposta in frequenza faccio come prima, mi porto nel punto 1 (che corrisponde alla frequenza 0) e mi muovo lungo la proiezione del cerchio unitario.</p>
+</div>
+<div id="S6.SS3.p6" class="ltx_para">
+<p class="ltx_p">La cosa interessante di questo esempio e’ vedere cosa succede quando e’ presente un POLO, come abbiamo detto in precedenza il polo porta verso infinito la funzione. Per indicare la presenza di POLI e ZERI possiamo costruire un grafico POLI-ZERI, in cui indico con una X la presenza di un polo e con uno 0 la presenza di uno ZERO.</p>
+</div>
+<figure id="S6.SS3.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez28-es3.webp" width="729" height="608" loading="lazy" alt="Riquadro 'ES 3' con H(z) = 1/(z - 1/3) e, tramite z = e^{jω̂}, H(e^{jω̂}) = 1/(e^{jω̂} - 1/3). A sinistra un grafico 3D con un picco alto in corrispondenza di 1/3 e la scritta rossa 'ROC non include 1/3'. A destra il grafico di |H(e^{jω̂})| tra -π e π, curva gialla con massimo al centro. In basso il diagramma poli-zeri: piano complesso con cerchio unitario, una croce in 1/3, un cerchio azzurro attorno e la scritta '∉ ROC', una grande circonferenza gialla con una croce a destra."></div>
+</figure>
+<div class="ltx_pagination ltx_role_newpage"></div>
+</div>
+</section>
+</div>
+</section>
+<section id="S7" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.7</span> Dalla <math id="S7.m1" class="ltx_Math" alttext="H(z)" display="inline"><semantics><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></semantics></math> all’equazione alle differenze</h2>
+
+<div id="S7.p1" class="ltx_para">
+<p class="ltx_p">Non abbiamo ancora visto qual’e’ l’equazione alle differenze che genera la <math id="S7.p1.m1" class="ltx_Math" alttext="H(z)" display="inline"><semantics><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></semantics></math>. Dobbiamo usare la trasformata z inversa: <math id="S7.p1.m2" class="ltx_Math" alttext="z^{-1}" display="inline"><semantics><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></semantics></math>, ma non vedremo nessuna formula, useremo le coppie di trasformate z note.</p>
+</div>
+<div id="S7.p2" class="ltx_para">
+<p class="ltx_p">Vediamolo per ogni esempio che abbiamo visto.</p>
+</div>
+<div id="S7.p3" class="ltx_para">
+<p class="ltx_p">Esempio 1:</p>
+</div>
+<div id="S7.p4" class="ltx_para">
+<div id="Ex23" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex23.m1" class="ltx_Math" alttext="\begin{split}\frac{Y(z)}{X(z)}&amp;{}=H(z)=1\\
+Y(z)&amp;{}=X(z)\\
+y[n]&amp;{}=x[n]\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mfrac><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mfrac></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mn>1</mn></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S7.p5" class="ltx_para">
+<p class="ltx_p">Esempio 2:</p>
+<div id="Ex24" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex24.m1" class="ltx_Math" alttext="\begin{split}\frac{Y(z)}{X(z)}&amp;{}=H(z)=z-\frac{1}{2}\\
+Y(z)&amp;{}=X(z)z^{-(-1)}-\frac{1}{2}X(z)\\
+y[n]&amp;{}=x[n+1]-\frac{1}{2}x[n]\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mfrac><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mfrac></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>z</mi><mo>−</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mrow><mo stretchy="false">(</mo><mrow><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">)</mo></mrow></mrow></msup></mrow><mo>−</mo><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>⁢</mo><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S7.p6" class="ltx_para">
+<p class="ltx_p">Abbiamo trovato un equazione FIR anticausale</p>
+</div>
+<div id="S7.p7" class="ltx_para">
+<p class="ltx_p">Esempio 3:</p>
+</div>
+<div id="S7.p8" class="ltx_para">
+<div id="Ex25" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex25.m1" class="ltx_Math" alttext="\begin{split}\frac{Y(z)}{X(z)}&amp;{}=H(z)=\frac{1}{z-\frac{1}{3}}\\
+Y(z)z-Y(z)\frac{1}{3}&amp;{}=X(z)\\
+y[n+1]-\frac{1}{3}y[n]&amp;{}=x[n]\\
+y[n]&amp;{}=3y[n+1]-3x[n]\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mfrac><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mfrac></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mfrac><mn>1</mn><mrow><mi>z</mi><mo>−</mo><mfrac><mn>1</mn><mn>3</mn></mfrac></mrow></mfrac></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mi>z</mi></mrow><mo>−</mo><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mfrac><mn>1</mn><mn>3</mn></mfrac></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mrow><mfrac><mn>1</mn><mn>3</mn></mfrac><mo>⁢</mo><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mn>3</mn><mo>⁢</mo><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mrow><mn>3</mn><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S7.p9" class="ltx_para">
+<p class="ltx_p">Abbiamo trovato un equazione IIR anticausale.</p>
+</div>
+</div>
+</section>
+<section id="S8" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.8</span> Da <math id="S8.m1" class="ltx_Math" alttext="H(z)" display="inline"><semantics><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></semantics></math> alla risposta all’impulso</h2>
+
+<div id="S8.p1" class="ltx_para">
+<p class="ltx_p">Se faccio la trasformata z inversa direttamente della funzione di trasferimento, trovo la risposta all’impulso. Lo facciamo sempre guardando le trasformate note.</p>
+</div>
+<div id="S8.p2" class="ltx_para">
+<p class="ltx_p">Vediamo applicato a tutti gli esempi che abbiamo visto.</p>
+</div>
+<div id="S8.p3" class="ltx_para">
+<p class="ltx_p">Esempio 1:</p>
+</div>
+<div id="S8.p4" class="ltx_para">
+<div id="Ex26" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex26.m1" class="ltx_Math" alttext="\begin{split}H(z)&amp;{}=1\\
+h[n]&amp;{}=\delta[n]\end{split}" display="block"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mn>1</mn></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S8.p5" class="ltx_para">
+<p class="ltx_p">Esempio 2:</p>
+</div>
+<div id="S8.p6" class="ltx_para">
+<div id="Ex27" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex27.m1" class="ltx_Math" alttext="\begin{split}H(z)&amp;{}=z-\frac{1}{2}\\
+h[n]&amp;{}=\delta[n+1]-\frac{1}{2}\delta[n]\end{split}" display="block"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>z</mi><mo>−</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S8.p7" class="ltx_para">
+<p class="ltx_p">Esempio 3:</p>
+</div>
+<div id="S8.p8" class="ltx_para">
+<div id="Ex28" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex28.m1" class="ltx_Math" alttext="\begin{split}H(z)&amp;{}=\frac{1}{z-\frac{1}{3}}=\frac{z^{-1}}{1-\frac{1}{3}z^{-1}%
+}\\
+&amp;{}=\frac{1}{1-\frac{1}{3}z^{-1}}\cdot z^{-1}\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mfrac><mn>1</mn><mrow><mi>z</mi><mo>−</mo><mfrac><mn>1</mn><mn>3</mn></mfrac></mrow></mfrac><mo>=</mo><mfrac><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mrow><mn>1</mn><mo>−</mo><mrow><mfrac><mn>1</mn><mn>3</mn></mfrac><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow></mfrac></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><mrow><mfrac><mn>1</mn><mn>3</mn></mfrac><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow></mfrac><mo lspace="0.222em" rspace="0.222em">⋅</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S8.p9" class="ltx_para">
+<p class="ltx_p">Qui pero’ abbiamo un problema, perche’ non sappiamo se e’ un sistema causale o anticausale, ed il comportamento del gradino cambia in base al tipo di sistema, quindi se ROC: <math id="S8.p9.m1" class="ltx_math_unparsed" alttext="|z|&gt;|\frac{1}{3}" display="inline"><semantics><mrow><mo fence="false" rspace="0.167em" stretchy="false">|</mo><mi>z</mi><mo fence="false" stretchy="false">|</mo><mo lspace="0.167em" rspace="0em">&gt;</mo><mo fence="false" rspace="0.167em" stretchy="false">|</mo><mfrac><mn>1</mn><mn>3</mn></mfrac></mrow></semantics></math>—, allora <math id="S8.p9.m2" class="ltx_Math" alttext="h[n]=(\frac{1}{3})^{n-1}u[n-1]" display="inline"><semantics><mrow><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><msup><mrow><mo stretchy="false">(</mo><mfrac><mn>1</mn><mn>3</mn></mfrac><mo stretchy="false">)</mo></mrow><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></msup><mo>⁢</mo><mi>u</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math>.
+Invece se ROC: <math id="S8.p9.m3" class="ltx_Math" alttext="|z|&lt;|\frac{1}{3}|" display="inline"><semantics><mrow><mrow><mo stretchy="false">|</mo><mi>z</mi><mo stretchy="false">|</mo></mrow><mo>&lt;</mo><mrow><mo stretchy="false">|</mo><mfrac><mn>1</mn><mn>3</mn></mfrac><mo stretchy="false">|</mo></mrow></mrow></semantics></math>, allora <math id="S8.p9.m4" class="ltx_Math" alttext="h[n]=-(\frac{1}{3})^{n-1}u[-(n-1)]" display="inline"><semantics><mrow><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mo>−</mo><mrow><msup><mrow><mo stretchy="false">(</mo><mfrac><mn>1</mn><mn>3</mn></mfrac><mo stretchy="false">)</mo></mrow><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></msup><mo>⁢</mo><mi>u</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mo>−</mo><mrow><mo stretchy="false">(</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></semantics></math>.</p>
+</div>
+<div class="ltx_pagination ltx_role_newpage"></div>
+</div>
+</section>
+<section id="S9" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.9</span> Esempio 4</h2>
+
+<div id="S9.p1" class="ltx_para">
+<p class="ltx_p">Partiamo adesso da un filtro causale FIR:</p>
+</div>
+<div id="S9.p2" class="ltx_para">
+<div id="Ex29" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex29.m1" class="ltx_Math" alttext="y[n]=x[n]-\sqrt{2}x[n-1]+x[n-2]" display="block"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mrow><msqrt><mn>2</mn></msqrt><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>+</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>2</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S9.p3" class="ltx_para">
+<p class="ltx_p">Da cui voglio ricavare il grafico del modulo della risposta in frequenza.
+Per farlo ho a disposizione due procedure, una e’ quella che usavamo fino ad adesso, ovvero troviamo la risposta all’impulso, da cui ricaviamo tramite la formula la risposta in frequenza, poi ci riconduciamo alla forma con il coseno e disegniamo il modulo del coseno.
+Facciamolo:</p>
+</div>
+<div id="S9.p4" class="ltx_para">
+<div id="Ex30" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex30.m1" class="ltx_Math" alttext="\begin{split}h[n]&amp;{}=\delta[n]-\sqrt{2}\delta[n-1]+\delta[n-2]\\
+H(e^{j\hat{\omega}})&amp;{}=1-\sqrt{2}e^{-j\hat{\omega}}+e^{-j2\hat{\omega}}\\
+&amp;{}=2e^{-j\hat{\omega}}\{\frac{e}{2}^{j\hat{\omega}}-\frac{\sqrt{2}}{2}+\frac{%
+e}{2}^{-j\hat{\omega}}\}\\
+&amp;{}=2(\cos\hat{\omega}-\frac{\sqrt{2}}{2})e^{-j\hat{\omega}}\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mrow><msqrt><mn>2</mn></msqrt><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>+</mo><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>2</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mn>1</mn><mo>−</mo><mrow><msqrt><mn>2</mn></msqrt><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup></mrow></mrow><mo>+</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mn>2</mn><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mn>2</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mrow><mrow><msup><mfrac><mi>e</mi><mn>2</mn></mfrac><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo>−</mo><mfrac><msqrt><mn>2</mn></msqrt><mn>2</mn></mfrac></mrow><mo>+</mo><msup><mfrac><mi>e</mi><mn>2</mn></mfrac><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup></mrow><mo stretchy="false">}</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mn>2</mn><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mi>cos</mi><mo lspace="0.167em">⁡</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow><mo>−</mo><mfrac><msqrt><mn>2</mn></msqrt><mn>2</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<figure id="S9.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez28-es4.webp" width="589" height="222" loading="lazy" alt="Grafico del modulo |H(e^{jω̂})| con asse ω̂ da -π a π. Curva rossa che parte da 2 a sinistra, scende a zero in un punto, risale a un massimo vicino a 2√2 sull'asse verticale e riscende a zero in un secondo punto con la scritta '(π/4)??'. Poi risale fino a 2+√2. Una curva grigia da 2 a -2 e punti interrogativi blu e rossi accanto."></div>
+</figure>
+<div id="S9.p5" class="ltx_para">
+<p class="ltx_p">Utilizziamo adesso una seconda procedura trovando la funzione di trasferimento del sistema, successivamente trovare i zeri ed i poli della funzione, disegnare il grafico poli-zeri e da quello trovare il grafico approssimativo del modulo della risposta in frequenza.
+Facciamolo:</p>
+</div>
+<div id="S9.p6" class="ltx_para">
+<div id="Ex31" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex31.m1" class="ltx_Math" alttext="\begin{split}&amp;{}y[n]=x[n]-\sqrt{2}x[n-1]+x[n-2]\\
+&amp;{}\mbox{Usiamo subito la proprieta' di linearita'}\\
+&amp;{}Y(z)=X(z)-\sqrt{2}Z\{x[n-1]\}+Z\{x[n-2]\}\\
+&amp;{}\mbox{Usiamo la proprieta' del ritardo}\\
+&amp;{}Y(z)=X(z)-\sqrt{2}X(z)z^{-1}+X(z)z^{-2}\\
+&amp;{}\frac{Y(z)}{X(z)}=1-\sqrt{2}z^{-1}+z^{-1}=\frac{z^{2}-\sqrt{2}z+1}{z^{2}}%
+\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mrow><msqrt><mn>2</mn></msqrt><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>+</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>2</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mtext>Usiamo subito la proprieta’ di linearita’</mtext></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>−</mo><mrow><msqrt><mn>2</mn></msqrt><mo>⁢</mo><mi>Z</mi><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">}</mo></mrow></mrow></mrow><mo>+</mo><mrow><mi>Z</mi><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>2</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">}</mo></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mtext>Usiamo la proprieta’ del ritardo</mtext></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>−</mo><mrow><msqrt><mn>2</mn></msqrt><mo>⁢</mo><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo>+</mo><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mfrac><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mfrac><mo>=</mo><mrow><mrow><mn>1</mn><mo>−</mo><mrow><msqrt><mn>2</mn></msqrt><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo>+</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo>=</mo><mfrac><mrow><mrow><msup><mi>z</mi><mn>2</mn></msup><mo>−</mo><mrow><msqrt><mn>2</mn></msqrt><mo>⁢</mo><mi>z</mi></mrow></mrow><mo>+</mo><mn>1</mn></mrow><msup><mi>z</mi><mn>2</mn></msup></mfrac></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S9.p7" class="ltx_para">
+<p class="ltx_p">Dobbiamo trovare gli ZERI:</p>
+</div>
+<div id="S9.p8" class="ltx_para">
+<div id="Ex32" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex32.m1" class="ltx_Math" alttext="\begin{split}&amp;{}z^{2}-\sqrt{2}z+1=0\\
+&amp;{}Z_{1,2}=\frac{\sqrt{2}\pm\sqrt{2-4}}{2}=\frac{\sqrt{2}\pm i\sqrt{2}}{2}=%
+\sqrt{\frac{2}{4}+\frac{2}{4}}e^{\pm i\frac{\pi}{4}}\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mrow><msup><mi>z</mi><mn>2</mn></msup><mo>−</mo><mrow><msqrt><mn>2</mn></msqrt><mo>⁢</mo><mi>z</mi></mrow></mrow><mo>+</mo><mn>1</mn></mrow><mo>=</mo><mn>0</mn></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><msub><mi>Z</mi><mrow><mn>1</mn><mo>,</mo><mn>2</mn></mrow></msub><mo>=</mo><mfrac><mrow><msqrt><mn>2</mn></msqrt><mo>±</mo><msqrt><mrow><mn>2</mn><mo>−</mo><mn>4</mn></mrow></msqrt></mrow><mn>2</mn></mfrac><mo>=</mo><mfrac><mrow><msqrt><mn>2</mn></msqrt><mo>±</mo><mrow><mi>i</mi><mo>⁢</mo><msqrt><mn>2</mn></msqrt></mrow></mrow><mn>2</mn></mfrac><mo>=</mo><mrow><msqrt><mrow><mfrac><mn>2</mn><mn>4</mn></mfrac><mo>+</mo><mfrac><mn>2</mn><mn>4</mn></mfrac></mrow></msqrt><mo>⁢</mo><msup><mi>e</mi><mrow><mo>±</mo><mrow><mi>i</mi><mo>⁢</mo><mfrac><mi>π</mi><mn>4</mn></mfrac></mrow></mrow></msup></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S9.p9" class="ltx_para">
+<p class="ltx_p">ed i POLI:</p>
+</div>
+<div id="S9.p10" class="ltx_para">
+<div id="Ex33" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex33.m1" class="ltx_Math" alttext="p_{1}=p_{2}=0" display="block"><semantics><mrow><msub><mi>p</mi><mn>1</mn></msub><mo>=</mo><msub><mi>p</mi><mn>2</mn></msub><mo>=</mo><mn>0</mn></mrow></semantics></math></div>
+</div>
+</div>
+<figure id="S9.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez28-es4v2.webp" width="679" height="456" loading="lazy" alt="In alto a sinistra 'diagramma poli zeri': piano complesso con cerchio unitario, una croce rossa nell'origine con (2) accanto, due zeri come cerchietti rossi sul cerchio unitario etichettati e^{iπ/4} e e^{-iπ/4}, con frecce gialle e verdi. A destra un piccolo disegno 3D con coni grigi e la scritta |H(z)|. In basso il grafico di |H(e^{jω̂})| tra -π e π con un zero marcato in rosso (scritta 'zero', π/4 in verde) e due frecce blu con punti interrogativi."></div>
+</figure>
+<div id="S9.p11" class="ltx_para">
+<p class="ltx_p">Quello che faccio e’ disegnare inizialmente il diagramma poli zeri, poi lo uso per fare il grafico del modulo percorrendo la circonferenza del cerchio unitario da 1 a <math id="S9.p11.m1" class="ltx_Math" alttext="\pi" display="inline"><semantics><mi>π</mi></semantics></math>. Da questo esempio possiamo notare che quando ho uno zero che e’ sul cerchio, nel grafico del modulo quei punti vanno a zero, quindi e’ come se stessi tagliando quelle frequenza, nel nostro esempio quelle a <math id="S9.p11.m2" class="ltx_Math" alttext="\frac{\pi}{4}" display="inline"><semantics><mfrac><mi>π</mi><mn>4</mn></mfrac></semantics></math>.</p>
+</div>
+</div>
+</section>
+<section id="S10" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.10</span> Esercizio</h2>
+
+<div id="S10.p1" class="ltx_para">
+<p class="ltx_p">Facciamo un esercizio un po’ piu’ complicato, data la seguente funzione di trasferimento:</p>
+</div>
+<div id="S10.p2" class="ltx_para">
+<div id="Ex34" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex34.m1" class="ltx_Math" alttext="H(z)=\frac{1-\sqrt{3}z^{-1}+z^{-2}}{1-0,9\sqrt{3}z^{-1}+0,81z^{-2}}=\frac{Y(z)%
+}{X(z)}" display="block" tabindex="0"><semantics><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mfrac><mrow><mrow><mn>1</mn><mo>−</mo><mrow><msqrt><mn>3</mn></msqrt><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo>+</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow><mrow><mrow><mn>1</mn><mo>−</mo><mn>0</mn></mrow><mo>,</mo><mrow><mrow><mn>9</mn><mo>⁢</mo><msqrt><mn>3</mn></msqrt><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo>+</mo><mn>0</mn></mrow><mo>,</mo><mrow><mn>81</mn><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow></mrow></mfrac><mo>=</mo><mfrac><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mfrac></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S10.p3" class="ltx_para">
+<p class="ltx_p">Vogliamo trovare l’equazione alle differenze che l’ha generata. Per farlo dobbiamo fare la trasformata z inversa di Y(z) e X(z):</p>
+</div>
+<div id="S10.p4" class="ltx_para">
+<div id="Ex35" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex35.m1" class="ltx_Math" alttext="\begin{split}&amp;{}X(z)[1-\sqrt{3}z^{-1}+z^{-2}]=Y(z)[1-0,9\sqrt{3}z^{-1}+0,81z^{%
+-2}]\\
+&amp;{}X(z)-\sqrt{3}z^{-1}X(z)+X(z)+z^{-2}=Y(z)-0,9\sqrt{3}z^{-1}Y(z)+0,81z^{-2}Y(%
+z)\\
+&amp;{}\mbox{Facciamo la trasformata inversa}\\
+&amp;{}x[n]-\sqrt{3}x[n-1]+x[n-2]=y[n]-0,9\sqrt{3}y[n-1]+0,81y[n-2]\\
+&amp;{}y[n]=0,9\sqrt{3}y[n-1]-0,81y[n-2]+x[n]-\sqrt{3}x[n-1]+x[n-2]\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mrow><mn>1</mn><mo>−</mo><mrow><msqrt><mn>3</mn></msqrt><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo>+</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mn>1</mn><mo>−</mo><mn>0</mn></mrow><mo>,</mo><mrow><mrow><mn>9</mn><mo>⁢</mo><msqrt><mn>3</mn></msqrt><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo>+</mo><mn>0</mn></mrow><mo>,</mo><mrow><mn>81</mn><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>−</mo><mrow><msqrt><mn>3</mn></msqrt><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo>⁢</mo><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mrow><mo>+</mo><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>+</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow><mo>=</mo><mrow><mrow><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>−</mo><mn>0</mn></mrow><mo>,</mo><mrow><mrow><mn>9</mn><mo>⁢</mo><msqrt><mn>3</mn></msqrt><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo>⁢</mo><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>+</mo><mn>0</mn></mrow><mo>,</mo><mrow><mn>81</mn><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>2</mn></mrow></msup><mo>⁢</mo><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mtext>Facciamo la trasformata inversa</mtext></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mrow><msqrt><mn>3</mn></msqrt><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>+</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>2</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mn>0</mn></mrow><mo>,</mo><mrow><mrow><mn>9</mn><mo>⁢</mo><msqrt><mn>3</mn></msqrt><mo>⁢</mo><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mn>0</mn></mrow><mo>,</mo><mrow><mn>81</mn><mo>⁢</mo><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>2</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mn>0</mn><mo>,</mo><mrow><mrow><mn>9</mn><mo>⁢</mo><msqrt><mn>3</mn></msqrt><mo>⁢</mo><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mn>0</mn></mrow><mo>,</mo><mrow><mrow><mrow><mrow><mn>81</mn><mo>⁢</mo><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>2</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>−</mo><mrow><msqrt><mn>3</mn></msqrt><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>+</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>2</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S10.p5" class="ltx_para">
+<p class="ltx_p">Ora vogliamo disegnare il diagramma poli-zeri, desumendo un grafico approssimativo della risposta in frequenza, e dire che filtro e’.</p>
+</div>
+<div id="S10.p6" class="ltx_para">
+<p class="ltx_p">Il consiglio e’ di considerare sempre i polinomi con esponenti negativi, ma quando dobbiamo trovare i poli e gli zeri di portarli in positivo, per farlo in questo caso raccogliamo la potenza negativa maggiore sia al numeratore che al denominatore:</p>
+</div>
+<div id="S10.p7" class="ltx_para">
+<div id="Ex36" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex36.m1" class="ltx_Math" alttext="\begin{split}H(z)&amp;{}=\frac{1-\sqrt{3}z^{-1}+z^{-2}}{1-0,9\sqrt{3}z^{-1}+0,81z^%
+{-2}}\\
+&amp;{}=\frac{z^{-2}(z^{2}-\sqrt{3}z+1)}{z^{-2}(z^{2}-0,9\sqrt{3}z+0,81)}\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mfrac><mrow><mrow><mn>1</mn><mo>−</mo><mrow><msqrt><mn>3</mn></msqrt><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo>+</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow><mrow><mrow><mn>1</mn><mo>−</mo><mn>0</mn></mrow><mo>,</mo><mrow><mrow><mn>9</mn><mo>⁢</mo><msqrt><mn>3</mn></msqrt><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo>+</mo><mn>0</mn></mrow><mo>,</mo><mrow><mn>81</mn><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>2</mn></mrow></msup></mrow></mrow></mfrac></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mfrac><mrow><msup><mi>z</mi><mrow><mo>−</mo><mn>2</mn></mrow></msup><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><msup><mi>z</mi><mn>2</mn></msup><mo>−</mo><mrow><msqrt><mn>3</mn></msqrt><mo>⁢</mo><mi>z</mi></mrow></mrow><mo>+</mo><mn>1</mn></mrow><mo stretchy="false">)</mo></mrow></mrow><mrow><msup><mi>z</mi><mrow><mo>−</mo><mn>2</mn></mrow></msup><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><msup><mi>z</mi><mn>2</mn></msup><mo>−</mo><mn>0</mn></mrow><mo>,</mo><mrow><mrow><mn>9</mn><mo>⁢</mo><msqrt><mn>3</mn></msqrt><mo>⁢</mo><mi>z</mi></mrow><mo>+</mo><mn>0</mn></mrow><mo>,</mo><mn>81</mn><mo stretchy="false">)</mo></mrow></mrow></mfrac></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S10.p8" class="ltx_para">
+<p class="ltx_p">ora calcoliamo gli ZERI, portandoli in forma polare:</p>
+<div id="Ex37" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex37.m1" class="ltx_Math" alttext="Z_{1,2}=\frac{\sqrt{3}\pm\sqrt{3-4}}{2}=\frac{\sqrt{3}}{2}\pm i\frac{1}{2}=e^{%
+\pm i\frac{\pi}{3}}" display="block"><semantics><mrow><msub><mi>Z</mi><mrow><mn>1</mn><mo>,</mo><mn>2</mn></mrow></msub><mo>=</mo><mfrac><mrow><msqrt><mn>3</mn></msqrt><mo>±</mo><msqrt><mrow><mn>3</mn><mo>−</mo><mn>4</mn></mrow></msqrt></mrow><mn>2</mn></mfrac><mo>=</mo><mrow><mfrac><msqrt><mn>3</mn></msqrt><mn>2</mn></mfrac><mo>±</mo><mrow><mi>i</mi><mo>⁢</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow></mrow><mo>=</mo><msup><mi>e</mi><mrow><mo>±</mo><mrow><mi>i</mi><mo>⁢</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow></mrow></msup></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S10.p9" class="ltx_para">
+<p class="ltx_p">e i POLI, portandoli in forma polare:</p>
+<div id="Ex38" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex38.m1" class="ltx_Math" alttext="P_{1,2}=\frac{0,9\sqrt{3}\pm\sqrt{0,81\cdot 3-0,81\cdot 4}}{2}=\frac{0,9\sqrt{%
+3}\pm 0,9i}{2}=0,9(\frac{\sqrt{3}}{2}+\frac{1}{2}i)=e^{i\frac{\pi}{3}}" display="block" tabindex="0"><semantics><mrow><mrow><msub><mi>P</mi><mrow><mn>1</mn><mo>,</mo><mn>2</mn></mrow></msub><mo>=</mo><mfrac><mrow><mn>0</mn><mo>,</mo><mrow><mrow><mn>9</mn><mo>⁢</mo><msqrt><mn>3</mn></msqrt></mrow><mo>±</mo><msqrt><mrow><mn>0</mn><mo>,</mo><mrow><mrow><mn>81</mn><mo lspace="0.222em" rspace="0.222em">⋅</mo><mn>3</mn></mrow><mo>−</mo><mn>0</mn></mrow><mo>,</mo><mrow><mn>81</mn><mo lspace="0.222em" rspace="0.222em">⋅</mo><mn>4</mn></mrow></mrow></msqrt></mrow></mrow><mn>2</mn></mfrac><mo>=</mo><mfrac><mrow><mn>0</mn><mo>,</mo><mrow><mrow><mn>9</mn><mo>⁢</mo><msqrt><mn>3</mn></msqrt></mrow><mo>±</mo><mn>0</mn></mrow><mo>,</mo><mrow><mn>9</mn><mo>⁢</mo><mi>i</mi></mrow></mrow><mn>2</mn></mfrac><mo>=</mo><mn>0</mn></mrow><mo>,</mo><mrow><mrow><mn>9</mn><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mfrac><msqrt><mn>3</mn></msqrt><mn>2</mn></mfrac><mo>+</mo><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>⁢</mo><mi>i</mi></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mfrac><mi>π</mi><mn>3</mn></mfrac></mrow></msup></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div class="ltx_pagination ltx_role_newpage"></div>
+<div id="S10.p10" class="ltx_para">
+<p class="ltx_p">Ora riportiamo i poli e gli zeri nel grafico poli-zeri e come fatto in precedenza percorrendo il cerchio unitario disegniamo il grafico del modulo della risposta in frequenza.</p>
+</div>
+<figure id="S10.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez29-graficoEs.webp" width="1600" height="1062" loading="lazy" alt="In alto il piano complesso con cerchio unitario nero e un cerchio verde interno; zeri sul cerchio unitario etichettati √3/2 + i 1/2 e √3/2 - i 1/2, poli (croci rosse) sul cerchio verde con l'etichetta 0,9(√3/2 + i 1/2), angolo π/3 indicato in azzurro, tratti verdi a raggiera all'esterno. In basso il grafico di |H(e^{jω̂})|: curva rossa con due minimi a ±π/3 e valore 1 ai lati; una freccia rossa collega il punto -1 del piano al grafico."></div>
+</figure>
+<div id="S10.p11" class="ltx_para">
+<div id="Ex39" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex39.m1" class="ltx_Math" alttext="z=e^{j\hat{\omega}}\in ROC\leftarrow X(z)=\frac{1-\sqrt{3}e^{j\hat{\omega}}+e^%
+{-j\hat{\omega}2}}{1-0,9\sqrt{3}e^{-j\hat{\omega}}+0,81e^{-j2\hat{\omega}}}=H(%
+e^{j\hat{\omega}})" display="block" tabindex="0"><semantics><mrow><mi>z</mi><mo>=</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo>∈</mo><mrow><mi>R</mi><mo>⁢</mo><mi>O</mi><mo>⁢</mo><mi>C</mi></mrow><mo stretchy="false">←</mo><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mfrac><mrow><mrow><mn>1</mn><mo>−</mo><mrow><msqrt><mn>3</mn></msqrt><mo>⁢</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup></mrow></mrow><mo>+</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mn>2</mn></mrow></mrow></msup></mrow><mrow><mrow><mn>1</mn><mo>−</mo><mn>0</mn></mrow><mo>,</mo><mrow><mrow><mn>9</mn><mo>⁢</mo><msqrt><mn>3</mn></msqrt><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup></mrow><mo>+</mo><mn>0</mn></mrow><mo>,</mo><mrow><mn>81</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mn>2</mn><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup></mrow></mrow></mfrac><mo>=</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S10.p12" class="ltx_para">
+<p class="ltx_p">Una cosa da notare di questo esercizio e’ che i poli o gli zeri posti all’origine degli assi non fanno niente, quindi possiamo non considerarli.
+Questo filtro si chiama blocca banda.</p>
+</div>
+</div>
+</section>
+<section id="S11" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.11</span> Esercizio</h2>
+
+<div id="S11.p1" class="ltx_para">
+<p class="ltx_p">Data la seguente funzione di trasferimento:</p>
+</div>
+<div id="S11.p2" class="ltx_para">
+<div id="Ex40" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex40.m1" class="ltx_Math" alttext="H(z)=\frac{1}{1-2z^{-1}}+\frac{1}{1-\frac{1}{3}z^{-1}}" display="block"><semantics><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><mrow><mn>2</mn><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow></mfrac><mo>+</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><mrow><mfrac><mn>1</mn><mn>3</mn></mfrac><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow></mfrac></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.p3" class="ltx_para">
+<p class="ltx_p">Ci viene detto che la ROC e’ <math id="S11.p3.m1" class="ltx_Math" alttext="\frac{1}{3}&lt;|z|&lt;2" display="inline"><semantics><mrow><mfrac><mn>1</mn><mn>3</mn></mfrac><mo>&lt;</mo><mrow><mo stretchy="false">|</mo><mi>z</mi><mo stretchy="false">|</mo></mrow><mo>&lt;</mo><mn>2</mn></mrow></semantics></math>, vogliamo trovare la risposta in frequenza <math id="S11.p3.m2" class="ltx_Math" alttext="h[n]" display="inline"><semantics><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math>.</p>
+</div>
+<div id="S11.p4" class="ltx_para">
+<p class="ltx_p">Per farlo dobbiamo applicare la trasformate z inversa, ma prima disegniamo il grafico poli-zeri per capire se il sistema e’ causale o anticausale e capire che trasformata nota dobbiamo usare.</p>
+</div>
+<div id="S11.p5" class="ltx_para">
+<p class="ltx_p">Gli zeri non li posso calcolare (o meglio dovrei fare il denominatore comune e trovare i numeratori), sappiamo pero’ che i poli sono quelli che annullano i due denominatori,
+quindi per il primo denominatore:</p>
+</div>
+<div id="S11.p6" class="ltx_para">
+<div id="Ex41" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex41.m1" class="ltx_Math" alttext="\begin{split}1-2z^{-1}=0\\
+z^{-1}=\frac{1}{2}\\
+z=2\end{split}" display="block"><semantics><mtable class="bml_alignment_aligned" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mn>1</mn><mo>−</mo><mrow><mn>2</mn><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo>=</mo><mn>0</mn></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>z</mi><mo>=</mo><mn>2</mn></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S11.p7" class="ltx_para">
+<p class="ltx_p">per il secondo:</p>
+<div id="Ex42" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex42.m1" class="ltx_Math" alttext="\begin{split}1-\frac{1}{3}z^{-1}=0\\
+z^{-1}=3\\
+z=\frac{1}{3}\end{split}" display="block"><semantics><mtable class="bml_alignment_aligned" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mn>1</mn><mo>−</mo><mrow><mfrac><mn>1</mn><mn>3</mn></mfrac><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo>=</mo><mn>0</mn></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo>=</mo><mn>3</mn></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>z</mi><mo>=</mo><mfrac><mn>1</mn><mn>3</mn></mfrac></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S11.p8" class="ltx_para">
+<p class="ltx_p">Notiamo che i poli di polinomi di questo tipo sono sempre i numeri che moltiplicano la z.</p>
+</div>
+<figure id="S11.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez29-poliZeriEsercizio.webp" width="1341" height="692" loading="lazy" alt="Piano complesso con assi Im e R, un cerchio unitario nero e due croci rosse sull'asse reale, una in 1/3 e una in 2. Una circonferenza grigia piccola attorno all'origine e una grande attorno ai poli; la regione tra le due è marcata da tratti verdi a raggiera."></div>
+</figure>
+<div id="S11.p9" class="ltx_para">
+<p class="ltx_p">Quindi da questo grafico capiamo che per il primo polinomio dobbiamo usare il gradino anticausale, perche’ la ROC e’ minore di 2, quindi va verso l’interno. Al contrario per il secondo polinomio dobbiamo usare il gradino causale, perche’ la ROC va da <math id="S11.p9.m1" class="ltx_Math" alttext="\frac{1}{3}" display="inline"><semantics><mfrac><mn>1</mn><mn>3</mn></mfrac></semantics></math> verso l’esterno.</p>
+</div>
+<div id="S11.p10" class="ltx_para">
+<div id="Ex43" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex43.m1" class="ltx_Math" alttext="\begin{split}h[n]&amp;{}=Z^{-1}\{\frac{1}{1-2z^{-1}}\}+Z^{-1}\{\frac{1}{1-\frac{1}%
+{3}z^{-1}}\}\\
+h[n]&amp;{}=-2^{n}u[-n-1]+(\frac{1}{3})^{n}u[n]\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><msup><mi>Z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><mrow><mn>2</mn><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow></mfrac><mo stretchy="false">}</mo></mrow></mrow><mo>+</mo><mrow><msup><mi>Z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><mrow><mfrac><mn>1</mn><mn>3</mn></mfrac><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow></mfrac><mo stretchy="false">}</mo></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mo>−</mo><mrow><msup><mn>2</mn><mi>n</mi></msup><mo>⁢</mo><mi>u</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mrow><mo>−</mo><mi>n</mi></mrow><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>+</mo><mrow><msup><mrow><mo stretchy="false">(</mo><mfrac><mn>1</mn><mn>3</mn></mfrac><mo stretchy="false">)</mo></mrow><mi>n</mi></msup><mo>⁢</mo><mi>u</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+<section id="S12" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.12</span> All zeros, All poles</h2>
+
+<div id="S12.p1" class="ltx_para">
+<p class="ltx_p">Troviamo ora un collegamento tra filtri FIR, IIR e la loro quantita’ di poli e zeri.</p>
+</div>
+<figure id="S12.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez29-allZeroAllPoles.webp" width="636" height="382" loading="lazy" alt="Due colonne scritte a mano. A sinistra 'FIR, ALL ZEROS': y[n] = somma per k=0..M di b_k x[n-k], H(z) = somma b_k z^-k, riscritto con z^-M e z^M-k a denominatore, con le scritte verdi 'M zeri' e 'M poli in zero'. A destra 'IIR, ALL POLES' con b_k = 0 per k≠0: y[n] = somma per h=1..N di a_h y[n-h] + x[n], H(z) = 1/(1 + somma a_h z^-h), riscritto con z^N, con le scritte verdi 'M zeri in zero' e 'M poli'."></div>
+</figure>
+<div id="S12.p2" class="ltx_para">
+<p class="ltx_p">Notiamo che i filtri FIR hanno M zeri e 0 poli, o meglio hanno M poli tutti in zero che come abbiamo visto in precedenza non contano. Viceversa i filtri IIR hanno M poli e M zeri tutti in zero (quindi non contano).</p>
+</div>
+</div>
+</section>
+<section id="S13" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.13</span> Esempio</h2>
+
+<div id="S13.p1" class="ltx_para">
+<p class="ltx_p">Vediamo un esercizio che ci permettera’ di introdurre una tecnica per calcolare la trasformata z inversa, la tecnica dei residui.</p>
+</div>
+<div id="S13.p2" class="ltx_para">
+<p class="ltx_p">Partiamo da un equazione alle differenze causale:</p>
+</div>
+<div id="S13.p3" class="ltx_para">
+<div id="Ex44" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex44.m1" class="ltx_Math" alttext="y[n]=a_{1}y[n-1]+b_{0}x[n]" display="block"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><msub><mi>b</mi><mn>0</mn></msub><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S13.p4" class="ltx_para">
+<p class="ltx_p">Vogliamo ora calcolare l’uscita di questo sistema <math id="S13.p4.m1" class="ltx_Math" alttext="y[n]" display="inline"><semantics><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math> se mettiamo in input:</p>
+</div>
+<div id="S13.p5" class="ltx_para">
+<div id="Ex45" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex45.m1" class="ltx_Math" alttext="x[n]=u[n]" display="block"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>u</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S13.p6" class="ltx_para">
+<p class="ltx_p">Quello che avremmo dovuto fare prima della trasformata Z era calcolare la convoluzione tra il sistema ed il segnale in input.
+Ma ora possiamo calcolare la funzione di trasferimento del sistema, la trasformata z del segnale e fare la moltiplicazione (propritea’ della convoluzione) tra le due trasformate, successivamente fare la trasformata inversa del risultato trovando cosi’ <math id="S13.p6.m1" class="ltx_Math" alttext="y[n]" display="inline"><semantics><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math>.</p>
+</div>
+<div id="S13.p7" class="ltx_para">
+<p class="ltx_p">Quindi inizialmente calcoliamo la funzione di trasferimento <math id="S13.p7.m1" class="ltx_Math" alttext="H(z)" display="inline"><semantics><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></semantics></math> dell’equaazione alle differenze:</p>
+</div>
+<div id="S13.p8" class="ltx_para">
+<div id="Ex46" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex46.m1" class="ltx_Math" alttext="\begin{split}y[n]=a_{1}y[n-1]+b_{0}x[n]\\
+Y(z)=a_{1}Y(z)z^{-1}+bX(z)\\
+Y(z)\{1-a_{1}z^{-1}\}=bX(z)\\
+\frac{y(z)}{X(z)}=\frac{b}{1-a_{1}z^{-1}}=H(z)\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><msub><mi>b</mi><mn>0</mn></msub><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo>+</mo><mrow><mi>b</mi><mo>⁢</mo><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mrow><mn>1</mn><mo>−</mo><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo stretchy="false">}</mo></mrow></mrow><mo>=</mo><mrow><mi>b</mi><mo>⁢</mo><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mfrac><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mfrac><mo>=</mo><mfrac><mi>b</mi><mrow><mn>1</mn><mo>−</mo><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow></mfrac><mo>=</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S13.p9" class="ltx_para">
+<p class="ltx_p">Della funzione di trasferimento possiamo dire che la ROC e’ <math id="S13.p9.m1" class="ltx_Math" alttext="|z|&gt;|a|" display="inline"><semantics><mrow><mrow><mo stretchy="false">|</mo><mi>z</mi><mo stretchy="false">|</mo></mrow><mo>&gt;</mo><mrow><mo stretchy="false">|</mo><mi>a</mi><mo stretchy="false">|</mo></mrow></mrow></semantics></math>, perche’ sapevamo che il sistema che l’ha generata e’ causale, inoltre esiste un solo polo che e’ <math id="S13.p9.m2" class="ltx_Math" alttext="a_{1}" display="inline"><semantics><msub><mi>a</mi><mn>1</mn></msub></semantics></math>.</p>
+</div>
+<div id="S13.p10" class="ltx_para">
+<p class="ltx_p">Ora troviamo la trasformata z del segnale in input:</p>
+</div>
+<div id="S13.p11" class="ltx_para">
+<div id="Ex47" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex47.m1" class="ltx_Math" alttext="x[n]=u[n]\leftarrow\frac{1}{1-z^{-1}}=X(z)" display="block"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>u</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">←</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mfrac><mo>=</mo><mrow><mi>X</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S13.p12" class="ltx_para">
+<p class="ltx_p">Dato che e’ un esponenziale causale (gradino causale) la ROC e’ <math id="S13.p12.m1" class="ltx_Math" alttext="|z|&gt;1" display="inline"><semantics><mrow><mrow><mo stretchy="false">|</mo><mi>z</mi><mo stretchy="false">|</mo></mrow><mo>&gt;</mo><mn>1</mn></mrow></semantics></math>.</p>
+</div>
+<div id="S13.p13" class="ltx_para">
+<p class="ltx_p">Ora facciamo la moltiplicazione tra le due trasformate che abbiamo trovato:</p>
+</div>
+<div id="S13.p14" class="ltx_para">
+<div id="Ex48" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex48.m1" class="ltx_Math" alttext="Y(z)=H(z)\cdot X(z)=\frac{b}{1-a_{1}z^{-1}}\cdot\frac{1}{1-z^{-1}}" display="block" tabindex="0"><semantics><mrow><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo rspace="0.055em" stretchy="false">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mi>X</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mfrac><mi>b</mi><mrow><mn>1</mn><mo>−</mo><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow></mfrac><mo lspace="0.222em" rspace="0.222em">⋅</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mfrac></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S13.p15" class="ltx_para">
+<p class="ltx_p">Per trovare la ROC dobbiamo trovare qual’e’ la condizione piu’ stringente tra le ROC di ogni trasformata. Il problema diceva anche che <math id="S13.p15.m1" class="ltx_Math" alttext="a_{1}&lt;1" display="inline"><semantics><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>&lt;</mo><mn>1</mn></mrow></semantics></math>, quindi la condizione piu’ stringente tra le due ROC e’ <math id="S13.p15.m2" class="ltx_Math" alttext="|z|&gt;1" display="inline"><semantics><mrow><mrow><mo stretchy="false">|</mo><mi>z</mi><mo stretchy="false">|</mo></mrow><mo>&gt;</mo><mn>1</mn></mrow></semantics></math>. Inoltre abbiamo due poli, uno in <math id="S13.p15.m3" class="ltx_Math" alttext="p_{1}=1" display="inline"><semantics><mrow><msub><mi>p</mi><mn>1</mn></msub><mo>=</mo><mn>1</mn></mrow></semantics></math> e l’altro in <math id="S13.p15.m4" class="ltx_Math" alttext="p_{2}=a_{1}" display="inline"><semantics><mrow><msub><mi>p</mi><mn>2</mn></msub><mo>=</mo><msub><mi>a</mi><mn>1</mn></msub></mrow></semantics></math>.
+Tracciamo il grafico poli-zeri:</p>
+</div>
+<figure id="S13.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez29-poliZeroEs.webp" width="144" height="176" loading="lazy" alt="Piccolo piano complesso con assi Im e R, un cerchio unitario nero e due croci rosse sull'asse reale, una vicino all'origine con etichetta a1 e una in 1 sul cerchio. Tratti verdi a raggiera all'esterno indicano la regione oltre il cerchio."></div>
+</figure>
+<div id="S13.p16" class="ltx_para">
+<p class="ltx_p">Ora per trovare <math id="S13.p16.m1" class="ltx_Math" alttext="Y(z)" display="inline"><semantics><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></semantics></math> abbiamo due strategie, possiamo portare a denominatore comune le due frazioni e cercare in numeratori corretti:</p>
+</div>
+<div id="S13.p17" class="ltx_para">
+<div id="Ex49" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math ltx_math_unparsed bml_eqn_cell ltx_align_center"><math id="Ex49.m1" class="ltx_math_unparsed" alttext="\begin{split}Y(z)=\frac{b}{(1-a_{1}z^{-1})(1-z^{-1})}=\frac{B_{1}}{(1-a_{1}z{-%
+1}}+\frac{B_{2}}{(1-z^{-1})}\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" displaystyle="true"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mfrac><mi>b</mi><mrow><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo stretchy="false">)</mo></mrow></mrow></mfrac><mo>=</mo><mrow><mfrac><msub><mi>B</mi><mn>1</mn></msub><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><msub><mi>a</mi><mn>1</mn></msub><mi>z</mi><mo>−</mo><mn>1</mn></mrow></mfrac><mo>+</mo><mfrac><msub><mi>B</mi><mn>2</mn></msub><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo stretchy="false">)</mo></mrow></mfrac></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S13.p18" class="ltx_para">
+<p class="ltx_p">Devo trovare i valori di <math id="S13.p18.m1" class="ltx_Math" alttext="B_{1}" display="inline"><semantics><msub><mi>B</mi><mn>1</mn></msub></semantics></math> e <math id="S13.p18.m2" class="ltx_Math" alttext="B_{2}" display="inline"><semantics><msub><mi>B</mi><mn>2</mn></msub></semantics></math>, per farlo basta risolvere questo sistema:</p>
+</div>
+<div id="S13.p19" class="ltx_para">
+<div id="Ex50" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex50.m1" class="ltx_Math" alttext="\begin{split}&amp;{}\begin{cases}B_{1}+B_{2}=b\\
+-B_{1}-a_{1}B_{2}=0\end{cases}\\
+&amp;{}B_{2}-a_{1}B_{2}=b\\
+&amp;{}B_{2}=\frac{b}{1-a_{1}}\\
+&amp;{}B_{1}=b-B_{2}=\frac{\cancel{b}-ba_{1}\cancel{-b}}{1-a_{1}}\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mo>{</mo><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><msub><mi>B</mi><mn>1</mn></msub><mo>+</mo><msub><mi>B</mi><mn>2</mn></msub></mrow><mo>=</mo><mi>b</mi></mrow></mtd><mtd></mtd></mtr><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mrow><mo>−</mo><msub><mi>B</mi><mn>1</mn></msub></mrow><mo>−</mo><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><msub><mi>B</mi><mn>2</mn></msub></mrow></mrow><mo>=</mo><mn>0</mn></mrow></mtd><mtd></mtd></mtr></mtable></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><msub><mi>B</mi><mn>2</mn></msub><mo>−</mo><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><msub><mi>B</mi><mn>2</mn></msub></mrow></mrow><mo>=</mo><mi>b</mi></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><msub><mi>B</mi><mn>2</mn></msub><mo>=</mo><mfrac><mi>b</mi><mrow><mn>1</mn><mo>−</mo><msub><mi>a</mi><mn>1</mn></msub></mrow></mfrac></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><msub><mi>B</mi><mn>1</mn></msub><mo>=</mo><mrow><mi>b</mi><mo>−</mo><msub><mi>B</mi><mn>2</mn></msub></mrow><mo>=</mo><mfrac><mrow><menclose notation="updiagonalstrike"><mi>b</mi></menclose><mo>−</mo><mrow><mi>b</mi><mo>⁢</mo><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><menclose notation="updiagonalstrike"><mrow><mo>−</mo><mi>b</mi></mrow></menclose></mrow></mrow><mrow><mn>1</mn><mo>−</mo><msub><mi>a</mi><mn>1</mn></msub></mrow></mfrac></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S13.p20" class="ltx_para">
+<p class="ltx_p">da cui:</p>
+</div>
+<div id="S13.p21" class="ltx_para">
+<div id="Ex51" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex51.m1" class="ltx_Math" alttext="\begin{split}&amp;{}\frac{B_{1}(1-z^{-1})+B_{2}(1-a_{1}z^{-1})}{(1-a_{1}z^{-1})(1-%
+z^{-1})}\\
+&amp;{}\frac{b}{1-a_{1}}\cdot\frac{1}{1-z^{-1}}-\frac{ba_{1}}{1-a_{1}}\cdot\frac{1%
+}{1-a_{1}z^{-1}}\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mfrac><mrow><mrow><msub><mi>B</mi><mn>1</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo stretchy="false">)</mo></mrow></mrow><mo>+</mo><mrow><msub><mi>B</mi><mn>2</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow><mrow><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo stretchy="false">)</mo></mrow></mrow></mfrac></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mfrac><mi>b</mi><mrow><mn>1</mn><mo>−</mo><msub><mi>a</mi><mn>1</mn></msub></mrow></mfrac><mo lspace="0.222em" rspace="0.222em">⋅</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mfrac></mrow><mo>−</mo><mrow><mfrac><mrow><mi>b</mi><mo>⁢</mo><msub><mi>a</mi><mn>1</mn></msub></mrow><mrow><mn>1</mn><mo>−</mo><msub><mi>a</mi><mn>1</mn></msub></mrow></mfrac><mo lspace="0.222em" rspace="0.222em">⋅</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow></mfrac></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S13.p22" class="ltx_para">
+<p class="ltx_p">e dato che il sistema e’ causale otteniamo:</p>
+</div>
+<div id="S13.p23" class="ltx_para">
+<div id="Ex52" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex52.m1" class="ltx_Math" alttext="y[n]=\frac{b}{1-a_{1}}u[n]-\frac{ba_{1}}{1-a_{1}}a_{1}^{n}u[n]" display="block"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mfrac><mi>b</mi><mrow><mn>1</mn><mo>−</mo><msub><mi>a</mi><mn>1</mn></msub></mrow></mfrac><mo>⁢</mo><mi>u</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mrow><mfrac><mrow><mi>b</mi><mo>⁢</mo><msub><mi>a</mi><mn>1</mn></msub></mrow><mrow><mn>1</mn><mo>−</mo><msub><mi>a</mi><mn>1</mn></msub></mrow></mfrac><mo>⁢</mo><msubsup><mi>a</mi><mn>1</mn><mi>n</mi></msubsup><mo>⁢</mo><mi>u</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S13.p24" class="ltx_para">
+<p class="ltx_p">Oppure potevamo usare la TECNICA DEI RESIDUI, ma prima di utilizzarla dobbiamo fare 3 verifiche (altrimenti lasciamo stare):</p>
+<ol id="S13.I1" class="ltx_enumerate">
+<li id="S13.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">1.</span><div id="S13.I1.i1.p1" class="ltx_para"><p class="ltx_p">Il polinomio deve essere espresso in potenze negative <math id="S13.I1.i1.p1.m1" class="ltx_Math" alttext="z^{-k}" display="inline"><semantics><msup><mi>z</mi><mrow><mo>−</mo><mi>k</mi></mrow></msup></semantics></math></p>
+</div>
+</li>
+<li id="S13.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">2.</span><div id="S13.I1.i2.p1" class="ltx_para"><p class="ltx_p">I poli sono singoli, hanno molteplicita’ 1 (non devono esserci due poli coincidenti in un punto solo)</p>
+</div>
+</li>
+</ol>
+</div>
+<div id="S13.p25" class="ltx_para">
+<p class="ltx_p">Quello che dobbiamo fare per trovare <math id="S13.p25.m1" class="ltx_Math" alttext="B_{1}" display="inline"><semantics><msub><mi>B</mi><mn>1</mn></msub></semantics></math> e <math id="S13.p25.m2" class="ltx_Math" alttext="B_{2}" display="inline"><semantics><msub><mi>B</mi><mn>2</mn></msub></semantics></math> e’ moltiplicare la frazione per un fattore che cancella il polo (opposto del fattore che genera il polo), quindi:</p>
+</div>
+<div id="S13.p26" class="ltx_para">
+<div id="Ex53" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex53.m1" class="ltx_Math" alttext="\begin{split}B_{1}&amp;{}=[Y(z)\cdot(1-p_{1}z^{-1})]=[\frac{b}{\cancel{(1-a_{1}z^{%
+-1})}(1-z^{-1})}\cdot\cancel{(1-a_{1}z^{-1})}]=\frac{b}{1-a^{-1}}\\
+B_{2}&amp;{}=[Y(z)\cdot(1-p_{1}z^{-1})]=[\frac{b}{(1-a_{1}z^{-1})\cancel{(1-z^{-1}%
+)}}\cdot\cancel{(1-z^{-1})}]=\frac{b}{1-a_{1}}\\
+\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><msub><mi>B</mi><mn>1</mn></msub></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mo stretchy="false">[</mo><mrow><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo rspace="0.055em" stretchy="false">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><mrow><msub><mi>p</mi><mn>1</mn></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">]</mo></mrow><mo>=</mo><mrow><mo stretchy="false">[</mo><mrow><mfrac><mi>b</mi><mrow><menclose notation="updiagonalstrike"><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo stretchy="false">)</mo></mrow></menclose><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo stretchy="false">)</mo></mrow></mrow></mfrac><mo lspace="0.222em" rspace="0.222em">⋅</mo><menclose notation="updiagonalstrike"><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo stretchy="false">)</mo></mrow></menclose></mrow><mo stretchy="false">]</mo></mrow><mo>=</mo><mfrac><mi>b</mi><mrow><mn>1</mn><mo>−</mo><msup><mi>a</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mfrac></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><msub><mi>B</mi><mn>2</mn></msub></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mo stretchy="false">[</mo><mrow><mrow><mi>Y</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo rspace="0.055em" stretchy="false">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><mrow><msub><mi>p</mi><mn>1</mn></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">]</mo></mrow><mo>=</mo><mrow><mo stretchy="false">[</mo><mrow><mfrac><mi>b</mi><mrow><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><mrow><msub><mi>a</mi><mn>1</mn></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><menclose notation="updiagonalstrike"><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo stretchy="false">)</mo></mrow></menclose></mrow></mfrac><mo lspace="0.222em" rspace="0.222em">⋅</mo><menclose notation="updiagonalstrike"><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow><mo stretchy="false">)</mo></mrow></menclose></mrow><mo stretchy="false">]</mo></mrow><mo>=</mo><mfrac><mi>b</mi><mrow><mn>1</mn><mo>−</mo><msub><mi>a</mi><mn>1</mn></msub></mrow></mfrac></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+<section id="S14" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.14</span> Metodo dei residui</h2>
+
+<div id="S14.p1" class="ltx_para">
+<p class="ltx_p">Formalizziamo meglio il metodo dei residui che abbiamo appena visto.
+Partiamo da una funzione di trasferimento, che come abbiamo gia’ visto e’ una funzione razionale fratta, per cui sappiamo che il numeratore e’ un polinomio espresso in potenze negative di z, mentre il denominatore lo definiamo come una produttoria di poli della funzione di trasferimento. Il metodo dei residui ci serve per trovare la risposta all’impulso del sistema partendo dalla funzione di trasferimento.</p>
+</div>
+<div id="S14.p2" class="ltx_para">
+<div id="Ex54" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex54.m1" class="ltx_Math" alttext="\begin{split}H(z)&amp;{}=\frac{N(z^{-1})}{\prod_{h=1}^{N}R_{h}\cdot\frac{1}{1-p_{h%
+}z^{-1}}}\end{split}" display="block"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mfrac><mrow><mi>N</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mrow><msubsup><mo>∏</mo><mrow><mi>h</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></msubsup><mrow><msub><mi>R</mi><mi>h</mi></msub><mo lspace="0.222em" rspace="0.222em">⋅</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><mrow><msub><mi>p</mi><mi>h</mi></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow></mfrac></mrow></mrow></mfrac></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S14.p3" class="ltx_para">
+<p class="ltx_p">Quello che facciamo quindi nel metodo dei residui e’ trasformare la produttoria in una sommatoria in cui moltiplichiamo la funzione di trasferimento per un RESIDUO che mi serve per annullare lo zero della funzione.</p>
+</div>
+<div id="S14.p4" class="ltx_para">
+<p class="ltx_p">Prima di applicare questa tecnica devo fare delle verifiche:</p>
+<ol id="S14.I1" class="ltx_enumerate">
+<li id="S14.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">1.</span><div id="S14.I1.i1.p1" class="ltx_para"><p class="ltx_p">Assicurarsi che i polinomi siano espressi in <math id="S14.I1.i1.p1.m1" class="ltx_Math" alttext="z^{-1}" display="inline"><semantics><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></semantics></math></p>
+</div>
+</li>
+<li id="S14.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">2.</span><div id="S14.I1.i2.p1" class="ltx_para"><p class="ltx_p">Assicurarsi che i poli siano semplici, ovvero che non abbiamo molteplicita’ diversa da 1.</p>
+</div>
+</li>
+<li id="S14.I1.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">3.</span><div id="S14.I1.i3.p1" class="ltx_para"><p class="ltx_p">Se il grado del numeratore e’ minore del grado del denominatore. Se non lo fosse bisogna fare la divisione tra polinomi per abbassare i gradi dei polinomi.</p>
+</div>
+</li>
+</ol>
+</div>
+<div id="S14.p5" class="ltx_para">
+<div id="Ex55" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex55.m1" class="ltx_Math" alttext="R_{h}=[H(z)(1-p_{h}z^{-1})]" display="block"><semantics><mrow><msub><mi>R</mi><mi>h</mi></msub><mo>=</mo><mrow><mo stretchy="false">[</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mn>1</mn><mo>−</mo><mrow><msub><mi>p</mi><mi>h</mi></msub><mo>⁢</mo><msup><mi>z</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">]</mo></mrow></mrow></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+<section id="S15" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">8.15</span> Stabilita’ di un filtro LTI</h2>
+
+<div id="S15.p1" class="ltx_para">
+<p class="ltx_p">Cosa intendiamo con stabilita’ di un sistema.
+Parliamo di stabilita’ B.I.B.O (Bounded Input Bounded Output), che semplicemente ci dice che se in un sistema LTI mettiamo in input un segnale finito ci aspettiamo in output un segnale finito.</p>
+</div>
+<figure id="S15.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez30-BIBO.webp" width="675" height="264" loading="lazy" alt="Scritta 'B.I.B.O. stability' con le due parti 'bounded input' (cerchiata in verde) e 'bounded output' (cerchiata in azzurro). Schema a blocchi: x[n] entra in un riquadro 'sistema' ed esce y[n]. Sotto, in azzurro 'ipotesi' con |x[n]| ≤ M &lt; +∞, una freccia rossa e |y[n]| ≤ L &lt; +∞."></div>
+</figure>
+<div id="S15.p2" class="ltx_para">
+<p class="ltx_p">Un esempio semplice di una situazione che viola questa stabilita’ e’ ad esempio una cantante che fa scoppiare i bicchieri con la voce. La voce e’ un input limitato che entrando in un sistema, il bicchiere, produce un output illimitato che fa scoppiare i bicchieri.
+Un esempio piu’ vicino all’elaborazione dei segnali e’ quando un segnale satura e fischia.</p>
+</div>
+<section id="S15.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">8.15.1</span> Teorema 1</h3>
+
+<div id="S15.SS1.p1" class="ltx_para">
+<p class="ltx_p">Dato un sistema LTI, condizione necessaria e sufficiente per la BIBO stabilita’ e’ che la risposta all’impulso sia assolutamente sommabile:</p>
+</div>
+<div id="S15.SS1.p2" class="ltx_para">
+<div id="Ex56" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex56.m1" class="ltx_Math" alttext="\sum_{n=-\infty}^{+\infty}|h[n]|&lt;+\infty" display="block"><semantics><mrow><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mo lspace="0em" stretchy="false">|</mo><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">|</mo></mrow></mrow><mo>&lt;</mo><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S15.SS1.p3" class="ltx_para">
+<p class="ltx_p">Dimostriamo la parte sufficiente:</p>
+</div>
+<div id="S15.SS1.p4" class="ltx_para">
+<p class="ltx_p">Se LTI <math id="S15.SS1.p4.m1" class="ltx_Math" alttext="\sum_{n=-\infty}^{+\infty}|h[n]|&lt;+\infty" display="inline"><semantics><mrow><mrow><msubsup><mo>∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></msubsup><mrow><mo lspace="0em" stretchy="false">|</mo><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">|</mo></mrow></mrow><mo>&lt;</mo><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></mrow></semantics></math> allora il sistema LTI e’ stabile</p>
+</div>
+<div id="S15.SS1.p5" class="ltx_para">
+<div id="Ex57" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex57.m1" class="ltx_Math" alttext="\begin{split}y[n]&amp;{}=x[n]*h[n]=\sum_{k=-\infty}^{+\infty}h[k]x[n-k]\\
+|y[n]|&amp;{}=|\sum_{k=-\infty}^{+\infty}h[k]x[n-k]|\leq\sum_{k=-\infty}^{+\infty}%
+|h[k]x[n-k]|\\
+&amp;{}=\sum_{k=-\infty}^{+\infty}|h[k]||x[n-k]|\leq\sum_{k=-\infty}^{+\infty}|h[k%
+]|\cdot M\\
+&amp;{}=M\sum_{k=-\infty}^{+\infty}h[k]=M\tilde{h}\\
+|y[n]|&amp;{}\leq M\tilde{h}&lt;+\infty\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mi>h</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mo stretchy="false">|</mo><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">|</mo></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mo stretchy="false">|</mo><mrow><munderover><mo lspace="0em" movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo stretchy="false">|</mo></mrow><mo rspace="0.111em">≤</mo><mrow><munderover><mo movablelimits="false" rspace="0em">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mo stretchy="false">|</mo><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">|</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false" rspace="0em">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mrow><mo stretchy="false">|</mo><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">|</mo></mrow><mo>⁢</mo><mrow><mo stretchy="false">|</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">|</mo></mrow></mrow></mrow><mo rspace="0.111em">≤</mo><mrow><munderover><mo movablelimits="false" rspace="0em">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mrow><mo stretchy="false">|</mo><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow></mrow><mo rspace="0.055em" stretchy="false">|</mo></mrow><mo rspace="0.222em">⋅</mo><mi>M</mi></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>M</mi><mo>⁢</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow><mo>=</mo><mrow><mi>M</mi><mo>⁢</mo><mover accent="true"><mi>h</mi><mo>~</mo></mover></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mo stretchy="false">|</mo><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">|</mo></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>≤</mo><mrow><mi>M</mi><mo>⁢</mo><mover accent="true"><mi>h</mi><mo>~</mo></mover></mrow><mo>&lt;</mo><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>

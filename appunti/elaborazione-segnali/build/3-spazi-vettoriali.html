@@ -1,0 +1,72 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">Dagli spazi vettoriali dall’algebra lineare agli spazi vettoriali in cui le basi sono funzioni (spazi di Hilbert).
+Per fare questo passaggio ripassiamo i vettori.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.1</span> Rappresentazione</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">Esistono due tipi di rappresentazione, cartesiana e polare.</p>
+</div>
+<figure id="S1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez7-vettori.webp" width="613" height="421" loading="lazy" alt="Piano cartesiano con assi x e y. Il vettore a (verde) va dall'origine al punto (2, 1) con angolo θa rispetto all'asse x; il vettore b (azzurro) va verso il punto (1, 3) con angolo θb. Un angolo tra i due vettori è evidenziato in rosso. Sugli assi sono segnati i valori 1, 2 e 3 con linee tratteggiate."></div>
+</figure>
+<div id="S1.p2" class="ltx_para">
+<div id="Ex1" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex1.m1" class="ltx_Math" alttext="\begin{split}\vec{a}=\begin{pmatrix}2\\
+1\end{pmatrix}\mbox{ }|\vec{a}|&amp;{}=\sqrt{1+4}=\sqrt{5}\\
+\Theta_{a}&amp;{}=arctan\frac{1}{2}\\
+\vec{b}=\begin{pmatrix}1\\
+3\end{pmatrix}\mbox{ }|\vec{b}|&amp;{}=\sqrt{1+9}=\sqrt{10}\\
+\Theta_{b}&amp;{}=arctan3\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mover accent="true"><mi>a</mi><mo stretchy="false">→</mo></mover><mo>=</mo><mrow><mrow><mo>(</mo><mtable displaystyle="true" rowspacing="0pt"><mtr><mtd><mn>2</mn></mtd></mtr><mtr><mtd><mn>1</mn></mtd></mtr></mtable><mo>)</mo></mrow><mo>⁢</mo><mtext> </mtext><mo>⁢</mo><mrow><mo stretchy="false">|</mo><mover accent="true"><mi>a</mi><mo stretchy="false">→</mo></mover><mo stretchy="false">|</mo></mrow></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><msqrt><mrow><mn>1</mn><mo>+</mo><mn>4</mn></mrow></msqrt><mo>=</mo><msqrt><mn>5</mn></msqrt></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><msub><mi mathvariant="normal">Θ</mi><mi>a</mi></msub></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>a</mi><mo>⁢</mo><mi>r</mi><mo>⁢</mo><mi>c</mi><mo>⁢</mo><mi>t</mi><mo>⁢</mo><mi>a</mi><mo>⁢</mo><mi>n</mi><mo>⁢</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mover accent="true"><mi>b</mi><mo stretchy="false">→</mo></mover><mo>=</mo><mrow><mrow><mo>(</mo><mtable displaystyle="true" rowspacing="0pt"><mtr><mtd><mn>1</mn></mtd></mtr><mtr><mtd><mn>3</mn></mtd></mtr></mtable><mo>)</mo></mrow><mo>⁢</mo><mtext> </mtext><mo>⁢</mo><mrow><mo stretchy="false">|</mo><mover accent="true"><mi>b</mi><mo stretchy="false">→</mo></mover><mo stretchy="false">|</mo></mrow></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><msqrt><mrow><mn>1</mn><mo>+</mo><mn>9</mn></mrow></msqrt><mo>=</mo><msqrt><mn>10</mn></msqrt></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><msub><mi mathvariant="normal">Θ</mi><mi>b</mi></msub></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>a</mi><mo>⁢</mo><mi>r</mi><mo>⁢</mo><mi>c</mi><mo>⁢</mo><mi>t</mi><mo>⁢</mo><mi>a</mi><mo>⁢</mo><mi>n</mi><mo>⁢</mo><mn>3</mn></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.2</span> Prodotto Scalare</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Il prodotto scalare di due vettori e’ la loro combinazione lineare (il primo elemento del primo vettore moltiplicato per il primo elemento del secondo vettore, e cosi’ via). Il risultato e’ un numero ed il simbolo e’ <math id="S2.p1.m1" class="ltx_math_unparsed" alttext="&lt;\vec{a},\vec{b}&gt;" display="inline"><semantics><mrow><mo>&lt;</mo><mover accent="true"><mi>a</mi><mo stretchy="false">→</mo></mover><mo>,</mo><mover accent="true"><mi>b</mi><mo stretchy="false">→</mo></mover><mo>&gt;</mo></mrow></semantics></math> o <math id="S2.p1.m2" class="ltx_Math" alttext="\vec{a}\cdot\vec{b}" display="inline"><semantics><mrow><mover accent="true"><mi>a</mi><mo stretchy="false">→</mo></mover><mo lspace="0.222em" rspace="0.222em">⋅</mo><mover accent="true"><mi>b</mi><mo stretchy="false">→</mo></mover></mrow></semantics></math>.</p>
+</div>
+<figure id="S2.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez7-prodottoScalare.webp" width="287" height="323" loading="lazy" alt="Due vettori colonna rossi tra parentesi quadre, con elementi a1, a2, ..., aN a sinistra e b1, b2, ..., bN a destra. Frecce azzurre bidirezionali collegano gli elementi di pari posizione (a1 con b1, a2 con b2, aN con bN)."></div>
+</figure>
+<div id="S2.p2" class="ltx_para">
+<p class="ltx_p">Rappresentazione cartesiana:</p>
+<div id="Ex2" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex2.m1" class="ltx_Math" alttext="\begin{split}[2,1][1,3]=2\cdot 1+1\cdot 3=5\end{split}" display="block"><semantics><mtable class="bml_alignment_aligned" displaystyle="true"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mrow><mo stretchy="false">[</mo><mn>2</mn><mo>,</mo><mn>1</mn><mo stretchy="false">]</mo></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mn>1</mn><mo>,</mo><mn>3</mn><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mn>2</mn><mo lspace="0.222em" rspace="0.222em">⋅</mo><mn>1</mn></mrow><mo>+</mo><mrow><mn>1</mn><mo lspace="0.222em" rspace="0.222em">⋅</mo><mn>3</mn></mrow></mrow><mo>=</mo><mn>5</mn></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.3</span> Vettori ortogonali</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">Due vettori sono ortogonali quando il loro prodotto scalare e’ zero.</p>
+</div>
+<figure id="S3.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez7-vettoriOrtogonali.webp" width="361" height="313" loading="lazy" alt="Piano cartesiano con asse y e un asse orizzontale. Il vettore giallo C va dall'origine al punto (4, 3), con proiezioni rosse sui due assi (valori 4 e 3). Sull'origine sono disegnati i due versori azzurri, j verso l'alto e i verso destra."></div>
+</figure>
+<div id="S3.p2" class="ltx_para">
+<p class="ltx_p">i e j sono detti VERSORI, posso riscrivere il vettore C come combinazione dei versori:</p>
+</div>
+<div id="S3.p3" class="ltx_para">
+<div id="Ex3" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex3.m1" class="ltx_Math" alttext="\vec{C}=\vec{i}4+\vec{j}\cdot 3" display="block"><semantics><mrow><mover accent="true"><mi>C</mi><mo stretchy="false">→</mo></mover><mo>=</mo><mrow><mrow><mover accent="true"><mi>i</mi><mo stretchy="false">→</mo></mover><mo>⁢</mo><mn>4</mn></mrow><mo>+</mo><mrow><mover accent="true"><mi>j</mi><mo stretchy="false">→</mo></mover><mo lspace="0.222em" rspace="0.222em">⋅</mo><mn>3</mn></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S3.p4" class="ltx_para">
+<p class="ltx_p">Di conseguenza possiamo considerare C come combinazione lineare delle basi nello spazio vettoriale e il modulo del vettore e’ la sua proiezione ortogonale.
+Quindi riconducendo questo discorso ai segnali, ogni volta che analizziamo un vettore ne facciamo il prodotto scalare dal prodotto scalare per fare una ”sintesi” del vettore rimetto insieme i prodotti scalari.</p>
+</div>
+</div>
+</section>
+</div>

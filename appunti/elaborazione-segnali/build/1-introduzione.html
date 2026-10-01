@@ -1,0 +1,148 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">Lui inizia alle 11.30 e finisce mezz’ora prima (13.00).</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">1.1</span> Segnali tempo continuo e discreto</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">Nella figura delle serie storiche e del suono del diapason la variabile indipendente (x) e’ il tempo. Storicamente i segnali temporali sono quelli piu’ vicini alla percezione della realta’.
+Il segnale che abbiamo visto adesso aveva un andamento oscillatorio, ed abbiamo detto che e’ a tempo continuo e quindi lo rappresentiamo come una funzione matematica x(t), quindi una funzione e’ un segnale, noi parleremo di funzioni che descrivono situazioni reali con caratteristiche particolari.
+Il tempo per un segnale a tempo continuo perche’ appartiene all’insieme dei numeri reali (R), <math id="S1.p1.m1" class="ltx_Math" alttext="t\in\mathbb{R}" display="inline"><semantics><mrow><mi>t</mi><mo>∈</mo><mi>ℝ</mi></mrow></semantics></math>.
+In realta’ i segnali sono creati da dei campioni distanziati da un certo intervallo (segnali a tempo discreto) che chiameremo genericamente <math id="S1.p1.m2" class="ltx_Math" alttext="\Delta(t)" display="inline"><semantics><mrow><mi mathvariant="normal">Δ</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow></semantics></math>, andiamo a far crescere il numero del campione man mano che progrediamo, quindi la variabile a indipendente e’ n, e la funzione dipende da n: x[n], parleremo di funzione discreta usando le parentesi quadre. (e’ un segnale a tempo discreto con variabile indipendente n).</p>
+</div>
+<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez1-segnaleTempoContinuo.webp" width="366" height="237" loading="lazy" alt="Grafico con asse verticale x(t) e asse orizzontale t: una sinusoide nera a tempo continuo su cui sono segnati in rosso dei punti equidistanti (campioni). I primi due punti sono indicati con n=1 e n=2, l'intervallo tra campioni è indicato con Δt. A sinistra è scritto in rosso x[n] e in basso a destra n."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 1.1: </span>Segnale a tempo continuo vs tempo discreto</figcaption>
+</figure>
+<div id="S1.p2" class="ltx_para">
+<p class="ltx_p">Noi ci occuperemo di segnali monodirezionali, la variabile indipendente sara’ 1, nel caso appena visto il tempo. Esistono anche segnali in cui ci sono piu’ variabili indipendenti, l’immagine.</p>
+</div>
+<figure id="F2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez1-segnaliMultidirezionali.webp" width="532" height="394" loading="lazy" alt="Tre quadrilateri (frame) colorati, con la scritta IMMAGINE sopra il primo e le etichette t1, t2, t3. Sul primo frame c'è un punto con due frecce, i verso il basso e j verso destra. Sotto, un asse del tempo t con due tacche indicate come FRAME #1 e FRAME #2, e Δt tra di esse."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 1.2: </span>Segnali multidirezionali</figcaption>
+</figure>
+<div id="S1.p3" class="ltx_para">
+<p class="ltx_p">Abbiamo un indice j che indica la riga ed un sensore i che indica la colonna, abbiamo due variabili indipendenti di tipo spaziale e se introduciamo un’altra variabile indipendente il tempo otteniamo una sequenza di immagini che e’ un video: nel video abbiamo una variabile a tempo continuo che cresce (il tempo) che viene discretizzato in tutti i frame, e tra tutti i frame ci sara’ un <math id="S1.p3.m1" class="ltx_Math" alttext="\Delta t" display="inline"><semantics><mrow><mi mathvariant="normal">Δ</mi><mo>⁢</mo><mi>t</mi></mrow></semantics></math>. In questo caso abbiamo un segnale tridimensionale con 2 variabili indipendenti spaziali ed 1 variabile indipendente temporale.</p>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">1.2</span> Sistema</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Cio’ che manipola un segnale tipicamente si chiama sistema, che cos’e’ un sistema?
+Per adesso lo rappresentiamo come una scatola che e’ il nostro algoritmo che ha in ingresso il nostro segnale tempo discreto x[n] ed in uscita ha un altro segnale tempo discreto y[n], cosa succede all’interno dell’algoritmo al momento non ci interessa, ma sappiamo che il segnale viene modificato, consideriamo che l’algoritmo sia una funzione y[n] = Tx[n].</p>
+</div>
+<figure id="F3" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez1-sistema.webp" width="574" height="130" loading="lazy" alt="Schema a blocchi: un rettangolo vuoto con la scritta ALGORITMO, con ingresso x[n] a sinistra e uscita a destra. Accanto sono scritte le formule y[n] = T{x[n]} e y = f(x) = x^2."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 1.3: </span>Sistema</figcaption>
+</figure>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">1.3</span> Segnali e Sistemi</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">Abbiamo i segnali che all’inizio saranno a tempo continuo, impareremo le caratteristiche di questi segnali ed impareremo a convertirli in tempo discreto con un convertitore analogico digitale, all’uscita di questo convertitore avremo un segnale a tempo discreto. Questo segnale tempo discreto impareremo a manipolarlo con un sistema che ci da un segnale in uscita che ancora una volta e’ a tempo discreto.
+Per ora siamo ancora in un mondo a tempo discreto, pero’ la nostra applicazione deve fare qualcosa nel mondo reale, allora in questo caso dobbiamo tornare nel tempo continuo, lo facciamo con un convertitore digitale analogico(DAC), quindi in uscita avremo un segnale a tempo continuo.</p>
+</div>
+<figure id="F4" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez1-continuoAdiscreto.webp" width="752" height="339" loading="lazy" alt="Schema a blocchi della catena di elaborazione: segnale a tempo continuo x(t) in ingresso a un convertitore A/D (analogico, digitale), poi x[n] entra nel blocco FILTRO / SISTEMA e esce y[n], che passa in un convertitore D/A (DAC, digitale, analogico) con uscita y(t). Il tratto tra A/D e D/A è racchiuso in un riquadro verde con la scritta SEGNALI TEMPO DISCRETO. Ci sono numeri cerchiati 1, 2, 3 e le scritte SEGNALI TEMPO-CONTINUO e TEMPO CONTINUO."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 1.4: </span>Trasformare i segnali da tempo continuo a discreto</figcaption>
+</figure>
+<div id="S3.p2" class="ltx_para">
+<p class="ltx_p">Dobbiamo partire dai segnali tempo continui perche’ vogliamo capire che segnali digitali li caratterizzano, dopo di che parleremo dei segnali digitali, a questo punto potremo manipolare i segnali digitali parlando dei sistemi.
+Infine torneremo ai segnali perche’ vorremo essere in grado non solo di capire come funziona un sistema ma anche di progettarlo.
+Un’altro modo di dire la parola sistema e’ FILTRO, quindi dovremo essere in grado di scrivere degli algoritmi che siano dei filtri digitali che trasformino il segnale come vogliamo noi, lo faremo soprattutto nel contesto di Fourier.</p>
+</div>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">1.4</span> Segnale trigonometrico</h2>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">Nel contesto dei segnali tempo continui andiamo a ripassare un segnale trigonometrico, il piu’ semplice e’ il coseno:</p>
+<div id="E1" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id1">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id1"><span class="bml_sr_only">equation </span>(1.1)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(1.1)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E1.m1" class="ltx_Math" alttext="x(t)=A_{0}\cos(2\pi f_{0}t+\varphi_{0})" display="block"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><msub><mi>A</mi><mn>0</mn></msub><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><msub><mi>f</mi><mn>0</mn></msub><mo>⁢</mo><mi>t</mi></mrow><mo>+</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S4.p2" class="ltx_para">
+<p class="ltx_p">ricordiamo che t e’ la variabile indipendente e non e’ un parametro, certamente al variare di t cambia il segnale, ma siamo interessati al segnale nella sua interezza.</p>
+</div>
+<div id="S4.p3" class="ltx_para">
+<p class="ltx_p">Andiamo ora a definire meglio tutti i parametri dell’equazione appena vista.</p>
+</div>
+<section id="S4.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">1.4.1</span> Ampiezza</h3>
+
+<div id="S4.SS1.p1" class="ltx_para">
+<p class="ltx_p"><math id="S4.SS1.p1.m1" class="ltx_Math" alttext="A_{0}" display="inline"><semantics><msub><mi>A</mi><mn>0</mn></msub></semantics></math> e’ l’ampiezza del segnale, moltiplicare il coseno per un ampiezza significa aumentare o diminuire i punti massimi del coseno. Se <math id="S4.SS1.p1.m2" class="ltx_Math" alttext="A_{0}&gt;1" display="inline"><semantics><mrow><msub><mi>A</mi><mn>0</mn></msub><mo>&gt;</mo><mn>1</mn></mrow></semantics></math> aumento i punti massini, altrimenti li diminuisco.</p>
+</div>
+</div>
+</section>
+<section id="S4.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">1.4.2</span> Frequenza</h3>
+
+<div id="S4.SS2.p1" class="ltx_para">
+<p class="ltx_p"><math id="S4.SS2.p1.m1" class="ltx_Math" alttext="f_{0}" display="inline"><semantics><msub><mi>f</mi><mn>0</mn></msub></semantics></math> e’ la frequenza del segnale cosinusoidale (in questo caso solo 1). Il concetto di frequenza e’ un concetto base (con che frequenza mangi in una giornata), intendiamo il numero di volte che facciamo qualcosa in un unita’ di tempo, per quanto ci riguarda la nostra unita’ di tempo e’ 1 secondo. Si misura in Heartz (hz) ed e’ ottenuta dal numero di eventi fratto l’unita’ di tempo. Nel nostro caso dato che stiamo parlando di un coseno, il quale e’ periodico di periodo <math id="S4.SS2.p1.m2" class="ltx_Math" alttext="2k\pi" display="inline"><semantics><mrow><mn>2</mn><mo>⁢</mo><mi>k</mi><mo>⁢</mo><mi>π</mi></mrow></semantics></math>, questo sara’ uguale a se stesso (si ripetera’)dopo:</p>
+</div>
+<div id="S4.SS2.p2" class="ltx_para">
+<div id="E2" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id2">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id2"><span class="bml_sr_only">equation </span>(1.2)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(1.2)</span>
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="E2.m1" class="ltx_Math" alttext="2\pi f_{0}t+\varphi_{0}=0+2\pi k+\varphi" display="block"><semantics><mrow><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><msub><mi>f</mi><mn>0</mn></msub><mo>⁢</mo><mi>t</mi></mrow><mo>+</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow><mo>=</mo><mrow><mn>0</mn><mo>+</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi><mo>⁢</mo><mi>k</mi></mrow><mo>+</mo><mi>φ</mi></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S4.SS2.p3" class="ltx_para">
+<p class="ltx_p">dove k e’ una costante e <math id="S4.SS2.p3.m1" class="ltx_Math" alttext="k\in\mathbb{(}Z)" display="inline"><semantics><mrow><mi>k</mi><mo>∈</mo><mrow><mo stretchy="false">(</mo><mi>Z</mi><mo stretchy="false">)</mo></mrow></mrow></semantics></math>.
+Da questa formula posso quindi scrivere che <math id="S4.SS2.p3.m2" class="ltx_Math" alttext="t=\frac{k}{f_{0}}=kT_{0}" display="inline"><semantics><mrow><mi>t</mi><mo>=</mo><mfrac><mi>k</mi><msub><mi>f</mi><mn>0</mn></msub></mfrac><mo>=</mo><mrow><mi>k</mi><mo>⁢</mo><msub><mi>T</mi><mn>0</mn></msub></mrow></mrow></semantics></math>.
+Dove <math id="S4.SS2.p3.m3" class="ltx_Math" alttext="T_{0}=\frac{1}{f_{0}}" display="inline"><semantics><mrow><msub><mi>T</mi><mn>0</mn></msub><mo>=</mo><mfrac><mn>1</mn><msub><mi>f</mi><mn>0</mn></msub></mfrac></mrow></semantics></math> che e’ il periodo del segnale.
+Il segnale si ripetera’ un’infinita’ di volte, ma e’ un modello.
+Questo <math id="S4.SS2.p3.m4" class="ltx_Math" alttext="f_{0}" display="inline"><semantics><msub><mi>f</mi><mn>0</mn></msub></semantics></math> diremo indicativamente che e’ grande per segnali ad alta frequenza, in questo caso se la frequenza e’ grande il periodo (inverso della frequenza) sara’ piccolo. Avremo anche segnali a bassa frequenza con <math id="S4.SS2.p3.m5" class="ltx_Math" alttext="f_{0}" display="inline"><semantics><msub><mi>f</mi><mn>0</mn></msub></semantics></math> piccolo ed il periodo grande. Queste stesse cose valgono anche per la lunghezza d’onda nelle radio.</p>
+</div>
+</div>
+</section>
+<section id="S4.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">1.4.3</span> Pulsazione</h3>
+
+<div id="S4.SS3.p1" class="ltx_para">
+<p class="ltx_p">Un altra grandezza da considerare e’ la pulsazione (frequenza angolare o velocita’ angolare), generalmente detta <math id="S4.SS3.p1.m1" class="ltx_Math" alttext="\omega_{0}" display="inline"><semantics><msub><mi>ω</mi><mn>0</mn></msub></semantics></math> ed e’ banalmente uguale a <math id="S4.SS3.p1.m2" class="ltx_Math" alttext="2\pi\cdot f_{0}" display="inline"><semantics><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow><mo lspace="0.222em" rspace="0.222em">⋅</mo><msub><mi>f</mi><mn>0</mn></msub></mrow></semantics></math>, cioe’ portiamo in radianti la frequenza.
+Si misura di conseguenza in radianti al secondo: <math id="S4.SS3.p1.m3" class="ltx_Math" alttext="\frac{\mbox{RAD}}{1}" display="inline"><semantics><mfrac><mtext>RAD</mtext><mn>1</mn></mfrac></semantics></math>.
+Soprattutto nel tempo discreto la velocita’ angolare si usa molto, perche’ viene riportata al concetto di frequenza.</p>
+</div>
+</div>
+</section>
+<section id="S4.SS4" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">1.4.4</span> Fase</h3>
+
+<div id="S4.SS4.p1" class="ltx_para">
+<p class="ltx_p"><math id="S4.SS4.p1.m1" class="ltx_Math" alttext="\varphi_{0}" display="inline"><semantics><msub><mi>φ</mi><mn>0</mn></msub></semantics></math> e’ la fase, sposta il segnale a destra o sinistra rispettivamente se positiva o negativa. Ricordiamoci sempre che stiamo lavorando con segnali periodici, quindi potremo spostarli fino a <math id="S4.SS4.p1.m2" class="ltx_Math" alttext="2\pi" display="inline"><semantics><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow></semantics></math>, dopo di che tornano ad essere uguali, quindi generalizzando il concetto possiamo dire che tutto quello che esce dal range <math id="S4.SS4.p1.m3" class="ltx_Math" alttext="0\rightarrow 2\pi" display="inline"><semantics><mrow><mn>0</mn><mo stretchy="false">→</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow></mrow></semantics></math> non modifica la funzione, una conseguenza di questa cosa e’ che data una funzione periodica possiamo rimapparla togliendo <math id="S4.SS4.p1.m4" class="ltx_Math" alttext="2\pi" display="inline"><semantics><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow></semantics></math>.
+In elaborazione dei segnali, per convenzione, si preferisce considerare il periodo base <math id="S4.SS4.p1.m5" class="ltx_Math" alttext="-2\pi\rightarrow\pi" display="inline"><semantics><mrow><mrow><mo>−</mo><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow></mrow><mo stretchy="false">→</mo><mi>π</mi></mrow></semantics></math>.</p>
+</div>
+<div id="S4.SS4.p2" class="ltx_para">
+<p class="ltx_p">Nell’esempio vediamo come sommare o sottrarre una costante <math id="S4.SS4.p2.m1" class="ltx_Math" alttext="\tau=2" display="inline"><semantics><mrow><mi>τ</mi><mo>=</mo><mn>2</mn></mrow></semantics></math> trasla rispettivamente a destra e sinistra la funzione, esattamente il comportamento che ha la fase.</p>
+</div>
+<figure id="S4.SS4.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez1-modificareTempo.webp" width="757" height="270" loading="lazy" alt="Due grafici con un segnale triangolare rosso con picco di valore 2. A sinistra, titolo x(t+τ): il triangolo ha base da -2 a 1 con picco in -1, e una freccia rosa verso sinistra con la scritta &quot;2 = 2&quot;. A destra, titolo x(t-τ): il triangolo ha base da 2 a 5 con picco in 3, e una freccia rosa verso destra con &quot;2&quot;. Gli assi sono etichettati t."></div>
+</figure>
+</div>
+</section>
+</div>
+</section>
+</div>

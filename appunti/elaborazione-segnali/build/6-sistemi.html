@@ -1,0 +1,902 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">Dopo aver parlato di segnali a tempo continuo e segnali a tempo discreto, il nostro obbiettivo ora e’ scrivere un algoritmo per modificare un segnale. In generale questa operazione sara’ fatta costruendo dei filtri (o SISTEMI) che hanno in ingresso un segnale a tempo discreto ed in uscita sempre un segnale a tempo discreto.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.1</span> Esempio di sistemi, equazione alle differenze</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">Troviamo un modo matematico per esprimere gli algoritmi.
+Un operatore matematico che si applica ad un segnale tempo discreto e’ detto <span class="ltx_text ltx_font_bold">equazione alle differenze</span>, il quale ha in uscita un segnale tempo discreto ed in uscita sempre un segnale a tempo discreto.</p>
+</div>
+<div id="S1.p2" class="ltx_para">
+<p class="ltx_p">Vediamo ora degli esempi di sistemi. Innanzitutto diamo delle definizioni, chiameremo n (la variabile indipendente) <span class="ltx_text ltx_font_bold">presente</span>, di conseguenza considereremo un segnale con in input solo n, input presente.
+Mentre considereremo un segnale <math id="S1.p2.m1" class="ltx_Math" alttext="x[n-k],k\in\mathbf{N}" display="inline"><semantics><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>,</mo><mi>k</mi></mrow><mo>∈</mo><mi>𝐍</mi></mrow></semantics></math>, <span class="ltx_text ltx_font_bold">input passato</span>, invece un segnale <math id="S1.p2.m2" class="ltx_Math" alttext="x[n+k],k\in\mathbf{N}" display="inline"><semantics><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>+</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>,</mo><mi>k</mi></mrow><mo>∈</mo><mi>𝐍</mi></mrow></semantics></math>, <span class="ltx_text ltx_font_bold">input futuro</span>. <math id="S1.p2.m3" class="ltx_Math" alttext="y[n]" display="inline"><semantics><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math> e’ considerato l’<span class="ltx_text ltx_font_bold">output</span></p>
+</div>
+<div id="S1.p3" class="ltx_para">
+<div id="Ex1" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex1.m1" class="ltx_Math" alttext="\begin{split}y[n]&amp;{}=(x[n])^{2}\\
+y[n]&amp;{}=(x[n])^{3}-x[n-1]+\frac{1}{2}x[n+1]\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><msup><mrow><mo stretchy="false">(</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">)</mo></mrow><mn>2</mn></msup></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><msup><mrow><mo stretchy="false">(</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">)</mo></mrow><mn>3</mn></msup><mo>−</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>+</mo><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.2</span> Proprieta’ dei sistemi</h2>
+
+<div id="S2.p1" class="ltx_para">
+<ul id="S2.I1" class="ltx_itemize">
+<li id="S2.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i1.p1" class="ltx_para"><p class="ltx_p">Causale: sistema che dipende dal presente e dal passato: <math id="S2.I1.i1.p1.m1" class="ltx_Math" alttext="y[n]=x[n-1]" display="inline"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math></p>
+</div>
+</li>
+<li id="S2.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i2.p1" class="ltx_para"><p class="ltx_p">Anti-Causale: sistema che dipende dal futuro <math id="S2.I1.i2.p1.m1" class="ltx_Math" alttext="y[n]=x[n+2]" display="inline"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>+</mo><mn>2</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math></p>
+</div>
+</li>
+<li id="S2.I1.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i3.p1" class="ltx_para"><p class="ltx_p">A-Causali: sistema che dipende sia dal passato che dal futuro: <math id="S2.I1.i3.p1.m1" class="ltx_Math" alttext="y[n]=\frac{x[n+1]-x[n-1]}{2}" display="inline"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mfrac><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mn>2</mn></mfrac></mrow></semantics></math></p>
+</div>
+</li>
+</ul>
+</div>
+<figure id="S2.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez12-sistemi.webp" width="712" height="277" loading="lazy" alt="Diagramma a insiemi: un ovale grande &quot;sistemi&quot; contiene un ovale azzurro &quot;causali&quot; e un ovale verde &quot;anti causali&quot; che si sovrappongono in una piccola zona segnata in rosso. Sotto, in giallo, la scritta &quot;a causali&quot;."></div>
+</figure>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.3</span> Definizione di segnali tempo discreti particolari</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">Diamo ora delle definizioni di segnali particolari che ci serviranno successivamente.</p>
+</div>
+<section id="S3.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.3.1</span> Delta di Kronecker (impulso discreto)</h3>
+
+<div id="S3.SS1.p1" class="ltx_para">
+<p class="ltx_p">E’ un segnale che vale 1 nel punto 0 e 0 in tutti gli altri punti. Ha quindi la caratteristica di essere estremamente collocato nel tempo.</p>
+</div>
+<div id="S3.SS1.p2" class="ltx_para">
+<div id="Ex2" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex2.m1" class="ltx_Math" alttext="\begin{split}\delta[n]=\begin{cases}1\text{ se }n=0\\
+0\text{ se }n\neq 0\\
+\end{cases}\end{split}" display="block"><semantics><mtable class="bml_alignment_aligned" displaystyle="true"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mo>{</mo><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mn>1</mn><mo>⁢</mo><mtext> se </mtext><mo>⁢</mo><mi>n</mi></mrow><mo>=</mo><mn>0</mn></mrow></mtd><mtd></mtd></mtr><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mn>0</mn><mo>⁢</mo><mtext> se </mtext><mo>⁢</mo><mi>n</mi></mrow><mo>≠</mo><mn>0</mn></mrow></mtd><mtd></mtd></mtr></mtable></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS1.p3" class="ltx_para">
+<p class="ltx_p">Equivale alla modellazione discreta di un evento ad impulsi, ad esempio lo scoppio di un palloncino.</p>
+</div>
+<figure id="S3.SS1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez12-delta.webp" width="737" height="237" loading="lazy" alt="Grafico del segnale δ[n] con asse verticale δ[n] e asse orizzontale n: un solo campione di valore 1 in n=0, tutti gli altri campioni sull'asse valgono 0. Sull'asse sono segnati -1, 1, 2, 3, 4."></div>
+</figure>
+</div>
+</section>
+<section id="S3.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.3.2</span> Gradino causale (step function)</h3>
+
+<div id="S3.SS2.p1" class="ltx_para">
+<div id="Ex3" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex3.m1" class="ltx_Math" alttext="\begin{split}u[n]=\begin{cases}1\text{ se }n\leq 0\\
+0\text{ se }n&lt;0\\
+\end{cases}\end{split}" display="block"><semantics><mtable class="bml_alignment_aligned" displaystyle="true"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mi>u</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mo>{</mo><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mn>1</mn><mo>⁢</mo><mtext> se </mtext><mo>⁢</mo><mi>n</mi></mrow><mo>≤</mo><mn>0</mn></mrow></mtd><mtd></mtd></mtr><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mn>0</mn><mo>⁢</mo><mtext> se </mtext><mo>⁢</mo><mi>n</mi></mrow><mo>&lt;</mo><mn>0</mn></mrow></mtd><mtd></mtd></mtr></mtable></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS2.p2" class="ltx_para">
+<p class="ltx_p">Possiamo considerarlo come un segnale che si attiva in un certo istante e poi rimane attivo all’infinito.</p>
+</div>
+<figure id="S3.SS2.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez12-gradinoCausale.webp" width="852" height="246" loading="lazy" alt="Grafico del gradino u[n] con asse verticale u[n] e asse orizzontale n: i campioni a sinistra dello zero valgono 0, quelli da n=0 in poi valgono 1, indicato sull'asse verticale e a destra, e proseguono verso destra."></div>
+</figure>
+</div>
+</section>
+<section id="S3.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.3.3</span> Gradino anticausale</h3>
+
+<div id="S3.SS3.p1" class="ltx_para">
+<p class="ltx_p">E’ l’opposto del gradino causale:</p>
+</div>
+<div id="S3.SS3.p2" class="ltx_para">
+<div id="Ex4" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex4.m1" class="ltx_Math" alttext="\begin{split}-u[-n-1]=\begin{cases}0\text{ se }n\geq 0\\
+-1\text{ se }n&lt;0(n\leq 1)\\
+\end{cases}\end{split}" display="block"><semantics><mtable class="bml_alignment_aligned" displaystyle="true"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mo>−</mo><mrow><mi>u</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mrow><mo>−</mo><mi>n</mi></mrow><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>=</mo><mrow><mo>{</mo><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mn>0</mn><mo>⁢</mo><mtext> se </mtext><mo>⁢</mo><mi>n</mi></mrow><mo>≥</mo><mn>0</mn></mrow></mtd><mtd></mtd></mtr><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mo>−</mo><mrow><mn>1</mn><mo>⁢</mo><mtext> se </mtext><mo>⁢</mo><mi>n</mi></mrow></mrow><mo>&lt;</mo><mrow><mn>0</mn><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>n</mi><mo>≤</mo><mn>1</mn></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd><mtd></mtd></mtr></mtable></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S3.SS3.p3" class="ltx_para">
+<p class="ltx_p">Possiamo considerarlo come un segnale che esisteva da meno infinito in passato ed ad un certo punto finisce.</p>
+</div>
+<figure id="S3.SS3.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez12-gradinoAnticausale.webp" width="723" height="199" loading="lazy" alt="Grafico di un segnale discreto con asse orizzontale n: per n negativo i campioni valgono -1 (valore segnato sotto l'asse), da n=0 in poi i campioni valgono 0."></div>
+</figure>
+</div>
+</section>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.4</span> Altre poprieta’ dei sistemi</h2>
+
+<section id="S4.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.4.1</span> Tempo-Invarianza (invarianza temporale)</h3>
+
+<div id="S4.SS1.p1" class="ltx_para">
+<p class="ltx_p">E’ un concetto che possiamo facilmente ricondurre alla realta’, noi ci aspettiamo sempre che se rifacciamo un’azione a distanza di tempo l’output derivato da quell’azione e’ lo stesso, ad esempio riprodurre la stessa canzone una volta la mattina ed una la sera, ci aspettiamo che la canzone riprodotta sia la medesima.</p>
+</div>
+<div id="S4.SS1.p2" class="ltx_para">
+<p class="ltx_p">Nell’esempio vediamo che se ritardiamo l’input di <math id="S4.SS1.p2.m1" class="ltx_Math" alttext="n_{0}" display="inline"><semantics><msub><mi>n</mi><mn>0</mn></msub></semantics></math> campioni, allora anche l’output e’ ritardato degli stessi campioni <math id="S4.SS1.p2.m2" class="ltx_Math" alttext="n_{0}" display="inline"><semantics><msub><mi>n</mi><mn>0</mn></msub></semantics></math>.</p>
+</div>
+<div id="S4.SS1.p3" class="ltx_para">
+<p class="ltx_p">Vediamo ora degli esempi di tempo invarianza, vediamo come nel primo esempio, avendo un segnale tempo invariante (non dipendente da n), nonostante applichiamo un ritardo, all’ingresso o all’uscita del sistema, l’output non cambia.
+Mentre nel secondo caso il sistema <math id="S4.SS1.p3.m1" class="ltx_Math" alttext="nx[n]" display="inline"><semantics><mrow><mi>n</mi><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math> e’ strettamente dipendente ( dalla n che moltiplica il sistema) notiamo che gli outpu applicando il ritardo prima o dopo il sistema cambiano, quindi non e’ tempo invariante. Generalizzando possiamo dire che un segnale che dipende strettamente dal tempo non e’ a tempo invariante.</p>
+</div>
+<figure id="S4.SS1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez12-esTempoInvarianza.webp" width="1132" height="682" loading="lazy" alt="Due coppie di schemi a blocchi. Con y[n] = (x[n])^2: ritardo D_n0 dopo il sistema S oppure prima di S, entrambi danno (x[n-n0])^2, con l'annotazione verde 'OK T.I.'. Con y[n] = n x[n]: ritardo dopo il sistema dà (n-n0) x[n-n0], ritardo prima dà n x[n-n0], con l'annotazione gialla 'NO T.I.'."></div>
+</figure>
+<div id="S4.SS1.p4" class="ltx_para">
+<p class="ltx_p">Vedendolo in modo piu’ ”informatico” possiamo considerare il ritardo come se spostassimo di <math id="S4.SS1.p4.m1" class="ltx_Math" alttext="n_{0}" display="inline"><semantics><msub><mi>n</mi><mn>0</mn></msub></semantics></math> posizioni un array.</p>
+</div>
+<figure id="S4.SS1.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez12-tempoInvarianzaArray.webp" width="1407" height="538" loading="lazy" alt="Quattro colonne di caselle che rappresentano array indicizzati da n=0 a n=5. La prima contiene 1, 2, 3, 4, 5, 6; la seconda 0, 2, 6, 12, 20, 30; la terza (evidenziata in giallo) 0, 0, 0, 2, 6, 12; la quarta contiene 0, 0, 1, 2, 3, 4 e la quinta 0, 0, 2, 6, 12, 20. Frecce e un segno arancione collegano le colonne."></div>
+</figure>
+</div>
+</section>
+<section id="S4.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.4.2</span> Linearita’</h3>
+
+<div id="S4.SS2.p1" class="ltx_para">
+<p class="ltx_p">Avendo un sistema con 2 input <math id="S4.SS2.p1.m1" class="ltx_Math" alttext="x_{1}[n],x_{2}[n]" display="inline"><semantics><mrow><mrow><msub><mi>x</mi><mn>1</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>,</mo><mrow><msub><mi>x</mi><mn>2</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math> e registro gli output del sistema <math id="S4.SS2.p1.m2" class="ltx_Math" alttext="y_{1}[n],y_{2}[n]" display="inline"><semantics><mrow><mrow><msub><mi>y</mi><mn>1</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>,</mo><mrow><msub><mi>y</mi><mn>2</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math>, se invece mettiamo in input delle combinazioni lineari degli intput: <math id="S4.SS2.p1.m3" class="ltx_Math" alttext="\alpha x_{1}[n],\beta x_{2}[n]" display="inline"><semantics><mrow><mrow><mi>α</mi><mo>⁢</mo><msub><mi>x</mi><mn>1</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>,</mo><mrow><mi>β</mi><mo>⁢</mo><msub><mi>x</mi><mn>2</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math>, ci sara’ ancora una relazione con gli input precedenti?
+Si se il sistema e’ lineare, ed otterremo una combinazione lineare degli ouput di prima con gli stessi coeficienti degli input :<math id="S4.SS2.p1.m4" class="ltx_Math" alttext="\alpha y_{1}[n],\beta y_{2}[n]" display="inline"><semantics><mrow><mrow><mi>α</mi><mo>⁢</mo><msub><mi>y</mi><mn>1</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>,</mo><mrow><mi>β</mi><mo>⁢</mo><msub><mi>y</mi><mn>2</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math></p>
+</div>
+<figure id="S4.SS2.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez12-linearita.webp" width="480" height="250" loading="lazy" alt="Due schemi a blocchi, ciascuno con un riquadro S: nel primo l'ingresso x1[n] entra in S e l'uscita è y1[n]; nel secondo l'ingresso x2[n] entra in S e l'uscita è y2[n]. Ingressi evidenziati in verde, uscite in giallo."></div>
+</figure>
+<div id="S4.SS2.p2" class="ltx_para">
+<p class="ltx_p">Quello che facciamo in pratica e’ dare degli stimoli al sistema e vederne gli effetti.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S5" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.5</span> Di che sistemi trattiamo</h2>
+
+<div id="S5.p1" class="ltx_para">
+<p class="ltx_p">In questo corso tratteremo solo di segnali lineare e tempo invarianti (LTI).</p>
+</div>
+<figure id="S5.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez12-sistemiTrattiamo.webp" width="1206" height="473" loading="lazy" alt="Diagramma a insiemi: un ovale grande 'Sistemi' contiene l'insieme 'Tempo invarianti' (verde) e l'insieme 'Lineari' (azzurro), che si sovrappongono in una zona tratteggiata in rosso indicata con una freccia come 'Lineari e tempo invarianti, LTI'. La parte esterna dell'ovale è 'Non lineari' e una zona gialla sotto l'insieme dei tempo invarianti è etichettata 'Chaos'."></div>
+</figure>
+<div id="S5.p2" class="ltx_para">
+<p class="ltx_p">Notiamo che ci sono dei sistemi che godono della proprieta’ del CHAOS, ovvero hanno estrema dipendente dalle condizioni iniziali.</p>
+</div>
+<section id="S5.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.5.1</span> Esempio</h3>
+
+<div id="S5.SS1.p1" class="ltx_para">
+<p class="ltx_p">Prendiamo un input e lo mettiamo in un sistema.</p>
+</div>
+<div id="S5.SS1.p2" class="ltx_para">
+<p class="ltx_p">In questo esempio useremo una delta nel sistema e notiamo che in uscita dal sistema abbiamo ancora una delta. Quello che facciamo quindi e’ aver calcolato la <span class="ltx_text ltx_font_bold">risposta del sistema</span> quando l’ingresso e’ un impulso discreto, <span class="ltx_text ltx_font_bold">risposta all’impulso</span>.</p>
+</div>
+<div id="S5.SS1.p3" class="ltx_para">
+<div id="Ex5" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex5.m1" class="ltx_Math" alttext="\begin{split}y[n]&amp;{}=(x[n])^{2}\\
+x[n]&amp;{}=\delta[n]\\
+y[n]&amp;{}=(\delta[n])^{2}=\delta[n]\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><msup><mrow><mo stretchy="false">(</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">)</mo></mrow><mn>2</mn></msup></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><msup><mrow><mo stretchy="false">(</mo><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">)</mo></mrow><mn>2</mn></msup><mo>=</mo><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<figure id="S5.SS1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez12-esA.webp" width="607" height="198" loading="lazy" alt="Grafico con asse orizzontale n e la scritta 'Risposta all'impulso': un campione di valore 1 in n=0, gli altri campioni sull'asse valgono 0."></div>
+</figure>
+<div id="S5.SS1.p4" class="ltx_para">
+<p class="ltx_p">Ora cambiamo il sistema (sempre lineare e tempo invariante, LTI), e ci mettiamo sempre in input la delta e calcoliamo la risposta del sistema:</p>
+</div>
+<div id="S5.SS1.p5" class="ltx_para">
+<div id="Ex6" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex6.m1" class="ltx_Math" alttext="\begin{split}y[n]&amp;{}=\frac{1}{2}x[n]+\frac{1}{2}x[n-1]\\
+x[n]&amp;{}=\delta[n]\\
+y[n]&amp;{}=h[n]=\frac{1}{2}\delta[n]+\frac{1}{2}\delta[n-1]\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S5.SS1.p6" class="ltx_para">
+<p class="ltx_p">Per disegnare il grafico del segnale, notando che e’ la somma di due funzioni delta, prendiamo la prima la dividiamo per 2, ovvero dove valeva 1 ora vale <math id="S5.SS1.p6.m1" class="ltx_Math" alttext="\frac{1}{2}" display="inline"><semantics><mfrac><mn>1</mn><mn>2</mn></mfrac></semantics></math> e dove valeva 0 rimane a 0, alla quale sommo un’altra funzione delta anch’essa divisa per 2 e traslata verso destra di 1 (perche’ come sappiamo sottrarre un numero dalla variabile dipendente della funzione significa traslare verso destra la funzione del valore sottratto).</p>
+</div>
+<figure id="S5.SS1.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez12-esB.webp" width="628" height="145" loading="lazy" alt="Grafico con asse orizzontale n: un campione di valore 1/2 in n=0 e un campione di valore 1/2 in n=1, tutti gli altri campioni valgono 0. Sull'asse sono segnati 1, 2, 3."></div>
+</figure>
+</div>
+</section>
+</div>
+</section>
+<section id="S6" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.6</span> Scomposizione con delta traslate</h2>
+
+<div id="S6.p1" class="ltx_para">
+<p class="ltx_p">Osserviamo che qualunque segnale puo’ essere scomposto come somma di impulsi opportunamente scalati e traslati.</p>
+</div>
+<div id="S6.p2" class="ltx_para">
+<p class="ltx_p">Disegniamo un segnale qualunque <math id="S6.p2.m1" class="ltx_Math" alttext="x[n]" display="inline"><semantics><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math> che ha un supporto compatto, ovvero ha un dominio limitato nel tempo (e’ definito nel tempo in un certo intervallo). Notiamo che ogni campione del segnale puo’ essere scritto come una funzione delta scalata di un valore (l’altezza y) e traslata sull’asse x.</p>
+</div>
+<figure id="S6.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez13-composizioneDelta.webp" width="1107" height="844" loading="lazy" alt="In alto, asse n con δ[n] (campione 1 in 0, in rosso), δ[n+2] (azzurro, in n=-2) e δ[n-3] = δ[n] traslata (verde, in n=3). In basso, il segnale x[n] a campioni: 2 in n=-1, 3 in n=0, 1 in n=1, -1 in n=2, -2 in n=3, 4 in n=4, 3 in n=5. Frecce lo collegano alle delta traslate 2δ[n+1], δ[n-1], 4δ[n-4], con annotazioni 'supporto compatto (limitato nel tempo)', 'supporto' e 'x[n] ≠ 0 se n ∈ [-1;5]'."></div>
+</figure>
+<div id="S6.p3" class="ltx_para">
+<p class="ltx_p">Riscriviamo quindi il segnale come composizione di delta:</p>
+<div id="Ex7" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex7.m1" class="ltx_Math" alttext="x[n]=2\delta[n+1]+3\delta[n]+\delta[n-1]-\delta[n-2]-2\delta[n-3]+4\delta[n-4]%
++3\delta[n-5]" display="block" tabindex="0"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mrow><mn>2</mn><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><mn>3</mn><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>−</mo><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>2</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mrow><mn>2</mn><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>3</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>+</mo><mrow><mn>4</mn><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>4</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><mn>3</mn><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>5</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S6.p4" class="ltx_para">
+<p class="ltx_p">Questa cosa possiamo farla con qualsiasi segnale:</p>
+</div>
+<div id="S6.p5" class="ltx_para">
+<div id="Ex8" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex8.m1" class="ltx_Math" alttext="x[n]=\sum_{k=-\infty}^{+\infty}x[k]\delta[n-k]" display="block"><semantics><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S6.p6" class="ltx_para">
+<p class="ltx_p">dove <math id="S6.p6.m1" class="ltx_Math" alttext="x[n]" display="inline"><semantics><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math> e’ il valore del segnale nel punto (la modulazione delle y), <math id="S6.p6.m2" class="ltx_math_unparsed" alttext="\delta[n-k" display="inline"><semantics><mrow><mi>δ</mi><mrow><mo stretchy="false">[</mo><mi>n</mi><mo>−</mo><mi>k</mi></mrow></mrow></semantics></math> e’ la funzione delta traslata nel tempo. Inoltre notiamo che generalizzando si puo’ scomporre un segnale anche che non abbia un supporto compatto.</p>
+</div>
+<div id="S6.p7" class="ltx_para">
+<p class="ltx_p">Ci serve per descrivere in modo naturale un segnale, un insieme di campioni nel tempo con valori diversi.</p>
+</div>
+</div>
+</section>
+<section id="S7" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.7</span> Prodotto di convoluzione</h2>
+
+<div id="S7.p1" class="ltx_para">
+<p class="ltx_p">Vediamo che la risposta all’impulso (che esiste sempre) per i sistemi lineari e tempo invarianti ci permette di descrivere le uscite dal sistema per qualunque segnale.</p>
+</div>
+<div id="S7.p2" class="ltx_para">
+<p class="ltx_p">Consideriamo quindi un sistema generale, con input <math id="S7.p2.m1" class="ltx_Math" alttext="x[n]" display="inline"><semantics><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math> ed output <math id="S7.p2.m2" class="ltx_Math" alttext="y[n]" display="inline"><semantics><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math>. Possiamo scrivere <math id="S7.p2.m3" class="ltx_Math" alttext="y[n]" display="inline"><semantics><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math> come composizione lineare degli <math id="S7.p2.m4" class="ltx_Math" alttext="x[n]" display="inline"><semantics><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math>, inoltre posso anche sostituire al segnale <math id="S7.p2.m5" class="ltx_Math" alttext="x[n]" display="inline"><semantics><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math> la sommatoria di funzione delta (come abbiamo appena visto), ottenendo:</p>
+</div>
+<div id="S7.p3" class="ltx_para">
+<div id="Ex9" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex9.m1" class="ltx_Math" alttext="y[n]=L(\sum_{k=-\infty}^{+\infty}x[k]\delta[n-k])" display="block"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>L</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><munderover><mo lspace="0em" movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S7.p4" class="ltx_para">
+<p class="ltx_p">quindi possiamo usare la linearita’ dell’operatore lineare L, dato che <math id="S7.p4.m1" class="ltx_Math" alttext="x[n]" display="inline"><semantics><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math> e’ un numero:</p>
+</div>
+<div id="S7.p5" class="ltx_para">
+<div id="Ex10" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex10.m1" class="ltx_Math" alttext="y[n]=\sum_{k=-\infty}^{+\infty}x[k]L(\delta[n-k])" display="block"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><mi>L</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S7.p6" class="ltx_para">
+<p class="ltx_p">il nostro sistema e’ anche tempo invariante, abbiamo spostato l’input (<math id="S7.p6.m1" class="ltx_Math" alttext="\delta[n-k]" display="inline"><semantics><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></semantics></math>), quindi mi aspetto che anche l’output sia spostato nel tempo (<math id="S7.p6.m2" class="ltx_Math" alttext="h[n-k]" display="inline"><semantics><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></semantics></math>).</p>
+</div>
+<figure id="S7.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez13-tempoInvarianteConvoluzione.webp" width="697" height="316" loading="lazy" alt="Due schemi a blocchi con un riquadro L( ): nel primo l'ingresso δ[n] dà l'uscita h[n]; nel secondo, con la scritta 'tempo invariante', l'ingresso δ[n-k] dà l'uscita h[n-k]. Una freccia gialla collega i due termini traslati."></div>
+</figure>
+<div id="S7.p7" class="ltx_para">
+<div id="Ex11" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex11.m1" class="ltx_Math" alttext="y[n]=\sum_{k=-\infty}^{+\infty}x[k]h[n-k]" display="block"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S7.p8" class="ltx_para">
+<p class="ltx_p">Quindi se conosciamo <math id="S7.p8.m1" class="ltx_Math" alttext="h[n]" display="inline"><semantics><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math> possiamo calcolare <math id="S7.p8.m2" class="ltx_Math" alttext="y[n]" display="inline"><semantics><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math> qualsiasi sia l’input. La risposta all’inpulso caratterizza perfettamente il mio sistema.
+L’operazione si chiama prodotto di convoluzione:</p>
+</div>
+<div id="S7.p9" class="ltx_para">
+<div id="Ex12" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex12.m1" class="ltx_Math" alttext="\sum_{k=-\infty}^{+\infty}x[k]h[n-k]=x[n]*h[n]" display="block"><semantics><mrow><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mi>h</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<section id="S7.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.7.1</span> Proprieta’ del prodotto di convoluzione</h3>
+
+<section id="S7.SS1.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Commutativa</h4>
+
+<div id="S7.SS1.SSSx1.p1" class="ltx_para">
+<div id="Ex13" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex13.m1" class="ltx_Math" alttext="\begin{split}y[n]&amp;{}=x[n]*h[n]=\sum_{k=-\infty}^{+\infty}x[k]h[n-k]\\
+y[n]&amp;{}=h[n]*x[n]=\sum_{k=-\infty}^{+\infty}h[k]x[n-k]\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mi>h</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mi>x</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+<section id="S7.SS1.SSSx2" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Associativa</h4>
+
+<div id="S7.SS1.SSSx2.p1" class="ltx_para">
+<div id="Ex14" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex14.m1" class="ltx_Math" alttext="\begin{split}(x[n]*y[n])*z[n]=x[n]*(y[n]*z[n])\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" displaystyle="true"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mrow><mrow><mo stretchy="false">(</mo><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mi>y</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo rspace="0.055em" stretchy="false">)</mo></mrow><mo rspace="0.222em">∗</mo><mi>z</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mi>z</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+<section id="S7.SS1.SSSx3" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Distributiva rispetto alla somma</h4>
+
+<div id="S7.SS1.SSSx3.p1" class="ltx_para">
+<div id="Ex15" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex15.m1" class="ltx_Math" alttext="\begin{split}(x[n]+y[n])*z[n]=x[n]*z[n]+y[n]*z[n]\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" displaystyle="true"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mrow><mrow><mo stretchy="false">(</mo><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow><mo rspace="0.055em" stretchy="false">)</mo></mrow><mo rspace="0.222em">∗</mo><mi>z</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mi>z</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mi>z</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+<section id="S7.SS1.SSSx4" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Elemento neutro</h4>
+
+<div id="S7.SS1.SSSx4.p1" class="ltx_para">
+<div id="Ex16" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex16.m1" class="ltx_Math" alttext="\begin{split}x[n]*e[n]&amp;{}=x[n]\\
+e[n]&amp;{}=\delta[n]\\
+x[n]*\delta[n]&amp;{}=\sum_{k=-\infty}^{+\infty}x[k]\delta[n-k]=x[n]\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mi>e</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>e</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mi>δ</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>=</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S7.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.7.2</span> Razionalizzando la convoluzione</h3>
+
+<div id="S7.SS2.p1" class="ltx_para">
+<p class="ltx_p">Riscriviamo la convoluzione ribaltando e la traslazione nel tempo:</p>
+</div>
+<div id="S7.SS2.p2" class="ltx_para">
+<div id="Ex17" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex17.m1" class="ltx_Math" alttext="\sum_{k=-\infty}^{+\infty}x[k]h[n-k]=h[-(k-n)]" display="block"><semantics><mrow><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>=</mo><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mo>−</mo><mrow><mo stretchy="false">(</mo><mrow><mi>k</mi><mo>−</mo><mi>n</mi></mrow><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S8" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.8</span> Risposta in frequenza</h2>
+
+<figure id="S8.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez13-cosinusoideDiscreta.webp" width="1252" height="141" loading="lazy" alt="Schema a blocchi: l'ingresso x_c[n] = A0 cos(ω0 n + φ0) entra in un riquadro LTI e l'uscita è indicata come '? y_c[n]'. Il termine A0 cos(ω0 n) è sottolineato in rosso."></div>
+</figure>
+<div id="S8.p1" class="ltx_para">
+<p class="ltx_p">Possiamo scomporre con Eulero la cosinusoide:</p>
+</div>
+<div id="S8.p2" class="ltx_para">
+<div id="Ex18" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex18.m1" class="ltx_Math" alttext="\begin{split}\sum_{k=-\infty}^{+\infty}\frac{A_{0}}{2}\{e^{\hat{\omega_{0}}ki}%
+e^{i\varphi_{0}}+e^{-\hat{\omega_{0}}ki}e^{-i\varphi_{0}}\}h[n-k]\\
+\mbox{Separiamo la sommatoria sulla somma}\\
+\sum_{k=-\infty}^{+\infty}\frac{A_{0}}{2}\{e^{\hat{\omega_{0}}ki}e^{i\varphi_{%
+0}}h[n-k]\}+&amp;{}\sum_{k=-\infty}^{+\infty}\frac{A_{0}}{2}\{e^{-\hat{\omega_{0}}%
+ki}e^{-i\varphi_{0}}h[n-k]\}\\
+\mbox{Portiamo fuori i termini costanti che non dipendono da k}\\
+\frac{A_{0}}{2}e^{i\varphi_{0}}\cdot\sum_{k=-\infty}^{k=+\infty}e^{+i\hat{%
+\omega_{0}}k}h[n-k]+\frac{A_{0}}{2}e^{-i\varphi_{0}}\cdot\sum_{k=-\infty}^{k=+%
+\infty}e^{-i\hat{\omega_{0}}k}h[n-k]\\
+\mbox{Notiamo che ci sono termini che sono complessi e complessi coniugati}\\
+\mbox{Applichiamo ora la proprieta' commutativa della convoluzione}\\
+\frac{A_{0}}{2}e^{i\varphi_{0}}\cdot\sum_{k=-\infty}^{k=+\infty}e^{+i\hat{%
+\omega_{0}}(n-k)}h[k]+\frac{A_{0}}{2}e^{-i\varphi_{0}}\cdot\sum_{k=-\infty}^{k%
+=+\infty}e^{-i\hat{\omega_{0}}(n-k)}h[k]\\
+\mbox{Posso applicare le proprieta' delle potenze}\\
+e^{\hat{\omega_{0}}(n-k)i}=e^{\hat{\omega_{0}}ni}e^{-\hat{\omega_{0}}ki}\\
+\mbox{Porto fuori i termini che non dipendono da k}\\
+\frac{A_{0}}{2}e^{i\varphi_{0}}e^{\hat{\omega_{0}}ni}\cdot\sum_{k=-\infty}^{k=%
++\infty}e^{-\hat{\omega_{0}}ki}h[k]+\frac{A_{0}}{2}e^{-i\varphi_{0}}e^{-\hat{%
+\omega_{0}}ni}\cdot\sum_{k=-\infty}^{k=+\infty}e^{\hat{\omega_{0}}ki}h[k]\\
+\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mrow><mrow><msup><mi>e</mi><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>k</mi><mo>⁢</mo><mi>i</mi></mrow></msup><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow></msup></mrow><mo>+</mo><mrow><msup><mi>e</mi><mrow><mo>−</mo><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>k</mi><mo>⁢</mo><mi>i</mi></mrow></mrow></msup><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow></mrow></msup></mrow></mrow><mo stretchy="false">}</mo></mrow><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mtext>Separiamo la sommatoria sulla somma</mtext></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mrow><msup><mi>e</mi><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>k</mi><mo>⁢</mo><mi>i</mi></mrow></msup><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow></msup><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">}</mo></mrow></mrow></mrow><mo>+</mo></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mrow><msup><mi>e</mi><mrow><mo>−</mo><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>k</mi><mo>⁢</mo><mi>i</mi></mrow></mrow></msup><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow></mrow></msup><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">}</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mtext>Portiamo fuori i termini costanti che non dipendono da k</mtext></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mrow><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow></msup></mrow><mo lspace="0.222em" rspace="0.055em">⋅</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mi>k</mi><mo>=</mo><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></mrow></munderover><mrow><msup><mi>e</mi><mrow><mo>+</mo><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>k</mi></mrow></mrow></msup><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow><mo>+</mo><mrow><mrow><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow></mrow></msup></mrow><mo lspace="0.222em" rspace="0.055em">⋅</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mi>k</mi><mo>=</mo><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></mrow></munderover><mrow><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>k</mi></mrow></mrow></msup><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mtext>Notiamo che ci sono termini che sono complessi e complessi coniugati</mtext></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mtext>Applichiamo ora la proprieta’ commutativa della convoluzione</mtext></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mrow><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow></msup></mrow><mo lspace="0.222em" rspace="0.055em">⋅</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mi>k</mi><mo>=</mo><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></mrow></munderover><mrow><msup><mi>e</mi><mrow><mo>+</mo><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></msup><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow><mo>+</mo><mrow><mrow><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow></mrow></msup></mrow><mo lspace="0.222em" rspace="0.055em">⋅</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mi>k</mi><mo>=</mo><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></mrow></munderover><mrow><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></msup><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mtext>Posso applicare le proprieta’ delle potenze</mtext></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><msup><mi>e</mi><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mi>i</mi></mrow></msup><mo>=</mo><mrow><msup><mi>e</mi><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>n</mi><mo>⁢</mo><mi>i</mi></mrow></msup><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>k</mi><mo>⁢</mo><mi>i</mi></mrow></mrow></msup></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mtext>Porto fuori i termini che non dipendono da k</mtext></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mrow><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow></msup><mo>⁢</mo><msup><mi>e</mi><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>n</mi><mo>⁢</mo><mi>i</mi></mrow></msup></mrow><mo lspace="0.222em" rspace="0.055em">⋅</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mi>k</mi><mo>=</mo><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></mrow></munderover><mrow><msup><mi>e</mi><mrow><mo>−</mo><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>k</mi><mo>⁢</mo><mi>i</mi></mrow></mrow></msup><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow><mo>+</mo><mrow><mrow><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow></mrow></msup><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>n</mi><mo>⁢</mo><mi>i</mi></mrow></mrow></msup></mrow><mo lspace="0.222em" rspace="0.055em">⋅</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mi>k</mi><mo>=</mo><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></mrow></munderover><mrow><msup><mi>e</mi><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>k</mi><mo>⁢</mo><mi>i</mi></mrow></msup><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S8.p3" class="ltx_para">
+<p class="ltx_p">Arrivati a questo punto notiamo che <math id="S8.p3.m1" class="ltx_Math" alttext="\sum_{k=-\infty}^{k=+\infty}e^{-\hat{\omega_{0}}ki}h[k]" display="inline"><semantics><mrow><msubsup><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mi>k</mi><mo>=</mo><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></mrow></msubsup><mrow><msup><mi>e</mi><mrow><mo>−</mo><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>k</mi><mo>⁢</mo><mi>i</mi></mrow></mrow></msup><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math> e’ un numero complesso ed e’ importante, quindi lo chiamiamo <math id="S8.p3.m2" class="ltx_Math" alttext="H(e^{j\hat{\omega_{0}}})" display="inline"><semantics><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></semantics></math> che dipende da <math id="S8.p3.m3" class="ltx_Math" alttext="\hat{\omega_{0}}" display="inline"><semantics><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></semantics></math>, l’altro e’ il complesso coniugato: <math id="S8.p3.m4" class="ltx_Math" alttext="H^{*}(e^{j\hat{\omega_{0}}})" display="inline"><semantics><mrow><msup><mi>H</mi><mo>∗</mo></msup><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></semantics></math>.</p>
+</div>
+<div id="S8.p4" class="ltx_para">
+<p class="ltx_p">L’output di un sistema <math id="S8.p4.m1" class="ltx_Math" alttext="y[n]" display="inline"><semantics><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math> quando abbiamo in input una cosinusoide discreta:</p>
+</div>
+<div id="S8.p5" class="ltx_para">
+<div id="Ex19" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex19.m1" class="ltx_Math" alttext="y[n]=H(e^{j\hat{\omega_{0}}})\frac{A_{0}}{2}e^{i\varphi_{0}}e^{\hat{\omega_{0}%
+}ni}+H^{*}(e^{j\hat{\omega_{0}}})\frac{A_{0}}{2}e^{-i\varphi_{0}}e^{-\hat{%
+\omega_{0}}ni}" display="block" tabindex="0"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow></msup><mo>⁢</mo><msup><mi>e</mi><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>n</mi><mo>⁢</mo><mi>i</mi></mrow></msup></mrow><mo>+</mo><mrow><msup><mi>H</mi><mo>∗</mo></msup><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow></mrow></msup><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>n</mi><mo>⁢</mo><mi>i</mi></mrow></mrow></msup></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S8.p6" class="ltx_para">
+<p class="ltx_p">Ora riscriviamo i termini in H in forma polare (ricordando che la parte tra il modulo e’ il modulo e l’esponenziale moltiplicato per il modulo e’ la fase):</p>
+</div>
+<div id="S8.p7" class="ltx_para">
+<div id="Ex20" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math ltx_math_unparsed bml_eqn_cell ltx_align_center"><math id="Ex20.m1" class="ltx_math_unparsed" alttext="\begin{split}y_{c}[n]&amp;{}=|H(e^{j\hat{\omega_{0}}})|e^{i\varphi H(e^{j\hat{%
+\omega_{0}}})}\cdot\frac{A_{0}}{2}e^{i\varphi_{0}}e^{\hat{\omega_{0}}ni}+|H(e^%
+{j\hat{\omega_{0}}})|e^{-i\varphi H(e^{j\hat{\omega_{0}}})}\cdot\frac{A_{0}}{2%
+}e^{-i\varphi_{0}}e^{-\hat{\omega_{0}}ni}\\
+&amp;{}\mbox{Raccolgo i termini con la stessa base}\\
+&amp;{}=|H(e^{j\hat{\omega_{0}}})|\frac{A_{0}}{2}e^{i[\hat{\omega_{0}}n+%
+\varepsilon_{0}+\varphi H(e^{j\hat{\omega_{0}}})]}+|H(e^{j\hat{\omega_{0}}})|%
+\frac{A_{0}}{2}e^{-i[\hat{\omega_{0}}n+\varepsilon_{0}+\varphi H(e^{j\hat{%
+\omega_{0}}})]}\\
+y_{c}[n]&amp;{}=|H(e^{j\hat{\omega_{0}}}|A_{0}\cos[\hat{\omega_{0}}n+\varepsilon_{%
+0}+\varphi_{0}H(e^{j\hat{\omega_{0}}})]\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><msub><mi>y</mi><mi>c</mi></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mrow><mrow><mrow><mo stretchy="false">|</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">|</mo></mrow><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mi>φ</mi><mo>⁢</mo><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></msup></mrow><mo lspace="0.222em" rspace="0.222em">⋅</mo><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac></mrow><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow></msup><mo>⁢</mo><msup><mi>e</mi><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>n</mi><mo>⁢</mo><mi>i</mi></mrow></msup></mrow><mo>+</mo><mrow><mrow><mrow><mrow><mo stretchy="false">|</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">|</mo></mrow><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mi>φ</mi><mo>⁢</mo><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></mrow></msup></mrow><mo lspace="0.222em" rspace="0.222em">⋅</mo><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac></mrow><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><msub><mi>φ</mi><mn>0</mn></msub></mrow></mrow></msup><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>n</mi><mo>⁢</mo><mi>i</mi></mrow></mrow></msup></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mtext>Raccolgo i termini con la stessa base</mtext></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mrow><mo stretchy="false">|</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">|</mo></mrow><mo>⁢</mo><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><msub><mi>ε</mi><mn>0</mn></msub><mo>+</mo><mrow><mi>φ</mi><mo>⁢</mo><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></mrow><mo stretchy="false">]</mo></mrow></mrow></msup></mrow><mo>+</mo><mrow><mrow><mo stretchy="false">|</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">|</mo></mrow><mo>⁢</mo><mfrac><msub><mi>A</mi><mn>0</mn></msub><mn>2</mn></mfrac><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mrow><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>n</mi></mrow><mo>+</mo><msub><mi>ε</mi><mn>0</mn></msub><mo>+</mo><mrow><mi>φ</mi><mo>⁢</mo><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></msup></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><msub><mi>y</mi><mi>c</mi></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo rspace="0em">=</mo><mo fence="false" rspace="0.167em" stretchy="false">|</mo><mi>H</mi><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo fence="false" rspace="0.167em" stretchy="false">|</mo><msub><mi>A</mi><mn>0</mn></msub><mi>cos</mi><mrow><mo stretchy="false">[</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mi>n</mi><mo>+</mo><msub><mi>ε</mi><mn>0</mn></msub><mo>+</mo><msub><mi>φ</mi><mn>0</mn></msub><mi>H</mi><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S8.p8" class="ltx_para">
+<p class="ltx_p">Concludendo notiamo che in output dal sistema abbiamo un coseno con la stesse frequenza discreta di qu
+ello messo in input.
+Si dice quindi che il coseno e’ un autofunzione di un sistema LTI, ovvero che non viene modificata nella sua forma funzionale (ha la stessa frequenza), ma al massimo iene traslato in ampiezza e fase.</p>
+</div>
+<div id="S8.p9" class="ltx_para">
+<p class="ltx_p"><math id="S8.p9.m1" class="ltx_Math" alttext="H(e^{i\hat{\omega_{0}}})" display="inline"><semantics><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></semantics></math> e’ detta <span class="ltx_text ltx_font_bold">risposta in frequenza del sistema</span> <math id="S8.p9.m2" class="ltx_Math" alttext="\in\mathbf{C}" display="inline"><semantics><mrow><mi></mi><mo>∈</mo><mi>𝐂</mi></mrow></semantics></math>.</p>
+</div>
+<div id="S8.p10" class="ltx_para">
+<div id="Ex21" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex21.m1" class="ltx_Math" alttext="H(e^{i\hat{\omega_{0}}})=\sum_{k=-\infty}^{+\infty}h[n]e^{-i\hat{\omega_{0}}k}" display="block"><semantics><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><msub><mi>ω</mi><mn>0</mn></msub><mo>^</mo></mover><mo>⁢</mo><mi>k</mi></mrow></mrow></msup></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S8.p11" class="ltx_para">
+<p class="ltx_p">Approfondiamo ora le proprieta’ della risposta in frequenza.</p>
+</div>
+<section id="S8.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.8.1</span> Chiarimento</h3>
+
+<div id="S8.SS1.p1" class="ltx_para">
+<p class="ltx_p">Notiamo che abbiamo scritto la risposta in frequenza come una funzione <math id="S8.SS1.p1.m1" class="ltx_Math" alttext="H(e^{j\hat{\omega}})" display="inline"><semantics><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></semantics></math> che quindi non dipende da una singola variabile ma da un esponenziale, questo perche’:</p>
+</div>
+<div id="S8.SS1.p2" class="ltx_para">
+<div id="Ex22" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex22.m1" class="ltx_Math" alttext="H(e^{j\hat{\omega}})=\sum_{n=-\infty}^{+\infty}h[n]e^{-j\hat{\omega}n}=\sum_{n%
+=-\infty}^{+\infty}h[n]e^{(j\hat{\omega})-n}" display="block" tabindex="0"><semantics><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mi>n</mi></mrow></mrow></msup></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>e</mi><mrow><mrow><mo stretchy="false">(</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow><mo stretchy="false">)</mo></mrow><mo>−</mo><mi>n</mi></mrow></msup></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S8.SS1.p3" class="ltx_para">
+<p class="ltx_p">Notiamo quindi che e’ una funzione del termine <math id="S8.SS1.p3.m1" class="ltx_Math" alttext="e^{i\hat{\omega}}" display="inline"><semantics><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup></semantics></math>.
+Inoltre specifichiamo utilizzando Eulero <math id="S8.SS1.p3.m2" class="ltx_Math" alttext="e^{i\hat{\omega}}=\cos\hat{\omega}+i\sin\hat{\omega}" display="inline"><semantics><mrow><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo>=</mo><mrow><mrow><mi>cos</mi><mo lspace="0.167em">⁡</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow><mo>+</mo><mrow><mi>i</mi><mo lspace="0.167em">⁢</mo><mrow><mi>sin</mi><mo lspace="0.167em">⁡</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></mrow></mrow></semantics></math>, dato che compare nella risposta in frequenza anche quest’ultima e’ quindi una funzione periodica di periodo <math id="S8.SS1.p3.m3" class="ltx_Math" alttext="2\pi" display="inline"><semantics><mrow><mn>2</mn><mo>⁢</mo><mi>π</mi></mrow></semantics></math>.</p>
+</div>
+</div>
+</section>
+<section id="S8.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.8.2</span> Simmetria coniugata</h3>
+
+<div id="S8.SS2.p1" class="ltx_para">
+<p class="ltx_p">Perche’ abbiamo sia la risposta in frequenza sia la sua coniugata.</p>
+<div id="Ex23" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex23.m1" class="ltx_Math" alttext="\begin{split}H(e^{j\hat{\omega}})&amp;{}=\{H(e^{-j\hat{\omega}})\}^{*}\\
+H(e^{j\hat{\omega}})&amp;{}=\sum_{n=-\infty}^{+\infty}h[n]e^{-i\hat{\omega}n}\\
+H(e^{-j\hat{\omega}})&amp;{}=\sum_{n=-\infty}^{+\infty}h[n]e^{-i(\hat{-\omega})n}=%
+\sum_{n=-\infty}^{+\infty}h[n]e^{i\hat{\omega}n}\\
+(\sum_{n=-\infty}^{+\infty}h[n]e^{i\hat{\omega}n})^{*}&amp;{}=H(e^{j\hat{\omega}})%
+\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><msup><mrow><mo stretchy="false">{</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">}</mo></mrow><mo>∗</mo></msup></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mi>n</mi></mrow></mrow></msup></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>i</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mover accent="true"><mrow><mo>−</mo><mi>ω</mi></mrow><mo>^</mo></mover><mo stretchy="false">)</mo></mrow><mo>⁢</mo><mi>n</mi></mrow></mrow></msup></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mi>n</mi></mrow></msup></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><msup><mrow><mo stretchy="false">(</mo><mrow><munderover><mo lspace="0em" movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mi>n</mi></mrow></msup></mrow></mrow><mo stretchy="false">)</mo></mrow><mo>∗</mo></msup></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S8.SS2.p2" class="ltx_para">
+<p class="ltx_p">Quindi possiamo dire che la risposta in frequenza ha una parte reale che e’ il mudolo che ha simmetria pari, ed una parte immaginaria che e’ la fase con simmetria dispari.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S9" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.9</span> Supporto risposta all’impulso</h2>
+
+<div id="S9.p1" class="ltx_para">
+<p class="ltx_p">La risposta all’impulso si divide in due categorie:</p>
+<ul id="S9.I1" class="ltx_itemize">
+<li id="S9.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S9.I1.i1.p1" class="ltx_para"><p class="ltx_p">FIR (Finite Impulse Response): se ho un supporto compatto allora si chiama risposta all’impulso finita, nel supporto e non nell’ampiezza (che e’ finita di perse’). <math id="S9.I1.i1.p1.m1" class="ltx_Math" alttext="h[n]\neq 0\rightarrow n\in[a,b]" display="inline"><semantics><mrow><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>≠</mo><mn>0</mn><mo stretchy="false">→</mo><mi>n</mi><mo>∈</mo><mrow><mo stretchy="false">[</mo><mi>a</mi><mo>,</mo><mi>b</mi><mo stretchy="false">]</mo></mrow></mrow></semantics></math>.</p>
+</div>
+</li>
+<li id="S9.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S9.I1.i2.p1" class="ltx_para"><p class="ltx_p">IIR (Infinite Impulse Response): se non ha un supporto compatto si chiama risposta all’impulso infinita. <math id="S9.I1.i2.p1.m1" class="ltx_math_unparsed" alttext="h[n]\neq 0\rightarrow n&lt;&gt;a" display="inline"><semantics><mrow><mi>h</mi><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>≠</mo><mn>0</mn><mo stretchy="false">→</mo><mi>n</mi><mo rspace="0em">&lt;</mo><mo lspace="0em">&gt;</mo><mi>a</mi></mrow></semantics></math></p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S9.p2" class="ltx_para">
+<p class="ltx_p">Abbiamo quindi una prima intuizione di filtro, in quanto la risposta all’impulso e’ un filtro con cui calcoliamo l’uscita di un sistema.</p>
+</div>
+</div>
+</section>
+<section id="S10" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.10</span> Equazione alle differenze di un qualunque sistema LTI</h2>
+
+<div id="S10.p1" class="ltx_para">
+<p class="ltx_p">Possiamo definire un’equazione alle differenze standard per qualunque sistema LTI:</p>
+</div>
+<div id="S10.p2" class="ltx_para">
+<div id="Ex24" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex24.m1" class="ltx_Math" alttext="y[n]=\sum_{h=-N_{1},h\neq 0}^{N_{2}}ahy[n-h]+\sum_{k=-M_{1}}^{M_{2}}bkx[n-k]" display="block" tabindex="0"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mrow><mi>h</mi><mo>=</mo><mrow><mo>−</mo><msub><mi>N</mi><mn>1</mn></msub></mrow></mrow><mo>,</mo><mrow><mi>h</mi><mo>≠</mo><mn>0</mn></mrow></mrow><msub><mi>N</mi><mn>2</mn></msub></munderover><mrow><mi>a</mi><mo>⁢</mo><mi>h</mi><mo>⁢</mo><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>h</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo rspace="0.055em">+</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mrow><mo>−</mo><msub><mi>M</mi><mn>1</mn></msub></mrow></mrow><msub><mi>M</mi><mn>2</mn></msub></munderover><mrow><mi>b</mi><mo>⁢</mo><mi>k</mi><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S10.p3" class="ltx_para">
+<p class="ltx_p">In cui <math id="S10.p3.m1" class="ltx_Math" alttext="ah" display="inline"><semantics><mrow><mi>a</mi><mo>⁢</mo><mi>h</mi></mrow></semantics></math> e <math id="S10.p3.m2" class="ltx_Math" alttext="bk" display="inline"><semantics><mrow><mi>b</mi><mo>⁢</mo><mi>k</mi></mrow></semantics></math> sono costanti, <math id="S10.p3.m3" class="ltx_math_unparsed" alttext="y[n-h" display="inline"><semantics><mrow><mi>y</mi><mrow><mo stretchy="false">[</mo><mi>n</mi><mo>−</mo><mi>h</mi></mrow></mrow></semantics></math> e’ l’uscita del sistema futura o passata e <math id="S10.p3.m4" class="ltx_Math" alttext="x[n-k]" display="inline"><semantics><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></semantics></math> e’ l’input del sistema (presente, passato o futuro).
+La prima sommatoria si chiama parte <span class="ltx_text ltx_framed ltx_framed_underline">AUTOREGRESSIVA (AR)</span> che dipende dall’output del sistema.
+La seconda sommatoria si chiama <span class="ltx_text ltx_framed ltx_framed_underline">MEDIA MOBILE (MA)</span> o MOUVING AVERAGE, che dipende solamente dall’input al sistema.
+Se riusciamo a ricondurre l’equazione alle differenze di un sistema a questa equazione generale non dobbiamo verificarne la linearita’ e la tempo invarianza.</p>
+</div>
+<div id="S10.p4" class="ltx_para">
+<p class="ltx_p">Inoltre possiamo dire che condizione sufficiente (ma non necessaria) per un sistema LTI per avere risposta all’impulso finita (FIR) e’ che <math id="S10.p4.m1" class="ltx_Math" alttext="ah=0,\forall h" display="inline"><semantics><mrow><mrow><mi>a</mi><mo>⁢</mo><mi>h</mi></mrow><mo>=</mo><mrow><mn>0</mn><mo>,</mo><mrow><mo rspace="0.167em">∀</mo><mi>h</mi></mrow></mrow></mrow></semantics></math>. Vuol dire che non c’e’ dipendenza dall’output ma solamente dall’input, ovvero non esiste la parte autoregressiva.</p>
+</div>
+<div id="S10.p5" class="ltx_para">
+<p class="ltx_p">Notiamo inoltre che se e’ presente la parte autoregressiva NON posso dire che il sistema non e’ FIR.</p>
+</div>
+</div>
+</section>
+<section id="S11" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.11</span> Filtraggio (pratico) con sistemi LTI</h2>
+
+<div id="S11.p1" class="ltx_para">
+<p class="ltx_p">Proviamo a capire perche’ ci interessa la risposta all’impulso di un sistema.</p>
+</div>
+<figure id="S11.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez15-uscitaLTIcoseno.webp" width="1124" height="347" loading="lazy" alt="Schema a blocchi: l'ingresso A0 cos(ω0 n + φ) entra in un riquadro LTI; l'uscita è A0 |H(e^{jω0})| cos[ω0 n + φ + ∠H(e^{jω0})], con 'modulo' sopra il valore assoluto e 'fase' sotto l'angolo. Dal riquadro partono le frecce 'Eq. differenze' (verde) e 'risposta all'impulso' (rosso) che porta a 'risposta in frequenza' (giallo)."></div>
+</figure>
+<div id="S11.p2" class="ltx_para">
+<p class="ltx_p">Ricordiamo innanzitutto che l’uscita di sistema LTI quando l’input e’ una cosinusoide discreta e’ una cosinusoide discreta con la stessa frequenza ma modulata in modulo e fase.
+Questa nozione e’ alla base del filtraggio pratico con sistemi LTI.
+Partiamo dall’ipotesi che abbiamo un segnale discreto da filtrare, che e’ una combinazione lineare di cosinusoidi discrete. Quello che voglio fare e’ fare agire il filtro tipo un setaccio, per far passare solo le cosinuosidi che mi interessano e scartare quelle che non mi interessano.
+Notiamo che e’ il modulo della risposta in frequenza che puo’ fare questa operazione, in quanto se lo mettiamo uguale a 0 il coseno non esiste, quindi e’ come se lo avessimo ”bloccato”.
+Inoltre potremmo anche amplificare (o diminuire) l’ampiezza di una cosinusoide, se il modulo della risposta in frequenza fosse <math id="S11.p2.m1" class="ltx_Math" alttext="\neq 0" display="inline"><semantics><mrow><mi></mi><mo>≠</mo><mn>0</mn></mrow></semantics></math>.</p>
+</div>
+<div id="S11.p3" class="ltx_para">
+<p class="ltx_p">Quindi il modulo della risposta in frequenza puo’ aumentare o diminuire l’ampiezza (in verticale <math id="S11.p3.m1" class="ltx_Math" alttext="\hat{|}" display="inline"><semantics><mover accent="true"><mo fence="false" stretchy="false">|</mo><mo>^</mo></mover></semantics></math>) della cosinusoide, mentre la fase ci permette di spostarla (in orizzontale <math id="S11.p3.m2" class="ltx_Math" alttext="\leftrightarrow" display="inline"><semantics><mo stretchy="false">↔</mo></semantics></math>) rispetto a quella che mettiamo in ingresso al sistema LTI.</p>
+</div>
+<figure id="S11.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez15-filtraggioLTI.webp" width="1333" height="518" loading="lazy" alt="Schema a blocchi: l'ingresso x[n] = somma per k=1 a 5 di A_k cos(ω_k n + φ_k) entra in un riquadro LTI; l'uscita è y[n] = somma per k=1 a 5 di A_k |H(e^{iω_k})| cos(ω_k n + φ_k + ∠H(e^{iω_k})). In basso, per ogni k: se |H(e^{iω_k})| = 0 la componente è 'rimossa', se |H(e^{iω_k})| ≥ 1 la componente è 'amplificata'."></div>
+</figure>
+<div id="S11.p4" class="ltx_para">
+<p class="ltx_p">Sono stati definiti dei filtri ideali.</p>
+</div>
+<section id="S11.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.11.1</span> Filtro passa basso (low pass)</h3>
+
+<figure id="S11.SS1.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez15-passaBasso.webp" width="1187" height="501" loading="lazy" alt="Grafico del filtro passa basso (low pass): asse verticale |H_LP(e^{jω})|, asse orizzontale ω da -π a π. Il modulo vale 1 tra -ωc e ωc e 0 altrove. ωc è indicata con la freccia 'frequenza di taglio (cut frequency)'."></div>
+</figure>
+<div id="S11.SS1.p1" class="ltx_para">
+<p class="ltx_p">Innanzitutto notiamo che il grafico del filtro e’ rappresentato tra <math id="S11.SS1.p1.m1" class="ltx_Math" alttext="-\pi,\pi" display="inline"><semantics><mrow><mrow><mo>−</mo><mi>π</mi></mrow><mo>,</mo><mi>π</mi></mrow></semantics></math> questo perche’ la risposta in frequenza e’ periodica, quindi ci aspettiamo che fuori da questo intervallo si ripete.</p>
+</div>
+<div id="S11.SS1.p2" class="ltx_para">
+<p class="ltx_p">Questo filtro ci dice che se consideriamo una frequenza (di una cosinuoside) compresa tra <math id="S11.SS1.p2.m1" class="ltx_Math" alttext="-\hat{\omega},\hat{\omega}" display="inline"><semantics><mrow><mrow><mo>−</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow><mo>,</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></semantics></math>, dato che il filtro vale 1, la cosinuoside esce uguale a come e’ entrata (in ampiezza), mentre tutte le cosinusoidi con frequenze fuori da questo intervallo vengono cancellate, perche’ uscirebbero con ampiezza 0, in quanto il modulo della risposta in frequenza fuori dall’intervallo vale 0.</p>
+</div>
+</div>
+</section>
+<section id="S11.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.11.2</span> Filtro passa alto (High Pass)</h3>
+
+<div id="S11.SS2.p1" class="ltx_para">
+<p class="ltx_p">E’ il duale del filtro passa basso, quindi elimina tutte le cosinusoidi con frequenza compresa tra <math id="S11.SS2.p1.m1" class="ltx_Math" alttext="-\hat{\omega},\hat{\omega}" display="inline"><semantics><mrow><mrow><mo>−</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow><mo>,</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></semantics></math> e mantiene inalterate le altre.</p>
+</div>
+<figure id="S11.SS2.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez15-passaAlto.webp" width="1161" height="535" loading="lazy" alt="Grafico del filtro passa alto (high pass): asse verticale |H_HP(e^{jω})|, asse orizzontale ω da -π a π. Il modulo vale 0 tra -ωc e ωc e 1 tra -π e -ωc e tra ωc e π."></div>
+</figure>
+<div id="S11.SS2.p2" class="ltx_para">
+<p class="ltx_p">Notiamo che se la frequenza di taglio del filtro passa alto e del passa basso e’ uguale, allora dato un filtro posso riscrivere l’altro:</p>
+</div>
+<div id="S11.SS2.p3" class="ltx_para">
+<div id="Ex25" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex25.m1" class="ltx_Math" alttext="\begin{split}|H_{LP}(e^{j\hat{\omega}})|&amp;{}=1-|H_{HP}(e^{j\hat{\omega}})|\\
+|H_{HP}(e^{j\hat{\omega}})|&amp;{}=1-|H_{LP}(e^{j\hat{\omega}})|\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mo stretchy="false">|</mo><mrow><msub><mi>H</mi><mrow><mi>L</mi><mo>⁢</mo><mi>P</mi></mrow></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">|</mo></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mn>1</mn><mo>−</mo><mrow><mo stretchy="false">|</mo><mrow><msub><mi>H</mi><mrow><mi>H</mi><mo>⁢</mo><mi>P</mi></mrow></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">|</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mo stretchy="false">|</mo><mrow><msub><mi>H</mi><mrow><mi>H</mi><mo>⁢</mo><mi>P</mi></mrow></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">|</mo></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mn>1</mn><mo>−</mo><mrow><mo stretchy="false">|</mo><mrow><msub><mi>H</mi><mrow><mi>L</mi><mo>⁢</mo><mi>P</mi></mrow></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">|</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS2.p4" class="ltx_para">
+<p class="ltx_p">Dove <math id="S11.SS2.p4.m1" class="ltx_Math" alttext="H_{L}P" display="inline"><semantics><mrow><msub><mi>H</mi><mi>L</mi></msub><mo>⁢</mo><mi>P</mi></mrow></semantics></math> e’ la risposta in frequenza del filtro passa basso e <math id="S11.SS2.p4.m2" class="ltx_Math" alttext="H_{H}P" display="inline"><semantics><mrow><msub><mi>H</mi><mi>H</mi></msub><mo>⁢</mo><mi>P</mi></mrow></semantics></math> e’ la risposta in frequenza del filtro passa alto.</p>
+</div>
+</div>
+</section>
+<section id="S11.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.11.3</span> Filtro passa banda (Band Pass)</h3>
+
+<div id="S11.SS3.p1" class="ltx_para">
+<p class="ltx_p">A volte serve uccidere frequenze alte e basse ma lasciare una certa banda.</p>
+</div>
+<figure id="S11.SS3.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez15-passaBanda.webp" width="1084" height="609" loading="lazy" alt="Grafico del filtro passa banda (band pass): asse verticale |H_BP(e^{jω})|, asse orizzontale ω. Il modulo vale 1 negli intervalli da -ωB a -ωA e da ωA a ωB, e 0 altrove."></div>
+</figure>
+</div>
+</section>
+<section id="S11.SS4" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.11.4</span> Filtro blocca banda (Band Block)</h3>
+
+<div id="S11.SS4.p1" class="ltx_para">
+<p class="ltx_p">E’ il duale del filtro passa banda. Cancella le frequenze che appartengono ad una certa banda. Ad esempio e’ usato quando vogliamo cancellare l’interferenza della rete elettrica, (50Hz), nel segnale campionato cancelleremo quel piccolo range di frequenze.</p>
+</div>
+<div id="S11.SS4.p2" class="ltx_para">
+<p class="ltx_p">Si chiama Notch Filter quando la banda bloccata e’ poco ampia.</p>
+</div>
+<figure id="S11.SS4.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez15-bloccaBanda.webp" width="913" height="434" loading="lazy" alt="Grafico di |H_BB(e^{jω})| (filtro blocca banda) su ω da -π a π: il modulo vale 1 tranne in due intervalli in cui vale 0, uno nella parte negativa e uno nella parte positiva dell'asse. Gli estremi degli intervalli sono etichettati con ω hat tagliati e poco leggibili."></div>
+</figure>
+<div id="S11.SS4.p3" class="ltx_para">
+<p class="ltx_p">Anche in questo caso, se la banda e’ uguale, posso dato un filtro passa banda posso ottenere il blocca banda e viceversa:</p>
+</div>
+<div id="S11.SS4.p4" class="ltx_para">
+<div id="Ex26" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex26.m1" class="ltx_Math" alttext="|H_{BP}(e^{i\hat{\omega}})|=1-|H_{BB}(e^{i\hat{\omega}})|" display="block"><semantics><mrow><mrow><mo stretchy="false">|</mo><mrow><msub><mi>H</mi><mrow><mi>B</mi><mo>⁢</mo><mi>P</mi></mrow></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">|</mo></mrow><mo>=</mo><mrow><mn>1</mn><mo>−</mo><mrow><mo stretchy="false">|</mo><mrow><msub><mi>H</mi><mrow><mi>B</mi><mo>⁢</mo><mi>B</mi></mrow></msub><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo stretchy="false">|</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS4.p5" class="ltx_para">
+<p class="ltx_p">Queste sono definizioni di riferimento, ora vediamo degli esercizi in cui partendo da un equazione alle differenze scriviamo la risposta in frequenza e ne disegniamo il modulo e fase. Infine vedremo a quale filtro ideale assomiglia.</p>
+</div>
+</div>
+</section>
+<section id="S11.SS5" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.11.5</span> Esercizio 1</h3>
+
+<div id="S11.SS5.p1" class="ltx_para">
+<p class="ltx_p">Abbiamo un filtro: <math id="S11.SS5.p1.m1" class="ltx_Math" alttext="y[n]=x[n]+2x[n-1]+x[n-2]" display="inline"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><mn>2</mn><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>2</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></semantics></math>, quindi quando entra un input in questo sistema ne consideriamo 3 campioni, un presente e due passati, di conseguenza e’ un sistema CAUSALE (in quanto dipende solo da presente e passato) e FIR in quanto non e’ presente la parte autoregressiva (quella che dipende dall’output). Quindi posso scrivere la risposta all’impulso semplicemente sostituendo <math id="S11.SS5.p1.m2" class="ltx_Math" alttext="x=\delta" display="inline"><semantics><mrow><mi>x</mi><mo>=</mo><mi>δ</mi></mrow></semantics></math>:</p>
+</div>
+<div id="S11.SS5.p2" class="ltx_para">
+<div id="Ex27" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex27.m1" class="ltx_Math" alttext="h[n]=1\delta[n]+2\delta[n-1]+\delta[n-2]" display="block"><semantics><mrow><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mn>1</mn><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><mn>2</mn><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>2</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS5.p3" class="ltx_para">
+<p class="ltx_p">Ora dobbiamo calcolare la risposta in frequenza, per farlo notiamo che dalla sommatoria dobbiamo tenere solo gli elementi in cui la delta e’ diversa da 0 (dove vale 1) e sono quelli che annullano la n dentro le varie delta. Mentre come coeficienti moltiplicativi usiamo quelli delle delta:</p>
+</div>
+<div id="S11.SS5.p4" class="ltx_para">
+<div id="Ex28" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex28.m1" class="ltx_Math" alttext="H(e^{i\hat{\omega}})=\sum_{n=+\infty}^{-\infty}x[n]e^{-j\hat{\omega}n}=1e^{-j%
+\hat{\omega}0}+2e^{-j\hat{\omega}1}+1e^{-j\hat{\omega}2}" display="block" tabindex="0"><semantics><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mi>n</mi></mrow></mrow></msup></mrow></mrow><mo>=</mo><mrow><mrow><mn>1</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mn>0</mn></mrow></mrow></msup></mrow><mo>+</mo><mrow><mn>2</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mn>1</mn></mrow></mrow></msup></mrow><mo>+</mo><mrow><mn>1</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mn>2</mn></mrow></mrow></msup></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS5.p5" class="ltx_para">
+<p class="ltx_p">Ora per trovare il modulo e la fase dobbiamo fare qualche operazione algebrica:</p>
+</div>
+<div id="S11.SS5.p6" class="ltx_para">
+<div id="Ex29" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex29.m1" class="ltx_Math" alttext="1+2e^{-j\hat{\omega}}+1e^{-j\hat{\omega}2}" display="block"><semantics><mrow><mn>1</mn><mo>+</mo><mrow><mn>2</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup></mrow><mo>+</mo><mrow><mn>1</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mn>2</mn></mrow></mrow></msup></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS5.p7" class="ltx_para">
+<p class="ltx_p">ora il consiglio per risolvere questa equazione e’ raccogliere la meta’ del termine massimo e vedere cosa succede:</p>
+</div>
+<div id="S11.SS5.p8" class="ltx_para">
+<div id="Ex30" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex30.m1" class="ltx_Math" alttext="2e^{-j\hat{\omega}}\{\frac{e^{j}\hat{\omega}}{2}+1+\frac{e^{-j\hat{\omega}}}{2}\}" display="block"><semantics><mrow><mn>2</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mrow><mfrac><mrow><msup><mi>e</mi><mi>j</mi></msup><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow><mn>2</mn></mfrac><mo>+</mo><mn>1</mn><mo>+</mo><mfrac><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup><mn>2</mn></mfrac></mrow><mo stretchy="false">}</mo></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS5.p9" class="ltx_para">
+<p class="ltx_p">Usando Eulero noto che <math id="S11.SS5.p9.m1" class="ltx_Math" alttext="\frac{e^{j}\hat{\omega}}{2}+\frac{e^{-j\hat{\omega}}}{2}=\cos(\hat{\omega})" display="inline"><semantics><mrow><mrow><mfrac><mrow><msup><mi>e</mi><mi>j</mi></msup><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow><mn>2</mn></mfrac><mo>+</mo><mfrac><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup><mn>2</mn></mfrac></mrow><mo>=</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo stretchy="false">)</mo></mrow></mrow></mrow></semantics></math>, quindi:</p>
+</div>
+<div id="S11.SS5.p10" class="ltx_para">
+<div id="Ex31" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex31.m1" class="ltx_Math" alttext="2e^{-j\hat{\omega}}[1+\cos(\hat{\omega})]" display="block"><semantics><mrow><mn>2</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mn>1</mn><mo>+</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo stretchy="false">)</mo></mrow></mrow></mrow><mo stretchy="false">]</mo></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS5.p11" class="ltx_para">
+<p class="ltx_p">Ora invece di trasformare in forma polare riscrivo l’equazione in modo che sia scritta in maniera simile alla forma polare, che ricordiamo essere <math id="S11.SS5.p11.m1" class="ltx_Math" alttext="\phi e^{i\Omega}" display="inline"><semantics><mrow><mi>ϕ</mi><mo>⁢</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mi mathvariant="normal">Ω</mi></mrow></msup></mrow></semantics></math>, da cui posso ricavare il modulo e la fase:</p>
+</div>
+<div id="S11.SS5.p12" class="ltx_para">
+<div id="Ex32" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math ltx_math_unparsed bml_eqn_cell ltx_align_center"><math id="Ex32.m1" class="ltx_math_unparsed" alttext="(2+2\cos(\hat{\omega})e^{-j\hat{\omega}}" display="block"><semantics><mrow><mo stretchy="false">(</mo><mn>2</mn><mo>+</mo><mn>2</mn><mi>cos</mi><mrow><mo stretchy="false">(</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo stretchy="false">)</mo></mrow><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS5.p13" class="ltx_para">
+<p class="ltx_p">Dato che <math id="S11.SS5.p13.m1" class="ltx_math_unparsed" alttext="2+2\cos(\hat{\omega}\geq 0" display="inline"><semantics><mrow><mn>2</mn><mo>+</mo><mn>2</mn><mi>cos</mi><mrow><mo stretchy="false">(</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>≥</mo><mn>0</mn></mrow></mrow></semantics></math> e’ il modulo e la fase sara’ <math id="S11.SS5.p13.m2" class="ltx_Math" alttext="-\hat{\omega}" display="inline"><semantics><mrow><mo>−</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></semantics></math>.</p>
+</div>
+<figure id="S11.SS5.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez15-es1.webp" width="1423" height="736" loading="lazy" alt="A sinistra, il grafico di |H(e^{jω})| = 2 + 2cos ω su ω da -π a π: curva rossa a campana con massimo in ω=0 e minimo 0 agli estremi, con in azzurro un filtro passa basso ideale tratteggiato e in grigio i grafici di 2cos ω e 1; annotazioni 'modulo pari' e 'praticamente passa basso'. A destra, ∠H(e^{jω}) = -ω: retta rossa decrescente da π a -π, con 'fase lineare' e 'fase dispari'."></div>
+</figure>
+<div id="S11.SS5.p14" class="ltx_para">
+<p class="ltx_p">Per disegnare i grafici semplicemente dobbiamo disegnare il grafico di ciascuna funzione (modulo e fase), sempre nel periodo della risposta in frequenza <math id="S11.SS5.p14.m1" class="ltx_Math" alttext="-\pi,+\pi" display="inline"><semantics><mrow><mrow><mo>−</mo><mi>π</mi></mrow><mo>,</mo><mrow><mo>+</mo><mi>π</mi></mrow></mrow></semantics></math>.
+In questo caso notiamo dal grafico del modulo che questo e’ un’approssimazione del filtro passa basso.</p>
+</div>
+</div>
+</section>
+<section id="S11.SS6" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.11.6</span> Esercizio 2</h3>
+
+<div id="S11.SS6.p1" class="ltx_para">
+<p class="ltx_p">Usiamo lo stesso filtro di prima ma cambiando un segno <math id="S11.SS6.p1.m1" class="ltx_Math" alttext="y[n]=x[n]-2x[n-1]+x[n-2]" display="inline"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mrow><mn>2</mn><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>+</mo><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>2</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></semantics></math>.
+Seguiamo i passaggi fatti in precedenza, quindi inizialmente scriviamo la risposta all’impulso:</p>
+<div id="Ex33" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex33.m1" class="ltx_Math" alttext="h[n]=1\delta[n]-2\delta[n-1]+\delta[n-2]" display="block"><semantics><mrow><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mn>1</mn><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>−</mo><mrow><mn>2</mn><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow><mo>+</mo><mrow><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mn>2</mn></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS6.p2" class="ltx_para">
+<p class="ltx_p">Poi calcoliamo la risposta in frequenza:</p>
+</div>
+<div id="S11.SS6.p3" class="ltx_para">
+<div id="Ex34" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex34.m1" class="ltx_Math" alttext="H(e^{i\hat{\omega}})=\sum_{n=+\infty}^{-\infty}x[n]e^{-j\hat{\omega}n}=1e^{-j%
+\hat{\omega}0}-2e^{-j\hat{\omega}1}+1e^{-j\hat{\omega}2}" display="block" tabindex="0"><semantics><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>n</mi><mo>=</mo><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></mrow><mrow><mo>−</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mi>n</mi></mrow></mrow></msup></mrow></mrow><mo>=</mo><mrow><mrow><mrow><mn>1</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mn>0</mn></mrow></mrow></msup></mrow><mo>−</mo><mrow><mn>2</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mn>1</mn></mrow></mrow></msup></mrow></mrow><mo>+</mo><mrow><mn>1</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mn>2</mn></mrow></mrow></msup></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS6.p4" class="ltx_para">
+<div id="Ex35" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex35.m1" class="ltx_Math" alttext="\begin{split}H(e^{i\hat{\omega}})&amp;{}=1-2e^{-j\hat{\omega}}+1e^{-j\hat{\omega}2%
+}\\
+&amp;{}=2e^{-j\hat{\omega}}\{\frac{e^{j}\hat{\omega}}{2}-1+\frac{e^{-j\hat{\omega}%
+}}{2}\}\\
+&amp;{}=2e^{-j\hat{\omega}}[-1+\cos(\hat{\omega})]\\
+\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mn>1</mn><mo>−</mo><mrow><mn>2</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup></mrow></mrow><mo>+</mo><mrow><mn>1</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mn>2</mn></mrow></mrow></msup></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mn>2</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup><mo>⁢</mo><mrow><mo stretchy="false">{</mo><mrow><mrow><mfrac><mrow><msup><mi>e</mi><mi>j</mi></msup><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow><mn>2</mn></mfrac><mo>−</mo><mn>1</mn></mrow><mo>+</mo><mfrac><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup><mn>2</mn></mfrac></mrow><mo stretchy="false">}</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mn>2</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mrow><mo>−</mo><mn>1</mn></mrow><mo>+</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo stretchy="false">)</mo></mrow></mrow></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS6.p5" class="ltx_para">
+<p class="ltx_p">Ma arrivati a questo punto notiamo che <math id="S11.SS6.p5.m1" class="ltx_Math" alttext="\cos(\hat{\omega})-1" display="inline"><semantics><mrow><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo stretchy="false">)</mo></mrow></mrow><mo>−</mo><mn>1</mn></mrow></semantics></math> non puo’ essere il modulo, in quanto non e’ maggiore di 0. Notiamo che se togliamo un - sarebbe sempre positivo e quindi il modulo:</p>
+<div id="Ex36" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex36.m1" class="ltx_Math" alttext="-1e^{-j\hat{\omega}}(2+2\cos(\hat{\omega}))" display="block"><semantics><mrow><mo>−</mo><mrow><mn>1</mn><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup><mo>⁢</mo><mrow><mo stretchy="false">(</mo><mrow><mn>2</mn><mo>+</mo><mrow><mn>2</mn><mo lspace="0.167em">⁢</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS6.p6" class="ltx_para">
+<p class="ltx_p">Ma quel segno meno, come abbiamo sempre fatto, possiamo riscriverlo come <math id="S11.SS6.p6.m1" class="ltx_Math" alttext="-1=e^{j\pi}" display="inline"><semantics><mrow><mrow><mo>−</mo><mn>1</mn></mrow><mo>=</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mi>π</mi></mrow></msup></mrow></semantics></math>.</p>
+</div>
+<figure id="S11.SS6.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez15-es2.webp" width="1424" height="601" loading="lazy" alt="A sinistra, il grafico di |H(e^{jω})| = 2 - 2cos ω su ω da -π a π: curva rossa con minimo 0 in ω=0 e valore 4 agli estremi, con in grigio le curve 2 e 1 e annotazione 'simmetria pari'. A destra, ∠H(e^{jω}) = e^{-j(ω-π)}, con 'simmetria dispari': tratti rossi lineari decrescenti con valori -π e 2π segnati."></div>
+</figure>
+<div id="S11.SS6.p7" class="ltx_para">
+<p class="ltx_p">Dal grafico del modulo notiamo che e’ un’approssimazione del filtro passa alto.</p>
+</div>
+</div>
+</section>
+<section id="S11.SS7" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.11.7</span> Esercizio 3 (Amplificatore Ideale)</h3>
+
+<div id="S11.SS7.p1" class="ltx_para">
+<p class="ltx_p">Abbiamo un filtro <math id="S11.SS7.p1.m1" class="ltx_Math" alttext="y[n]=Ax[n-n_{0}]" display="inline"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>A</mi><mo>⁢</mo><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><msub><mi>n</mi><mn>0</mn></msub></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math>, in cui <math id="S11.SS7.p1.m2" class="ltx_Math" alttext="n_{0}" display="inline"><semantics><msub><mi>n</mi><mn>0</mn></msub></semantics></math> e’ costante ed <math id="S11.SS7.p1.m3" class="ltx_Math" alttext="A&gt;0" display="inline"><semantics><mrow><mi>A</mi><mo>&gt;</mo><mn>0</mn></mrow></semantics></math>.
+Notiamo subito che se <math id="S11.SS7.p1.m4" class="ltx_Math" alttext="n_{0}\geq 0" display="inline"><semantics><mrow><msub><mi>n</mi><mn>0</mn></msub><mo>≥</mo><mn>0</mn></mrow></semantics></math> il sistema e’ CAUSALE e FIR.
+Quello che fa in pratica questo filtro e’ prendere il segnale e ritardarlo di n campioni e lo moltiplica di un valore A. Si chiama amplificatore ideale.
+Come fatto in precedenza calcoliamo la risposta all’impulso:</p>
+</div>
+<div id="S11.SS7.p2" class="ltx_para">
+<div id="Ex37" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex37.m1" class="ltx_Math" alttext="h[n]=A\delta[n-n_{0}]" display="block"><semantics><mrow><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mi>A</mi><mo>⁢</mo><mi>δ</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><msub><mi>n</mi><mn>0</mn></msub></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS7.p3" class="ltx_para">
+<p class="ltx_p">Tracciamone il grafico:</p>
+</div>
+<figure id="S11.SS7.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez15-es2RispostaImpulso.webp" width="632" height="258" loading="lazy" alt="Grafico di h[n] con asse orizzontale n: campioni nulli sull'asse e un solo campione di altezza A in n=n0."></div>
+</figure>
+<div id="S11.SS7.p4" class="ltx_para">
+<p class="ltx_p">Troviamo la risposta in frequenza, come prima prendendo dalla sommatoria solo il termine in cui la delta vale 1, in questo caso l’argomento della delta si annulla quando <math id="S11.SS7.p4.m1" class="ltx_Math" alttext="n=n_{0}" display="inline"><semantics><mrow><mi>n</mi><mo>=</mo><msub><mi>n</mi><mn>0</mn></msub></mrow></semantics></math>:</p>
+</div>
+<div id="S11.SS7.p5" class="ltx_para">
+<div id="Ex38" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex38.m1" class="ltx_Math" alttext="H(e^{i\hat{\omega}})=Ae^{-j\hat{\omega}n_{0}}" display="block"><semantics><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>i</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mi>A</mi><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><msub><mi>n</mi><mn>0</mn></msub></mrow></mrow></msup></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS7.p6" class="ltx_para">
+<p class="ltx_p">Da cui ricaviamo il modulo <math id="S11.SS7.p6.m1" class="ltx_Math" alttext="A" display="inline"><semantics><mi>A</mi></semantics></math> e la fase <math id="S11.SS7.p6.m2" class="ltx_Math" alttext="-\hat{\omega}n_{0}" display="inline"><semantics><mrow><mo>−</mo><mrow><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><msub><mi>n</mi><mn>0</mn></msub></mrow></mrow></semantics></math>.</p>
+</div>
+<figure id="S11.SS7.fig2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez15-es3.webp" width="1512" height="649" loading="lazy" alt="A sinistra, |H(e^{jω})| = A: retta orizzontale rossa costante tra -π e π, con la scritta 'passa tutto (all pass)'. A destra, ∠H(e^{jω}) = -ω n0: retta rossa decrescente da 5π a -5π con tratti viola che riportano la fase nell'intervallo tra -π e π; annotazioni 'n0 = 8' e 'y = -x n0'."></div>
+</figure>
+</div>
+</section>
+<section id="S11.SS8" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.11.8</span> Esercizio 4</h3>
+
+<div id="S11.SS8.p1" class="ltx_para">
+<p class="ltx_p">Partiamo ora dalla risposta all’impulso:</p>
+</div>
+<div id="S11.SS8.p2" class="ltx_para">
+<div id="Ex39" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex39.m1" class="ltx_Math" alttext="h[n]=\begin{cases}\frac{1}{L}\text{ se }0\leq n\leq L-1\\
+0\text{ altrimenti }\\
+\end{cases}" display="block"><semantics><mrow><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mo>{</mo><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><mstyle displaystyle="false"><mfrac><mn>1</mn><mi>L</mi></mfrac></mstyle><mo>⁢</mo><mtext> se </mtext><mo>⁢</mo><mn>0</mn></mrow><mo>≤</mo><mi>n</mi><mo>≤</mo><mrow><mi>L</mi><mo>−</mo><mn>1</mn></mrow></mrow></mtd><mtd></mtd></mtr><mtr><mtd class="ltx_align_left" columnalign="left"><mrow><mn>0</mn><mo>⁢</mo><mtext> altrimenti </mtext></mrow></mtd><mtd></mtd></mtr></mtable></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS8.p3" class="ltx_para">
+<p class="ltx_p">Tracciamone il grafico:</p>
+</div>
+<figure id="S11.SS8.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez15-es4RispostaImpulso.webp" width="683" height="310" loading="lazy" alt="Grafico di h[n] con asse orizzontale n: campioni di altezza uguale 1/L per n da 0 a L-1, segnati 1 e L-1 sull'asse, e zero altrove."></div>
+</figure>
+<div id="S11.SS8.p4" class="ltx_para">
+<p class="ltx_p">Il sistema che ha prodotto questa risposta all’impulso sara’:</p>
+</div>
+<div id="S11.SS8.p5" class="ltx_para">
+<div id="Ex40" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex40.m1" class="ltx_Math" alttext="y[n]=\frac{1}{L}\sum_{k=0}^{L-1}x[n-k]" display="block"><semantics><mrow><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>=</mo><mrow><mfrac><mn>1</mn><mi>L</mi></mfrac><mo>⁢</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>L</mi><mo>−</mo><mn>1</mn></mrow></munderover><mrow><mi>x</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mrow><mi>n</mi><mo>−</mo><mi>k</mi></mrow><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS8.p6" class="ltx_para">
+<p class="ltx_p">Calcolandone la risposta in frequenza:</p>
+</div>
+<div id="S11.SS8.p7" class="ltx_para">
+<div id="Ex41" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex41.m1" class="ltx_Math" alttext="H(e^{j\hat{\omega}})=\sum_{k=0}^{L-1}\frac{1}{L}e^{-j\hat{\omega}n}=\frac{1}{L%
+}\sum_{k=0}^{L-1}e^{-j\hat{\omega}n}" display="block" tabindex="0"><semantics><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo rspace="0.111em">=</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>L</mi><mo>−</mo><mn>1</mn></mrow></munderover><mrow><mfrac><mn>1</mn><mi>L</mi></mfrac><mo>⁢</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mi>n</mi></mrow></mrow></msup></mrow></mrow><mo>=</mo><mrow><mfrac><mn>1</mn><mi>L</mi></mfrac><mo>⁢</mo><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>L</mi><mo>−</mo><mn>1</mn></mrow></munderover><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mi>n</mi></mrow></mrow></msup></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS8.p8" class="ltx_para">
+<p class="ltx_p">Notiamo che questa e’ una serie nota <math id="S11.SS8.p8.m1" class="ltx_Math" alttext="\sum_{k=0}^{L-1}q^{k}=\frac{1-q^{L}}{1-q}" display="inline"><semantics><mrow><mrow><msubsup><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>L</mi><mo>−</mo><mn>1</mn></mrow></msubsup><msup><mi>q</mi><mi>k</mi></msup></mrow><mo>=</mo><mfrac><mrow><mn>1</mn><mo>−</mo><msup><mi>q</mi><mi>L</mi></msup></mrow><mrow><mn>1</mn><mo>−</mo><mi>q</mi></mrow></mfrac></mrow></semantics></math>, se chiamo <math id="S11.SS8.p8.m2" class="ltx_Math" alttext="e^{-j\hat{\omega}}=q" display="inline"><semantics><mrow><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup><mo>=</mo><mi>q</mi></mrow></semantics></math>, ottengo:</p>
+</div>
+<div id="S11.SS8.p9" class="ltx_para">
+<div id="Ex42" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex42.m1" class="ltx_Math" alttext="H(e^{j\hat{\omega}})=\frac{1}{L}\frac{1-e^{-j\hat{\omega}L}}{1-e^{-j\hat{%
+\omega}}}" display="block"><semantics><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mrow><mfrac><mn>1</mn><mi>L</mi></mfrac><mo>⁢</mo><mfrac><mrow><mn>1</mn><mo>−</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mi>L</mi></mrow></mrow></msup></mrow><mrow><mn>1</mn><mo>−</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></mrow></msup></mrow></mfrac></mrow></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS8.p10" class="ltx_para">
+<p class="ltx_p">Ora come prima raccolgo la meta’ dell’esponente massimo:</p>
+</div>
+<div id="S11.SS8.p11" class="ltx_para">
+<div id="Ex43" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex43.m1" class="ltx_Math" alttext="\begin{split}H(e^{j\hat{\omega}})=&amp;{}\frac{1}{L}\frac{e^{-j\hat{\omega}\frac{L%
+}{2}}}{e^{-j\hat{\omega}\frac{L}{2}}}\frac{(e^{j\hat{\omega}\frac{L}{2}}-e^{-j%
+\hat{\omega}\frac{L}{2}})}{(e^{j\frac{\hat{\omega}}{2}}-e^{-j\frac{\hat{\omega%
+}}{2}})}\frac{{\color[rgb]{1,0,0}2j}}{{\color[rgb]{1,0,0}2j}}\\
+=&amp;{}e^{-j\hat{\omega}\frac{(L-1)}{2}}\frac{\sin(\hat{\omega}\frac{L}{2})}{\sin%
+(\frac{\hat{\omega}}{2})}\cdot\frac{1}{L}\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mrow><mi>H</mi><mo>⁢</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover></mrow></msup><mo stretchy="false">)</mo></mrow></mrow><mo>=</mo><mi></mi></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mfrac><mn>1</mn><mi>L</mi></mfrac><mo>⁢</mo><mfrac><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mfrac><mi>L</mi><mn>2</mn></mfrac></mrow></mrow></msup><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mfrac><mi>L</mi><mn>2</mn></mfrac></mrow></mrow></msup></mfrac><mo>⁢</mo><mfrac><mrow><mo stretchy="false">(</mo><mrow><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mfrac><mi>L</mi><mn>2</mn></mfrac></mrow></msup><mo>−</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mfrac><mi>L</mi><mn>2</mn></mfrac></mrow></mrow></msup></mrow><mo stretchy="false">)</mo></mrow><mrow><mo stretchy="false">(</mo><mrow><msup><mi>e</mi><mrow><mi>j</mi><mo>⁢</mo><mfrac><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mn>2</mn></mfrac></mrow></msup><mo>−</mo><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mfrac><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mn>2</mn></mfrac></mrow></mrow></msup></mrow><mo stretchy="false">)</mo></mrow></mfrac><mo>⁢</mo><mfrac><mrow><mn class="bml_color_FF0000">2</mn><mo>⁢</mo><mi class="bml_color_FF0000">j</mi></mrow><mrow><mn class="bml_color_FF0000">2</mn><mo>⁢</mo><mi class="bml_color_FF0000">j</mi></mrow></mfrac></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mo>=</mo></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mrow><msup><mi>e</mi><mrow><mo>−</mo><mrow><mi>j</mi><mo>⁢</mo><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mfrac><mrow><mo stretchy="false">(</mo><mrow><mi>L</mi><mo>−</mo><mn>1</mn></mrow><mo stretchy="false">)</mo></mrow><mn>2</mn></mfrac></mrow></mrow></msup><mo>⁢</mo><mfrac><mrow><mi>sin</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mo>⁢</mo><mfrac><mi>L</mi><mn>2</mn></mfrac></mrow><mo stretchy="false">)</mo></mrow></mrow><mrow><mi>sin</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mfrac><mover accent="true"><mi>ω</mi><mo>^</mo></mover><mn>2</mn></mfrac><mo stretchy="false">)</mo></mrow></mrow></mfrac></mrow><mo lspace="0.222em" rspace="0.222em">⋅</mo><mfrac><mn>1</mn><mi>L</mi></mfrac></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S11.SS8.p12" class="ltx_para">
+<p class="ltx_p">Ottenendo la forma di Dirichlet.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S12" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.12</span> Sistemi in cascata</h2>
+
+<div id="S12.p1" class="ltx_para">
+<p class="ltx_p">Quello che vogliamo fare e’ prendere l’output di un sistema e metterlo in input ad un altro sistema LTI.</p>
+</div>
+<figure id="S12.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez15-sistemiCascata.webp" width="1370" height="399" loading="lazy" alt="Schema a blocchi 'sistemi in cascata (o serie)': l'ingresso x[n] entra in LTI1 con risposta h1[n], l'uscita intermedia è w[n] che entra in LTI2 con risposta h2[n], l'uscita finale è y[n]. Sotto: w[n] = h1[n] * x[n] e y[n] = h2[n] * w[n]; a destra h[n] = h1[n] * h2[n] in giallo."></div>
+</figure>
+<div id="S12.p2" class="ltx_para">
+<div id="Ex44" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex44.m1" class="ltx_Math" alttext="\begin{split}y[n]&amp;{}=h_{2}[n]*(h_{1}[n]*x[n])\\
+y[n]&amp;{}=(h_{1}[n]*h_{2}[n])*x[n]\\
+h[n]&amp;{}=h_{1}[n]*h_{2}[n]\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><msub><mi>h</mi><mn>2</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mrow><mo stretchy="false">(</mo><mrow><mrow><mrow><msub><mi>h</mi><mn>1</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mi>x</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mrow><mo stretchy="false">(</mo><mrow><mrow><mrow><msub><mi>h</mi><mn>1</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><msub><mi>h</mi><mn>2</mn></msub></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo rspace="0.055em" stretchy="false">)</mo></mrow><mo rspace="0.222em">∗</mo><mi>x</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mrow><msub><mi>h</mi><mn>1</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><msub><mi>h</mi><mn>2</mn></msub></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+<section id="S13" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.13</span> Parallelo di due sistemi</h2>
+
+<figure id="S13.fig1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/elaborazione-segnali/figure/immagini-lez15-paralleloSistemi.webp" width="1482" height="744" loading="lazy" alt="Schema a blocchi del parallelo di due sistemi: il segnale x[n] si divide in due rami, uno attraversa il blocco LTI1 (h1[n]) e dà y1[n], l'altro attraversa LTI2 (h2[n]) e dà y2[n]; le uscite entrano in un sommatore che produce y[n] = y1[n] + y2[n]. L'insieme è evidenziato in giallo con h[n] = h1[n] + h2[n]; sotto sono scritte y1[n] = h1[n] * x[n] e y2[n] = h2[n] * x[n], collegate da frecce verdi alle due componenti di y[n]."></div>
+</figure>
+<div id="S13.p1" class="ltx_para">
+<div id="Ex45" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex45.m1" class="ltx_Math" alttext="\begin{split}y[n]&amp;{}=h_{1}[n]*x[n]+h_{2}[n]*x[n]\\
+y[n]&amp;{}=(h_{1}[n]+h_{2}[n])*x[n]\\
+h[n]&amp;{}=h_{1}[n]+h_{2}[n]\end{split}" display="block" tabindex="0"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mrow><mrow><msub><mi>h</mi><mn>1</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mi>x</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><mrow><mrow><msub><mi>h</mi><mn>2</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo rspace="0.055em" stretchy="false">]</mo></mrow></mrow><mo rspace="0.222em">∗</mo><mi>x</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>y</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><mrow><mo stretchy="false">(</mo><mrow><mrow><msub><mi>h</mi><mn>1</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><msub><mi>h</mi><mn>2</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow><mo rspace="0.055em" stretchy="false">)</mo></mrow><mo rspace="0.222em">∗</mo><mi>x</mi></mrow><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mtd></mtr><mtr><mtd class="ltx_align_right" columnalign="right"><mrow><mi>h</mi><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mi></mi><mo>=</mo><mrow><mrow><msub><mi>h</mi><mn>1</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow><mo>+</mo><mrow><msub><mi>h</mi><mn>2</mn></msub><mo>⁢</mo><mrow><mo stretchy="false">[</mo><mi>n</mi><mo stretchy="false">]</mo></mrow></mrow></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+</div>
+</section>
+</div>
