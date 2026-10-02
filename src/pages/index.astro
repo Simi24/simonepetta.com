@@ -1,4 +1,5 @@
 ---
+import { lede } from '../config/about-texts.ts';
 import { getCollection } from 'astro:content';
 import Bio from '../components/about/Bio.astro';
 import Colophon from '../components/about/Colophon.astro';
@@ -31,8 +32,7 @@ const description = "Simone Petta: letture, percorso e progetti open source.";
 >
   <div class="page">
     <h1 class="page__full">{site.author}</h1>
-    <!-- Author-voice copy stays a visible placeholder until the author writes it (SPEC.md §1.2). -->
-    <p class="lede placeholder">Presentazione: la scrive l'autore.</p>
+    <p class="lede">{lede.it}</p>
     <Bio lang="it" />
     <Percorso lang="it" />
     <OpenSource lang="it" />

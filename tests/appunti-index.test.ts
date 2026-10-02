@@ -45,8 +45,9 @@ test('the nav links to /appunti/ and the page carries a title and the h1', () =>
   assert.match(html, /<title>Appunti/);
 });
 
-test('the lede is an author-voice placeholder', () => {
-  assert.match(indexHtml(), /<p class="lede placeholder[^"]*"[^>]*>/);
+test('the lede is the author-approved text, not a placeholder', () => {
+  assert.match(indexHtml(), /<p class="lede"[^>]*>Gli appunti che ho scritto durante la triennale e la magistrale/);
+  assert.doesNotMatch(indexHtml(), /class="[^"]*placeholder/);
 });
 
 test('theses appear on top and link to their course page', () => {

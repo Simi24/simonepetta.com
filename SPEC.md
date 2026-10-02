@@ -23,7 +23,7 @@ The root answer, from the grilling of 2026-09-23 ([map notes](https://github.com
 ### 1.2 Standing constraints
 1. **Static by default, a single dynamic endpoint** in the whole site (`POST /api/chat`, v2). Sections do not share their fate: if the chat exhausts its budget, readings and notes stay up.
 2. **Heavy ingestion stays out of the build.** Conversion artifacts are produced separately and committed; a change to readings never depends on a broken `\input` in a 2022 course.
-3. **The author writes, never an LLM.** Reading reactions and personal texts are written by the author. Agents build scaffolding, never content, and quote the author's words verbatim. **Interface copy rule**: functional copy that explains the interface (labels, captions, empty states, error messages, e.g. "Spine height follows page count") may be written by agents; anything in the author's voice or in first person (section ledes, bio, "about" texts) is a visible placeholder until the author writes it. The ledes in the prototypes are placeholders, not approved copy.
+3. **Reading reactions are the author's alone.** Agents never write them and quote the author's words verbatim. The about pages and section ledes started from agent drafts the author approved on 2026-10-02 (facts from GitHub, the theses and the author's notes); he may rewrite them at any time. The site does not state where its texts come from. **Interface copy rule**: functional copy that explains the interface (labels, captions, empty states, error messages, e.g. "Spine height follows page count") may be written by agents; any other text in the author's voice or in first person is a visible placeholder until the author writes or approves it. The ledes in the prototypes are placeholders, not approved copy.
 4. **Site and private wiki are independent systems** ([#8](https://github.com/Simi24/simonepetta.com/issues/8)). No export, no sync, no wiki content on the site. The build never reads the private repo `Simi24/llm-wiki`.
 5. **Language follows each section's audience**: readings and notes in Italian; projects/OSS in English; the about page exists in both languages as two separate pages (`/` and `/en/`), never mixed.
 6. **"Done well" means both qualities**: the visible result (typography, performance, accessibility, care) and the project underneath (structure, maintainability, no shortcuts).
@@ -273,7 +273,7 @@ Structure prototyped in [#9](https://github.com/Simi24/simonepetta.com/issues/9)
 - `/`: name, one-line lede, bio paragraphs, **Percorso** (timeline), **Open source** (e.g. `dynantic`), latest readings, **Colophon**.
 - `/en/`: the English about page, with English navigation and labels and no Italian content blocks (no latest readings). `hreflang` links the two.
 - Open Graph images are designed by an agent from the visual contract (typographic, no photos). `sameAs`: GitHub `https://github.com/Simi24`, LinkedIn `https://www.linkedin.com/in/simone-paolo-petta/`.
-- **Colophon**, six lines: typeface (Host Grotesk), math (MathML drawn by the browser without JavaScript), notes (LaTeX converted with LaTeXML outside the build), build (Astro, static pages), hosting (Cloudflare Workers), writing (Markdown from a local desk, texts written by hand without language models).
+- **Colophon**, six lines: typeface (Host Grotesk), math (MathML drawn by the browser without JavaScript), notes (LaTeX converted with LaTeXML outside the build), build (Astro, static pages), hosting (Cloudflare Workers), writing (Markdown from a local desk).
 - **SEO priority high** ([#18](https://github.com/Simi24/simonepetta.com/issues/18)): JSON-LD `Person` with `sameAs` (GitHub, LinkedIn), curated Open Graph image.
 
 ---
@@ -542,6 +542,8 @@ Found while writing this document and by the cold read (an agent with no context
 
 **Confirmed by the author (2026-10-02)**
 27. **Red accent on interaction**: one `--red` token, used only for the hovered link underline, the focus outline and the current nav item underline; "No accent color" is replaced (§5.1, [#88](https://github.com/Simi24/simonepetta.com/issues/88)).
+
+28. **About texts from approved drafts**: the author approved the agent's drafts for the about pages and section ledes ("vanno bene, comincia a fare tu delle scelte"); reading reactions stay his alone. The colophon's writing line drops any claim about where the texts come from, at the author's request (§1.2, §8, [#93](https://github.com/Simi24/simonepetta.com/issues/93)).
 
 **Applied by default**
 4. **Theme toggle vs JS budget**: one inline theme script ≤ 1 KB is a declared budget exception (§5.1, §12.2).

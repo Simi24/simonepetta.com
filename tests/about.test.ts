@@ -10,44 +10,57 @@ const jsonLdOf = (html: string): unknown => {
   return JSON.parse(match![1]!);
 };
 
-test('the home page (/) carries the IT about sections as visible placeholders', () => {
+const IT_LEDE = 'Software engineer a Milano. Qui tengo traccia di cosa leggo, cosa ho studiato e cosa costruisco.';
+const EN_LEDE = 'Software engineer in Milan. This site is where I keep track of what I build and what I have studied.';
+const PROJECTS = ['dynantic', 'ralph-gh', 'rideIt', 'SaltinoInterpreter', 'kafka-secure-ha-cluster'];
+
+const section = (html: string, heading: string): string =>
+  html.match(new RegExp(`<h2>${heading}</h2>([\\s\\S]*?)</section>`))?.[1] ?? '';
+
+test('the home page (/) carries the IT about texts, with no placeholder left', () => {
   const html = read(buildSite(), 'index.html');
   assert.match(html, /<html lang="it"/);
-  assert.match(html, /<p class="lede placeholder">[^<]*<\/p>/);
-  assert.match(html, /<h2>Percorso<\/h2>/);
-  assert.match(html, /<h2>Open source<\/h2>/);
-  assert.match(html, /<h2>Colophon<\/h2>/);
-  assert.match(html, /dynantic/);
-  assert.match(html, /href="https:\/\/github\.com\/Simi24\/dynantic"/);
-  // Percorso and the open-source description stay placeholders (SPEC.md §1.2 point 3).
-  const percorso = html.match(/<h2>Percorso<\/h2>([\s\S]*?)<\/section>/)?.[1] ?? '';
-  assert.match(percorso, /class="placeholder"/);
-  const openSource = html.match(/<h2>Open source<\/h2>([\s\S]*?)<\/section>/)?.[1] ?? '';
-  assert.match(openSource, /class="placeholder"/);
-  // Bio is author-voice too, and has more than one paragraph (SPEC.md §8).
-  const bioParagraphs = [...html.matchAll(/<p class="placeholder">Bio[^<]*<\/p>/g)];
-  assert.ok(bioParagraphs.length >= 2, 'the bio has fewer than two placeholder paragraphs');
+  assert.ok(html.includes(`<p class="lede">${IT_LEDE}</p>`), 'the IT lede is missing');
+  assert.doesNotMatch(html, /class="[^"]*placeholder/);
+  assert.match(html, /Sono un software engineer e vivo a Milano\. Lavoro in AdKaora/);
+  assert.match(html, /Ho studiato Informatica alla Statale di Milano/);
+  const percorso = section(html, 'Percorso');
+  for (const when of ['2025–oggi', '2024–2026', '2023–2024', '2020–2023']) {
+    assert.ok(percorso.includes(`<span class="when">${when}</span>`), `Percorso lacks ${when}`);
+  }
+  assert.equal([...percorso.matchAll(/<li>/g)].length, 4);
+  assert.match(percorso, /Software engineer, AdKaora \(Milano\)\. Backend e infrastruttura su AWS, Terraform\./);
+  const openSource = section(html, 'Open source');
+  for (const name of PROJECTS) {
+    assert.match(openSource, new RegExp(`<a href="https://github\\.com/Simi24/${name}">${name}</a>`));
+  }
+  assert.match(openSource, /un ORM per DynamoDB in Python, tipizzato con Pydantic v2/);
 });
 
-test('every EN author-voice block (lede, bio, path, project description) is a placeholder', () => {
+test('the EN page carries the EN about texts, with no placeholder left', () => {
   const html = read(buildSite(), 'en/index.html');
-  const lede = html.match(/<p class="lede placeholder">([^<]*)<\/p>/)?.[1] ?? '';
-  assert.ok(lede.length > 0, 'no placeholder lede on the EN page');
-  const bioParagraphs = [...html.matchAll(/<p class="placeholder">Bio[^<]*<\/p>/g)];
-  assert.ok(bioParagraphs.length >= 2, 'the EN bio has fewer than two placeholder paragraphs');
-  const path = html.match(/<h2>Path<\/h2>([\s\S]*?)<\/section>/)?.[1] ?? '';
-  assert.match(path, /class="placeholder"/);
-  const openSource = html.match(/<h2>Open source<\/h2>([\s\S]*?)<\/section>/)?.[1] ?? '';
-  assert.match(openSource, /class="placeholder"/);
+  assert.ok(html.includes(`<p class="lede">${EN_LEDE}</p>`), 'the EN lede is missing');
+  assert.doesNotMatch(html, /class="[^"]*placeholder/);
+  assert.match(html, /I&#39;m a software engineer based in Milan\. At AdKaora/);
+  assert.match(html, /The rest of this site is in Italian/);
+  const path = section(html, 'Path');
+  for (const when of ['2025–now', '2024–2026', '2023–2024', '2020–2023']) {
+    assert.ok(path.includes(`<span class="when">${when}</span>`), `Path lacks ${when}`);
+  }
+  const openSource = section(html, 'Open source');
+  for (const name of PROJECTS) {
+    assert.match(openSource, new RegExp(`<a href="https://github\\.com/Simi24/${name}">${name}</a>`));
+  }
+  assert.match(openSource, /a typed DynamoDB ORM for Python built on Pydantic v2/);
 });
 
 test('Percorso is a timeline (an ol with a when column), not a plain paragraph (SPEC.md §8)', () => {
   const html = read(buildSite(), 'index.html');
-  const percorso = html.match(/<h2>Percorso<\/h2>([\s\S]*?)<\/section>/)?.[1] ?? '';
+  const percorso = section(html, 'Percorso');
   assert.match(percorso, /<ol class="timeline">/);
   const row = percorso.match(/<li>([\s\S]*?)<\/li>/)?.[1] ?? '';
-  assert.match(row, /<span class="when placeholder">[^<]+<\/span>/);
-  assert.match(row, /<span class="placeholder">[^<]+<\/span>/);
+  assert.match(row, /<span class="when">[^<]+<\/span>/);
+  assert.match(row, /<span>[^<]+<\/span>/);
 });
 
 test('the home page colophon has six IT lines matching the SPEC.md §8 facts', () => {
@@ -57,7 +70,8 @@ test('the home page colophon has six IT lines matching the SPEC.md §8 facts', (
     assert.match(colophon, new RegExp(`<dt>${term}</dt>`));
   }
   assert.match(colophon, /Host Grotesk/);
-  assert.match(colophon, /senza modelli linguistici/);
+  assert.match(colophon, /Markdown, da una scrivania locale\./);
+  assert.doesNotMatch(colophon, /modelli linguistici|assistente/);
 });
 
 test('the home page still shows the latest readings from #26, when there are any', () => {
@@ -83,7 +97,7 @@ test('the EN page exists at /en/, in English, with no Italian content blocks', (
   assert.ok(existsSync(join(dist, 'en/index.html')), '/en/ was not built');
   const html = read(dist, 'en/index.html');
   assert.match(html, /<html lang="en"/);
-  assert.doesNotMatch(html, /Percorso|Ultime letture|Presentazione|la scrive l'autore/);
+  assert.doesNotMatch(html, /Percorso|Ultime letture/);
   assert.match(html, /<h2>Path<\/h2>/);
   assert.match(html, /<h2>Open source<\/h2>/);
   assert.match(html, /<h2>Colophon<\/h2>/);
@@ -96,7 +110,8 @@ test('the EN page colophon has six EN lines, not the IT wording', () => {
   for (const term of ['Typeface', 'Math', 'Notes', 'Build', 'Hosting', 'Writing']) {
     assert.match(colophon, new RegExp(`<dt>${term}</dt>`));
   }
-  assert.match(colophon, /without language models/);
+  assert.match(colophon, /Markdown, from a local writing desk\./);
+  assert.doesNotMatch(colophon, /language models|assistant/);
   assert.doesNotMatch(colophon, /senza modelli linguistici/);
 });
 

@@ -1,4 +1,5 @@
 ---
+import { sectionLedes } from '../../config/about-texts.ts';
 import { getCollection } from 'astro:content';
 import CourseList from '../../components/appunti/CourseList.astro';
 import Piles from '../../components/appunti/Piles.astro';
@@ -35,8 +36,7 @@ const description = 'Gli appunti dei corsi universitari: PDF di ogni corso, e le
 <Base title="Appunti" description={description} og={{ image: '/og/appunti.png', description }}>
   <div class="page">
     <h1 class="page__full">Appunti</h1>
-    <!-- Author-voice copy stays a visible placeholder until the author writes it (SPEC.md §1.2). -->
-    <p class="lede placeholder">Presentazione della sezione: la scrive l'autore.</p>
+    <p class="lede">{sectionLedes.appunti}</p>
     <div class="page__full">
       <Theses theses={theses} />
       <Piles piles={piles} />

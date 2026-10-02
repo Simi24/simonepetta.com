@@ -25,7 +25,7 @@ test('the facts cover typeface, math, notes, build, hosting and writing', () => 
   assert.match(it, /Astro/);
   assert.match(it, /Cloudflare Workers/);
   assert.match(it, /Markdown/);
-  assert.match(it, /senza modelli linguistici/);
+  assert.doesNotMatch(it, /modelli linguistici|assistente/);
 
   const en = colophon.en.map((line) => line.detail).join(' ');
   assert.match(en, /Host Grotesk/);
@@ -34,5 +34,5 @@ test('the facts cover typeface, math, notes, build, hosting and writing', () => 
   assert.match(en, /Astro/);
   assert.match(en, /Cloudflare Workers/);
   assert.match(en, /Markdown/);
-  assert.match(en, /without language models/);
+  assert.doesNotMatch(en, /language models|assistant/);
 });

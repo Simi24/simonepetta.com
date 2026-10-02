@@ -6,7 +6,7 @@ The author's personal site: readings, university notes, and (v2) a per-course ch
 
 ## Rules that are easy to break
 
-- **The author writes, never an LLM** (`SPEC.md` §1.2 point 3). Agents write functional interface copy (labels, captions, empty states, errors). Anything in the author's voice or in first person (section ledes, bio, about texts, reading reactions) is a visible placeholder styled with `.placeholder` until the author writes it.
+- **Reading reactions are the author's alone** (`SPEC.md` §1.2 point 3): agents never write them. The about pages and section ledes come from agent drafts the author approved on 2026-10-02 (`src/config/about-texts.ts`); change them only on the author's word. Agents write functional interface copy (labels, captions, empty states, errors). Any other author-voice text is a visible placeholder styled with `.placeholder` until the author writes or approves it.
 - **Site and private wiki are independent.** Never read, import or sync anything from `Simi24/llm-wiki`.
 - **No chat model from Anthropic** in v2: the models are decided in `SPEC.md` §9.3.
 - **Static by default.** No Astro route is dynamic; the only dynamic endpoint is the separate chat Worker on `/api/*` (v2). One dev-only exception: the writing desk's `/scrivi` route is `prerender: false` and exists only under `astro dev` (`SPEC.md` §6.4); `build` and `preview` never register it, and a test fails if any trace reaches `dist`.
