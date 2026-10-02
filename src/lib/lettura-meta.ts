@@ -1,18 +1,12 @@
 import type { CollectionEntry } from 'astro:content';
 import { site } from '../config/site.ts';
-import { formatDataIt } from './lettura-format-it.ts';
-import { ORDERING_DATE } from './lettura-order.ts';
 import { hasPost } from './lettura-post.ts';
-import { STATO_PRESENTATION } from './lettura-presentation.ts';
+import { bookMetaLine } from './lettura-meta-line.ts';
 
 /** A book's line under its title: author, date line, the abandonment note when there is one, and "senza testo" for a finished or abandoned book with no post (SPEC.md §6.2). */
 export function metaLine(entry: CollectionEntry<'letture'>): string {
-  const { autore, stato, nota } = entry.data;
-  const date = entry.data[ORDERING_DATE[stato]];
-  const parts = [autore, date ? `${STATO_PRESENTATION[stato].dateVerb} ${formatDataIt(date)}` : ''];
-  if (stato === 'abbandonato' && nota) parts.push(nota);
-  if (stato !== 'in-corso' && !hasPost(entry)) parts.push('senza testo');
-  return parts.filter(Boolean).join(', ');
+  const noText = entry.data.stato !== 'in-corso' && !hasPost(entry) ? 'senza testo' : '';
+  return [bookMetaLine(entry.data), noText].filter(Boolean).join(', ');
 }
 
 /** Functional, not author-voice, description shared by a post page's OG tags and its feed item (SPEC.md §1.2 point 3). */

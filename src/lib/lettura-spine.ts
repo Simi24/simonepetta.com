@@ -1,3 +1,6 @@
+import type { StatoLettura } from '../schemas/lettura.ts';
+import { STATO_PRESENTATION } from './lettura-presentation.ts';
+
 const DEFAULT_PAGINE = 250;
 const MIN_SPINE_PAGINE = 80;
 const MAX_SPINE_PAGINE = 1000;
@@ -50,4 +53,25 @@ export function truncateTitle(titolo: string): string {
 export function authorSurname(autore: string): string {
   const words = autore.trim().split(/\s+/);
   return words[words.length - 1] ?? autore;
+}
+
+interface SpineBook {
+  slug: string;
+  titolo: string;
+  autore: string;
+  pagine?: number | null | undefined;
+  stato: StatoLettura;
+}
+
+/** Everything a spine shows, so the site's shelf and the writing desk's draw the same one. */
+export function spineLook(book: SpineBook) {
+  const pagine = book.pagine ?? undefined;
+  return {
+    className: ['spine', `spine--tint-${tintForSlug(book.slug)}`, STATO_PRESENTATION[book.stato].spineClass].filter(Boolean).join(' '),
+    heightRem: spineHeightRem(pagine),
+    widthRem: spineWidthRem(pagine),
+    title: truncateTitle(book.titolo),
+    surname: authorSurname(book.autore),
+    label: `${book.titolo}, ${book.autore}`,
+  };
 }

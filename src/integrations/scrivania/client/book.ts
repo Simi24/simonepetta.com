@@ -3,6 +3,8 @@ import type { StatoLettura } from '../../../schemas/lettura.ts';
 /** A book as the page embeds it for the client script: `undefined` fields become `null` across JSON. */
 export interface DeskBook {
   slug: string;
+  /** The entry's file name inside the content directory; not always `<slug>.md` (a hand-made file keeps its own name). */
+  file: string;
   titolo: string;
   autore: string;
   anno_opera: number | null;

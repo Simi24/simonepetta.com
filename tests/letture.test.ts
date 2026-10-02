@@ -41,8 +41,10 @@ test('the lede sits at grid-column 5/span 6, per the prototype', () => {
 });
 
 test('the shelf does not shrink its spines: it scrolls instead', () => {
-  const html = lettureHtml(FIXTURES);
-  assert.match(html, /\.shelf\[[^\]]+\]\{[^}]*min-width:min-content/);
+  // The shelf's stylesheet is shared with the writing desk, so it is a linked file, not inlined.
+  const dist = buildSite(FIXTURES);
+  const css = filesWithExtension(dist, '.css').map((file) => read(dist, file));
+  assert.match([lettureHtml(FIXTURES), ...css].join('\n'), /\.shelf(\[[^\]]+\])?\{[^}]*min-width:min-content/);
 });
 
 test('with no books the shelf shows an empty plank and a one-line caption', () => {

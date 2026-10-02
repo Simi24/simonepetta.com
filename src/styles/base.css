@@ -13,7 +13,7 @@ body {
 .site {
   max-width: 84rem;
   margin-inline: auto;
-  padding-inline: 20px;
+  padding-inline: var(--gutter);
   padding-block: 28px 150px;
   font-size: 1.15rem;
   line-height: 1.5;

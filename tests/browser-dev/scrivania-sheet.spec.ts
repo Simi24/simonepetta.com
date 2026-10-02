@@ -22,7 +22,7 @@ test('the timer starts at the first keystroke and never locks the sheet', async 
   await expect(page.locator('#dk-text')).toBeEnabled();
 });
 
-test('the timer does not run while editing an existing text', async ({ page }, testInfo) => {
+test('the timer stays at 20:00 while editing an existing text', async ({ page }, testInfo) => {
   const titolo = uniqueTitle('Il timer non riparte', testInfo);
   await addBook(page, titolo);
   await spine(page, titolo).click();
@@ -39,7 +39,10 @@ test('the timer does not run while editing an existing text', async ({ page }, t
   await page.getByRole('button', { name: 'Modifica', exact: true }).click();
   await expect(page.locator('.clock')).toBeHidden();
   await page.locator('#dk-text').fill('Testo scritto una prima volta. Aggiunta.');
+  // A running clock would show 19:59 after a second: wait past one tick.
+  await page.waitForTimeout(1500);
   await expect(page.locator('.clock')).toBeHidden();
+  await expect(page.locator('.clock')).toHaveText('20:00');
 });
 
 test('clicking an outline question inserts it as a `##` heading', async ({ page }, testInfo) => {
@@ -52,11 +55,14 @@ test('clicking an outline question inserts it as a `##` heading', async ({ page 
   await expect(page.locator('#dk-text')).toHaveValue('## A cosa si collega\n\n');
 });
 
-test('grades are selectable in half points from 1 to 5', async ({ page }, testInfo) => {
+test('the grades on offer are 1 to 5 in half points, and one can be picked', async ({ page }, testInfo) => {
   const titolo = uniqueTitle('Il voto a metà punto', testInfo);
   await addBook(page, titolo);
   await spine(page, titolo).click();
   await page.getByRole('button', { name: "L'ho finito, scrivo" }).click();
+
+  const offered = await page.locator('.votes button').evaluateAll((buttons) => buttons.map((b) => b.getAttribute('aria-label')));
+  expect(offered).toEqual(['Voto 1', 'Voto 1,5', 'Voto 2', 'Voto 2,5', 'Voto 3', 'Voto 3,5', 'Voto 4', 'Voto 4,5', 'Voto 5']);
 
   const halfBetween3And4 = page.getByRole('button', { name: 'Voto 3,5' });
   await halfBetween3And4.click();
@@ -70,7 +76,7 @@ test('the preview renders the real post component, not a copy of its markup', as
   await page.getByRole('button', { name: "L'ho finito, scrivo" }).click();
   await page.locator('#dk-text').fill('## A cosa si collega\n\nUna reazione sincera al libro.');
 
-  await page.getByRole('button', { name: 'Anteprima' }).click();
+  await page.getByRole('button', { name: 'Anteprima', exact: true }).click();
   await expect(page.locator('.post .post-head h1')).toHaveText(titolo);
   await expect(page.locator('.post .prose h2')).toHaveText('A cosa si collega');
   await expect(page.locator('.post .prose p')).toHaveText('Una reazione sincera al libro.');
@@ -114,7 +120,7 @@ test('abandoning with a one-line note produces a valid entry', async ({ page }, 
   await saveAndReload(page, page.getByRole('button', { name: 'Mettilo di traverso' }));
 
   await spine(page, titolo).click();
-  await expect(page.getByRole('button', { name: 'Ricomincia' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Ricomincialo' })).toBeVisible();
 });
 
 test('leaving the sheet with unsaved text asks first, and staying keeps the text', async ({ page }, testInfo) => {
@@ -125,17 +131,17 @@ test('leaving the sheet with unsaved text asks first, and staying keeps the text
   await page.locator('#dk-text').fill('Testo che non ho ancora confermato.');
 
   page.once('dialog', (dialog) => void dialog.dismiss());
-  await page.getByRole('button', { name: 'Indietro' }).click();
+  await page.getByRole('button', { name: 'Mensola', exact: true }).click();
   await expect(page.locator('#dk-text')).toHaveValue('Testo che non ho ancora confermato.');
 
   page.once('dialog', (dialog) => void dialog.accept());
-  await page.getByRole('button', { name: 'Indietro' }).click();
+  await page.getByRole('button', { name: 'Mensola', exact: true }).click();
   await expect(page.getByRole('button', { name: "L'ho finito, scrivo" })).toBeVisible();
 });
 
 // Blocking fix: the shelf stays live above the panel, so every way of clicking out of the sheet —
 // another spine, "+ aggiungi", or the same spine again — must ask before destroying the sheet, not
-// just the sheet's own "Indietro" button.
+// just the sheet's own "Mensola" button.
 
 test('the shelf cannot destroy the sheet: switching to another spine with unsaved text asks first', async ({ page, request }, testInfo) => {
   const primo = uniqueTitle('Primo libro della mensola', testInfo);
@@ -303,4 +309,53 @@ test('a save in another tab reloads the open sheet only through the unsaved-text
   await dialog.dismiss();
 
   await expect(sheetTab.locator('#dk-text')).toHaveValue('Testo non ancora salvato.');
+});
+
+// The prototype's copy on the sheet (docs/prototype/scrivania.html).
+
+test('the sheet’s bar hints at what is optional, and goes back to the shelf with "Mensola"', async ({ page }, testInfo) => {
+  const titolo = uniqueTitle('Libro con i suggerimenti', testInfo);
+  await addBook(page, titolo);
+  await spine(page, titolo).click();
+  await page.getByRole('button', { name: "L'ho finito, scrivo" }).click();
+
+  await expect(page.locator('.bar')).toContainText('Il testo è opzionale: anche solo il voto va bene.');
+  await page.getByRole('button', { name: 'Mensola', exact: true }).click();
+  await expect(page.locator('.sheet')).toHaveCount(0);
+});
+
+test('editing an existing text says the timer is only for the first pass', async ({ page, request }, testInfo) => {
+  const titolo = uniqueTitle('Libro con testo e suggerimento', testInfo);
+  const data = { titolo, autore: 'Autore di Prova', stato: 'letto', finito: '2025-03-01' };
+  const slug = await saveBook(request, { data });
+  await saveBook(request, { slug, data, testo: 'Testo esistente.' });
+
+  await page.goto('/scrivi/');
+  await spine(page, titolo).click();
+  await page.getByRole('button', { name: 'Modifica', exact: true }).click();
+  await expect(page.locator('.bar')).toContainText("Modifica: il timer serve solo alla prima passata. L'indirizzo della pagina non cambia.");
+});
+
+test('previewing an empty text says the book appears in the list with its grade and dates', async ({ page }, testInfo) => {
+  const titolo = uniqueTitle('Libro senza testo in anteprima', testInfo);
+  await addBook(page, titolo);
+  await spine(page, titolo).click();
+  await page.getByRole('button', { name: "L'ho finito, scrivo" }).click();
+  await page.getByRole('button', { name: 'Anteprima', exact: true }).click();
+
+  await expect(page.getByText("Nessun testo: sul sito il libro compare nell'elenco con voto e date.")).toBeVisible();
+});
+
+test('the writing area shows where the focus is', async ({ page }, testInfo) => {
+  const titolo = uniqueTitle('Libro con il fuoco visibile', testInfo);
+  await addBook(page, titolo);
+  await spine(page, titolo).click();
+  await page.getByRole('button', { name: "L'ho finito, scrivo" }).click();
+  await page.keyboard.press('Tab');
+  await page.locator('#dk-text').focus();
+  await page.keyboard.press('Shift+Tab');
+  await page.keyboard.press('Tab');
+
+  await expect(page.locator('#dk-text')).toBeFocused();
+  await expect(page.locator('#dk-text')).not.toHaveCSS('outline-style', 'none');
 });

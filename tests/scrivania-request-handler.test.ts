@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { join } from 'node:path';
 import { after, before, test } from 'node:test';
@@ -84,4 +84,39 @@ test('the refresh hook is told what was saved, so it can wait until that is serv
   const created = (await (await post({ data })).json()) as { slug: string };
   await post({ slug: created.slug, data, testo: '  Il testo da servire.  ' });
   assert.deepEqual(lastSaved, { slug: 'da-servire', titolo: 'Da Servire', stato: 'letto', testo: '  Il testo da servire.  ' });
+});
+
+test('a save naming the entry’s hand-made file edits that file and answers with the entry’s slug', async () => {
+  writeFileSync(join(contentDir, 'Fatto A Mano.md'), '---\ntitolo: "Fatto A Mano"\nautore: "Autore"\nstato: letto\nfinito: "2026-09-25"\n---\n');
+  const res = await post({
+    slug: 'fatto-a-mano',
+    file: 'Fatto A Mano.md',
+    data: { titolo: 'Fatto A Mano', autore: 'Autore', stato: 'letto', finito: '2026-09-26' },
+  });
+  assert.equal(res.status, 200);
+  assert.equal(((await res.json()) as { slug: string }).slug, 'fatto-a-mano');
+  assert.ok(!readdirSync(contentDir).includes('fatto-a-mano.md'));
+  assert.match(readFileSync(join(contentDir, 'Fatto A Mano.md'), 'utf8'), /finito: "2026-09-26"/);
+});
+
+test('a save naming a file outside the content directory is refused, writing nothing', async () => {
+  const before = readdirSync(contentDir).sort();
+  const res = await post({
+    slug: 'fatto-a-mano',
+    file: '../fuori.md',
+    data: { titolo: 'Fatto A Mano', autore: 'Autore', stato: 'letto', finito: '2026-09-26' },
+  });
+  assert.equal(res.status, 400);
+  assert.deepEqual(readdirSync(contentDir).sort(), before);
+});
+
+test('asking for the last save answers with the file as written', async () => {
+  await post({ saveId: 'id-1', data: { titolo: 'Ultimo Salvato', autore: 'Autore', stato: 'in-corso', iniziato: '2026-09-14' } });
+  const res = await fetch(url);
+  assert.equal(res.status, 200);
+  const last = (await res.json()) as { slug: string; path: string; contents: string; saveId: string };
+  assert.equal(last.slug, 'ultimo-salvato');
+  assert.equal(last.saveId, 'id-1');
+  assert.match(last.path, /ultimo-salvato\.md$/);
+  assert.equal(last.contents, readFileSync(join(contentDir, 'ultimo-salvato.md'), 'utf8'));
 });

@@ -1,15 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { relative } from 'node:path';
 import { LetturaSchemaError } from '../../schemas/lettura.ts';
 import { readJsonBody, respondJson } from './http.ts';
+import type { SavedFile, SavePayload } from './payload.ts';
 import { saveLettura } from './save.ts';
 import type { SavedBook } from './served.ts';
-
-interface SavePayload {
-  slug?: string;
-  data?: unknown;
-  testo?: string;
-  expectedVersion?: string;
-}
 
 export interface SaveHandlerOptions {
   contentDir: string;
@@ -19,10 +14,19 @@ export interface SaveHandlerOptions {
 
 /**
  * The dev-server save handler (SPEC.md §6.4): validates with the shared schema, writes the file,
- * and reports per-field messages on an invalid payload without writing anything.
+ * and reports per-field messages on an invalid payload without writing anything. A GET answers
+ * with the file the last save wrote: the dev server reloads the saving page before the save's own
+ * response may reach it, and the saved view is read from here instead.
  */
 export function createSaveHandler({ contentDir, onSaved }: SaveHandlerOptions) {
+  let lastSaved: SavedFile | undefined;
+
   return async function handleSave(req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void): Promise<void> {
+    if (req.method === 'GET') {
+      if (lastSaved === undefined) respondJson(res, 404, { issues: ['nessun salvataggio'] });
+      else respondJson(res, 200, lastSaved);
+      return;
+    }
     if (req.method !== 'POST') {
       next();
       return;
@@ -30,10 +34,11 @@ export function createSaveHandler({ contentDir, onSaved }: SaveHandlerOptions) {
     let result;
     let testo: string | undefined;
     try {
-      const payload = await readJsonBody<SavePayload>(req);
-      const { slug, data, expectedVersion } = payload;
+      const payload = await readJsonBody<Partial<SavePayload>>(req);
+      const { slug, file, data, expectedVersion, saveId } = payload;
       testo = payload.testo;
-      result = saveLettura({ contentDir, slug, input: data, testo, expectedVersion });
+      result = saveLettura({ contentDir, slug, file, input: data, testo, expectedVersion });
+      lastSaved = { slug: result.slug, path: relative(process.cwd(), result.path), contents: result.contents, saveId };
     } catch (error) {
       if (error instanceof LetturaSchemaError) {
         respondJson(res, 400, { issues: error.issues });

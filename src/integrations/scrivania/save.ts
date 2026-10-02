@@ -1,6 +1,8 @@
 import { existsSync, readdirSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { authorSurname } from '../../lib/lettura-spine.ts';
 import { LetturaSchemaError, parseLettura, type Lettura } from '../../schemas/lettura.ts';
+import { resolveEntryFile } from './entry-file.ts';
 import { fileVersion } from './version.ts';
 
 const KEBAB_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -14,11 +16,6 @@ function slugPart(value: string): string {
     .replace(/['’]/g, '-')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
-}
-
-function authorSurname(autore: string): string {
-  const words = autore.trim().split(/\s+/);
-  return words[words.length - 1] ?? autore;
 }
 
 function existingSlugs(contentDir: string): Set<string> {
@@ -68,6 +65,12 @@ export interface SaveParams {
   contentDir: string;
   /** The existing entry's slug, when editing. Absent for a new book. */
   slug?: string | undefined;
+  /**
+   * The existing entry's file name inside `contentDir`, when it is not `<slug>.md` (a hand-made
+   * `Il Nome.md`). Resolved against the directory's own listing, so it can only name a file that is
+   * already there. Defaults to `<slug>.md`.
+   */
+  file?: string | undefined;
   input: unknown;
   /**
    * The writing sheet's current draft (SPEC.md §6.4): when given, it replaces the body outright
@@ -87,6 +90,8 @@ export interface SaveParams {
 export interface SaveResult {
   slug: string;
   path: string;
+  /** The file exactly as written. */
+  contents: string;
   titolo: string;
   stato: string;
 }
@@ -100,44 +105,43 @@ function formatTesto(testo: string): string {
 /**
  * Validates with `parseLettura` (throws `LetturaSchemaError`, unchanged, on invalid input: no file
  * is written) and writes the book's file. A new book gets a fresh, exclusively-created slug
- * (SPEC.md §6.1; never overwrites); an edit keeps the file name it was given — validated as an
- * existing, kebab-case slug so it can't escape `contentDir`. Metadata-only edits (no `testo`)
+ * (SPEC.md §6.1; never overwrites); an edit keeps the file name it was given — resolved from
+ * the directory's listing (see `resolveEntryFile`) so it can't escape `contentDir`. Metadata-only edits (no `testo`)
  * never touch the body that follows the frontmatter; the writing sheet's edits (`testo` given)
  * replace it outright, without needing to read — or recognize — whatever body was there before.
  */
-export function saveLettura({ contentDir, slug, input, testo, expectedVersion }: SaveParams): SaveResult {
+export function saveLettura({ contentDir, slug, file, input, testo, expectedVersion }: SaveParams): SaveResult {
   const lettura = parseLettura(input);
   mkdirSync(contentDir, { recursive: true });
 
   if (slug === undefined) {
     const finalSlug = pickCreateSlug(lettura.titolo, lettura.autore, existingSlugs(contentDir));
     const path = join(contentDir, `${finalSlug}.md`);
+    const contents = serializeLettura(lettura, '');
     try {
       // 'wx': exclusive create, defense in depth against a slug that (despite the check above)
       // turns out to already exist — a create must never overwrite a file.
-      writeFileSync(path, serializeLettura(lettura, ''), { flag: 'wx' });
+      writeFileSync(path, contents, { flag: 'wx' });
     } catch (error) {
       if (isNodeError(error) && error.code === 'EEXIST') {
         throw new LetturaSchemaError([`il campo "titolo": esiste già un libro con lo slug "${finalSlug}"`]);
       }
       throw error;
     }
-    return { slug: finalSlug, path, titolo: lettura.titolo, stato: lettura.stato };
+    return { slug: finalSlug, path, contents, titolo: lettura.titolo, stato: lettura.stato };
   }
 
   if (!KEBAB_SLUG_RE.test(slug)) {
     throw new LetturaSchemaError([`il campo "slug": "${slug}" non è in kebab-case`]);
   }
-  const path = join(contentDir, `${slug}.md`);
-  if (!existsSync(path)) {
-    throw new LetturaSchemaError([`il campo "slug": nessun libro con lo slug "${slug}"`]);
-  }
+  const path = resolveEntryFile(contentDir, file ?? `${slug}.md`);
   if (testo !== undefined && expectedVersion !== undefined && fileVersion(readFileSync(path)) !== expectedVersion) {
     throw new LetturaSchemaError(['il file è cambiato nel frattempo: ricarica la pagina e riprova']);
   }
   const body = testo !== undefined ? formatTesto(testo) : readBody(path);
-  writeFileSync(path, serializeLettura(lettura, body));
-  return { slug, path, titolo: lettura.titolo, stato: lettura.stato };
+  const contents = serializeLettura(lettura, body);
+  writeFileSync(path, contents);
+  return { slug, path, contents, titolo: lettura.titolo, stato: lettura.stato };
 }
 
 function isNodeError(error: unknown): error is NodeJS.ErrnoException {

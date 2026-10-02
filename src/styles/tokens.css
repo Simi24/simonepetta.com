@@ -12,6 +12,8 @@
   --rule: light-dark(#cfcfcc, #2e2e2d);
   --surface: light-dark(#e2e2df, #1f1f1e);
   --paper: light-dark(#f6f6f4, #1b1b1a);
+  /* A bar fixed to the bottom edge: --bg with 8% --ink mixed in. */
+  --bar: light-dark(#dcdcda, #262626);
   /* The sheet raster figures sit on: light in both themes, since they are never inverted. */
   --sheet: light-dark(#ffffff, #ffffff);
 
@@ -26,6 +28,9 @@
   --tint-4-ink: light-dark(#161616, #ebebe8);
   --tint-5: light-dark(#d2d2cf, #3a3a39);
   --tint-5-ink: light-dark(#161616, #ebebe8);
+
+  /* The page's side gutter, and the edge of anything fixed to the viewport. */
+  --gutter: 20px;
 
   --font: 'Host Grotesk', system-ui, sans-serif;
 }

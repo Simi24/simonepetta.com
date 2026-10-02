@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { saveLettura } from '../src/integrations/scrivania/save.ts';
@@ -344,4 +344,76 @@ test('a metadata-only edit (no testo) is never blocked by expectedVersion: it do
   });
 
   assert.match(readFileSync(path, 'utf8'), /titolo: "Solo Metadati \(corretto\)"/);
+});
+
+const HAND_MADE = [
+  '---',
+  'titolo: "Il Nome"',
+  'autore: "Autore"',
+  'stato: letto',
+  'finito: "2026-09-25"',
+  '---',
+  '',
+  'Testo scritto a mano.',
+  '',
+].join('\n');
+
+test('editing an entry whose file name is hand-made writes that same file, never a new one', () => {
+  const contentDir = tempContentDir();
+  writeFileSync(join(contentDir, 'Il Nome.md'), HAND_MADE);
+
+  const result = saveLettura({
+    contentDir,
+    slug: 'il-nome',
+    file: 'Il Nome.md',
+    input: { titolo: 'Il Nome', autore: 'Autore', stato: 'letto', finito: '2026-09-26' },
+  });
+
+  assert.equal(result.slug, 'il-nome');
+  assert.deepEqual(readdirSync(contentDir), ['Il Nome.md']);
+  const written = readFileSync(join(contentDir, 'Il Nome.md'), 'utf8');
+  assert.match(written, /finito: "2026-09-26"/);
+  assert.ok(written.includes('Testo scritto a mano.'));
+});
+
+test('a sheet save on a hand-made file name checks the version of that file', () => {
+  const contentDir = tempContentDir();
+  writeFileSync(join(contentDir, 'Il Nome.md'), HAND_MADE);
+  const input = { titolo: 'Il Nome', autore: 'Autore', stato: 'letto', finito: '2026-09-26' };
+
+  assert.throws(
+    () => saveLettura({ contentDir, slug: 'il-nome', file: 'Il Nome.md', input, testo: 'Nuovo', expectedVersion: 'stale' }),
+    LetturaSchemaError,
+  );
+  assert.equal(readFileSync(join(contentDir, 'Il Nome.md'), 'utf8'), HAND_MADE);
+
+  saveLettura({ contentDir, slug: 'il-nome', file: 'Il Nome.md', input, testo: 'Nuovo', expectedVersion: fileVersion(HAND_MADE) });
+  assert.match(readFileSync(join(contentDir, 'Il Nome.md'), 'utf8'), /\nNuovo\n$/);
+});
+
+test('a file name that is not one of the content directory’s own markdown files is rejected, writing nothing', () => {
+  const contentDir = tempContentDir();
+  writeFileSync(join(contentDir, 'Il Nome.md'), HAND_MADE);
+  const input = { titolo: 'Il Nome', autore: 'Autore', stato: 'letto', finito: '2026-09-26' };
+
+  for (const file of ['../escaped.md', '/etc/passwd', 'sub/Il Nome.md', 'Il Nome.md/../x.md', 'Il Nome.txt', 'altro.md']) {
+    assert.throws(() => saveLettura({ contentDir, slug: 'il-nome', file, input }), LetturaSchemaError, file);
+  }
+  assert.deepEqual(readdirSync(contentDir), ['Il Nome.md']);
+  assert.equal(readFileSync(join(contentDir, 'Il Nome.md'), 'utf8'), HAND_MADE);
+});
+
+test('a directory that happens to be named like a markdown file is not an entry', () => {
+  const contentDir = tempContentDir();
+  mkdirSync(join(contentDir, 'cartella.md'));
+  assert.throws(
+    () =>
+      saveLettura({
+        contentDir,
+        slug: 'cartella',
+        file: 'cartella.md',
+        input: { titolo: 'Titolo', autore: 'Autore', stato: 'in-corso', iniziato: '2026-09-14' },
+      }),
+    LetturaSchemaError,
+  );
 });
