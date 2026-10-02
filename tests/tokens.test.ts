@@ -46,3 +46,16 @@ for (const theme of ['light', 'dark'] as const) {
     }
   });
 }
+
+// The red accent (SPEC.md §5.1) is only ever a thin line, so its bar is the 3:1 of non-text UI
+// (WCAG 1.4.11); the stricter 4.5:1 is kept so it also reads as text-sized contrast.
+const RED = { light: '#c42b1c', dark: '#ff6a55' } as const;
+
+for (const theme of ['light', 'dark'] as const) {
+  test(`--red is the agreed color and passes 4.5:1 on the page background in the ${theme} theme`, () => {
+    const colors = tokens()[theme];
+    assert.equal(colors.get('red'), RED[theme]);
+    const ratio = contrast(colors.get('red') ?? '', colors.get('bg') ?? '');
+    assert.ok(ratio >= AA_TEXT, `--red on --bg is ${ratio.toFixed(2)}:1 in ${theme}`);
+  });
+}
