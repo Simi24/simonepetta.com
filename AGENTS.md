@@ -22,7 +22,7 @@ The author's personal site: readings, university notes, and (v2) a per-course ch
 - **Node 24 LTS** (`.nvmrc`, the single place the version lives). TypeScript strictest; named exports (Astro and tool configs keep their required default export). Exception: `src/scripts/theme.js` is plain JS because it is inlined verbatim into every page. Exception: `public/scripts/cerca.js` is plain JS because it is served as-is from `public/` (never bundled or compiled) as a linked file, so the byte budget measures it and the one-inline-script rule holds.
 - Micro-files: many small, focused components and modules.
 - Italian for readings, notes and their UI; English for code, comments, commits, docs and PRs.
-- `SITE_INDEXABLE` (build-time env, default `false`) drops `noindex`. It stays off until the v0 launch and is never set on previews.
+- `SITE_INDEXABLE` (build-time env, default `false`) drops `noindex` and loads the analytics beacon. Since the v0 launch (2026-10-02) the `site` workflow sets it for the production build on `main` only; it is never set on PR builds, previews or tests.
 
 ## Testing
 
