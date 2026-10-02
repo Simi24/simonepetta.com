@@ -44,11 +44,19 @@ test('a course with fonti shows its sources and the removal contact', () => {
 });
 
 test('a course with no fonti lists none, but still shows the removal contact (SPEC.md §7.1)', () => {
-  const dist = buildSite(FIXTURES_APPUNTI);
+  const dist = buildSite({ ...FIXTURES_APPUNTI, APPUNTI_REMOVAL_CONTACT: '' });
   const html = read(dist, 'appunti/quaderno-scansionato/index.html');
   assert.doesNotMatch(html, /<li[\s>]/, 'no fonti were declared, so no <li> should render');
   assert.match(html, /class="removal-contact"/);
   assert.match(html, /Contatto per la rimozione: lo aggiunge l'autore\./);
+});
+
+test('a build without overrides shows the committed removal contact', () => {
+  // The address the author chose on 2026-10-02.
+  const { APPUNTI_REMOVAL_CONTACT: _override, ...env } = process.env;
+  assert.equal(_override, undefined, 'run this test without APPUNTI_REMOVAL_CONTACT set');
+  const html = read(buildSite({ ...env, ...FIXTURES_APPUNTI }), 'appunti/pdf-corso/index.html');
+  assert.match(html, /Per richieste di rimozione: pettasimonepaolo@gmail\.com/);
 });
 
 test('a removal contact set via config replaces the placeholder', () => {

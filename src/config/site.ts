@@ -7,21 +7,20 @@ export const site = {
   },
   analytics: {
     /**
-     * Cloudflare Web Analytics public site token (SPEC.md §12.4), committed here once the
-     * author creates the site by hand in the dashboard. Empty for now, so the beacon never
-     * renders. Overridable by env only so build-based tests can exercise the "token set" case
-     * without a real one committed (SPEC.md #30); production never sets this env var.
+     * Cloudflare Web Analytics public site token (SPEC.md §12.4), from the site the author
+     * created in the dashboard. Public by design: it ships in every page's HTML. The beacon
+     * still renders only on indexable builds (the launch). Overridable by env only so
+     * build-based tests can exercise both cases (SPEC.md #30); production never sets it.
      */
-    cloudflareBeaconToken: process.env['CLOUDFLARE_BEACON_TOKEN'] ?? '',
+    cloudflareBeaconToken: process.env['CLOUDFLARE_BEACON_TOKEN'] ?? '6a0514e58e274236a0e06d1b6f4ae839',
   },
   appunti: {
     /**
-     * Removal contact for third-party course material (SPEC.md §7.1, §7.2): empty until the
-     * author provides one, shown on course pages as a placeholder meanwhile. Overridable by
-     * env only so build-based tests can exercise the "contact set" case without a real one
-     * committed, the same pattern as the analytics token above.
+     * Removal contact for third-party course material (SPEC.md §7.1, §7.2), chosen by the
+     * author; an empty value shows a placeholder on course pages. Overridable by env only so
+     * build-based tests can exercise both cases, the same pattern as the analytics token above.
      */
-    removalContact: process.env['APPUNTI_REMOVAL_CONTACT'] ?? '',
+    removalContact: process.env['APPUNTI_REMOVAL_CONTACT'] ?? 'pettasimonepaolo@gmail.com',
     // University and degree programme names (SPEC.md §7.2).
     university: 'Università degli Studi di Milano',
     degreeProgrammes: {
