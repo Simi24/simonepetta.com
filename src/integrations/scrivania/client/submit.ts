@@ -23,8 +23,8 @@ export interface SubmitOptions {
  */
 export async function submitLettura({ payload, heading, errorsBox, onSaved }: SubmitOptions): Promise<void> {
   clear(errorsBox);
-  expectSavedView(heading);
-  const result = await postSave(SAVE_PATH, payload);
+  const saveId = expectSavedView(heading);
+  const result = await postSave(SAVE_PATH, { ...payload, saveId });
   if (result.ok) {
     if (result.warning) window.alert(result.warning);
     onSaved?.();

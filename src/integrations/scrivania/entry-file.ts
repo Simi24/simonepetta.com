@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { LetturaSchemaError } from '../../schemas/lettura.ts';
 
@@ -10,7 +10,7 @@ import { LetturaSchemaError } from '../../schemas/lettura.ts';
  */
 export function resolveEntryFile(contentDir: string, file: string): string {
   const listed = existsSync(contentDir) ? readdirSync(contentDir).find((name) => name === file && name.endsWith('.md')) : undefined;
-  if (listed === undefined) {
+  if (listed === undefined || !statSync(join(contentDir, listed)).isFile()) {
     throw new LetturaSchemaError([`il campo "file": nessun libro nel file "${file}"`]);
   }
   return join(contentDir, listed);

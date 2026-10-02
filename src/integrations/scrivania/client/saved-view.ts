@@ -2,20 +2,28 @@ import { SAVE_PATH } from '../constants.ts';
 import type { SavedFile } from '../payload.ts';
 import { el } from './dom.ts';
 
-const PENDING_KEY = 'scrivania-saved-heading';
+const PENDING_KEY = 'scrivania-saved';
+
+export interface ExpectedSavedView {
+  heading: string;
+  /** Sent with the save and echoed by the server: ties the view to this save. */
+  id: string;
+}
 
 /**
  * The dev server reloads every open page as soon as a save is served, which may be before the
  * save's own response reaches the page that made it. So the saved view is not drawn from that
  * response: the page notes it expects one before saving, and the page that loads next draws it.
- * Per tab (`sessionStorage`), so another tab's reload never shows it.
+ * Per tab (`sessionStorage`); returns the id to send with the save.
  */
-export function expectSavedView(heading: string): void {
+export function expectSavedView(heading: string): string {
+  const id = crypto.randomUUID();
   try {
-    sessionStorage.setItem(PENDING_KEY, heading);
+    sessionStorage.setItem(PENDING_KEY, JSON.stringify({ heading, id } satisfies ExpectedSavedView));
   } catch {
     // Storage blocked: the save still works, the shelf just shows without the saved view.
   }
+  return id;
 }
 
 export function forgetSavedView(): void {
@@ -26,10 +34,12 @@ export function forgetSavedView(): void {
   }
 }
 
-/** The heading of the saved view this page was loaded to show, if any. */
-export function expectedSavedHeading(): string | null {
+/** The saved view this page was loaded to show, if any. Read once: a later reload shows the shelf. */
+export function takeExpectedSavedView(): ExpectedSavedView | null {
   try {
-    return sessionStorage.getItem(PENDING_KEY);
+    const raw = sessionStorage.getItem(PENDING_KEY);
+    sessionStorage.removeItem(PENDING_KEY);
+    return raw === null ? null : (JSON.parse(raw) as ExpectedSavedView);
   } catch {
     return null;
   }
@@ -55,7 +65,9 @@ export function buildSavedView(heading: string, saved: SavedFile, onBack: () => 
 
   const steps = el('div', 'steps');
   const hint = el('p', undefined, 'Per pubblicarlo, dal terminale: ');
-  hint.append(el('code', undefined, 'git commit -am "letture: …"'), ' e poi push. Il deploy parte da solo.');
+  // `add` first: a new entry is an untracked file, which `commit -a` would leave out.
+  const folder = saved.path.slice(0, saved.path.lastIndexOf('/'));
+  hint.append(el('code', undefined, `git add ${folder}`), ' e ', el('code', undefined, 'git commit -m "letture: …"'), ', poi push. Il deploy parte da solo.');
   steps.appendChild(hint);
   wrap.appendChild(steps);
 

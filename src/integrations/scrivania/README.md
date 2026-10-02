@@ -20,8 +20,9 @@ tab reloads the open sheet only through the unsaved-text guard".
 
 After a save the page shows the file that was written (`client/saved-view.ts`). That page is not the one
 the save's response reaches: the reload described above can replace it first. So the page notes in
-`sessionStorage` that it expects a saved view, and whichever page loads next draws it, reading the file
-from `GET /__scrivania/save` (the last save, kept by `request-handler.ts`). A failed save clears the note.
+`sessionStorage` that it expects a saved view, with an id it also sends with the save. The next page to
+load reads and clears the note, and draws the view only if `GET /__scrivania/save` (the last save, kept by
+`request-handler.ts`) echoes the same id; otherwise it shows the shelf. A failed save clears the note.
 
 ## Which file an edit writes
 

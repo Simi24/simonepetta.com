@@ -35,10 +35,10 @@ export function createSaveHandler({ contentDir, onSaved }: SaveHandlerOptions) {
     let testo: string | undefined;
     try {
       const payload = await readJsonBody<Partial<SavePayload>>(req);
-      const { slug, file, data, expectedVersion } = payload;
+      const { slug, file, data, expectedVersion, saveId } = payload;
       testo = payload.testo;
       result = saveLettura({ contentDir, slug, file, input: data, testo, expectedVersion });
-      lastSaved = { slug: result.slug, path: relative(process.cwd(), result.path), contents: result.contents };
+      lastSaved = { slug: result.slug, path: relative(process.cwd(), result.path), contents: result.contents, saveId };
     } catch (error) {
       if (error instanceof LetturaSchemaError) {
         respondJson(res, 400, { issues: error.issues });

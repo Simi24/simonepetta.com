@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { saveLettura } from '../src/integrations/scrivania/save.ts';
@@ -401,4 +401,19 @@ test('a file name that is not one of the content directory’s own markdown file
   }
   assert.deepEqual(readdirSync(contentDir), ['Il Nome.md']);
   assert.equal(readFileSync(join(contentDir, 'Il Nome.md'), 'utf8'), HAND_MADE);
+});
+
+test('a directory that happens to be named like a markdown file is not an entry', () => {
+  const contentDir = tempContentDir();
+  mkdirSync(join(contentDir, 'cartella.md'));
+  assert.throws(
+    () =>
+      saveLettura({
+        contentDir,
+        slug: 'cartella',
+        file: 'cartella.md',
+        input: { titolo: 'Titolo', autore: 'Autore', stato: 'in-corso', iniziato: '2026-09-14' },
+      }),
+    LetturaSchemaError,
+  );
 });

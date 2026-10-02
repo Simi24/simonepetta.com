@@ -111,11 +111,12 @@ test('a save naming a file outside the content directory is refused, writing not
 });
 
 test('asking for the last save answers with the file as written', async () => {
-  await post({ data: { titolo: 'Ultimo Salvato', autore: 'Autore', stato: 'in-corso', iniziato: '2026-09-14' } });
+  await post({ saveId: 'id-1', data: { titolo: 'Ultimo Salvato', autore: 'Autore', stato: 'in-corso', iniziato: '2026-09-14' } });
   const res = await fetch(url);
   assert.equal(res.status, 200);
-  const last = (await res.json()) as { slug: string; path: string; contents: string };
+  const last = (await res.json()) as { slug: string; path: string; contents: string; saveId: string };
   assert.equal(last.slug, 'ultimo-salvato');
+  assert.equal(last.saveId, 'id-1');
   assert.match(last.path, /ultimo-salvato\.md$/);
   assert.equal(last.contents, readFileSync(join(contentDir, 'ultimo-salvato.md'), 'utf8'));
 });

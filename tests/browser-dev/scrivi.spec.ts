@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
-import { saveAndReload, spine, uniqueTitle } from './desk.ts';
+import { saveAndReload, saveBook, spine, uniqueTitle } from './desk.ts';
 
 // The one flow that exists only under `astro dev` (SPEC.md §6.4): everything else about the
 // writing desk is covered at the `save.ts` unit seam and the build-output seam.
@@ -49,10 +49,39 @@ test('a save shows the saved view: the file, what is in it and how to publish, t
   await expect(page.getByRole('heading', { name: 'Sul comodino.' })).toBeVisible();
   await expect(page.locator('.path')).toHaveText(/\.md$/);
   await expect(page.locator('.file')).toContainText(`titolo: "${titolo}"`);
-  await expect(page.locator('.steps')).toContainText('git commit -am "letture: …"');
+  // A new entry is an untracked file: the hint must add it, which `commit -a` does not.
+  const path = (await page.locator('.path').textContent()) ?? '';
+  await expect(page.locator('.steps')).toContainText(`git add ${path.slice(0, path.lastIndexOf('/'))}`);
+  await expect(page.locator('.steps')).toContainText('git commit -m "letture: …"');
   await expect(page.locator('.steps')).toContainText('Il deploy parte da solo.');
   await expect(page.locator('.shelf')).toBeHidden();
 
   await page.getByRole('button', { name: 'Torna alla mensola' }).click();
   await expect(spine(page, titolo)).toBeVisible();
+});
+
+test('the saved view is shown once: reloading the page afterwards shows the shelf', async ({ page }, testInfo) => {
+  const titolo = uniqueTitle('Libro visto una volta', testInfo);
+  await page.goto('/scrivi/');
+  await page.getByRole('button', { name: '+ aggiungi' }).click();
+  await page.locator('#nf-t').fill(titolo);
+  await page.locator('#nf-a').fill('Autore di Prova');
+  await page.getByRole('button', { name: 'Inizia a leggerlo' }).click();
+  await expect(page.getByRole('heading', { name: 'Sul comodino.' })).toBeVisible();
+
+  await page.reload();
+  await expect(spine(page, titolo)).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sul comodino.' })).toHaveCount(0);
+});
+
+test('a saved view only shows the save that asked for it', async ({ page, request }, testInfo) => {
+  const titolo = uniqueTitle('Libro di un altro salvataggio', testInfo);
+  await page.goto('/scrivi/');
+  // A flag left behind by an earlier save, then someone else's save is the last one.
+  await page.evaluate(() => sessionStorage.setItem('scrivania-saved', JSON.stringify({ heading: 'Modificato.', id: 'altro' })));
+  await saveBook(request, { data: { titolo, autore: 'Autore di Prova', stato: 'in-corso', iniziato: '2026-09-14' } });
+
+  await page.goto('/scrivi/');
+  await expect(spine(page, titolo)).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Modificato.' })).toHaveCount(0);
 });

@@ -5,7 +5,7 @@ import { buildDropForm } from './forms/drop.ts';
 import { buildEditForm } from './forms/edit.ts';
 import { buildFinishForm } from './forms/finish.ts';
 import { buildNewForm } from './forms/new.ts';
-import { buildSavedView, expectedSavedHeading, fetchLastSaved, forgetSavedView } from './saved-view.ts';
+import { buildSavedView, fetchLastSaved, takeExpectedSavedView, type ExpectedSavedView } from './saved-view.ts';
 import { renderShelf, type Selection } from './shelf.ts';
 import { buildSheet } from './sheet/index.ts';
 
@@ -16,15 +16,12 @@ function readDeskData(): DeskData {
 }
 
 /** Shows the file the last save wrote instead of the shelf, when this page was loaded by a save. */
-async function showSavedView(homeEl: HTMLElement, savedEl: HTMLElement, heading: string): Promise<void> {
+async function showSavedView(homeEl: HTMLElement, savedEl: HTMLElement, expected: ExpectedSavedView): Promise<void> {
   const saved = await fetchLastSaved();
-  if (saved === null) {
-    forgetSavedView();
-    return;
-  }
+  // Someone else's save (or none) is not this page's: the shelf stays.
+  if (saved === null || saved.saveId !== expected.id) return;
   savedEl.appendChild(
-    buildSavedView(heading, saved, () => {
-      forgetSavedView();
+    buildSavedView(expected.heading, saved, () => {
       clear(savedEl);
       savedEl.hidden = true;
       homeEl.hidden = false;
@@ -107,6 +104,6 @@ export function initScrivania(): void {
   drawShelf();
   renderPanel();
 
-  const savedHeading = expectedSavedHeading();
-  if (savedHeading !== null) void showSavedView(homeEl, savedEl, savedHeading);
+  const expected = takeExpectedSavedView();
+  if (expected !== null) void showSavedView(homeEl, savedEl, expected);
 }
