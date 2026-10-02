@@ -1,3 +1,5 @@
+import type { PreviewPayload, SavePayload } from '../payload.ts';
+
 export interface SaveOk {
   ok: true;
   slug: string;
@@ -12,21 +14,20 @@ export interface SaveErr {
 
 export type SaveResponse = SaveOk | SaveErr;
 
-/** Posts a book's frontmatter (and, from the writing sheet, its body) to the dev-server save handler (SPEC.md §6.4). */
-export async function postSave(
-  savePath: string,
-  payload: { slug?: string | undefined; data: Record<string, unknown>; testo?: string | undefined; expectedVersion?: string | undefined },
-): Promise<SaveResponse> {
-  let res: Response;
+const UNREACHABLE: SaveErr = { ok: false, issues: ['il server di sviluppo non risponde'] };
+
+async function postJson(path: string, payload: SavePayload | PreviewPayload): Promise<Response | undefined> {
   try {
-    res = await fetch(savePath, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    return await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   } catch {
-    return { ok: false, issues: ['il server di sviluppo non risponde'] };
+    return undefined;
   }
+}
+
+/** Posts a book's frontmatter (and, from the writing sheet, its body) to the dev-server save handler (SPEC.md §6.4). */
+export async function postSave(savePath: string, payload: SavePayload): Promise<SaveResponse> {
+  const res = await postJson(savePath, payload);
+  if (res === undefined) return UNREACHABLE;
   const body = (await res.json().catch(() => ({}))) as { slug?: string; issues?: string[]; warning?: string };
   if (res.ok && body.slug) return { ok: true, slug: body.slug, warning: body.warning };
   return { ok: false, issues: body.issues ?? [`errore HTTP ${res.status}`] };
@@ -40,17 +41,9 @@ export interface PreviewOk {
 export type PreviewResponse = PreviewOk | SaveErr;
 
 /** Asks the dev server to render the sheet's current draft with the real `Post` component (SPEC.md §6.4). */
-export async function postPreview(previewPath: string, payload: { data: Record<string, unknown>; testo: string }): Promise<PreviewResponse> {
-  let res: Response;
-  try {
-    res = await fetch(previewPath, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-  } catch {
-    return { ok: false, issues: ['il server di sviluppo non risponde'] };
-  }
+export async function postPreview(previewPath: string, payload: PreviewPayload): Promise<PreviewResponse> {
+  const res = await postJson(previewPath, payload);
+  if (res === undefined) return UNREACHABLE;
   const body = (await res.json().catch(() => ({}))) as { html?: string; issues?: string[] };
   if (res.ok && typeof body.html === 'string') return { ok: true, html: body.html };
   return { ok: false, issues: body.issues ?? [`errore HTTP ${res.status}`] };

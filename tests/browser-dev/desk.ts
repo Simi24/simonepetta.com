@@ -22,14 +22,15 @@ interface SavePayload {
 }
 
 /**
- * Clicks a button that saves, and resolves once the page has been replaced by a fresh `/scrivi/`
- * (its panel starts hidden; a failed save leaves it open and this times out). `waitForURL` cannot
- * wait for that: the sheet is already on `/scrivi/`, so it matches at once and the next click
- * lands on the page about to be replaced. The save response is not awaited: the dev server's
- * reload can replace the page before it arrives.
+ * Clicks a button that saves, waits for the saved view the fresh `/scrivi/` shows, and goes back
+ * to the shelf. `waitForURL` cannot wait for that: the sheet is already on `/scrivi/`, so it
+ * matches at once and the next click lands on the page about to be replaced. The save response
+ * is not awaited: the dev server's reload can replace the page before it arrives, which the saved
+ * view is built to survive. A failed save leaves the form open and this times out.
  */
 export async function saveAndReload(page: Page, saveButton: Locator): Promise<void> {
   await saveButton.click();
+  await page.getByRole('button', { name: 'Torna alla mensola' }).click();
   await expect(page.locator('#scrivania-panel')).toBeHidden();
 }
 

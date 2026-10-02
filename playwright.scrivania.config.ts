@@ -3,7 +3,10 @@ import { makeTempDir } from './tests/support/temp-root.ts';
 
 const port = 4591;
 // A fresh, empty content dir per run: the writing desk must never touch src/content/letture/.
-const contentDir = makeTempDir('scrivania-dev-');
+// Workers re-evaluate this file: they reuse the main process's dir through the environment, so
+// the specs can seed files (e.g. a hand-made file name) straight into the dir the server reads.
+const contentDir = process.env['LETTURE_CONTENT_DIR'] ?? makeTempDir('scrivania-dev-');
+process.env['LETTURE_CONTENT_DIR'] = contentDir;
 
 export default defineConfig({
   testDir: 'tests/browser-dev',

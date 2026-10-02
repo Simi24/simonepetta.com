@@ -1,0 +1,100 @@
+/* The shelf of spines (SPEC.md §6.1): drawn by the readings page and by the writing desk. */
+.shelf-wrap {
+  overflow-x: auto;
+  margin-top: 0.5rem;
+}
+
+.shelf {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  min-height: 8rem;
+  min-width: min-content;
+  padding: 1.6rem 0.4rem 0;
+  border-bottom: 6px solid var(--ink);
+}
+
+.spine {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 0;
+  border-radius: 1px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.1;
+  text-decoration: none;
+  border: 0;
+  position: relative;
+  transition: translate 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spine {
+    transition: none;
+  }
+}
+
+.spine:is(a[href], button):hover,
+.spine:is(a[href], button):focus-visible,
+.spine[aria-pressed='true'] {
+  translate: 0 -8px;
+}
+
+.spine > span {
+  overflow: hidden;
+  max-height: 100%;
+}
+
+.spine__author {
+  font-weight: 400;
+}
+
+.spine--in-corso::after {
+  content: '';
+  position: absolute;
+  bottom: -1.1rem;
+  left: 42%;
+  width: 0.5rem;
+  height: 1.6rem;
+  background: var(--ink);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+}
+
+.spine--abbandonato {
+  transform: rotate(172deg);
+  margin-left: 1.2rem;
+}
+
+.shelf-wrap + .caption {
+  margin-top: 0.7rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.spine--tint-1 {
+  background: var(--tint-1);
+  color: var(--tint-1-ink);
+}
+
+.spine--tint-2 {
+  background: var(--tint-2);
+  color: var(--tint-2-ink);
+}
+
+.spine--tint-3 {
+  background: var(--tint-3);
+  color: var(--tint-3-ink);
+}
+
+.spine--tint-4 {
+  background: var(--tint-4);
+  color: var(--tint-4-ink);
+}
+
+.spine--tint-5 {
+  background: var(--tint-5);
+  color: var(--tint-5-ink);
+}

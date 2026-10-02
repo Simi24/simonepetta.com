@@ -9,7 +9,7 @@ The author's personal site: readings, university notes, and (v2) a per-course ch
 - **The author writes, never an LLM** (`SPEC.md` §1.2 point 3). Agents write functional interface copy (labels, captions, empty states, errors). Anything in the author's voice or in first person (section ledes, bio, about texts, reading reactions) is a visible placeholder styled with `.placeholder` until the author writes it.
 - **Site and private wiki are independent.** Never read, import or sync anything from `Simi24/llm-wiki`.
 - **No chat model from Anthropic** in v2: the models are decided in `SPEC.md` §9.3.
-- **Static by default.** No Astro route is dynamic; the only dynamic endpoint is the separate chat Worker on `/api/*` (v2).
+- **Static by default.** No Astro route is dynamic; the only dynamic endpoint is the separate chat Worker on `/api/*` (v2). One dev-only exception: the writing desk's `/scrivi` route is `prerender: false` and exists only under `astro dev` (`SPEC.md` §6.4); `build` and `preview` never register it, and a test fails if any trace reaches `dist`.
 - **Dependencies**: only those listed in `SPEC.md` §4.1. Any other one must be justified in `SPEC.md` first, in the same PR.
 - **Nav links appear only when their page exists.** A section is added to `src/config/nav.ts` in the same change that adds its page; the link test fails otherwise.
 - **No accent color, no Tailwind, no MDX, no React.** Plain CSS with the tokens in `src/styles/tokens.css`; every color is a `light-dark()` token.
@@ -28,6 +28,7 @@ The author's personal site: readings, university notes, and (v2) a per-course ch
 - **TDD**: red, then green, one behavior at a time, at the seams below. No test against internals.
 - **`npm test`**: `node:test` files in `tests/`, run serially (parallel Astro builds race on the shared cache). Build-based tests build the site into a temporary directory through `tests/support/built-site.ts` and assert on the output.
 - **`npm run test:browser`**: Playwright against a fresh build served by `astro preview` (never a reused server).
+- **`npm run test:browser-dev`**: the one exception to the line above, for the writing desk, which exists only under `astro dev`: `playwright.scrivania.config.ts` starts its own foreground `astro dev` on a fixed port with `LETTURE_CONTENT_DIR` pointing at a temporary directory (never `src/content/letture/`), one worker.
 - Seams in use: the built output (`dist`), behavior in a real browser, the token contract file, schema modules shared with the writing desk (tested as units, e.g. `src/schemas/lettura.ts`).
 - No network and no credentials in tests.
 
