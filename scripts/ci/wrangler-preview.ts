@@ -1,6 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
 
-type WranglerEntry = { type?: string; message?: string; error?: { message?: string } } & Record<string, unknown>;
+type WranglerEntry = {
+  type?: string;
+  message?: string;
+  error?: { message?: string };
+  preview_url?: string;
+} & Record<string, unknown>;
 
 type UploadResult = {
   status: 'uploaded' | 'worker-missing' | 'failed';
@@ -22,9 +27,8 @@ function parseNdjson(ndjson: string): WranglerEntry[] {
     });
 }
 
-function findUrl(entry: WranglerEntry): string {
-  const match = JSON.stringify(entry).match(/https?:\/\/[^"\\]+/);
-  return match ? match[0] : '';
+function messageOf(entry: WranglerEntry): string {
+  return entry.message ?? entry.error?.message ?? '';
 }
 
 // SPEC.md §11 / the site workflow: `wrangler versions upload` fails the
@@ -33,8 +37,7 @@ function findUrl(entry: WranglerEntry): string {
 // of a Worker that does not yet exist. Please run the `deploy` command
 // first."). Match on the stable part of that message, not the whole string.
 function isMissingWorker(entry: WranglerEntry): boolean {
-  const message = entry.message ?? entry.error?.message ?? '';
-  return message.includes('does not yet exist');
+  return messageOf(entry).includes('does not yet exist');
 }
 
 /**
@@ -45,7 +48,11 @@ export function interpretUpload(ndjson: string): UploadResult {
   const entries = parseNdjson(ndjson);
   const upload = [...entries].reverse().find((entry) => entry.type === 'version-upload');
   if (upload) {
-    return { status: 'uploaded', previewUrl: findUrl(upload), message: '' };
+    // An upload that reports success without a preview URL must not end in an empty PR comment.
+    if (!upload.preview_url) {
+      return { status: 'failed', previewUrl: '', message: 'wrangler reported a version-upload without a preview_url' };
+    }
+    return { status: 'uploaded', previewUrl: upload.preview_url, message: '' };
   }
 
   const failure = [...entries].reverse().find((entry) => entry.type === 'command-failed');
@@ -54,13 +61,13 @@ export function interpretUpload(ndjson: string): UploadResult {
   }
 
   const message = failure
-    ? (failure.message ?? failure.error?.message ?? JSON.stringify(failure))
+    ? (messageOf(failure) || JSON.stringify(failure))
     : 'wrangler produced no version-upload or command-failed entry';
   return { status: 'failed', previewUrl: '', message };
 }
 
 // CLI: reads the ND-JSON file wrangler wrote and prints `$GITHUB_OUTPUT` lines.
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.main) {
   const path = process.argv[2];
   if (!path) {
     console.error('usage: wrangler-preview.ts <ndjson-file>');
