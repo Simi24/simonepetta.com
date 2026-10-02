@@ -16,12 +16,11 @@ export const site = {
   },
   appunti: {
     /**
-     * Removal contact for third-party course material (SPEC.md §7.1, §7.2): empty until the
-     * author provides one, shown on course pages as a placeholder meanwhile. Overridable by
-     * env only so build-based tests can exercise the "contact set" case without a real one
-     * committed, the same pattern as the analytics token above.
+     * Removal contact for third-party course material (SPEC.md §7.1, §7.2), chosen by the
+     * author; an empty value shows a placeholder on course pages. Overridable by env only so
+     * build-based tests can exercise both cases, the same pattern as the analytics token above.
      */
-    removalContact: process.env['APPUNTI_REMOVAL_CONTACT'] ?? '',
+    removalContact: process.env['APPUNTI_REMOVAL_CONTACT'] ?? 'pettasimonepaolo@gmail.com',
     // University and degree programme names (SPEC.md §7.2).
     university: 'Università degli Studi di Milano',
     degreeProgrammes: {
