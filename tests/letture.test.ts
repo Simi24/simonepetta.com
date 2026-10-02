@@ -27,9 +27,10 @@ test('the nav links to /letture/', () => {
   assert.match(html, /<nav[^>]*>[\s\S]*<a href="\/letture\/"/);
 });
 
-test('the lede is a placeholder, not the prototype’s copy', () => {
+test('the lede is the author-approved text, not a placeholder or the prototype’s copy', () => {
   const html = lettureHtml();
-  assert.match(html, /<p class="lede placeholder[^"]*"[^>]*>/);
+  assert.match(html, /<p class="lede"[^>]*>Tutti i libri che leggo, anche quelli che lascio a metà\./);
+  assert.doesNotMatch(html, /class="[^"]*placeholder/);
   assert.doesNotMatch(html, /Tutto quello che leggo/);
 });
 

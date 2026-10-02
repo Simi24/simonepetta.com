@@ -1,4 +1,5 @@
 ---
+import { projectDescriptions } from '../../config/about-texts.ts';
 import { projects } from '../../config/projects.ts';
 
 interface Props {
@@ -6,9 +7,6 @@ interface Props {
 }
 
 const { lang = 'it' } = Astro.props;
-// The project name and link are facts; the description is author-voice and stays a
-// placeholder until the author writes it (SPEC.md §1.2).
-const placeholder = lang === 'en' ? 'Description: written by the author.' : "Descrizione: la scrive l'autore.";
 ---
 
 <section class="block">
@@ -17,7 +15,7 @@ const placeholder = lang === 'en' ? 'Description: written by the author.' : "Des
     {
       projects.map((project) => (
         <li>
-          <a href={project.href}>{project.name}</a> <span class="placeholder">{placeholder}</span>
+          <a href={project.href}>{project.name}</a> <span>{projectDescriptions[lang][project.name]}</span>
         </li>
       ))
     }

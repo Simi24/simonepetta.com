@@ -136,9 +136,16 @@ blockquote p {
   color: var(--muted);
 }
 
+.timeline,
+.projects {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 .timeline li {
   display: grid;
-  grid-template-columns: 6rem 1fr;
+  grid-template-columns: 7rem 1fr;
   gap: 1rem;
   padding-block: 0.2rem;
 }
@@ -146,6 +153,7 @@ blockquote p {
 .when {
   font-variant-numeric: tabular-nums;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .projects li a {
@@ -153,8 +161,13 @@ blockquote p {
   font-size: 1.3rem;
 }
 
+.projects li {
+  padding-block: 0.2rem 0.6rem;
+}
+
 .projects span {
   display: block;
+  color: var(--muted);
 }
 
 @media (max-width: 860px) {

@@ -14,7 +14,7 @@ export const colophon: { it: readonly ColophonLine[]; en: readonly ColophonLine[
     { term: 'Appunti', detail: 'LaTeX convertito in HTML con LaTeXML, fuori dalla build del sito.' },
     { term: 'Costruzione', detail: 'Astro, output statico.' },
     { term: 'Hosting', detail: 'Cloudflare Workers.' },
-    { term: 'Scrittura', detail: 'Markdown, da una scrivania locale; testi scritti a mano, senza modelli linguistici.' },
+    { term: 'Scrittura', detail: 'Markdown, da una scrivania locale.' },
   ],
   en: [
     { term: 'Typeface', detail: 'Host Grotesk.' },
@@ -22,6 +22,6 @@ export const colophon: { it: readonly ColophonLine[]; en: readonly ColophonLine[
     { term: 'Notes', detail: 'LaTeX converted to HTML with LaTeXML, outside the site build.' },
     { term: 'Build', detail: 'Astro, static output.' },
     { term: 'Hosting', detail: 'Cloudflare Workers.' },
-    { term: 'Writing', detail: 'Markdown, from a local writing desk; texts written by hand, without language models.' },
+    { term: 'Writing', detail: 'Markdown, from a local writing desk.' },
   ],
 };
