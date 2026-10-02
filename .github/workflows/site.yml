@@ -51,6 +51,17 @@ jobs:
           include-hidden-files: true
           retention-days: 7
 
+  infra:
+    # Terraform fmt and validate only: no backend, no credentials. The deploy does not wait for it.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.14.6
+          terraform_wrapper: false
+      - run: scripts/ci/infra-check.sh
+
   deploy:
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
