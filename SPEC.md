@@ -540,7 +540,7 @@ Found while writing this document and by the cold read (an agent with no context
 25. **HTML stops at two courses** (`gpucomputing`, `elaborazione-segnali`): readers download the PDF, conversions cost hours each (§7.1, S9).
 
 **Confirmed by the author (2026-10-02)**
-26. **Red accent on interaction**: one `--red` token, used only for the hovered link underline, the focus outline and the current nav item underline; "No accent color" is replaced (§5.1, [#88](https://github.com/Simi24/simonepetta.com/issues/88)).
+27. **Red accent on interaction**: one `--red` token, used only for the hovered link underline, the focus outline and the current nav item underline; "No accent color" is replaced (§5.1, [#88](https://github.com/Simi24/simonepetta.com/issues/88)).
 
 **Applied by default**
 4. **Theme toggle vs JS budget**: one inline theme script ≤ 1 KB is a declared budget exception (§5.1, §12.2).
