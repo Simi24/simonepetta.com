@@ -110,6 +110,7 @@ appunti/<slug>/
   src/                      only if converted: the canonical .tex
   build/                    only if converted: pipeline output, committed
 pipeline/                   Dockerfile (LaTeXML via BookML) + conversion and check scripts
+scripts/                    build-time and CI scripts: ci/ (preview and workflow checks), og/, favicon/, quality/ (gates), setup-cloudflare.sh
 workers/api/                v2: the chat Worker
 agent/                      v2: the Python Lambda
 infra/                      Terraform (Cloudflare + AWS providers)

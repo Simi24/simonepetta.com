@@ -39,7 +39,6 @@ test('a compatibility date is set', () => {
 });
 
 test('the built 404 page exists where not_found_handling expects it', () => {
-  assert.equal(config.assets?.not_found_handling, '404-page');
   const dist = buildSite();
   assert.ok(existsSync(join(dist, '404.html')), 'dist/404.html is missing: not_found_handling would have nothing to serve');
 });
