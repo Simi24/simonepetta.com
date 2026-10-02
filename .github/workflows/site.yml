@@ -34,6 +34,14 @@ jobs:
         # SPEC.md §6.4: the desk only exists under `astro dev` — its own fresh, foreground
         # instance (see playwright.scrivania.config.ts), never reusing the preview server above.
         run: npm run test:browser-dev
+      - name: Build the indexable site (main only)
+        # SPEC.md §11: production is indexable and loads analytics; PR previews never are. The
+        # browser tests above rebuild `dist` without the flag, so this runs after them and the
+        # gates below check exactly what deploys.
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          SITE_INDEXABLE: 'true'
+        run: npm run build
       - name: Quality gates (axe, byte budget)
         # Both gates check the `dist` this job just built (the one uploaded below for deploy and
         # preview), rather than rebuilding it.
