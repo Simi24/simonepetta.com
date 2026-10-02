@@ -5,3 +5,10 @@ test-results/
 playwright-report/
 .ralph-gh/
 .DS_Store
+
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
