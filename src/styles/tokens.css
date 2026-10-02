@@ -29,6 +29,9 @@
   --tint-5: light-dark(#d2d2cf, #3a3a39);
   --tint-5-ink: light-dark(#161616, #ebebe8);
 
+  /* The one accent, shown only on interaction: link hover underline, focus outline, current nav item (SPEC.md §5.1). */
+  --red: light-dark(#c42b1c, #ff6a55);
+
   /* The page's side gutter, and the edge of anything fixed to the viewport. */
   --gutter: 20px;
 

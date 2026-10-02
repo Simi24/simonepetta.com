@@ -132,10 +132,11 @@ Direction **"Tipografico"** ([#9](https://github.com/Simi24/simonepetta.com/issu
 | secondary text | `#646462` | `#9a9a97` |
 | rules | `#cfcfcc` | `#2e2e2d` |
 | surface | `#e2e2df` | `#1f1f1e` |
+| red (interaction only) | `#c42b1c` | `#ff6a55` |
 | spine / notebook tints (background → text) | `#161616→#ededeb` `#4a4a48→#ededeb` `#2c2c2b→#ededeb` `#9a9a97→#161616` `#d2d2cf→#161616` | `#ebebe8→#151515` `#b5b5b2→#151515` `#d0d0cd→#151515` `#626260→#ebebe8` `#3a3a39→#ebebe8` |
 
 - Contrast fix after the cold read: the dark mid-grey tint is `#626260` (the prototype had `#6e6e6c`, 4.28:1), and spine/notebook text has **no opacity** (the prototype dimmed the author's surname to 75%, down to 3.17:1). Every tint pair must pass WCAG AA for its text size; the axe gate checks it.
-- **No accent color.** Links in running text are always underlined. Navigational objects (nav items, brand, spines, notebooks, thesis cards) are recognizable as links by form and have no underline; they get a visible focus style.
+- **One red accent, only on interaction.** The site is monochrome at rest. Red (`--red`, 4.8:1 on the light background and 6.6:1 on the dark one) is used in exactly three places: the underline color of a hovered link, the keyboard focus outline, and the underline of the current page in the nav (`aria-current`). It is never the only signal: links stay underlined at rest, and focus and the current page keep their outline or underline without the color. No other element turns red, and errors are recognized by their text, never by red. Links in running text are always underlined. Navigational objects (nav items, brand, spines, notebooks, thesis cards) are recognizable as links by form and have no underline, so they get no hover color, only the red focus outline.
 - **Theme** follows the system, both themes are designed, plus a three-state manual toggle (system / light / dark) remembered in `localStorage` ([#9](https://github.com/Simi24/simonepetta.com/issues/9)). It needs one inline script of at most 1 KB that sets `data-theme` before paint (budget exception, [§12.2](#122-performance-budget-blocking-checked-on-dist)).
 - **Theme toggle placement**: a text button in the nav (as in the desk prototype, "Tema: sistema"), handled by the same inline script.
 - **Nav links** appear only when their target exists ("Appunti" from S6, "EN" from S3), so the shell never links to a 404.
@@ -537,6 +538,9 @@ Found while writing this document and by the cold read (an agent with no context
 
 **Confirmed by the author (2026-10-01)**
 25. **HTML stops at two courses** (`gpucomputing`, `elaborazione-segnali`): readers download the PDF, conversions cost hours each (§7.1, S9).
+
+**Confirmed by the author (2026-10-02)**
+27. **Red accent on interaction**: one `--red` token, used only for the hovered link underline, the focus outline and the current nav item underline; "No accent color" is replaced (§5.1, [#88](https://github.com/Simi24/simonepetta.com/issues/88)).
 
 **Applied by default**
 4. **Theme toggle vs JS budget**: one inline theme script ≤ 1 KB is a declared budget exception (§5.1, §12.2).

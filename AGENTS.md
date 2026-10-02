@@ -12,7 +12,8 @@ The author's personal site: readings, university notes, and (v2) a per-course ch
 - **Static by default.** No Astro route is dynamic; the only dynamic endpoint is the separate chat Worker on `/api/*` (v2). One dev-only exception: the writing desk's `/scrivi` route is `prerender: false` and exists only under `astro dev` (`SPEC.md` §6.4); `build` and `preview` never register it, and a test fails if any trace reaches `dist`.
 - **Dependencies**: only those listed in `SPEC.md` §4.1. Any other one must be justified in `SPEC.md` first, in the same PR.
 - **Nav links appear only when their page exists.** A section is added to `src/config/nav.ts` in the same change that adds its page; the link test fails otherwise.
-- **No accent color, no Tailwind, no MDX, no React.** Plain CSS with the tokens in `src/styles/tokens.css`; every color is a `light-dark()` token.
+- **One red accent, only on interaction** (`--red`, `SPEC.md` §5.1): the underline of a hovered link, the focus outline and the underline of the current nav item, nowhere else. A test scans the built CSS and fails on any other use.
+- **No Tailwind, no MDX, no React.** Plain CSS with the tokens in `src/styles/tokens.css`; every color is a `light-dark()` token.
 - Avoid in UI copy: em-dashes, uppercase eyebrow labels.
 
 ## Stack and conventions

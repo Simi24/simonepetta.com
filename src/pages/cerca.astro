@@ -28,7 +28,7 @@ import Base from '../layouts/Base.astro';
     --pagefind-ui-font: var(--font);
   }
 
-  /* No accent color (AGENTS.md): matches and focus use the ink, not Pagefind's yellow and blue. */
+  /* Matches use the ink, not Pagefind's yellow and blue; focus takes the red outline (AGENTS.md). */
   .search :global(mark) {
     background: var(--surface);
     color: var(--ink);
@@ -36,8 +36,8 @@ import Base from '../layouts/Base.astro';
     text-decoration-thickness: 2px;
   }
 
-  .search :global(.pagefind-ui__search-input:focus) {
-    outline: 2px solid var(--ink);
+  .search :global(.pagefind-ui__search-input:focus-visible) {
+    outline: 2px solid var(--red);
     outline-offset: 3px;
   }
 </style>

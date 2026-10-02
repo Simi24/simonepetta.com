@@ -146,13 +146,12 @@ const jitterPx = (slug: string): number => (slugHash(slug) % 9) - 4;
   .nb.nb--scan {
     background: transparent;
     color: var(--muted);
-    outline: 1.5px dashed var(--muted);
-    outline-offset: -1.5px;
   }
 
-  .nb.nb--scan:focus-visible {
-    outline: 2px solid var(--ink);
-    outline-offset: 3px;
+  /* Focused, the scan takes the shared focus outline instead of its dashed edge. */
+  .nb.nb--scan:not(:focus-visible) {
+    outline: 1.5px dashed var(--muted);
+    outline-offset: -1.5px;
   }
 
   .pile-year {
