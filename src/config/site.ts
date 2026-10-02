@@ -7,12 +7,12 @@ export const site = {
   },
   analytics: {
     /**
-     * Cloudflare Web Analytics public site token (SPEC.md §12.4), committed here once the
-     * author creates the site by hand in the dashboard. Empty for now, so the beacon never
-     * renders. Overridable by env only so build-based tests can exercise the "token set" case
-     * without a real one committed (SPEC.md #30); production never sets this env var.
+     * Cloudflare Web Analytics public site token (SPEC.md §12.4), from the site the author
+     * created in the dashboard. Public by design: it ships in every page's HTML. The beacon
+     * still renders only on indexable builds (the launch). Overridable by env only so
+     * build-based tests can exercise both cases (SPEC.md #30); production never sets it.
      */
-    cloudflareBeaconToken: process.env['CLOUDFLARE_BEACON_TOKEN'] ?? '',
+    cloudflareBeaconToken: process.env['CLOUDFLARE_BEACON_TOKEN'] ?? '6a0514e58e274236a0e06d1b6f4ae839',
   },
   appunti: {
     /**

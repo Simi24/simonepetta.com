@@ -28,3 +28,12 @@ test('token set and indexable: the beacon is present, carrying the token', () =>
     assert.match(html, beaconRegex, `${page} has no beacon`);
   }
 });
+
+test('a launch build without overrides carries the committed Web Analytics token', () => {
+  // The value the author copied from the dashboard snippet on 2026-10-02 (public by design).
+  const { CLOUDFLARE_BEACON_TOKEN: _override, ...env } = process.env;
+  assert.equal(_override, undefined, 'run this test without CLOUDFLARE_BEACON_TOKEN set');
+  const home = builtPages({ ...env, SITE_INDEXABLE: 'true' }).find(({ page }) => page === 'index.html');
+  assert.ok(home, 'the home page is built');
+  assert.match(home.html, /data-cf-beacon="\{&quot;token&quot;:&quot;6a0514e58e274236a0e06d1b6f4ae839&quot;\}"/);
+});
