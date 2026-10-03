@@ -26,15 +26,16 @@ test('corsoTitle carries the course, the programme and the university, with no e
   assert.doesNotMatch(title, /—/);
 });
 
-test('corsoDescription names the course kind and the academic year', () => {
+test('corsoDescription leads with "Appunti di" and the course, then the programme and the year', () => {
   const description = corsoDescription(corso);
-  assert.match(description, /^Corso di /);
+  assert.match(description, /^Appunti di Probabilità e statistica\. Corso di Laurea in Informatica per la comunicazione digitale, /);
   assert.match(description, /2019\/20/);
+  assert.doesNotMatch(description, /Corso di Corso di/);
 });
 
 test('corsoDescription names a tesi as "Tesi", not "Corso"', () => {
   const tesi: Corso = { ...corso, tipo: 'tesi', anno: undefined, aa: '2022' };
-  assert.match(corsoDescription(tesi), /^Tesi di /);
+  assert.match(corsoDescription(tesi), /^Tesi: Probabilità e statistica\. /);
 });
 
 test('corsoNotice mentions the course for a corso', () => {

@@ -186,3 +186,20 @@ test('with nothing at all, both empty lines render', () => {
   assert.match(section(html, 'tesi'), /Nessuna tesi pubblicata\./);
   assert.match(section(html, 'piles'), /Nessun corso pubblicato\./);
 });
+
+test('title and description name the subject, the university and both degree programmes', () => {
+  const html = indexHtml();
+  assert.match(html, /<title>Appunti di Informatica, Università degli Studi di Milano/);
+  const description = html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? '';
+  assert.match(description, /Corso di Laurea in Informatica per la comunicazione digitale \(triennale\)/);
+  assert.match(description, /Corso di Laurea Magistrale in Informatica/);
+});
+
+test('the full course list is grouped under each degree programme, triennale first', () => {
+  const list = indexHtml().match(/<section class="courses-group"[\s\S]*?<\/section>/)?.[0] ?? '';
+  const headings = [...list.matchAll(/<h3[^>]*>([^<]*)<\/h3>/g)].map((m) => m[1]);
+  assert.deepEqual(headings, [
+    'Corso di Laurea in Informatica per la comunicazione digitale',
+    'Corso di Laurea Magistrale in Informatica',
+  ]);
+});
