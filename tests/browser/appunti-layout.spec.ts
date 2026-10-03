@@ -5,29 +5,34 @@ import { serveStatic } from '../support/static-server.ts';
 const DESKTOP = { width: 1280, height: 900 };
 const MOBILE = { width: 390, height: 800 };
 
-test('the full course list has no default list indent', async ({ page }) => {
+test('the full course lists have no default list indent', async ({ page }) => {
   const server = await serveStatic(buildSite({ APPUNTI_CONTENT_DIR: 'tests/fixtures/appunti' }));
   try {
     for (const viewport of [DESKTOP, MOBILE]) {
       await page.setViewportSize(viewport);
       await page.goto(`${server.url}/appunti/`);
-      const list = page.locator('#elenco ul');
-      await expect(list).toHaveCount(1);
-      const { listLeft, sectionLeft, headingLeft, style } = await page.evaluate(() => {
-        const ul = document.querySelector('#elenco ul')!;
+      // One list per degree programme (triennale, magistrale) in the fixtures.
+      await expect(page.locator('#elenco ul')).toHaveCount(2);
+      const { lists, sectionLeft, headingLeft } = await page.evaluate(() => {
         const section = document.querySelector('#elenco')!;
         const h2 = document.querySelector('#elenco h2')!;
-        const s = getComputedStyle(ul);
         return {
-          listLeft: ul.getBoundingClientRect().left,
+          lists: [...document.querySelectorAll('#elenco ul')].map((ul) => {
+            const s = getComputedStyle(ul);
+            return {
+              left: ul.getBoundingClientRect().left,
+              style: { paddingLeft: s.paddingLeft, listStyleType: s.listStyleType, marginLeft: s.marginLeft },
+            };
+          }),
           sectionLeft: section.getBoundingClientRect().left,
           headingLeft: h2.getBoundingClientRect().left,
-          style: { paddingLeft: s.paddingLeft, listStyleType: s.listStyleType, marginLeft: s.marginLeft },
         };
       });
-      expect(style, `${viewport.width}px`).toEqual({ paddingLeft: '0px', listStyleType: 'none', marginLeft: '0px' });
-      if (viewport === MOBILE) expect(listLeft).toBe(sectionLeft);
-      else expect(listLeft).toBeGreaterThan(headingLeft + 100); // starts at column 5, not at the label
+      for (const list of lists) {
+        expect(list.style, `${viewport.width}px`).toEqual({ paddingLeft: '0px', listStyleType: 'none', marginLeft: '0px' });
+        if (viewport === MOBILE) expect(list.left).toBe(sectionLeft);
+        else expect(list.left).toBeGreaterThan(headingLeft + 100); // starts at column 5, not at the label
+      }
     }
   } finally {
     await server.close();
