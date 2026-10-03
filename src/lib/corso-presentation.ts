@@ -13,8 +13,9 @@ export function corsoTitle(corso: Corso): string {
 
 /** Functional description shared by a course page's OG tags and its JSON-LD (SPEC.md §1.2 point 3, §12.3). */
 export function corsoDescription(corso: Corso): string {
-  const kind = corso.tipo === 'tesi' ? 'Tesi' : 'Corso';
-  return `${kind} di ${degreeProgramme(corso.livello)}, ${site.appunti.university}. Appunti di uno studente, anno accademico ${corso.aa}.`;
+  // The course name and the word "appunti" lead: they are what people search for (SPEC.md §12.4).
+  const subject = corso.tipo === 'tesi' ? `Tesi: ${corso.titolo}.` : `Appunti di ${corso.titolo}.`;
+  return `${subject} ${degreeProgramme(corso.livello)}, ${site.appunti.university}, anno accademico ${corso.aa}.`;
 }
 
 /** The student-notes notice at the top of a course page (SPEC.md §5.4, §7.3), worded for a course or a thesis. */

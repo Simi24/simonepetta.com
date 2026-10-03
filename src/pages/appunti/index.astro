@@ -10,6 +10,7 @@ import { groupByYear, type IndexCourse } from '../../lib/appunti-index.ts';
 import { readCorsoMeta } from '../../lib/corso-meta.ts';
 import { isPublished } from '../../lib/corso-published.ts';
 import { deriveStato, hasValidBuild } from '../../lib/corso-stato.ts';
+import { site } from '../../config/site.ts';
 
 const published = (await getCollection('appunti')).filter(isPublished);
 const theses = published.filter((entry) => entry.data.tipo === 'tesi');
@@ -30,10 +31,13 @@ const courses: IndexCourse[] = published.flatMap((entry) =>
     : [],
 );
 const piles = groupByYear(courses);
-const description = 'Gli appunti dei corsi universitari: PDF di ogni corso, e le pagine web di quelli convertiti.';
+// Named programmes and university: the words people search for (SPEC.md §12.4).
+const { university, degreeProgrammes } = site.appunti;
+const title = `Appunti di Informatica, ${university}`;
+const description = `Appunti dei corsi di Informatica all'${university}: ${degreeProgrammes.triennale} (triennale) e ${degreeProgrammes.magistrale}, con le due tesi. Tutti in PDF.`;
 ---
 
-<Base title="Appunti" description={description} og={{ image: '/og/appunti.png', description }}>
+<Base title={title} description={description} og={{ image: '/og/appunti.png', description }}>
   <div class="page">
     <h1 class="page__full">Appunti</h1>
     <p class="lede">{sectionLedes.appunti}</p>

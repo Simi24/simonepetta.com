@@ -1,5 +1,6 @@
 ---
 import { pileLabel, type Pile } from '../../lib/appunti-index.ts';
+import { degreeProgramme } from '../../lib/corso-presentation.ts';
 
 interface Props {
   piles: readonly Pile[];
@@ -7,23 +8,35 @@ interface Props {
 
 const { piles } = Astro.props;
 const courses = piles.flatMap((pile) => pile.courses.map((course) => ({ course, label: pileLabel(pile) })));
+// One list per degree programme, headed by its full name (piles are already ordered by level).
+const levels = [...new Set(piles.map((pile) => pile.livello))].map((livello) => ({
+  name: degreeProgramme(livello),
+  courses: courses.filter(({ course }) => course.livello === livello),
+}));
 ---
 
 {
   courses.length > 0 && (
     <section class="courses-group" id="elenco">
       <h2>Tutti i corsi</h2>
-      <ul class="courses">
-        {courses.map(({ course, label }) => (
-          <li>
-            <a class="courses__name" href={`/appunti/${course.id}/`}>
-              {course.titolo}
-            </a>
-            <span class="courses__level">{`${label.year} ${label.level}`}</span>
-            <span class="courses__pages">{course.pagine === undefined ? '' : `${course.pagine} pag.`}</span>
-          </li>
+      <div class="courses-levels">
+        {levels.map((level) => (
+          <>
+            <h3>{level.name}</h3>
+            <ul class="courses">
+              {level.courses.map(({ course, label }) => (
+                <li>
+                  <a class="courses__name" href={`/appunti/${course.id}/`}>
+                    {course.titolo}
+                  </a>
+                  <span class="courses__level">{`${label.year} ${label.level}`}</span>
+                  <span class="courses__pages">{course.pagine === undefined ? '' : `${course.pagine} pag.`}</span>
+                </li>
+              ))}
+            </ul>
+          </>
         ))}
-      </ul>
+      </div>
     </section>
   )
 }
@@ -45,8 +58,21 @@ const courses = piles.flatMap((pile) => pile.courses.map((course) => ({ course, 
     font-size: 1.05rem;
   }
 
-  .courses {
+  .courses-levels {
     grid-column: 5 / -1;
+  }
+
+  .courses-levels h3 {
+    margin: 0 0 0.6rem;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .courses-levels h3:not(:first-child) {
+    margin-top: 2rem;
+  }
+
+  .courses {
     margin: 0;
     padding: 0;
     list-style: none;
@@ -85,8 +111,12 @@ const courses = piles.flatMap((pile) => pile.courses.map((course) => ({ course, 
     }
 
     .courses-group h2,
-    .courses {
+    .courses-levels {
       grid-column: 1;
+    }
+
+    .courses-group h2 {
+      margin-bottom: 0.8rem;
     }
 
     .courses li {
