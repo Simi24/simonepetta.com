@@ -64,12 +64,17 @@ export const path: Record<Lang, readonly PathEntry[]> = {
   ],
 };
 
-/** Project descriptions by project name, one per language. */
+/**
+ * Project descriptions by project name, one per language. The Quits text was approved verbatim by
+ * the author on 2026-10-05 (Quits issue #13, SPEC.md §13).
+ */
 export const projectDescriptions: Record<
   Lang,
   Readonly<Record<string, string>>
 > = {
   it: {
+    Quits:
+      "un'app per dividere le spese di un viaggio con gli amici, anche senza rete. Come Splitwise, ma senza limiti a pagamento.",
     dynantic:
       "un ORM per DynamoDB in Python, tipizzato con Pydantic v2: query, indici secondari, transazioni. Pubblicato su PyPI.",
     "ralph-gh":
@@ -82,6 +87,8 @@ export const projectDescriptions: Record<
       "un cluster Kafka ad alta disponibilità in Docker, con TLS, SASL e ACL.",
   },
   en: {
+    Quits:
+      "an app for splitting trip expenses with friends, even offline. Like Splitwise, without the paywall.",
     dynantic:
       "a typed DynamoDB ORM for Python built on Pydantic v2, with queries, secondary indexes and transactions. Published on PyPI.",
     "ralph-gh":

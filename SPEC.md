@@ -270,7 +270,7 @@ Conversion fails silently, so verification cannot be the human eye. The detector
 ## 8. About and colophon
 
 Structure prototyped in [#9](https://github.com/Simi24/simonepetta.com/issues/9); **texts are written by the author** (out of scope for agents).
-- `/`: name, one-line lede, bio paragraphs, **Percorso** (timeline), **Open source** (e.g. `dynantic`), latest readings, **Colophon**.
+- `/`: name, one-line lede, bio paragraphs, **Percorso** (timeline), **Open source** (Quits first, linking the live app `https://quits.simonepetta.com/` with the text the author approved on 2026-10-05; then `dynantic` and the other public repos), latest readings, **Colophon**.
 - `/en/`: the English about page, with English navigation and labels and no Italian content blocks (no latest readings). `hreflang` links the two.
 - Open Graph images are designed by an agent from the visual contract (typographic, no photos). `sameAs`: GitHub `https://github.com/Simi24`, LinkedIn `https://www.linkedin.com/in/simone-paolo-petta/`.
 - **Colophon**, six lines: typeface (Host Grotesk), math (MathML drawn by the browser without JavaScript), notes (LaTeX converted with LaTeXML outside the build), build (Astro, static pages), hosting (Cloudflare Workers), writing (Markdown from a local desk).

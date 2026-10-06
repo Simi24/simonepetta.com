@@ -14,6 +14,11 @@ const IT_LEDE = 'Software engineer a Milano. Qui tengo traccia di cosa leggo, co
 const EN_LEDE = 'Software engineer in Milan. This site is where I keep track of what I build and what I have studied.';
 const PROJECTS = ['dynantic', 'ralph-gh', 'rideIt', 'SaltinoInterpreter', 'kafka-secure-ha-cluster'];
 
+const QUITS_HREF = 'https://quits.simonepetta.com/';
+const IT_QUITS =
+  "un'app per dividere le spese di un viaggio con gli amici, anche senza rete. Come Splitwise, ma senza limiti a pagamento.";
+const EN_QUITS = 'an app for splitting trip expenses with friends, even offline. Like Splitwise, without the paywall.';
+
 const section = (html: string, heading: string): string =>
   html.match(new RegExp(`<h2>${heading}</h2>([\\s\\S]*?)</section>`))?.[1] ?? '';
 
@@ -175,4 +180,17 @@ test('both about pages carry Open Graph meta tags with a shared, built image', (
     assert.match(html, /<meta property="og:description" content="[^"]+"\s*\/?>/);
   }
   assert.ok(existsSync(join(dist, 'og/about.png')), 'the OG image was not built into dist');
+});
+
+test('Open source lists Quits first, linking the live app with the approved text (IT and EN)', () => {
+  const site = buildSite();
+  for (const [file, text] of [
+    ['index.html', IT_QUITS],
+    ['en/index.html', EN_QUITS],
+  ] as const) {
+    const openSource = section(read(site, file), 'Open source');
+    const first = openSource.match(/<li>([\s\S]*?)<\/li>/)?.[1] ?? '';
+    assert.ok(first.includes(`<a href="${QUITS_HREF}">Quits</a>`), `${file}: Quits is not the first entry`);
+    assert.ok(first.includes(text.replaceAll("'", '&#39;')) || first.includes(text), `${file}: approved text missing`);
+  }
 });
