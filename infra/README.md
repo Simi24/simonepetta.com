@@ -7,7 +7,9 @@ Terraform for simonepetta.com (SPEC.md §10). Two independent configs, applied *
 | Config | Creates | State |
 |---|---|---|
 | `bootstrap/` | S3 state bucket (versioned, SSE-S3, public access blocked); AWS Budget of $5/month with alerts at 50%, 80%, 100% actual and 100% forecast | local file `bootstrap/terraform.tfstate` (gitignored; keep it) |
-| `main/` | Cloudflare `www` record (proxied `AAAA 100::`) and the redirect rule `www` to the apex, path and query preserved | S3 bucket above, key `main/terraform.tfstate`, native lockfile (`use_lockfile`, no DynamoDB) |
+| `main/` | Cloudflare `www` record (proxied `AAAA 100::`) and the redirect rule `www` to the apex, path and query preserved; Search Console TXT; Email Routing (zone MX/SPF/DKIM records, the destination address `pettasimonepaolo@gmail.com`, the rule `quits@simonepetta.com` forwarding to it) | S3 bucket above, key `main/terraform.tfstate`, native lockfile (`use_lockfile`, no DynamoDB) |
+
+Email Routing: after the first apply Cloudflare emails a verification link to the destination address; the rule forwards only once the owner has clicked it. Its MX/SPF/DKIM records sit at the apex name but are not the apex A/AAAA/CNAME.
 
 The apex record is owned by the site Worker's Custom Domain and is never managed here. `vault.` and `tripla.` are not touched.
 
@@ -16,7 +18,7 @@ The apex record is owned by the site Worker's Custom Domain and is never managed
 | Variable | Used by | Notes |
 |---|---|---|
 | `TF_VAR_budget_alert_email` | bootstrap | alert address; never committed, no `.tfvars` with real values |
-| `TF_VAR_cloudflare_api_token` | main | token with DNS edit and Rulesets (zone) edit on `simonepetta.com` |
+| `TF_VAR_cloudflare_api_token` | main | token with DNS edit and Rulesets (zone) edit on `simonepetta.com`, plus Email Routing edit at zone and account level (Account: Email Routing Addresses Edit; Zone: Email Routing Rules Edit) |
 
 AWS credentials come from the `personale` profile (`aws sso login --profile personale` or your usual login).
 

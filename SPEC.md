@@ -348,7 +348,7 @@ Region **eu-south-1** (Milan). Lambda (Python, hand-written loop, not AgentCore 
 | Site Worker code, its Custom Domain (which creates the apex DNS record itself) | `wrangler.jsonc` + `site` workflow |
 | Chat Worker, route `/api/*`, rate limit binding, Worker secrets (Turnstile secret, session signing key, Lambda HMAC secret) | `workers/api/wrangler.jsonc` + `api` workflow (secrets come from GitHub secrets) |
 | Lambda code | `agent` workflow; Terraform has `ignore_changes` on the code |
-| AI Gateways (production and eval) + spend limits + Dynamic Route, Turnstile widget, `www` record + redirect rule, Search Console TXT | Terraform (Cloudflare provider); **never the apex record** |
+| AI Gateways (production and eval) + spend limits + Dynamic Route, Turnstile widget, `www` record + redirect rule, Search Console TXT, Email Routing (zone records, destination address, the `quits@` forwarding rule) | Terraform (Cloudflare provider); **never the apex record** |
 | Lambda configuration, DynamoDB, S3 Vectors, S3 buckets, IAM, OIDC role, SSM parameters | Terraform (AWS provider) |
 | Terraform state bucket (versioned, encrypted, S3 native lockfile) and an **AWS Budget** of $5/month with email alerts at 50%, 80% and 100% (actual) and 100% (forecast) | a separate `infra/bootstrap` config, applied once |
 
