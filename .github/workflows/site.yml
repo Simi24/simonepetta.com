@@ -1,9 +1,34 @@
 name: site
 
+# Docs and tooling files that cannot change the built site, its tests or the gates skip the run
+# (SPEC.md §11). Never list `src/content/**/*.md`: that is site content. `infra/**` other than its
+# README still triggers (keep the two lists identical), so the `infra` job keeps running on Terraform changes.
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - SPEC.md
+      - AGENTS.md
+      - README.md
+      - docs/**
+      - infra/README.md
+      - pipeline/README.md
+      - src/integrations/scrivania/README.md
+      - .ralph-gh/**
+      - .ralph-gh.config
+      - .github/workflows/appunti.yml
   pull_request:
+    paths-ignore:
+      - SPEC.md
+      - AGENTS.md
+      - README.md
+      - docs/**
+      - infra/README.md
+      - pipeline/README.md
+      - src/integrations/scrivania/README.md
+      - .ralph-gh/**
+      - .ralph-gh.config
+      - .github/workflows/appunti.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -26,10 +51,12 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run check
-      - run: npm run build
       - name: Install Playwright's Chromium
         run: npx playwright install --with-deps chromium
-      - run: npm run test:browser
+      - name: Browser tests (builds dist)
+        # Playwright's web server builds `dist` (non-indexable) before serving it, so there is no
+        # separate `npm run build` step: the quality gates below reuse that same `dist`.
+        run: npm run test:browser
       - name: Writing desk (dev-only) browser check
         # SPEC.md §6.4: the desk only exists under `astro dev` — its own fresh, foreground
         # instance (see playwright.scrivania.config.ts), never reusing the preview server above.
@@ -48,16 +75,16 @@ jobs:
         env:
           QUALITY_GATE_REUSE_DIST: '1'
         run: npm run test:quality
-      - name: Upload the gated dist
+      - name: Hand the gated dist to deploy and preview
         # Only reached when every gate above passed. `deploy` and `preview` publish exactly this
         # directory; they never rebuild it (Pagefind and the notes conversions run once).
-        uses: actions/upload-artifact@v7
+        # A per-run cache entry, not an artifact: on this plan private repos get 500 MB of
+        # artifact storage and one dist weighs ~178 MB, while the Actions cache has its own
+        # 10 GB per repo. `cleanup` deletes the entry at the end of the run.
+        uses: actions/cache/save@v4
         with:
-          name: dist
           path: dist
-          if-no-files-found: error
-          include-hidden-files: true
-          retention-days: 7
+          key: dist-${{ github.run_id }}-${{ github.run_attempt }}
 
   infra:
     # Terraform fmt and validate only: no backend, no credentials. The deploy does not wait for it.
@@ -81,11 +108,12 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - name: Download the gated dist
-        uses: actions/download-artifact@v8
+      - name: Restore the gated dist
+        uses: actions/cache/restore@v4
         with:
-          name: dist
           path: dist
+          key: dist-${{ github.run_id }}-${{ github.run_attempt }}
+          fail-on-cache-miss: true
       - name: Deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -106,11 +134,12 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - name: Download the gated dist
-        uses: actions/download-artifact@v8
+      - name: Restore the gated dist
+        uses: actions/cache/restore@v4
         with:
-          name: dist
           path: dist
+          key: dist-${{ github.run_id }}-${{ github.run_attempt }}
+          fail-on-cache-miss: true
       - name: Upload a version
         id: upload
         env:
@@ -169,3 +198,17 @@ jobs:
                 body,
               });
             }
+
+  # The gated dist travels between jobs as a per-run cache entry; once deploy and preview
+  # are done nothing needs it, so the run deletes it to keep the repo's cache tidy.
+  cleanup:
+    needs: [build, deploy, preview]
+    if: always() && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Delete this run's dist cache entry
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh cache delete "dist-${{ github.run_id }}-${{ github.run_attempt }}" -R "${{ github.repository }}" || true

@@ -8,8 +8,11 @@ export default defineConfig({
   testMatch: /.*\.spec\.ts/,
   // Builds the quality builds once, before the specs enumerate their pages.
   globalSetup: './tests/quality/quality-setup.ts',
-  // One worker: the gate is one sequence of pages, and one Chromium keeps its timing predictable.
-  workers: 1,
+  // Every test is independent: it serves the build on its own ephemeral port and loads one page,
+  // and no assertion depends on timing, so the pages run in parallel. 4 workers match the 4 vCPUs
+  // of a GitHub-hosted runner (the setup builds run once, before the workers start).
+  fullyParallel: true,
+  workers: process.env['CI'] ? 4 : undefined,
   forbidOnly: !!process.env['CI'],
   reporter: process.env['CI'] ? 'github' : 'list',
   projects: [
