@@ -12,7 +12,8 @@ export default defineConfig({
   // and no assertion depends on timing, so the pages run in parallel. 4 workers match the 4 vCPUs
   // of a GitHub-hosted runner (the setup builds run once, before the workers start).
   fullyParallel: true,
-  workers: process.env['CI'] ? 4 : undefined,
+  // Locally Playwright picks the worker count; exactOptionalPropertyTypes forbids an explicit undefined.
+  ...(process.env['CI'] ? { workers: 4 } : {}),
   forbidOnly: !!process.env['CI'],
   reporter: process.env['CI'] ? 'github' : 'list',
   projects: [
