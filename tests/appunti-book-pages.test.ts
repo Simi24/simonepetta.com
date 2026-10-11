@@ -20,7 +20,7 @@ test('an appendix page is titled by its letter, an unnumbered page has no chapte
   assert.match(appendix, /Appendice A, Configurazioni\./);
 
   const thanks = read(dist, 'appunti/libro/ringraziamenti/index.html');
-  assert.doesNotMatch(thanks, /Capitolo|undefined|<aside/);
+  assert.doesNotMatch(thanks, /Capitolo \d|undefined|<aside|toc-title/);
 });
 
 test('previous and next links name an appendix by its letter', () => {
