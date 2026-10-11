@@ -1,0 +1,44 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">La progettazione dell’interfaccia grafica e dell’esperienza utente (UX) è una fase cruciale nella realizzazione di un software di successo. Nel contesto dell’obiettivo di questa tesi, che mira a facilitare i dipendenti dell’Azienda X nel raggiungimento dei loro luoghi di lavoro, questa Sezione descrive le scelte di progettazione che hanno contribuito a creare un’interfaccia utente più intuitiva, attraverso un’esperienza di utilizzo migliorata della mappa di ZConnect.</p>
+</div>
+<div id="p2" class="ltx_para">
+<p class="ltx_p">La progettazione dell’interfaccia grafica e dell’UX è stata guidata dalla necessità di fornire ai dipendenti un accesso rapido e intuitivo alle informazioni necessarie per raggiungere i loro luoghi di lavoro e registrare le presenze. L’ottimizzazione di funzionalità chiave, come la visualizzazione della posizione corrente dell’utente e dei luoghi di lavoro associati, nonché l’introduzione di nuove caratteristiche, come il ”follow-me”, hanno contribuito in modo significativo al raggiungimento di questi obiettivi.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.1</span> Progettazione delle interfacce grafiche e della UX</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">La progettazione dell’interfaccia grafica e dell’esperienza utente (UX) costituisce un elemento significativo all’interno di questo lavoro di tesi. L’obiettivo fondamentale di questa fase è stato progettare sistemi in grado di agevolare i dipendenti dell’Azienda X nel raggiungimento dei luoghi di lavoro. Per conseguire tale scopo, è stato necessario rivisitare l’interfaccia grafica dell’applicazione ZConnect.</p>
+</div>
+<div id="S1.p2" class="ltx_para">
+<p class="ltx_p">Come riportato nella Sezione <a title="2.3 Problemi del sistema esistente ‣ Capitolo 2 Analisi ‣ UTILIZZO DI SERVIZI BASATI SULLA POSIZIONE IN UN’APPLICAZIONE DI MONITORAGGIO DELLE PRESENZE" class="ltx_ref" href="/appunti/tesi/2-analisi/#S3"><span class="ltx_text ltx_ref_tag">2.3</span></a> nell’implementazione precedente a questo lavoro di tesi, il servizio di monitoraggio delle presenze di ZConnect non forniva un supporto adeguato agli utenti nel raggiungimento dell’area di lavoro. Per risolvere questo problema, è stata progettata la mappa in modo che mostri chiaramente la posizione dell’utente e l’area di lavoro da raggiungere.</p>
+</div>
+<div id="S1.p3" class="ltx_para">
+<p class="ltx_p">Inoltre, come riportato nella Sezione <a title="2.2 Analisi del sistema esistente ‣ Capitolo 2 Analisi ‣ UTILIZZO DI SERVIZI BASATI SULLA POSIZIONE IN UN’APPLICAZIONE DI MONITORAGGIO DELLE PRESENZE" class="ltx_ref" href="/appunti/tesi/2-analisi/#S2"><span class="ltx_text ltx_ref_tag">2.2</span></a> del capitolo di Analisi, ad ogni utente di ZConnect è associata una lista di luoghi geografici, modellati come geofence, in cui l’utente può effettuare la timbratura. Data questa molteplicità di luoghi in cui l’utente può registrare la propria presenza, è stato progettato di visualizzarli tutti sulla mappa, contrariamente a quanto avveniva prima dell’intervento descritto in questa tesi, come visibile in Figura <a title="Figura 3 ‣ 3.1 Progettazione delle interfacce grafiche e della UX ‣ Capitolo 3 Progettazione ‣ UTILIZZO DI SERVIZI BASATI SULLA POSIZIONE IN UN’APPLICAZIONE DI MONITORAGGIO DELLE PRESENZE" class="ltx_ref" href="#F3"><span class="ltx_text ltx_ref_tag">3</span></a>. In modo tale da agevolare l’utente nel raggiungimento del luogo di lavoro corretto, infatti essendo associati all’utente numerosi luoghi geografici non è possibile sapere a priori quale è quello in cui l’utente deve recarsi, di conseguenza non è plausibile scegliere un solo luogo da mostrare all’utente sulla mappa, scartando gli altri.</p>
+</div>
+<figure id="F3" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi/figure/Immagini-tanti_geofence.webp" width="355" height="728" loading="lazy" alt="Schermata dell'app Android con una mappa del nord Italia dal lago di Como alla costa ligure, coperta da una griglia di linee. Sulla mappa ci sono sette segnaposto rossi, ciascuno con un rettangolo azzurro di dimensione diversa: il più grande è sulla costa in basso a sinistra, altri sono in gruppo al centro e uno a destra. Una freccia bianca indica la posizione dell'utente vicino al rettangolo in alto a sinistra."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 3</span>: </span><span class="ltx_text">Mappa di un utente con tanti geofence</span></figcaption>
+</figure>
+<div id="S1.p4" class="ltx_para">
+<p class="ltx_p">Al fine di garantire un’esperienza utente ottimale, è stato ritenuto essenziale rendere chiaramente visibili all’utente, all’apertura della mappa, la propria posizione e il luogo di lavoro da raggiungere. Per questo motivo, è stata adottata l’opzione di centrare la mappa sulla posizione attuale dell’utente all’apertura della stessa. Inoltre, è stato impostato un adeguato livello di zoom della mappa per consentire all’utente di visualizzare contemporaneamente la propria posizione e il centro del luogo di lavoro più vicino. Un esempio di zoom della mappa alla sua apertura è visibile in Figura <a title="Figura 4 ‣ 3.1 Progettazione delle interfacce grafiche e della UX ‣ Capitolo 3 Progettazione ‣ UTILIZZO DI SERVIZI BASATI SULLA POSIZIONE IN UN’APPLICAZIONE DI MONITORAGGIO DELLE PRESENZE" class="ltx_ref" href="#F4"><span class="ltx_text ltx_ref_tag">4</span></a>, in cui sono chiaramente visibili la posizione dell’utente e il luogo di lavoro più vicino</p>
+</div>
+<figure id="F4" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi/figure/Immagini-zoom_vicino.webp" width="355" height="725" loading="lazy" alt="Schermata dell'app Android con la mappa aperta con zoom ravvicinato sulla zona di Collecchio, sovrapposta a una griglia di linee. Un rettangolo azzurro con bordo blu, il geofence, occupa la metà inferiore sinistra dello schermo e contiene un segnaposto rosso; una freccia bianca, la posizione dell'utente, è appena sopra il suo bordo superiore. In alto a destra ci sono l'icona di una bussola e quella di un segnaposto."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 4</span>: </span><span class="ltx_text">Zoom della mappa all’apertura</span></figcaption>
+</figure>
+<div id="S1.p5" class="ltx_para">
+<p class="ltx_p">Questa scelta è stata motivata dall’ipotesi che, in un caso d’uso normale, l’utente non utilizzi questa mappa come navigatore e, pertanto, non dovrebbe aprirla quando si trova a grandi distanze dal luogo di lavoro. Si è ipotizzato che l’utente debba aprire la mappa solamente in prossimità del luogo di lavoro per comprendere la relazione tra la sua posizione e il luogo di lavoro, utilizzando la mappa come supporto per raggiungere il luogo dove registrare la propria presenza. Pertanto, si è ritenuto che fosse efficace per l’utente visualizzare la sua posizione e il luogo di lavoro più vicino al fine di orientarsi facilmente.</p>
+</div>
+<div id="S1.p6" class="ltx_para">
+<p class="ltx_p">Durante la fase di progettazione dell’interfaccia grafica, si è valutato che la mappa dovesse fornire degli strumenti che agevolassero l’utente nel suo utilizzo. Per fare questo, è stata implementata una funzionalità di ”follow-me”, attivabile tramite un bottone sulla schermata della mappa. All’attivazione della funzionalità di ”follow-me”, la mappa scorre automaticamente, seguendo lo spostamento dell’utente, e rimane centrata sulla posizione dell’utente. Questa funzionalità agevola la navigazione dell’utente nello spazio che lo circonda, perché, nello spostamento per raggiungere il luogo di lavoro, non deve continuamente interagire con la mappa per vedere la sua posizione su di essa.</p>
+</div>
+<div id="S1.p7" class="ltx_para">
+<p class="ltx_p">Inoltre, è stata considerata l’aggiunta di un bottone che permette all’utente di centrare la mappa sulla sua posizione corrente, in modo che anche se dovesse interagire con la mappa togliendo dal focus il marker con la sua posizione, non perda contezza di dove è la sua posizione, ma con un click la ritrovi immediatamente.</p>
+</div>
+</div>
+</section>
+</div>

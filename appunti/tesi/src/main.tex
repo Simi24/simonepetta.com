@@ -1,0 +1,241 @@
+%
+% Tesi D.S.I. - modello preso da
+% Stanford University PhD thesis style -- modifications to the report style
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                         %
+%			TESI DOTTORATO                                                   %
+%			______________                                                   %
+%                                                                         %
+%			AUTORE: Elena Pagani                                             %
+%                                                                         %
+%			Ultima revisione: 7.X.1998                                       %
+%           correzioni atrent                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%
+\begin{filecontents*}[overwrite]{\jobname.xmpdata}
+\Title{UTILIZZO DI SERVIZI BASATI SULLA POSIZIONE IN UN'APPLICAZIONE DI MONITORAGGIO DELLE PRESENZE}
+\Author{Simone Paolo Petta}
+\Language{it-IT}
+\Subject{Tesi di informatica per la comunicazione digitale.}
+\Keywords{Tesi}
+\end{filecontents*}
+\documentclass[a4paper,12pt]{report}
+%    \renewcommand{\baselinestretch}{1.6}      % interline spacing
+%
+% \includeonly{}
+%
+%			PREAMBOLO
+%
+
+\usepackage[a4paper]{geometry}
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{epsfig}
+\usepackage[italian]{babel}
+\usepackage{setspace}
+\usepackage{tesi}
+\usepackage{listings}
+\usepackage{pgfplots}
+\usepackage{xurl}
+\usepackage{colorprofiles}
+\usepackage[a-1a,mathxmp]{pdfx}[2018/12/22]
+\hypersetup{pdfstartview=} 
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    linkbordercolor=white,
+    urlcolor=black, % Colore dei link URL (cambia a seconda delle tue preferenze)
+    citecolor=black % Colore dei link alle citazioni (cambia a seconda delle tue preferenze)
+}
+
+% per le accentate
+\usepackage[utf8]{inputenc}
+%
+\newtheorem{myteor}{Teorema}[section]
+%
+\newenvironment{teor}{\begin{myteor}\sl}{\end{myteor}}
+%
+%
+%			TITOLO
+%
+\begin{document}
+\title{UTILIZZO DI SERVIZI BASATI SULLA POSIZIONE IN UN'APPLICAZIONE DI MONITORAGGIO DELLE PRESENZE}
+\author{Simone Paolo PETTA}
+\dept{Corso di Laurea in informatica per la comunicazione digitale} 
+\anno{2022-2023}
+\relatore{Prof. Sergio MASCETTI}
+\correlatore{Silvia GALUZZI}
+%
+%        \submitdate{month year in which submitted to GPO}
+%		- date LaTeX'd if omitted
+%	\copyrightyear{year degree conferred (next year if submitted in Dec.)}
+%		- year LaTeX'd (or next year, in December) if omitted
+%	\copyrighttrue or \copyrightfalse
+%		- produce or don't produce a copyright page (false by default)
+%	\figurespagetrue or \figurespagefalse
+%		- produce or don't produce a List of Figures page
+%		  (false by default)
+%	\tablespagetrue or \tablespagefalse
+%		- produce or don't produce a List of Tables page
+%		  (false by default)
+% 
+%			DEDICA
+%
+\beforepreface
+% \prefacesection{}
+%         {\hfill \Large {\sl DEDICHE}}
+% % 
+% %			PREFAZIONE
+% %
+% \prefacesection{Prefazione}
+% hkjafgyruet.
+% %
+% %
+% %			ORGANIZZAZIONE
+% \section*{Organizzazione della tesi}
+% \label{organizzazione}
+% La tesi \`e organizzata come segue:
+% \begin{itemize}
+% \item nel Capitolo 1 ....
+% \end{itemize}
+%
+%			RINGRAZIAMENTI
+%
+\prefacesection{Ringraziamenti}
+Vorrei dedicare questo spazio a tutte le persone che, in modi diversi, hanno contribuito a rendere possibile il completamento del mio percorso accademico.
+
+\medskip
+
+Innanzitutto, desidero esprimere la mia profonda gratitudine alla mia famiglia. Il loro sostegno costante, la pazienza e l'amore hanno reso possibile questa esperienza accademica. Grazie per essere sempre stati al mio fianco e per avermi sostenuto nei momenti di difficoltà.
+
+\medskip
+
+Un ringraziamento speciale va ai miei amici, che hanno condiviso con me gioie e sfide durante questi anni. Le vostre risate, il vostro supporto e la vostra amicizia hanno reso ogni passo di questo viaggio più significativo.
+
+\medskip
+
+Un sentito ringraziamento va anche a tutte le persone che, anche solo con una parola di incoraggiamento, hanno contribuito a spingermi avanti nei momenti più difficili.
+
+\medskip
+
+Infine, desidero ringraziare me stesso per la dedizione e il duro lavoro che ho messo in questo percorso accademico. Questa tesi è il risultato del mio impegno e della mia passione. Sono grato di aver avuto l'opportunità di affrontare questo viaggio.
+
+\medskip
+
+Grazie a tutti coloro che hanno reso questo percorso un'esperienza indimenticabile.
+
+\afterpreface
+% 
+% 
+%			CAPITOLO 1: dshjkfg
+\chapter{Introduzione}
+\label{cap1}
+%
+%
+\include{Chapter/intro}
+
+\chapter{Analisi}
+\label{cap2}
+
+\include{Chapter/analisi}
+
+\chapter{Progettazione}
+\label{cap3}
+
+\include{Chapter/progettazione}
+
+\chapter{Implementazione}
+\label{cap4}
+
+\include{Chapter/implementazione}
+
+\chapter{Testing}
+\label{cap5}
+
+\include{Chapter/testing}
+
+\chapter{Conclusioni}
+\label{cap6}
+
+\include{Chapter/conclusioni}
+
+%
+%			BIBLIOGRAFIA
+%
+\begin{thebibliography}{00}
+\bibitem{GeoFence}
+\url{https://learn.microsoft.com/en-us/dynamics365/field-service/mobile-powerapp-geofence}
+
+\bibitem{OpenStreetMapWiki}
+\url{https://it.wikipedia.org/wiki/OpenStreetMap}
+
+\bibitem{MapKitDoc}
+\url{https://developer.apple.com/documentation/mapkit/}
+%
+\bibitem{Android}
+\url{https://www.android.com}
+%
+\bibitem{iOS}
+\url{https://developer.apple.com/documentation/}
+%
+\bibitem{Kotlin}
+\url{https://kotlinlang.org/docs/home.html}
+%
+\bibitem{Java}
+\url{https://docs.oracle.com/en/java/}
+%
+\bibitem{Swift}
+\url{https://www.swift.org/documentation/}
+
+\bibitem{BoundingBox}
+\url{https://osmdroid.github.io/osmdroid/javadocs/osmdroid-android/debug/index.html?org/osmdroid/util/BoundingBox.html}
+
+\bibitem{MKPolygon}
+\url{https://developer.apple.com/documentation/mapkit/mkpolygon}
+
+\bibitem{MyLocationNewOverlay}
+\url{https://osmdroid.github.io/osmdroid/javadocAll/org/osmdroid/views/overlay/mylocation/MyLocationNewOverlay.html}
+
+\bibitem{LocationProvider}
+\url{https://developer.android.com/reference/android/location/LocationProvider}
+
+\bibitem{MKMapView}
+\url{https://developer.apple.com/documentation/mapkit/mkmapview}
+
+\bibitem{MKMapCamera}
+\url{https://developer.apple.com/documentation/mapkit/mkmapcamera}
+
+\bibitem{CLLocationManager}
+\url{https://developer.apple.com/documentation/corelocation/cllocationmanager}
+
+\bibitem{CLLocationSourceInformation}
+\url{https://developer.apple.com/documentation/corelocation/cllocationsourceinformation}
+
+\bibitem{CLLocation}
+\url{https://developer.apple.com/documentation/corelocation/cllocation}
+
+\bibitem{Fragment}
+\url{https://developer.android.com/guide/fragments}
+
+\bibitem{ViewController}
+\url{https://developer.apple.com/documentation/uikit/uiviewcontroller}
+
+\bibitem{TestFunzionali}
+A. A. Omar and F. A. Mohammed. 1991. A survey of software functional testing methods. SIGSOFT Softw. Eng. Notes 16, 2 (April 1991), 75–82.
+\url{https://dl.acm.org/doi/abs/10.1145/122538.122551}
+
+\bibitem{AndroidFragmentation}
+D. Han, C. Zhang, X. Fan, A. Hindle, K. Wong and E. Stroulia, "Understanding Android Fragmentation with Topic Analysis of Vendor-Specific Bugs," 2012 19th Working Conference on Reverse Engineering, Kingston, ON, Canada, 2012, pp. 83-92, doi: 10.1109/WCRE.2012.18.
+\url{https://ieeexplore.ieee.org/document/6385104}
+
+\bibitem{AppNative}
+\url{https://aws.amazon.com/it/compare/the-difference-between-web-apps-native-apps-and-hybrid-apps/}
+\end{thebibliography}
+% 
+\end{document}

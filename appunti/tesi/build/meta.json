@@ -1,0 +1,165 @@
+{
+  "capitoli": [
+    {
+      "slug": "ringraziamenti",
+      "titolo": "Ringraziamenti",
+      "sezioni": [],
+      "math": false
+    },
+    {
+      "numero": 1,
+      "slug": "1-introduzione",
+      "titolo": "Introduzione",
+      "sezioni": [],
+      "math": false
+    },
+    {
+      "numero": 2,
+      "slug": "2-analisi",
+      "titolo": "Analisi",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "2.1",
+          "titolo": "Analisi degli attori",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "2.2",
+          "titolo": "Analisi del sistema esistente",
+          "sottosezioni": []
+        },
+        {
+          "id": "S3",
+          "numero": "2.3",
+          "titolo": "Problemi del sistema esistente",
+          "sottosezioni": []
+        },
+        {
+          "id": "S4",
+          "numero": "2.4",
+          "titolo": "Analisi dei requisiti",
+          "sottosezioni": []
+        },
+        {
+          "id": "S5",
+          "numero": "2.5",
+          "titolo": "Analisi delle necessità",
+          "sottosezioni": []
+        }
+      ],
+      "math": false
+    },
+    {
+      "numero": 3,
+      "slug": "3-progettazione",
+      "titolo": "Progettazione",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "3.1",
+          "titolo": "Progettazione delle interfacce grafiche e della UX",
+          "sottosezioni": []
+        }
+      ],
+      "math": false
+    },
+    {
+      "numero": 4,
+      "slug": "4-implementazione",
+      "titolo": "Implementazione",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "4.1",
+          "titolo": "Determinare la porzione di mappa da visualizzare",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "4.2",
+          "titolo": "Distanza dal bordo del geofence",
+          "sottosezioni": [
+            {
+              "id": "S2.SS1",
+              "numero": "4.2.1",
+              "titolo": "Determinare il bordo più vicino"
+            },
+            {
+              "id": "S2.SS2",
+              "numero": "4.2.2",
+              "titolo": "Calcolo della distanza dal bordo"
+            }
+          ]
+        },
+        {
+          "id": "S3",
+          "numero": "4.3",
+          "titolo": "Follow-me",
+          "sottosezioni": []
+        },
+        {
+          "id": "S4",
+          "numero": "4.4",
+          "titolo": "Fake position iOS",
+          "sottosezioni": []
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 5,
+      "slug": "5-testing",
+      "titolo": "Testing",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "5.1",
+          "titolo": "Metodologia di test",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "5.2",
+          "titolo": "Risultati dei test",
+          "sottosezioni": []
+        }
+      ],
+      "math": false
+    },
+    {
+      "numero": 6,
+      "slug": "6-conclusioni",
+      "titolo": "Conclusioni",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "6.1",
+          "titolo": "Risultati ottenuti",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "6.2",
+          "titolo": "Limiti del sistema",
+          "sottosezioni": []
+        },
+        {
+          "id": "S3",
+          "numero": "6.3",
+          "titolo": "Miglioramenti futuri",
+          "sottosezioni": []
+        }
+      ],
+      "math": false
+    },
+    {
+      "bibliografia": true,
+      "slug": "bibliografia",
+      "titolo": "Bibliografia",
+      "sezioni": [],
+      "math": false
+    }
+  ]
+}
