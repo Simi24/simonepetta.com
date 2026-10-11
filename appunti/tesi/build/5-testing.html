@@ -1,0 +1,60 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">Per poter rilasciare sul mercato la nuova versione di ZConnect creata dopo le modifiche effettuate nella Sezione di Implementazione di questa tesi, Zucchetti S.P.A. ha affidato il compito di testare la migliorata funzionalità di monitoraggio delle presenze ad un team specifico di tester. Durante questo lavoro di tesi è stato seguito anche il team di tester, che tramite dei test funzionali ha validato la nuova versione di ZConnect. Le metodologie di test ed i risultati prodotti saranno rispettivamente descritti nelle Sezioni 5.1 e 5.2.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">5.1</span> Metodologia di test</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">Durante questo lavoro di tesi, ho seguito anche il team di tester durante l’esecuzione dei test per poter rilasciare sul mercato la nuova versione di ZConnect. Il team di tester ha eseguito dei test funzionali. I test funzionali vengono utilizzati per individuare le discrepanze tra le specifiche e l’effettiva implementazione dei sistemi software <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi/bibliografia/#bib20">20</a>]</cite>. Tutti i test riportati di seguito sono stati eseguiti sia sulla versione Android che sulla versione iOS di ZConnect.</p>
+</div>
+<div id="S1.p2" class="ltx_para">
+<p class="ltx_p">Inoltre, per far fronte al problema della frammentazione hardware e software tipico delle applicazioni per dispositivi mobili <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi/bibliografia/#bib21">21</a>]</cite>, tutti i test sono stati effettuati su dispositivi fisici con la versione minima e massima dei sistemi operativi per cui è sviluppata l’applicazione. In altre parole, è stato utilizzato un dispositivo Android con installata la versione 7 di Android e un dispositivo con installata la versione 13 di Android. Per iOS, è stato utilizzato un dispositivo fisico con installata la versione 14 di iOS e un dispositivo con installata la versione 16 di iOS. L’applicazione è stata testata anche su un tablet Android, poiché ZConnect è disponibile anche per tablet.</p>
+</div>
+<div id="S1.p3" class="ltx_para">
+<p class="ltx_p">Il primo test funzionale eseguito è stato quello di apertura della mappa con un utente che ha associato numerose aree di lavoro per verificare che sulla mappa fossero presenti tutte le aree di lavoro, modellate tramite geofence, al cui centro fosse visibile un marker rosso che identifica il centro del geofence e che fosse visibile la posizione dell’utente identificata con un marker blu.</p>
+</div>
+<div id="S1.p4" class="ltx_para">
+<p class="ltx_p">Successivamente è stato provato se cambiando la posizione dell’emulatore il marker dell’utente reagisse al cambio di posizione spostandosi a sua volta. Sono anche stati provati il pulsante per centrare la mappa sulla posizione dell’utente ed il pulsante per il “follow-me”, controllando che all’attivazione e alla disattivazione del “follow-me” il pulsante cambi colore, in modo da dare un feedback adeguato all’utente. Con la funzionalità “follow-me” attiva è stato provato a mettere l’app in background ed a riportala in foreground per verificare che la funzionalità rimanesse attiva. Infine è stato provato ad impostare, la modalità scura dell’app per vedere che i nuovi elementi grafici aggiunti alla mappa reagissero al cambiamento cambiando a loro volta colore.</p>
+</div>
+<figure id="F6" class="ltx_figure">
+<div class="ltx_flex_figure">
+<div class="ltx_flex_cell ltx_flex_size_2">
+<figure id="F6.sf1" class="ltx_figure ltx_figure_panel"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi/figure/Immagini-zoom_dati_esempio.webp" width="730" height="1476" loading="lazy" alt="Schermata dell'app Android con una mappa della zona tra Parma e San Secondo Parmense, divisa da una griglia le cui celle sono etichettate con numeri nel formato 13/4329/2951. Una freccia bianca indica la posizione dell'utente; a destra c'è un piccolo rettangolo azzurro con un segnaposto rosso, e in basso un secondo rettangolo azzurro tagliato dal bordo. In alto a destra ci sono l'icona di una bussola, con contorno vuoto, e quella di un segnaposto."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">(a)</span> </span><span class="ltx_text">“follow-me” disattivo</span></figcaption>
+</figure>
+</div>
+<div class="ltx_flex_cell ltx_flex_size_2">
+<figure id="F6.sf2" class="ltx_figure ltx_figure_panel"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi/figure/Immagini-follow_me_attivo.webp" width="730" height="1480" loading="lazy" alt="Schermata dell'app Android con la stessa mappa a griglia della zona tra Parma e San Secondo Parmense, con la freccia bianca dell'utente, il rettangolo azzurro con segnaposto rosso a destra e un altro rettangolo tagliato in basso. Rispetto alla figura con follow-me disattivo, l'icona della bussola in alto a destra è piena, di colore blu."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">(b)</span> </span><span class="ltx_text">“follow-me” attivo</span></figcaption>
+</figure>
+</div>
+</div>
+<figcaption class="ltx_caption"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 6</span>: </span><span class="ltx_text">Cambio del fill del bottone per attivare la funzione “follow-me”</span></figcaption>
+</figure>
+<div id="S1.p5" class="ltx_para">
+<p class="ltx_p">Infine sono stati eseguiti dei test di non regressione. I test di non regressione vengono impiegati per verificare che le modifiche apportate al codice, gli aggiornamenti o le correzioni di errori non generino problemi alle funzionalità preesistenti dell’applicazione o del software, evitando nel contempo eventuali instabilità non correlate alle caratteristiche specifiche.
+É stato provato ad effettuare una timbratura all’esterno ed all’interno di un area di lavoro associata all’utente, per verificare che nel caso della timbratura effettuata all’esterno dell’area di lavoro associata all’utente che questa venisse rifiutata, mentre nel caso di timbratura effettuata all’interno dell’area di lavoro associata all’utente che questa venisse accettata.
+Infine è stato provata la visualizzazione della mappa sulla schermata delle timbrature passate, per testare che fosse ancora navigabile e che il luogo di lavoro dove è stata eseguita la timbratura fosse ancora visibile, modellato come un geofence.</p>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">5.2</span> Risultati dei test</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">I test funzionali illustrati nella Sezione 5.1 hanno prodotto per lo più risultati positivi.
+É stato riscontrato un solo problema, che nella versione Android di ZConnect se viene attivata la funzionalità di “follow-me” e successivamente, con la funzionalità attiva, l’applicazione viene messa in background e riportata in foreground, la funzionalità di “follow-me” risulta non attiva.</p>
+</div>
+<div id="S2.p2" class="ltx_para">
+<p class="ltx_p">Grazie all’esecuzione di questi test funzionali è stato possibile individuare delle problematiche la cui risoluzione ha portato al rilascio di una versione di ZConnect funzionante e conforme alle specifiche descritte nella fase di analisi di questa tesi.</p>
+</div>
+</div>
+</section>
+</div>

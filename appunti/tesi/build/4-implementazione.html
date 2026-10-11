@@ -1,0 +1,342 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">In questo capitolo verrà esplorata l’implementazione delle funzionalità chiave per il miglioramento della funzionalità di monitoraggio delle presenze di ZConnect. Nella Sezione 4.1, sarà analizzato l’algoritmo appositamente progettato per determinare la porzione di mappa da visualizzare quando l’utente apre la mappa, con l’obiettivo di fornire una chiara visualizzazione della posizione dell’utente e dell’area di lavoro più vicina. Verrà introdotto, nella Sezione 4.2, l’algoritmo utilizzato per calcolare la distanza tra la posizione dell’utente e il bordo più prossimo del geofence. Successivamente, nella Sezione 4.3, verrà esplorata l’implementazione della funzionalità “follow-me”, focalizzandosi su come questa caratteristica agevoli l’utente a raggiungere il luogo di lavoro preposto avendo il supporto della mappa. Infine, nella Sezione 4.4, verrà affrontato il tema della prevenzione della falsificazione della posizione nell’ambiente iOS di ZConnect, evidenziando le scelte implementative adottate.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.1</span> Determinare la porzione di mappa da visualizzare</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">Un aspetto critico per il miglioramento della funzionalità di monitoraggio delle presenze di ZConnect, come visto nella Sezione <a title="3.1 Progettazione delle interfacce grafiche e della UX ‣ Capitolo 3 Progettazione ‣ UTILIZZO DI SERVIZI BASATI SULLA POSIZIONE IN UN’APPLICAZIONE DI MONITORAGGIO DELLE PRESENZE" class="ltx_ref" href="/appunti/tesi/3-progettazione/#S1"><span class="ltx_text ltx_ref_tag">3.1</span></a>, è quello di fornire all’utente, all’apertura della mappa, una visuale esaustiva della sua posizione e dell’area di lavoro a lui più vicina.</p>
+</div>
+<div id="S1.p2" class="ltx_para">
+<p class="ltx_p">Per fare questo è stato necessario definire un algoritmo, chiamato zoomToUserAndGeoFence, a cui, passata la posizione dell’utente ed il geofence a lui più vicino, mostri la porzione di mappa corretta, che comprenda la posizione dell’utente ed il centro del geofence più vicino.
+La determinazione del geofence più vicino all’utente verrà approfondita nella Sezione 4.2.</p>
+</div>
+<div id="S1.p3" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">void zoomToUserAndGeoFence(IGeoPoint geoPoint, GeoFenceWithDistance geoFence);</span></code></pre></div>
+</div>
+<div id="S1.p4" class="ltx_para">
+<p class="ltx_p">Come già analizzato, le versioni Android e iOS di ZConnect utilizzano librerie diverse per visualizzare la mappa. La versione Android di ZConnect utilizza la libreria Osmdroid.</p>
+</div>
+<div id="S1.p5" class="ltx_para">
+<p class="ltx_p">La libreria Osmdroid tra i vari metodi e classi fornisce la classe BoundingBox <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi/bibliografia/#bib9">9</a>]</cite>, che definisce una porzione di mappa tramite quattro coordinate geografiche: nord, sud, est ed ovest, modellate come float. Questa classe risulta quindi essenziale per poter definire la porzione di mappa da visualizzare. Di conseguenza per definire la porzione di mappa da visualizzare è stato imperativo definire i quattro vertici della BoundingBox.</p>
+</div>
+<div id="S1.p6" class="ltx_para">
+<p class="ltx_p">Per fare questo, inizialmente è stato necessario calcolare il raggio della BoundingBox, ovvero il raggio della porzione di mappa da visualizzare. É stato scelto come raggio la distanza tra la posizione dell’utente ed il centro del geofence, il cui calcolo verrà illustrato in seguito, per avere la certezza che nella porzione di mappa scelta fosse sempre compresa la posizione dell’utente ed il centro del geofence a lui più vicino.</p>
+</div>
+<div id="S1.p7" class="ltx_para">
+<p class="ltx_p">I vertici della BoundingBox sono però modellati come gradi di latitudine e longitudine, si è quindi reso necessario convertire la distanza, espressa in metri, in gradi di latitudine e longitudine.
+Per ottenere questo risultato sono state usate delle approssimazioni, in particolare si è considerato che <math id="S1.p7.m1" class="ltx_Math" alttext="111111" display="inline"><semantics><mn>111111</mn></semantics></math> metri sono <math id="S1.p7.m2" class="ltx_Math" alttext="1" display="inline"><semantics><mn>1</mn></semantics></math> grado di latitudine e che <math id="S1.p7.m3" class="ltx_Math" alttext="\frac{\text{distanza}}{111111\cdot\cos{\text{\{latitudine\}}}}" display="inline"><semantics><mfrac><mtext>distanza</mtext><mrow><mn>111111</mn><mo lspace="0.222em" rspace="0.222em">⋅</mo><mrow><mi>cos</mi><mo lspace="0.167em">⁡</mo><mtext>{latitudine}</mtext></mrow></mrow></mfrac></semantics></math> è un grado di longitudine.</p>
+</div>
+<div id="S1.p8" class="ltx_para">
+<p class="ltx_p">Quindi ipotizzando che al metodo zoomToUserAndGeoFence siano passati i seguenti dati, che rappresentano le coordinate della posizione dell’utente e le coordinate del geofence:</p>
+</div>
+<div id="S1.p9" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">geoPoint.getLatitude = 44.87</span>
+<span class="ltx_listingline">geoPoint.getLongitude = 010.21</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">geoFence.getMaxLatitude = 44.86</span>
+<span class="ltx_listingline">geoFence.getMaxLongitude = 10.28</span>
+<span class="ltx_listingline">geoFence.getMinLatitude = 44.86</span>
+<span class="ltx_listingline">geoFence.getMinLongitude = 10.27</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">geoFence.getDistanceToCenter = 5154.18 metri</span></code></pre></div>
+</div>
+<div id="S1.p10" class="ltx_para">
+<p class="ltx_p">vengono calcolati i gradi di latitudine e longitudine della distanza tra la posizione dell’utente ed il centro del geofence con le approssimazioni precedentemente illustrate:</p>
+</div>
+<div id="S1.p11" class="ltx_para">
+<div id="Ex1" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex1.m1" class="ltx_Math" alttext="\begin{split}&amp;{}\text{longitudeBoundingBoxRadious}=|\frac{5154.18}{111111}|=0.%
+046\\
+&amp;{}\text{latitudeBoundingBoxRadious}=|\frac{5151.18}{\cos{44.87\cdot 111111}}|%
+=0.06\end{split}" display="block"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mtext>longitudeBoundingBoxRadious</mtext><mo>=</mo><mrow><mo stretchy="false">|</mo><mfrac><mn>5154.18</mn><mn>111111</mn></mfrac><mo stretchy="false">|</mo></mrow><mo>=</mo><mn>0.046</mn></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mtext>latitudeBoundingBoxRadious</mtext><mo>=</mo><mrow><mo stretchy="false">|</mo><mfrac><mn>5151.18</mn><mrow><mi>cos</mi><mo lspace="0.167em">⁡</mo><mrow><mn>44.87</mn><mo lspace="0.222em" rspace="0.222em">⋅</mo><mn>111111</mn></mrow></mrow></mfrac><mo stretchy="false">|</mo></mrow><mo>=</mo><mn>0.06</mn></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S1.p12" class="ltx_para">
+<p class="ltx_p">Dopo aver calcolato i gradi di latitudine e longitudine corrispondenti alla distanza tra l’utente ed il centro del geofence a lui più vicino sono stati determinati i vertici della BoundingBox trovando i punti più a Nord, Est, Sud e Ovest.
+Per determinare questi punti è stato scelto come punto centrale della BoundingBox la posizione dell’utente, rendendo così necessario sommare e sottrarre opportunamente la latitudine e la longitudine della distanza tra la posizione dell’utente ed il centro del geofence con la latitudine e longitudine della posizione dell’utente.
+Per determinare il punto più a Nord è stata sommata la latitudine della posizione dell’utente con la latitudine della distanza tra l’utente ed il centro del geofence. Per determinare il punto più a Est è stata sottratta la longitudine della distanza tra l’utente ed il centro del geofence alla longitudine della posizione dell’utente. Per determinare il punto più a sud è stata sottratta la latitudine della distanza tra l’utente ed il centro del geofence alla latitudine della posizione dell’utente. Infine per determinare il punto più ad ovest è stata sommata la longitudine della posizione dell’utente con la longitudine della distanza tra l’utente ed il centro del geofence.
+Così facendo è stata determinata la porzione di mappa da mostrare.</p>
+</div>
+<div id="S1.p13" class="ltx_para">
+<p class="ltx_p">Con i dati precedenti si otterrebbero i seguenti vertici:</p>
+</div>
+<div id="S1.p14" class="ltx_para">
+<div id="Ex2" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline">
+<div class="ltx_Math bml_eqn_cell ltx_align_center"><math id="Ex2.m1" class="ltx_Math" alttext="\begin{split}&amp;{}\text{Nord}:44.87+0.06=44.93\\
+&amp;{}\text{Est}:010.21-0.046=010.16\\
+&amp;{}\text{Sud}:44.87-0.06=44.81\\
+&amp;{}\text{Ovest}:010.21+0.046=010.26\\
+\end{split}" display="block"><semantics><mtable class="bml_alignment_aligned" columnspacing="0pt" displaystyle="true" rowspacing="0pt"><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mtext>Nord</mtext><mo lspace="0.278em" rspace="0.278em">:</mo><mrow><mrow><mn>44.87</mn><mo>+</mo><mn>0.06</mn></mrow><mo>=</mo><mn>44.93</mn></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mtext>Est</mtext><mo lspace="0.278em" rspace="0.278em">:</mo><mrow><mrow><mn>010.21</mn><mo>−</mo><mn>0.046</mn></mrow><mo>=</mo><mn>010.16</mn></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mtext>Sud</mtext><mo lspace="0.278em" rspace="0.278em">:</mo><mrow><mrow><mn>44.87</mn><mo>−</mo><mn>0.06</mn></mrow><mo>=</mo><mn>44.81</mn></mrow></mrow></mtd></mtr><mtr><mtd></mtd><mtd class="ltx_align_left" columnalign="left"><mrow><mtext>Ovest</mtext><mo lspace="0.278em" rspace="0.278em">:</mo><mrow><mrow><mn>010.21</mn><mo>+</mo><mn>0.046</mn></mrow><mo>=</mo><mn>010.26</mn></mrow></mrow></mtd></mtr></mtable></semantics></math></div>
+</div>
+</div>
+<div id="S1.p15" class="ltx_para">
+<p class="ltx_p">Nella versione iOS di ZConnect per definire la porzione di mappa da visualizzare è stata utilizzata la classe MKPolygon <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi/bibliografia/#bib10">10</a>]</cite>, la quale permette di definire un poligono passando come argomenti del costruttore una lista di vertici modellati come latitudini e longitudini. É stato necessario anche per la versione iOS calcolare i quattro vertici del MKPolygon per determinare la porzione di mappa da visualizzare. Per fare questo sono stati eseguiti gli stessi passaggi illustrati in precedenza per la versione Android di ZConnect.</p>
+</div>
+<div id="S1.p16" class="ltx_para">
+<p class="ltx_p">Con i dati di esempio precedente si ottiene la porzione di mappa in Figura <a title="Figura 5 ‣ 4.1 Determinare la porzione di mappa da visualizzare ‣ Capitolo 4 Implementazione ‣ UTILIZZO DI SERVIZI BASATI SULLA POSIZIONE IN UN’APPLICAZIONE DI MONITORAGGIO DELLE PRESENZE" class="ltx_ref" href="#F5"><span class="ltx_text ltx_ref_tag">5</span></a>.</p>
+</div>
+<figure id="F5" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi/figure/Immagini-zoom_dati_esempio.webp" width="730" height="1476" loading="lazy" alt="Schermata dell'app Android con una mappa della zona tra Parma e San Secondo Parmense, divisa da una griglia le cui celle sono etichettate con numeri nel formato 13/4329/2951. Una freccia bianca indica la posizione dell'utente; a destra c'è un piccolo rettangolo azzurro con un segnaposto rosso, e in basso un secondo rettangolo azzurro tagliato dal bordo. In alto a destra ci sono l'icona di una bussola, con contorno vuoto, e quella di un segnaposto."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 5</span>: </span><span class="ltx_text">Porzione di mappa ottenuta nella Sezione 4.1</span></figcaption>
+</figure>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.2</span> Distanza dal bordo del geofence</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Per determinare la porzione di mappa da mostrare è stato necessario stabilire quale fosse il luogo di lavoro più vicino all’utente nel momento in cui apre la mappa. Per stabilire quale luogo di lavoro fosse più vicino all’utente, dato che, come già visto, ad un utente è associata una lista di luoghi di lavoro, si è scelto di ordinare la lista dei luoghi di lavoro associata all’utente in base alla distanza tra il luogo di lavoro e l’utente, per poi scegliere il luogo di lavoro con distanza minore. In queste Sezione verrà trattato l’algoritmo per calcolare la distanza tra la posizione dell’utente ed un luogo di lavoro.</p>
+</div>
+<div id="S2.p2" class="ltx_para">
+<p class="ltx_p">Come approfondito nella Sezione <a title="2.2 Analisi del sistema esistente ‣ Capitolo 2 Analisi ‣ UTILIZZO DI SERVIZI BASATI SULLA POSIZIONE IN UN’APPLICAZIONE DI MONITORAGGIO DELLE PRESENZE" class="ltx_ref" href="/appunti/tesi/2-analisi/#S2"><span class="ltx_text ltx_ref_tag">2.2</span></a>, un area di lavoro è modellata come un istanza della classe GeoFence. Tutti i geofence utilizzati sono di tipo quadrato e sono definiti da quattro properties che servono ad identificare i vertici del quadrato, ovvero le latitudini e longitudini massime e minime. Inoltre ogni geofence ha associato il suo centro, modellato come un istanza della classe GeoPoint, che è una classe creata per rappresentare all’interno di ZConnect delle posizioni di punti sulla superficie terrestre, infatti ogni GeoPoint è identificato dalla sua latitudine e longitudine.</p>
+</div>
+<div id="S2.p3" class="ltx_para">
+<p class="ltx_p">Date queste caratteristiche, per stabilire quale sia il geofence più vicino all’utente è necessario stabilire, per ogni geofence associato all’utente, la distanza tra la posizione dell’utente ed il bordo del geofence più prossimo. É fondamentale anche calcolare la distanza tra la posizione dell’utente ed il centro del geofence, poiché in caso di due o più geofence con distanza tra l’utente ed il bordo più prossimo uguale, viene considerato come geofence più vicino quello con distanza tra la posizione dell’utente ed il centro minore.</p>
+</div>
+<section id="S2.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.2.1</span> Determinare il bordo più vicino</h3>
+
+<div id="S2.SS1.p1" class="ltx_para">
+<p class="ltx_p">Per calcolare la distanza tra la posizione dell’utente ed il bordo del geofence più prossimo all’utente è necessario prima stabilire qual’è il bordo del geofence più vicino all’utente, evitando così di calcolare la distanza tra la posizione dell’utente ed ogni bordo del geofence per poi selezionare la distanza minore.</p>
+</div>
+<div id="S2.SS1.p2" class="ltx_para">
+<p class="ltx_p">Nella classe GeoFence è stato creato un metodo, calculateDistanceToBorder, che prende come argomento un GeoPoint e restituisce la distanza tra il punto passato come argomento e il bordo più vicino al GeoFence stesso. Per determinare quale sia il bordo del geofence più vicino alla posizione passata sono stati inizialmente identificati i quattro vertici del geofence, è stato possibile farlo perchè il geofence ha come properties le latitudini e longitudini massime e minime. Quindi i vertici del geofence sono modellati come GeoPoint risultanti dal prodotto cartesiano tra le latitudini e le longitudini del geofence.
+Ad esempio se le properties del geofence sono i seguenti:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">maxLatitude = 44.77</span>
+<span class="ltx_listingline">maxLongitude = 10.23</span>
+<span class="ltx_listingline">minLatitude = 44.72</span>
+<span class="ltx_listingline">minLongitude = 10.17</span></code></pre></div>
+</div>
+<div id="S2.SS1.p3" class="ltx_para">
+<p class="ltx_p">i vertici dei geofence verranno composti in questo modo:</p>
+</div>
+<div id="S2.SS1.p4" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">GeoPoint top_right_vertex = new GeoPoint(maxLatitude, maxLongitude);</span>
+<span class="ltx_listingline">GeoPoint top_left_vertex = new GeoPoint(maxLatitude, minLongitude);</span>
+<span class="ltx_listingline">GeoPoint bottom_left_vertex = new GeoPoint(minLatitude, minLongitude);</span>
+<span class="ltx_listingline">GeoPoint bottom_right_vertex = new GeoPoint(minLatitude, maxLongitude);</span></code></pre></div>
+</div>
+<div id="S2.SS1.p5" class="ltx_para">
+<p class="ltx_p">Dopo aver identificato i vertici del geofence, si è deciso, immaginando di posizionare il geofence su un piano cartesiano, che rappresenta la superficie terrestre, di dividere lo spazio in settori; proiettando verso più e meno infinito le latitudini e longitudini massime e minime del geofence. Così facendo si vengono a creare nove settori. Come si può vedere nella tabella <a title="Tabella 1 ‣ 4.2.1 Determinare il bordo più vicino ‣ 4.2 Distanza dal bordo del geofence ‣ Capitolo 4 Implementazione ‣ UTILIZZO DI SERVIZI BASATI SULLA POSIZIONE IN UN’APPLICAZIONE DI MONITORAGGIO DELLE PRESENZE" class="ltx_ref" href="#T1"><span class="ltx_text ltx_ref_tag">1</span></a> i settori sono stati numerati sequenzialmente, partendo dal settore in alto a sinistra. Seguendo questa numerazione il settore cinque è quello che rappresenta l’area del geofence.</p>
+</div>
+<figure id="T1" class="ltx_table"><div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_r">1</td>
+<td class="ltx_td ltx_align_center ltx_border_r">2</td>
+<td class="ltx_td ltx_align_center">3</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t">4</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t">5</td>
+<td class="ltx_td ltx_align_center ltx_border_t">6</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t">7</td>
+<td class="ltx_td ltx_align_center ltx_border_r ltx_border_t">8</td>
+<td class="ltx_td ltx_align_center ltx_border_t">9</td>
+</tr>
+</table>
+</div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table"><span class="ltx_text">Tabella 1</span>: </span><span class="ltx_text">Divisione dello spazio in settori</span></figcaption>
+</figure>
+<div id="S2.SS1.p6" class="ltx_para">
+<p class="ltx_p">Una volta identificati questi settori, confrontando la latitudine e la longitudine della posizione dell’utente con la latitudine e longitudine dei vertici del geofence, è possibile stabilire in che quadrante è posizionato l’utente.
+Ad esempio se la posizione dell’utente, che è passata come argomento al metodo calculateDistanceToBorder, ha la seguente latitudine e longitudine:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">point_latitude = 37.42</span>
+<span class="ltx_listingline">point_longitude = -122.08</span></code></pre></div>
+</div>
+<div id="S2.SS1.p7" class="ltx_para">
+<p class="ltx_p">Confrontando la latitudine e la longitudine della posizione dell’utente con le latitudini e longitudini minime e massime del geofence, si stabilisce che la posizione dell’utente cade nel settimo settore, in quanto la latitudine della posizione dell’utente è minore uguale della latitudine minima del geofence e la longitudine della posizione dell’utente è minore uguale della longitudine minima del geofence.</p>
+</div>
+<div id="S2.SS1.p8" class="ltx_para">
+<p class="ltx_p">Una volta identificato qual’è il settore in cui è contenuta la posizione dell’utente si è stabilito anche qual’è il bordo più vicino all’utente, in quanto è sempre il bordo che fa parte del settore identificato.
+Nei casi in cui la posizione dell’utente sia contenuta nei quadranti 1, 3, 7 e 9, non viene identificato il bordo del geofence, ma viene identificato un vertice, in quanto, per qualsiasi posizione all’interno di questi quadranti, la distanza minima tra quella posizione ed il geofence sarà sempre la distanza tra quella posizione ed il vertice contenuto nel quadrante identificato.
+Nell’esempio precedente quindi viene identificato come bordo più vicino il vertice bottom_left_vertex.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.2.2</span> Calcolo della distanza dal bordo</h3>
+
+<div id="S2.SS2.p1" class="ltx_para">
+<p class="ltx_p">Grazie all’algoritmo precedentemente illustrato è stato possibile identificare quale fosse il bordo del geofence più vicino all’utente. Avendo identificato il bordo più vicino, modellato tramite i due vertici che lo compongono, che a loro volta sono modellati tramite istanze della classe GeoPoint, è stato possibile calcolare la distanza minima tra la posizione dell’utente ed il bordo identificato come quello più vicino all’utente.</p>
+</div>
+<div id="S2.SS2.p2" class="ltx_para">
+<p class="ltx_p">Come visto in precedenza, si può identificare come bordo più vicino un segmento o un punto. Nel caso in cui venga identificato un punto è necessario calcolare la distanza tra due punti, la posizione dell’utente e il vertice del geofence identificato come quello più vicino all’utente. Per raggiungere questo obiettivo è stato implementato un metodo nella classe GeoPoint, getHaversineDistance:</p>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">/**</span>
+<span class="ltx_listingline">* Computes the minimum distance between current geopoint and a second</span>
+<span class="ltx_listingline">* geopont using the Haversione Formula</span>
+<span class="ltx_listingline">* @param from The geopoint from which to compute distance</span>
+<span class="ltx_listingline">* @return The distance</span>
+<span class="ltx_listingline">*/</span>
+<span class="ltx_listingline">double getHaversineDistance(IGeoPoint from);</span></code></pre></div>
+</div>
+<div id="S2.SS2.p3" class="ltx_para">
+<p class="ltx_p">che permette di calcolare la distanza tra la posizione dell’utente, modellata tramite un’istanza della classe GeoPoint, ed una seconda posizione, passata come argomento del metodo stesso, utilizzando la formula di Haversine. La formula di Haversine determina la distanza tra due punti su una sfera, date le loro longitudini e latitudini.
+Viene riportata di seguito la formula di Haversine, dove <math id="S2.SS2.p3.m1" class="ltx_Math" alttext="\phi" display="inline"><semantics><mi>ϕ</mi></semantics></math> è la latitudine, <math id="S2.SS2.p3.m2" class="ltx_Math" alttext="\lambda" display="inline"><semantics><mi>λ</mi></semantics></math> è la longitudine e <math id="S2.SS2.p3.m3" class="ltx_Math" alttext="R" display="inline"><semantics><mi>R</mi></semantics></math> è il raggio della terra:</p>
+</div>
+<div id="S2.SS2.p4" class="ltx_para">
+<div id="Ch6.S3.EGx1" class="ltx_equationgroup ltx_eqn_align bml_equationgroup bml_equation_container ltx_align_baseline">
+<div id="Ex3" class="ltx_equation bml_equation ltx_align_baseline" role="group" aria-label="equation">
+<div class="ltx_td ltx_align_right bml_eqn_cell"><math id="Ex3.m1" class="ltx_Math" alttext="\displaystyle a" display="inline"><semantics><mi>a</mi></semantics></math></div>
+<div class="ltx_td ltx_align_left bml_eqn_cell"><math id="Ex3.m2" class="ltx_Math" alttext="\displaystyle{}=\sin^{2}\left(\frac{\phi_{2}-\phi_{1}}{2}\right)+\cos\phi_{1}%
+\cdot\cos\phi_{2}\cdot\sin^{2}\left(\frac{\lambda_{2}-\lambda_{1}}{2}\right)" display="inline"><semantics><mrow><mi></mi><mo>=</mo><mrow><mrow><msup><mi>sin</mi><mn>2</mn></msup><mo>⁡</mo><mrow><mo>(</mo><mstyle displaystyle="true"><mfrac><mrow><msub><mi>ϕ</mi><mn>2</mn></msub><mo>−</mo><msub><mi>ϕ</mi><mn>1</mn></msub></mrow><mn>2</mn></mfrac></mstyle><mo>)</mo></mrow></mrow><mo>+</mo><mrow><mrow><mi>cos</mi><mo lspace="0.167em">⁡</mo><msub><mi>ϕ</mi><mn>1</mn></msub></mrow><mo lspace="0.222em" rspace="0.222em">⋅</mo><mrow><mi>cos</mi><mo lspace="0.167em">⁡</mo><msub><mi>ϕ</mi><mn>2</mn></msub></mrow><mo lspace="0.222em" rspace="0.222em">⋅</mo><mrow><msup><mi>sin</mi><mn>2</mn></msup><mo>⁡</mo><mrow><mo>(</mo><mstyle displaystyle="true"><mfrac><mrow><msub><mi>λ</mi><mn>2</mn></msub><mo>−</mo><msub><mi>λ</mi><mn>1</mn></msub></mrow><mn>2</mn></mfrac></mstyle><mo>)</mo></mrow></mrow></mrow></mrow></mrow></semantics></math></div>
+</div>
+<div id="Ex4" class="ltx_equation bml_equation ltx_align_baseline" role="group" aria-label="equation">
+<div class="ltx_td ltx_align_right bml_eqn_cell"><math id="Ex4.m1" class="ltx_Math" alttext="\displaystyle c" display="inline"><semantics><mi>c</mi></semantics></math></div>
+<div class="ltx_td ltx_align_left bml_eqn_cell"><math id="Ex4.m2" class="ltx_Math" alttext="\displaystyle{}=2\cdot\mathrm{atan2}\left(\sqrt{a},\sqrt{1-a}\right)" display="inline"><semantics><mrow><mi></mi><mo>=</mo><mrow><mrow><mn>2</mn><mo lspace="0.222em" rspace="0.222em">⋅</mo><mi>atan2</mi></mrow><mo>⁢</mo><mrow><mo>(</mo><msqrt><mi>a</mi></msqrt><mo>,</mo><msqrt><mrow><mn>1</mn><mo>−</mo><mi>a</mi></mrow></msqrt><mo>)</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+<div id="Ex5" class="ltx_equation bml_equation ltx_align_baseline" role="group" aria-label="equation">
+<div class="ltx_td ltx_align_right bml_eqn_cell"><math id="Ex5.m1" class="ltx_Math" alttext="\displaystyle d" display="inline"><semantics><mi>d</mi></semantics></math></div>
+<div class="ltx_td ltx_align_left bml_eqn_cell"><math id="Ex5.m2" class="ltx_Math" alttext="\displaystyle{}=R\cdot c" display="inline"><semantics><mrow><mi></mi><mo>=</mo><mrow><mi>R</mi><mo lspace="0.222em" rspace="0.222em">⋅</mo><mi>c</mi></mrow></mrow></semantics></math></div>
+</div>
+</div>
+</div>
+<div id="S2.SS2.p5" class="ltx_para">
+<p class="ltx_p">Invece, nel caso in cui venga identificato un segmento è necessario calcolare la distanza minima tra un punto ed un segmento. Per fare questo è stato implementato un altro metodo nella classe GeoPoint, getMinimumDistancePointLine:</p>
+</div>
+<div id="S2.SS2.p6" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">/**</span>
+<span class="ltx_listingline">* Computer the distance bewteen two given geopoint and a third geopoint</span>
+<span class="ltx_listingline">*</span>
+<span class="ltx_listingline">* @param vertex1</span>
+<span class="ltx_listingline">* @param vertex2</span>
+<span class="ltx_listingline">* @return</span>
+<span class="ltx_listingline">*/</span>
+<span class="ltx_listingline">double getMinimumDistancePointLine(IGeoPoint vertex1, IGeoPoint vertex2);</span></code></pre></div>
+</div>
+<div id="S2.SS2.p7" class="ltx_para">
+<p class="ltx_p">che permette di calcolare la distanza tra la posizione, modellata tramite l’istanza della classe GeoPoint, ed un segmento, modellato tramite i suoi due vertici, passati come argomento al metodo stesso.
+Innanzitutto è stato calcolato l’angolo di Bearing assoluto dei due segmenti formati dai vertici del bordo più vicino e la posizione dell’utente. L’angolo di Bearing è l’angolo formato tra il segmento ed il nord magnetico.
+Considerando la posizione dell’utente come punto A ed i vertici del segmento come punti B e C, il calcolo dell’angolo di Bearing è il seguente, dove <math id="S2.SS2.p7.m1" class="ltx_Math" alttext="\phi" display="inline"><semantics><mi>ϕ</mi></semantics></math> è la latitudine, <math id="S2.SS2.p7.m2" class="ltx_Math" alttext="\lambda" display="inline"><semantics><mi>λ</mi></semantics></math> è la longitudine e <math id="S2.SS2.p7.m3" class="ltx_Math" alttext="R" display="inline"><semantics><mi>R</mi></semantics></math> è il raggio della terra:</p>
+</div>
+<div id="S2.SS2.p8" class="ltx_para">
+<div id="Ch6.S3.EGx2" class="ltx_equationgroup ltx_eqn_align bml_equationgroup bml_equation_container ltx_align_baseline">
+<div id="Ex6" class="ltx_equation bml_equation ltx_align_baseline" role="group" aria-label="equation">
+<div class="ltx_td ltx_align_right bml_eqn_cell"><span class="ltx_text ltx_markedasmath">bearingAC</span></div>
+<div class="ltx_td ltx_align_left bml_eqn_cell"><math id="Ex6.m2" class="ltx_Math" alttext="\displaystyle{}=\mathrm{atan2}\left(\sin(\lambda_{C}-\lambda_{A})\cdot\cos(%
+\phi_{2}),\cos(\phi_{1})\cdot\sin(\phi_{2})-\sin(\phi_{1})\cdot\cos(\phi_{2})%
+\cdot\cos(\phi_{C}-\phi_{A})\right)" display="inline"><semantics><mrow><mi></mi><mo>=</mo><mrow><mi>atan2</mi><mo>⁢</mo><mrow><mo>(</mo><mrow><mrow><mi>sin</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><msub><mi>λ</mi><mi>C</mi></msub><mo>−</mo><msub><mi>λ</mi><mi>A</mi></msub></mrow><mo rspace="0.055em" stretchy="false">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><msub><mi>ϕ</mi><mn>2</mn></msub><mo stretchy="false">)</mo></mrow></mrow></mrow><mo>,</mo><mrow><mrow><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><msub><mi>ϕ</mi><mn>1</mn></msub><mo rspace="0.055em" stretchy="false">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mrow><mi>sin</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><msub><mi>ϕ</mi><mn>2</mn></msub><mo stretchy="false">)</mo></mrow></mrow></mrow><mo>−</mo><mrow><mrow><mi>sin</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><msub><mi>ϕ</mi><mn>1</mn></msub><mo rspace="0.055em" stretchy="false">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><msub><mi>ϕ</mi><mn>2</mn></msub><mo rspace="0.055em" stretchy="false">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><msub><mi>ϕ</mi><mi>C</mi></msub><mo>−</mo><msub><mi>ϕ</mi><mi>A</mi></msub></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow><mo>)</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+<div id="Ex7" class="ltx_equation bml_equation ltx_align_baseline" role="group" aria-label="equation">
+<div class="ltx_td ltx_align_right bml_eqn_cell"><span class="ltx_text ltx_markedasmath">bearingAB</span></div>
+<div class="ltx_td ltx_align_left bml_eqn_cell"><math id="Ex7.m2" class="ltx_Math" alttext="\displaystyle{}=\mathrm{atan2}\left(\sin(\lambda_{B}-\lambda_{A})\cdot\cos(%
+\phi_{2}),\cos(\phi_{1})\cdot\sin(\phi_{2})-\sin(\phi_{1})\cdot\cos(\phi_{2})%
+\cdot\cos(\phi_{B}-\phi_{A})\right)" display="inline"><semantics><mrow><mi></mi><mo>=</mo><mrow><mi>atan2</mi><mo>⁢</mo><mrow><mo>(</mo><mrow><mrow><mi>sin</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><msub><mi>λ</mi><mi>B</mi></msub><mo>−</mo><msub><mi>λ</mi><mi>A</mi></msub></mrow><mo rspace="0.055em" stretchy="false">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><msub><mi>ϕ</mi><mn>2</mn></msub><mo stretchy="false">)</mo></mrow></mrow></mrow><mo>,</mo><mrow><mrow><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><msub><mi>ϕ</mi><mn>1</mn></msub><mo rspace="0.055em" stretchy="false">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mrow><mi>sin</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><msub><mi>ϕ</mi><mn>2</mn></msub><mo stretchy="false">)</mo></mrow></mrow></mrow><mo>−</mo><mrow><mrow><mi>sin</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><msub><mi>ϕ</mi><mn>1</mn></msub><mo rspace="0.055em" stretchy="false">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><msub><mi>ϕ</mi><mn>2</mn></msub><mo rspace="0.055em" stretchy="false">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mrow><mi>cos</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><msub><mi>ϕ</mi><mi>B</mi></msub><mo>−</mo><msub><mi>ϕ</mi><mi>A</mi></msub></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow><mo>)</mo></mrow></mrow></mrow></semantics></math></div>
+</div>
+</div>
+</div>
+<div id="S2.SS2.p9" class="ltx_para">
+<p class="ltx_p">Gli angoli di Bearing ottenuti sono stati normalizzati, in modo da ottenere valori compresi tra 0 e 360.
+Successivamente è stata calcolata la distanza tra il punto A ed il punto C utilizzando la formula di Haversine, precedentemente illustrata.
+Infine è stata calcolata la cross-track distance, ovvero la distanza tra un punto ed un segmento su una sfera, distanza chiamata great circle path.
+La formula per calcolare la cross-track distance è la seguente:</p>
+</div>
+<div id="S2.SS2.p10" class="ltx_para">
+<div id="Ch6.S3.EGx3" class="ltx_equationgroup ltx_eqn_align bml_equationgroup bml_equation_container ltx_align_baseline">
+<div id="Ex8" class="ltx_equation bml_equation ltx_align_baseline">
+<div class="ltx_td ltx_align_right bml_eqn_cell"><math id="Ex8.m1" class="ltx_Math" alttext="\displaystyle d_{xt}=\sin^{-1}\left(\sin(\delta_{13})\cdot\sin(\theta_{13}-%
+\theta_{12})\right)\cdot R" display="inline"><semantics><mrow><msub><mi>d</mi><mrow><mi>x</mi><mo>⁢</mo><mi>t</mi></mrow></msub><mo>=</mo><mrow><mrow><msup><mi>sin</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo>⁡</mo><mrow><mo>(</mo><mrow><mrow><mi>sin</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><msub><mi>δ</mi><mn>13</mn></msub><mo rspace="0.055em" stretchy="false">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mrow><mi>sin</mi><mo>⁡</mo><mrow><mo stretchy="false">(</mo><mrow><msub><mi>θ</mi><mn>13</mn></msub><mo>−</mo><msub><mi>θ</mi><mn>12</mn></msub></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow><mo rspace="0.055em">)</mo></mrow></mrow><mo rspace="0.222em">⋅</mo><mi>R</mi></mrow></mrow></semantics></math></div>
+</div>
+</div>
+</div>
+<div id="S2.SS2.p11" class="ltx_para">
+<p class="ltx_p">dove:</p>
+<ul id="S2.I1" class="ltx_itemize">
+<li id="S2.I1.i1" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i1.p1" class="ltx_para"><p class="ltx_p"><math id="S2.I1.i1.p1.m1" class="ltx_Math" alttext="\delta_{13}" display="inline"><semantics><msub><mi>δ</mi><mn>13</mn></msub></semantics></math> è la distanza tra il punto di partenza ed il terzo punto. Nell’esempio precedente è la distanza tra A e C</p>
+</div>
+</li>
+<li id="S2.I1.i2" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i2.p1" class="ltx_para"><p class="ltx_p"><math id="S2.I1.i2.p1.m1" class="ltx_Math" alttext="\theta_{13}" display="inline"><semantics><msub><mi>θ</mi><mn>13</mn></msub></semantics></math> è l’angolo di Bearing tra il punto di partenza ed il terzo punto. Nell’esempio precedente è l’angolo di Bearing del segmento AC.</p>
+</div>
+</li>
+<li id="S2.I1.i3" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i3.p1" class="ltx_para"><p class="ltx_p"><math id="S2.I1.i3.p1.m1" class="ltx_Math" alttext="\theta_{12}" display="inline"><semantics><msub><mi>θ</mi><mn>12</mn></msub></semantics></math> è l’angolo di Bearing tra il punto di partenza ed il secondo punto. Nell’esempio precedente è l’angolo di Bearing del segmento AB.</p>
+</div>
+</li>
+<li id="S2.I1.i4" class="ltx_item">
+<span class="ltx_tag ltx_tag_item">•</span><div id="S2.I1.i4.p1" class="ltx_para"><p class="ltx_p"><math id="S2.I1.i4.p1.m1" class="ltx_Math" alttext="R" display="inline"><semantics><mi>R</mi></semantics></math> è il raggio della terra.</p>
+</div>
+</li>
+</ul>
+</div>
+<div id="S2.SS2.p12" class="ltx_para">
+<p class="ltx_p">Grazie a questo algoritmo viene calcolata la distanza tra la posizione dell’utente ed il bordo del geofence che permette di selezionare il geofence più vicino all’utente nel momento in cui apre la mappa.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.3</span> Follow-me</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">Per migliorare la funzionalità di monitoraggio delle presenze di ZConnect in questo lavoro di tesi è stato deciso di implementare la funzionalità del “follow-me”, come approfondito nella Sezione <a title="3.1 Progettazione delle interfacce grafiche e della UX ‣ Capitolo 3 Progettazione ‣ UTILIZZO DI SERVIZI BASATI SULLA POSIZIONE IN UN’APPLICAZIONE DI MONITORAGGIO DELLE PRESENZE" class="ltx_ref" href="/appunti/tesi/3-progettazione/#S1"><span class="ltx_text ltx_ref_tag">3.1</span></a>. Questa funzionalità facilita l’utente nel raggiungimento dell’area di lavoro poiché, una volta attivata, il marker che rappresenta la posizione dell’utente rimane al centro della schermata della mappa durante gli spostamenti dell’utente.</p>
+</div>
+<div id="S3.p2" class="ltx_para">
+<p class="ltx_p">Anche in questo caso, a causa del duplice sviluppo di ZConnect per Android l’implementazione di questa funzionalità cambia notevolmente tra i due sistemi operativi.</p>
+</div>
+<div id="S3.p3" class="ltx_para">
+<p class="ltx_p">Come già detto la versione Android di ZConnect utilizza la libreria Osmdroid <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi/bibliografia/#bib2">2</a>]</cite> per la visualizzazione e l’interazione con la mappa. La libreria Osmdroid fornisce una classe, MyLocationNewOverlay <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi/bibliografia/#bib11">11</a>]</cite>, che permette di rappresentare la posizione del device sulla mappa tramite un marker. La classe MyLocationNewOverlay ha associato un LocationProvider <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi/bibliografia/#bib12">12</a>]</cite>, passato come argomento nel costruttore, grazie al quale è in grado di conoscere la posizione del device e reagire agli spostamenti, ridisegnando il marker sulla mappa. Inoltre la classe MyLocationNewOverlay espone i metodi enableFollowLocation e disableFollowLocation, i quali permettono di abilitare la funzionalità “follow-me” che permette di centrare la mappa sulla posizione corrente del MyLocationNewOverlay e automaticamente spostarla quando viene rilevato un cambio di posizione, in modo da far rimanere sempre al centro della mappa il marker che rappresenta la posizione del dispositivo.</p>
+</div>
+<div id="S3.p4" class="ltx_para">
+<p class="ltx_p">Quindi per implementare la funzionalità di “follow-me” nella versione Android è bastato utilizzare come marker per la posizione dell’utente un istanza della classe MyLocationNewOverlay ed utilizzare i suoi metodi per attivare e disattivare la funzionalità, la quale viene poi gestita in automatico dalla libreria Osmdroid.</p>
+</div>
+<div id="S3.p5" class="ltx_para">
+<p class="ltx_p">A differenza di Android, la versione iOS di ZConnect utilizza la libreria MapKit <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi/bibliografia/#bib3">3</a>]</cite> che è fornita direttamente da Apple.
+La libreria MapKit fornisce la classe MKMapView usata per mostrare ed interagire con la mappa <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi/bibliografia/#bib13">13</a>]</cite>. La libreria MKMapView implementa dei metodi per mostrare e manipolare dei contenuti sulla mappa. Per mostrare la posizione del device sulla mappa è stato utilizzato il metodo showUserLocation della classe MKMapView. Attivando questa funzione viene visualizzato sulla mappa un marker blu in corrispondenza della posizione del device. Il marker reagisce anche allo spostamento del device ridisegnandosi in corrispondenza della nuova posizione rilevata.</p>
+</div>
+<div id="S3.p6" class="ltx_para">
+<p class="ltx_p">La libreria MapKit non fornisce, a differenza di Osmdroid, la funzionalità “follow-me” integrata nella classe che rappresenta il marker dell’utente. Quindi per implementare la funzionalità di “follow-me” è stata usata la classe MKMapCamera <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi/bibliografia/#bib14">14</a>]</cite> fornita anch’essa dalla libreria MKMapKit. Un’istanza di questa classe definisce un punto di vista virtuale sopra la superficie della mappa e influenza il modo in cui MapKit presenta la mappa all’utente.</p>
+</div>
+<div id="S3.p7" class="ltx_para">
+<p class="ltx_p">La classe MKMapView fornisce una funzione di call-back che viene chiamata dal sistema operativo quando la posizione del device cambia, in questa funzione viene controllato se l’utente ha attivato funzionalità di “follow-me”, se è attiva viene settata la property centerCoordinate, della classe MKMapCamera, con le coordinate prese dalla posizione dell’utente, che la classe MKMapView salva nella variabile userLocation. Dopo aver settato le coordinate del centro della mappa, tramite la funzione setCamera della classe MKMapView viene animata la mappa per essere centrata sulla nuova posizione dell’utente.</p>
+</div>
+<div id="S3.p8" class="ltx_para">
+<p class="ltx_p">Così facendo è stata implementata la funzionalità di “follow-me” in iOS, agevolando anche gli utenti della versione iOS di ZConnect nel raggiungimento dell’area di lavoro.</p>
+</div>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.4</span> Fake position iOS</h2>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">Nel capitolo di Analisi si era identificato come caratteristica dell’applicazione la prevenzione di possibili falsificazioni della posizione del dispositivo da parte dell’utente, in modo da evitare che l’utente possa registrare la propria presenza sul posto di lavoro anche quando non è fisicamente lì.
+Questo controllo sulla falsificazione della posizione dell’utente nella versione iOS di ZConnect non era stato implementato prima di questo lavoro di tesi, a differenza della versione Android di ZConnect che controllava anche prima di questo lavoro di tesi la veridicità della posizione dell’utente.</p>
+</div>
+<div id="S4.p2" class="ltx_para">
+<p class="ltx_p">Quindi è stato necessario implementare un controllo sulla eventuale falsificazione della posizione dell’utente nella versione iOS di ZConnect.</p>
+</div>
+<div id="S4.p3" class="ltx_para">
+<p class="ltx_p">La classe che si occupa di implementare la classe che in iOS si occupa di rilevalre la posizione dell’utente è LocationManager. La classe che in iOS si occupa di rilevare la posizione del device è CLLocationManager. Il CLLocationManager è il luogo centrale per gestire i comportamenti legati alla posizione dell’applicazione. Si può utilizzare un oggetto location-manager per configurare, avviare e interrompere i servizi di localizzazione <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi/bibliografia/#bib15">15</a>]</cite>.</p>
+</div>
+<div id="S4.p4" class="ltx_para">
+<p class="ltx_p">Nella classe LocationManager è stato creato un metodo, isMockLocation, per identificare se la posizione rilevata dal CLLocationManager è fittizia oppure deriva dalla vera posizione del device. Per raggiungere questo obiettivo sono stati usati i metodi isSimulatedBySoftware e isProducedByAccessory della classe CLLocationSourceInformation. La classe CLLocationSourceInformation contiene informazioni sulla fonte che fornisce un’istanza di CLLocation <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi/bibliografia/#bib16">16</a>]</cite>. Un oggetto CLLocation contiene la posizione geografica e l’altitudine di un dispositivo, insieme a valori che indicano l’accuratezza di tali misurazioni e il momento in cui sono state raccolte <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi/bibliografia/#bib17">17</a>]</cite>.
+Il metodo isSimulatedBySoftware restituisce un valore booleano che indica se la posizione rilevate è stata generata da un software come Xcode, mentre il metodo isProducedByAccessory restituisce un valore booleano che indica se la posizione è stata generata da un accessorio esterno.</p>
+</div>
+<div id="S4.p5" class="ltx_para">
+<p class="ltx_p">Il metodo isMockLocation, implementato nella classe LocationManager, controlla i risultati dei metodi isSimulatedBySoftware e isProducedByAccessory. Se uno dei due risultati è vero allora la posizione rilevata dal CLLocationManager è stata falsificata dall’utente.</p>
+</div>
+<div id="S4.p6" class="ltx_para">
+<p class="ltx_p">Ora, per verificare se una posizione è stata falsificata, è necessario invocare il metodo isMockLocation dall’istanza della classe LocationManager, utilizzata per ottenere la posizione del dispositivo. Questo metodo esegue un controllo per determinare se la posizione ricevuta dal CLLocationManager è di natura simulata o rappresenta effettivamente la reale posizione del dispositivo.</p>
+</div>
+</div>
+</section>
+</div>
