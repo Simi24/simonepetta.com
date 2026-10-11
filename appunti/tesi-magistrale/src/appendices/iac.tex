@@ -1,0 +1,551 @@
+\section{Configurazione dell'orchestratore Terragrunt}
+
+Il Listato \ref{lst:hcl-root} riporta la configurazione di base dell'orchestratore Terragrunt e mentre il Listato \ref{lst:hcl-prod} la sua declinazione per l'ambiente di produzione. Il codice illustra il meccanismo di ereditarietà gerarchica adottato per prevenire la duplicazione delle dichiarazioni e definisce l'inizializzazione del backend remoto su Amazon S3, necessario per la gestione concorrente e sicura dello stato infrastrutturale.
+
+\begin{lstlisting}[language=HCL, label={lst:hcl-root}]
+locals {
+  env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+
+  aws_region            = "eu-west-1"
+  gcp_project_id_prefix = "company"
+  gcp_project_id        = "${local.gcp_project_id_prefix}-${local.env}"
+  gcp_region            = "europe-west1"
+
+  aws_account_id = local.env_vars.locals.aws_account_id
+  env            = local.env_vars.locals.env
+
+  iam_account_role_name = "<role-name>"
+}
+
+remote_state {
+  backend = "s3"
+  config = {
+    bucket         = "${local.gcp_project_id_prefix}-tfstate-${local.env}"
+    key            = "${path_relative_to_include()}/terraform.tfstate"
+    region         = local.aws_region
+    encrypt        = true
+    dynamodb_table = "${local.gcp_project_id_prefix}-tfstate-lock-${local.env}"
+
+    profile = "AdministratorAccess-<account-id>"
+    assume_role = {
+      role_arn = "arn:aws:iam::${local.aws_account_id}:role/<role name>"
+    }
+
+    s3_bucket_tags = {
+      owner = "terragrunt"
+      env   = local.env
+    }
+
+    dynamodb_table_tags = {
+      owner = "terragrunt"
+      env   = local.env
+    }
+  }
+  generate = {
+    path      = "backend.tf"
+    if_exists = "overwrite_terragrunt"
+  }
+}
+
+generate "provider" {
+  path      = "provider.tf"
+  if_exists = "overwrite_terragrunt"
+  contents  = <<EOF
+provider "aws" {
+  region  = "${local.aws_region}"
+  profile = "AdministratorAccess-<account-id>"
+
+  assume_role {
+    role_arn = "arn:aws:iam::${local.aws_account_id}:role/${local.iam_account_role_name}"
+  }
+}
+
+provider "aws" {
+  alias   = "us-east-1"
+
+  region  = "us-east-1"
+  profile = "AdministratorAccess-<account-id>"
+
+  assume_role {
+    role_arn = "arn:aws:iam::${local.aws_account_id}:role/${local.iam_account_role_name}"
+  }
+}
+
+provider "aws" {
+  alias   = "shared"
+  region  = "${local.aws_region}"
+  profile = "AdministratorAccess-<account-id>"
+
+  assume_role {
+    role_arn = "arn:aws:iam::<shared-account-id>:role/${local.iam_account_role_name}"
+  }
+}
+
+provider "google" {
+  project = "${local.gcp_project_id}"
+  region  = "${local.gcp_region}"
+  user_project_override = true
+  billing_project = "${local.gcp_project_id}"
+}
+
+provider "google-beta" {
+  project = "${local.gcp_project_id}"
+  region  = "${local.gcp_region}"
+  user_project_override = true
+  billing_project = "${local.gcp_project_id}"
+}
+EOF
+}
+
+generate "vars" {
+  path      = "vars.tf"
+  if_exists = "overwrite_terragrunt"
+  contents  = <<EOF
+variable "env" {
+  description = "The environment name. It is used to create the project name and the VPC name."
+  type        = string
+}
+
+data "aws_secretsmanager_secret" "tf-secrets" { name = "tf-secrets-$${var.env}" }
+data "aws_secretsmanager_secret_version" "tf-secrets" { secret_id = data.aws_secretsmanager_secret.tf-secrets.id }
+
+locals {
+  envs = {
+    dev = {
+      account-id = "xxxxxxxxxxx"
+    }
+    test = {
+      account-id = "xxxxxxxxxxx"
+    }
+    prod = {
+      account-id = "xxxxxxxxxxx"
+    }
+    shared = {
+      account-id = "xxxxxxxxxxx"
+    }
+  }
+  secrets = jsondecode(data.aws_secretsmanager_secret_version.tf-secrets.secret_string)
+}
+EOF
+}
+
+inputs = {
+  env = local.env
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=HCL, label={lst:hcl-prod}]
+include "root" {
+  path = find_in_parent_folders("root.hcl")
+}
+
+include "module_defaults" {
+  path = "${get_terragrunt_dir()}/../../_env/000-commons.hcl"
+}
+
+inputs = {
+  enable_flow_logs = true
+}
+\end{lstlisting}
+
+\section{Modulo api-gateway-lambda}
+
+Il Listato \ref{lst:gateway-var-out} definisce l'interfaccia pubblica del modulo Terraform. Il blocco di codice accorpa le dichiarazioni di ingresso (\texttt{variables.tf}), necessarie per parametrizzare l'ambiente di rilascio, e i valori di uscita (\texttt{outputs.tf}), impiegati per esporre gli identificativi univoci delle risorse generate (Amazon Resource Names) agli altri componenti dell'infrastruttura.
+
+\begin{lstlisting}[language=HCL, label={lst:gateway-var-out}]
+# ==========================================
+# File: variables.tf
+# ==========================================
+variable "name" {
+  type        = string
+  description = ""
+}
+
+variable "app_image" {
+  type        = string
+  description = ""
+}
+
+variable "lambda_timeout" {
+  type        = number
+  description = "Lambda function timeout in seconds"
+  default     = 60
+
+  validation {
+    condition     = var.lambda_timeout >= 60 && var.lambda_timeout <= 900
+    error_message = "Lambda timeout must be between 60 and 900 seconds."
+  }
+}
+
+variable "lambda_memory_size" {
+  type        = number
+  description = "Lambda function memory size in MB"
+  default     = 512
+}
+
+variable "env" {
+  type = string
+}
+
+variable "environments" {
+  description = ""
+  default     = {}
+}
+
+variable "domain_name" {
+  type        = string
+  description = "Domain name for the API Gateway"
+  default = null
+}
+
+variable "dynamodb_table_arn" {
+  type        = string
+  description = "DynamoDB table ARN"
+  default     = null
+}
+
+variable "tags" {
+  type        = map(string)
+  description = "Tags to be applied to all resources"
+  default     = {}
+}
+
+variable "allow_origins" {
+  description = ""
+  default     = ["*"]
+}
+
+variable "allow_methods" {
+  description = ""
+  default     = ["*"]
+}
+
+variable "custom_domain_name" {
+  type        = string
+  description = "Custom domain name for the API Gateway"
+  default     = null
+}
+
+variable "domain_extension" {
+  type        = string
+  description = "Domain extension for the API Gateway"
+  default     = null
+}
+
+variable "acm_certificate_arn" {
+  type        = string
+  description = "ARN of the certificate for the custom domain name"
+  default     = null
+}
+variable "cognito_audience" {
+  type        = list(string)
+  description = "Audience (App client IDs) for Cognito JWT authorizer"
+  default     = null
+}
+
+variable "cognito_user_pool_id" {
+  type        = string
+  description = "Cognito User Pool ID for JWT authorizer"
+  default     = null
+}
+
+variable "aws_region" {
+  type        = string
+  description = "AWS region for Cognito User Pool"
+  default     = null
+}
+variable "additional_managed_policy_arns" {
+  type        = list(string)
+  description = "Additional managed policy ARNs to attach to the Lambda role"
+  default     = []
+}
+
+variable "additional_iam_statements" {
+  type        = list(any)
+  description = "Additional IAM policy statements (list of maps) to include in the Lambda inline policy"
+  default     = []
+}
+
+# ==========================================
+# File: outputs.tf
+# ==========================================
+output "api_gateway_domain_name" {
+  description = "The domain name configured for the API Gateway."
+  value       = try(aws_apigatewayv2_domain_name.domain[0].domain_name, null)
+}
+
+output "api_gateway_target_domain_name" {
+  description = "The target domain name (CloudFront distribution) of the API Gateway custom domain."
+  value       = try(aws_apigatewayv2_domain_name.domain[0].domain_name_configuration[0].target_domain_name, null)
+}
+
+output "api_gateway_hosted_zone_id" {
+  description = "The hosted zone ID of the API Gateway custom domain."
+  value       = try(aws_apigatewayv2_domain_name.domain[0].domain_name_configuration[0].hosted_zone_id, null)
+}
+
+output "lambda_function_arn" {
+  description = "ARN of the Lambda function"
+  value       = aws_lambda_function.lambda.arn
+}
+
+output "lambda_function_name" {
+  description = "Name of the Lambda function"
+  value       = aws_lambda_function.lambda.function_name
+}
+\end{lstlisting}
+
+Il listato \ref{lst:gateway-iam} espone la configurazione dei permessi di accesso, redatta in stretta osservanza del principio del privilegio minimo. Il listato riporta le dichiarazioni Terraform per la creazione dei ruoli operativi (\texttt{iam.tf}) e i relativi documenti JSON (\texttt{api\_gateway\_assume\_role\_policy.json} e \texttt{lambda\_assume\_role\_policy.json}) che autorizzano esplicitamente i servizi AWS ad assumere tali identità durante l'esecuzione.
+
+\begin{lstlisting}[language=HCL, label={lst:gateway-iam}]
+# ==========================================
+# File: iam.tf
+# ==========================================
+resource "aws_iam_policy" "lambda_application_policy" {
+  name        = "app_policy_${var.name}"
+  description = "Policy to allow ${var.name} to perform operation"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = concat(
+      [
+        {
+          Action = [
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents",
+            "logs:DescribeLogStreams",
+            "logs:GetLogEvents"
+          ]
+          Effect = "Allow"
+          Resource = "arn:aws:logs:*:*:*"
+        }
+      ],
+      var.dynamodb_table_arn != null ? [
+        {
+          Action = [
+            "dynamodb:GetItem",
+            "dynamodb:PutItem",
+            "dynamodb:UpdateItem",
+            "dynamodb:DeleteItem",
+            "dynamodb:Scan",
+            "dynamodb:Query"
+          ]
+          Effect = "Allow"
+          Resource = [ var.dynamodb_table_arn, "${var.dynamodb_table_arn}/*" ]
+        }
+      ] : [],
+      var.additional_iam_statements
+    )
+  })
+}
+
+# ==========================================
+# File: api_gateway_assume_role_policy.json
+# ==========================================
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Action": "sts:AssumeRole",
+			"Effect": "Allow",
+			"Principal": {
+				"Service": "apigateway.amazonaws.com"
+			}
+		}
+	]
+}
+
+# ==========================================
+# File: lambda_assume_role_policy.json
+# ==========================================
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Action": "sts:AssumeRole",
+			"Effect": "Allow",
+			"Principal": {
+				"Service": "lambda.amazonaws.com"
+			}
+		}
+	]
+}
+\end{lstlisting}
+
+Il Listato \ref{lst:gateway-core} documenta il provisioning fisico delle risorse di calcolo e di rete. Il blocco illustra la configurazione della funzione Serverless (\texttt{lambda.tf}), comprensiva dei parametri di memoria e concorrenza, e l'istanziazione dell'interfaccia di esposizione sincrona (\texttt{gateway.tf}), responsabile del routing delle richieste HTTP verso il sottostante ambiente di esecuzione.
+
+\begin{lstlisting}[language=HCL, label={lst:gateway-core}]
+# ==========================================
+# File: lambda.tf
+# ==========================================
+resource "aws_lambda_function" "lambda" {
+  function_name = "${var.name}-${var.env}"
+  role          = aws_iam_role.lambda_assume_role.arn
+  package_type  = "Image"
+  image_uri     = var.app_image
+
+  # ignore changes to the image_uri to prevent unnecessary redeploys
+  lifecycle {
+    ignore_changes = [image_uri]
+  }
+
+  timeout       = var.lambda_timeout
+  memory_size   = var.lambda_memory_size
+  architectures = ["arm64"]
+
+  environment {
+    variables = merge(
+      var.environments,
+      {
+        CLOUD_ENV = var.env
+        STAGE     = "/api"
+    })
+  }
+
+  tags = var.tags
+}
+
+resource "aws_iam_role" "lambda_assume_role" {
+  name               = "${var.name}_lambda_role_${var.env}"
+  assume_role_policy = file("${path.module}/iam/lambda_assume_role_policy.json")
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
+  role       = aws_iam_role.lambda_assume_role.name
+  policy_arn = aws_iam_policy.lambda_application_policy.arn
+}
+
+# Attach any additional managed policy ARNs provided by the caller
+resource "aws_iam_role_policy_attachment" "additional_managed_policies" {
+  for_each = toset(var.additional_managed_policy_arns)
+  role     = aws_iam_role.lambda_assume_role.name
+  policy_arn = each.value
+}
+
+
+# ==========================================
+# File: gateway.tf
+# ==========================================
+resource "aws_apigatewayv2_api" "gateway" {
+  name                         = "${var.name}-${var.env}"
+  description                  = "API Gateway for ${var.name}"
+  version                      = "1.0.0"
+  protocol_type                = "HTTP"
+  disable_execute_api_endpoint = false
+
+  cors_configuration {
+    allow_origins  = var.allow_origins
+    allow_methods  = setunion(var.allow_methods, ["OPTIONS"])
+    allow_headers  = ["*"]
+    expose_headers = ["*"]
+    max_age        = 86400
+  }
+
+  tags = var.tags
+}
+
+resource "aws_apigatewayv2_authorizer" "cognito" {
+  count                      = var.cognito_user_pool_id != null ? 1 : 0
+  name                       = "${var.name}-cognito-authorizer"
+  api_id                     = aws_apigatewayv2_api.gateway.id
+  authorizer_type            = "JWT"
+  identity_sources           = ["$request.header.Authorization"]
+  jwt_configuration {
+    audience = var.cognito_audience
+    issuer   = "https://cognito-idp.${var.aws_region}.amazonaws.com/${var.cognito_user_pool_id}"
+  }
+}
+
+resource "aws_apigatewayv2_integration" "gateway_integration" {
+  api_id           = aws_apigatewayv2_api.gateway.id
+  integration_type = "AWS_PROXY"
+
+  connection_type        = "INTERNET"
+  description            = "${var.name} proxy integration"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.lambda.invoke_arn
+  payload_format_version = "2.0"
+  timeout_milliseconds   = 30000
+}
+
+locals {
+  allow_methods = [for method in toset(setunion(var.allow_methods, ["OPTIONS"])) : method == "*" ? "ANY" : method]
+}
+
+resource "aws_apigatewayv2_route" "this" {
+  for_each = toset(local.allow_methods)
+
+  api_id    = aws_apigatewayv2_api.gateway.id
+  route_key = strcontains(each.key, " /") ? each.key : "${each.key} /{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.gateway_integration.id}"
+  authorizer_id = (each.key == "OPTIONS" || var.cognito_user_pool_id == null) ? null : aws_apigatewayv2_authorizer.cognito[0].id
+  authorization_type = each.key == "OPTIONS" ? "NONE" : (var.cognito_user_pool_id != null ? "JWT" : "NONE")
+}
+
+resource "aws_lambda_permission" "allow_api" {
+  statement_id_prefix = "ExecuteByAPI"
+  action              = "lambda:InvokeFunction"
+  function_name       = aws_lambda_function.lambda.function_name
+  principal           = "apigateway.amazonaws.com"
+  source_arn          = "${aws_apigatewayv2_api.gateway.execution_arn}/*"
+}
+
+resource "aws_apigatewayv2_stage" "api" {
+  api_id      = aws_apigatewayv2_api.gateway.id
+  name        = "api"
+  auto_deploy = true
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.main_api_gw.arn
+    format = jsonencode({
+      requestId               = "$context.requestId"
+      sourceIp                = "$context.identity.sourceIp"
+      requestTime             = "$context.requestTime"
+      protocol                = "$context.protocol"
+      httpMethod              = "$context.httpMethod"
+      resourcePath            = "$context.resourcePath"
+      routeKey                = "$context.routeKey"
+      status                  = "$context.status"
+      responseLength          = "$context.responseLength"
+      integrationErrorMessage = "$context.integrationErrorMessage"
+      }
+    )
+  }
+  depends_on = [aws_cloudwatch_log_group.main_api_gw]
+
+  tags = var.tags
+}
+
+resource "aws_cloudwatch_log_group" "main_api_gw" {
+  name              = "/aws/api-gw/${aws_apigatewayv2_api.gateway.name}"
+  retention_in_days = 30
+
+  tags = var.tags
+}
+
+resource "aws_apigatewayv2_domain_name" "domain" {
+  count = var.custom_domain_name != null ? 1 : 0
+
+  domain_name = "${var.custom_domain_name}${var.env == "prod" ? "" : "-${var.env}"}.${var.domain_extension}"
+  domain_name_configuration {
+    certificate_arn = var.acm_certificate_arn
+    endpoint_type   = "REGIONAL"
+    security_policy = "TLS_1_2"
+  }
+
+  tags = var.tags
+}
+
+resource "aws_apigatewayv2_api_mapping" "domain_mapping" {
+  count = var.custom_domain_name != null ? 1 : 0
+
+  api_id      = aws_apigatewayv2_api.gateway.id
+  domain_name = aws_apigatewayv2_domain_name.domain[0].id
+  stage       = aws_apigatewayv2_stage.api.name
+
+  depends_on = [aws_apigatewayv2_stage.api]
+}
+\end{lstlisting}

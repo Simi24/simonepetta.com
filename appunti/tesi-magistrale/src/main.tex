@@ -1,0 +1,444 @@
+%
+% Tesi D.S.I. - modello preso da
+% Stanford University PhD thesis style -- modifications to the report style
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                         %
+%			TESI DOTTORATO                                                   %
+%			______________                                                   %
+%                                                                         %
+%			AUTORE: Elena Pagani                                             %
+%                                                                         %
+%			Ultima revisione: 7.X.1998                                       %
+%           correzioni atrent                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%
+\begin{filecontents*}[overwrite]{\jobname.xmpdata}
+\Title{UTILIZZO DI SERVIZI BASATI SULLA POSIZIONE IN UN'APPLICAZIONE DI MONITORAGGIO DELLE PRESENZE}
+\Author{Simone Paolo Petta}
+\Language{it-IT}
+\Subject{Tesi di informatica per la comunicazione digitale.}
+\Keywords{Tesi}
+\end{filecontents*}
+\documentclass[a4paper,12pt]{report}
+%    \renewcommand{\baselinestretch}{1.6}      % interline spacing
+%
+% \includeonly{}
+%
+%			PREAMBOLO
+%
+
+\usepackage[a4paper]{geometry}
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{epsfig}
+\usepackage[italian]{babel}
+\usepackage{setspace}
+\usepackage{tesi}
+\usepackage{listings}
+\usepackage{pgfplots}
+\usepackage{xurl}
+\usepackage{xcolor}
+\usepackage{colorprofiles}
+\usepackage[toc,page]{appendix}
+
+\usepackage[a-1a,mathxmp]{pdfx}[2018/12/22]
+\hypersetup{pdfstartview=} 
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    linkbordercolor=white,
+    urlcolor=black, % Colore dei link URL (cambia a seconda delle tue preferenze)
+    citecolor=black % Colore dei link alle citazioni (cambia a seconda delle tue preferenze)
+}
+
+\definecolor{codebackground}{rgb}{0.98,0.98,0.98} % Un grigio quasi bianco
+\definecolor{codecomment}{rgb}{0.3,0.5,0.3}       % Verde oliva tenue
+\definecolor{codekeyword}{rgb}{0.1,0.3,0.7}       % Blu accademico
+\definecolor{codestring}{rgb}{0.6,0.1,0.1}        % Rosso mattone
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}          % Grigio neutro per i numeri
+\definecolor{codeyamlpunct}{rgb}{0.6,0.6,0.6} % Un grigio leggermente più scuro
+
+\lstdefinestyle{thesiscode}{
+    backgroundcolor=\color{codebackground},   
+    commentstyle=\color{codecomment}\itshape,
+    keywordstyle=\color{codekeyword}\bfseries,
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codestring},
+    basicstyle=\ttfamily\footnotesize,        % Font monospace rimpicciolito
+    breakatwhitespace=false,         
+    breaklines=true,                          % A capo automatico
+    captionpos=b,                             % Didascalia in basso (bottom)
+    keepspaces=true,                 
+    numbers=left,                             % Numeri di riga a sinistra
+    numbersep=10pt,                           % Distanza dei numeri dal codice
+    showspaces=false,                
+    showstringspaces=false,                   % Rimuove il simbolo "_" negli spazi delle stringhe
+    showtabs=false,                  
+    tabsize=2,                                % Tabulazione a 2 spazi (ideale per ridurre la larghezza)
+    frame=single,                             % Bordo attorno al codice
+    rulecolor=\color{black!20},               % Colore del bordo molto chiaro
+    belowskip=1.5em,                          % Spazio extra sotto il blocco
+    aboveskip=1.5em                           % Spazio extra sopra il blocco
+}
+
+% Applica lo stile globalmente
+\lstset{style=thesiscode}
+
+\lstdefinelanguage{HCL}{
+  morekeywords={
+    resource, data, provider, variable, output, module, 
+    terraform, locals, default, type, description, source,
+    backend, provisioner, connection, require_version,
+    required_providers, any, string, number, bool, list, map, object
+  },
+  morecomment=[l]{\#},                  % Commenti con cancelletto
+  morecomment=[l]{//},                  % Commenti con doppio slash
+  morecomment=[s]{/*}{*/},              % Commenti multilinea
+  morestring=[b]",                      % Stringhe tra doppie virgolette
+  morestring=[s]{<<EOF}{EOF},           % Supporto base per gli Heredoc
+  sensitive=true                        % Case-sensitive
+}
+
+% Definizione per allineamento a destra nelle colonne X (opzionale, per tabelle larghe quanto la pagina)
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+
+% per le accentate
+\usepackage[utf8]{inputenc}
+%
+\newtheorem{myteor}{Teorema}[section]
+%
+\newenvironment{teor}{\begin{myteor}\sl}{\end{myteor}}
+%
+%
+%			TITOLO
+%
+\begin{document}
+\title{PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD}
+\author{Simone Paolo PETTA}
+\dept{Corso di Laurea Magistrale in Informatica} 
+\anno{2024-2025}
+\relatore{Prof. Claudio Agostino ARDAGNA}
+\correlatore{Dott. Nicola BENA}
+%
+%        \submitdate{month year in which submitted to GPO}
+%		- date LaTeX'd if omitted
+%	\copyrightyear{year degree conferred (next year if submitted in Dec.)}
+%		- year LaTeX'd (or next year, in December) if omitted
+%	\copyrighttrue or \copyrightfalse
+%		- produce or don't produce a copyright page (false by default)
+%	\figurespagetrue or \figurespagefalse
+%		- produce or don't produce a List of Figures page
+%		  (false by default)
+%	\tablespagetrue or \tablespagefalse
+%		- produce or don't produce a List of Tables page
+%		  (false by default)
+% 
+%			DEDICA
+%
+\beforepreface
+% \prefacesection{}
+%         {\hfill \Large {\sl DEDICHE}}
+% % 
+% %			PREFAZIONE
+% %
+% \prefacesection{Prefazione}
+% hkjafgyruet.
+% %
+% %
+% %			ORGANIZZAZIONE
+% \section*{Organizzazione della tesi}
+% \label{organizzazione}
+% La tesi \`e organizzata come segue:
+% \begin{itemize}
+% \item nel Capitolo 1 ....
+% \end{itemize}
+%
+%			RINGRAZIAMENTI
+%
+\prefacesection{Ringraziamenti}
+Desidero ringraziare il Prof. Claudio Agostino Ardagna, in qualità di Relatore, per la supervisione e la guida fornite durante la stesura di questa tesi.
+
+Vorrei inoltre ringraziare Nicholas Farinato e tutti i miei colleghi per la disponibilità e il supporto tecnico che mi ha fornito nel corso di questo lavoro.
+
+Infine, un ringraziamento speciale va alla mia famiglia e a chiunque mi sia stato accanto in questi anni, per il fondamentale sostegno e l'incoraggiamento che mi hanno accompagnato durante l’intero percorso universitario.
+
+\afterpreface
+% 
+% 
+\chapter{Introduzione}
+\label{caph:introduzione}
+%
+%
+\include{chapters/introduzione}
+
+\chapter{Background Tecnologico}
+\label{chap:background}
+
+\include{chapters/background_tecnologico}
+
+\chapter{Analisi e Design}
+\label{chap:analisi}
+
+\include{chapters/analisi}
+
+\chapter{Implementazione}
+\label{chap:implementazione}
+
+\include{chapters/implementazione}
+
+\chapter{Caso di Studio}
+\label{chap:caso_studio}
+
+\include{chapters/caso_studio}
+
+\chapter{Conclusioni}
+\label{chap:conclusioni}
+
+\include{chapters/conclusioni}
+
+%
+%			BIBLIOGRAFIA
+%
+\begin{thebibliography}{00}
+
+\bibitem{MicroservicesDragoni}
+N. Dragoni et al., "Microservices: Yesterday, Today, and Tomorrow,"  \textit{arXiv:1606.04036}, 2017.
+
+\bibitem{FowlerMicroservices}
+M. Fowler and J. Lewis, "Microservices: a definition of this new architectural style," 2014 \url{https://martinfowler.com/articles/microservices.html}
+
+\bibitem{BerkeleyServerless}
+E. Jonas et al., "Cloud Programming Simplified: A Berkeley View on Serverless Computing," \textit{arXiv preprint arXiv:1902.03383}, 2019.
+
+\bibitem{EivyEconomics}
+A. Eivy and J. Weinman, "Be Wary of the Economics of "Serverless" Cloud Computing," in IEEE Cloud Computing, vol. 4, no. 2, pp. 6-12, March-April 2017, doi: 10.1109/MCC.2017.32.
+
+\bibitem{EventDrivenArchitecture}
+M. Bellemare, "Event-Driven Architecture: How SOA fits with Event Driven Architecture," IBM DeveloperWorks, 2020.
+
+\bibitem{LeastPrivilegeCloud}
+Matthew Sanders, Chuan Yue, "Automated least privileges in cloud-based web services", \textit{https://doi.org/10.1145/3132465.3132470}, 2017
+
+\bibitem{ServerlessObservability}
+Lavi Ben-Shimol; Edita Grolman; Aviad Elyashar; Inbar Maimon; Dudu Mimran; Oleg Brodt, "Observability and Incident Response in Managed Serverless Environments Using Ontology-Based Log Monitoring", IEEE Transactions on Cloud Computing, \textit{doi: 10.1109/TCC.2025.3598060}, 2025
+
+\bibitem{FinOpsBook}
+J. R. Storment, Mike Fuller, "Cloud FinOps Collaborative, Real-Time Cloud Financial Management", O'REILLY, 2019
+
+\bibitem{AWSLambdaDoc}
+AWS Documentation, "AWS Lambda Developer Guide," 2024. \url{https://docs.aws.amazon.com/lambda/latest/dg/welcome.html}
+
+\bibitem{EC2}
+AWS Documentation, "What is Amazon EC2?"
+\url{https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html}
+
+\bibitem{WangColdStart}
+L. Wang et al., "Peeking Behind the Curtains of Serverless Platforms," in \textit{2018 USENIX Annual Technical Conference (USENIX ATC 18)}, 2018.
+
+\bibitem{APIGatewayDoc}
+AWS Documentation, "Amazon API Gateway: HTTP APIs vs REST APIs" \url{https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vs-rest.html}
+
+\bibitem{EventBridgeDoc}
+AWS Documentation, "Amazon EventBridge User Guide," 2024. \url{https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html}
+
+\bibitem{SNS}
+\url{https://docs.aws.amazon.com/it_it/sns/latest/dg/welcome.html}
+
+\bibitem{PubSubPattern}
+W. Fang, B. Jin, B. Zhang, Y. Yang and Z. Qin, "Design and evaluation of a Pub/Sub service in the cloud," 2011 International Conference on Cloud and Service Computing, Hong Kong, China, 2011, pp. 32-39, doi: 10.1109/CSC.2011.6138542.
+
+\bibitem{DynamoDBPaper}
+G. DeCandia et al., "Dynamo: Amazon's Highly Available Key-value Store," in \textit{SOSP '07: Proceedings of twenty-first ACM SIGOPS symposium on Operating systems principles}, 2007.
+
+\bibitem{S3Doc}
+AWS Documentation, "Amazon S3 User Guide." \url{https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html}
+
+\bibitem{AWSGlueDoc}
+AWS Documentation, "AWS Glue Developer Guide." \url{https://docs.aws.amazon.com/glue/latest/dg/what-is-glue.html}
+
+\bibitem{Athena}
+AWS Documentation, "AWS Athena Developer Guide"
+\url{https://docs.aws.amazon.com/athena/latest/ug/what-is.html}
+
+\bibitem{ECR}
+AWS Documentation, "AWS ECR Developer Guide"
+\url{https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html}
+
+\bibitem{IAM}
+AWS Documentation, "AWS IAM Developer Guide"
+\url{https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html}
+
+\bibitem{JWT}
+AWS Documentation, "API JWT Authorizer"
+\url{https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-jwt-authorizer.html}
+
+\bibitem{Cognito}
+AWS Documentation, "AWS Cognito Developer Guide"
+\url{https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools.html}
+
+\bibitem{CloudWatch}
+AWS Documentation, "AWS CloudWatch Developer Guide"
+\url{https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html}
+
+\bibitem{CostExplorer}
+AWS Documentation, "AWS Cost Explorer Developer Guide"
+\url{https://docs.aws.amazon.com/cost-management/latest/userguide/ce-what-is.html}
+
+\bibitem{CostAllocationTags}
+AWS Documentation, "AWS Cost Allocations Tags Developer Guide"
+\url{https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html}
+
+\bibitem{EC2}
+AWS Documentation, "AWS EC2 Developer Guide"
+\url{https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html}
+
+\bibitem{Python}
+Python Software Foundation, "Python Documentation"
+\url{https://www.python.org/}
+
+\bibitem{Scala}
+École Polytechnique Fédérale, "Scala Documentation"
+\url{https://www.scala-lang.org/}
+
+\bibitem{Spark}
+The Apache Software Foundation, "Spark Documentation"
+\url{https://spark.apache.org/}
+
+\bibitem{PythonTrends}
+Stack Overflow, "2023 Developer Survey," 2023. \url{https://survey.stackoverflow.co/2023/}
+
+\bibitem{FastAPIDoc}
+S. Ramírez, "FastAPI Documentation," 2024. \url{https://fastapi.tiangolo.com/}
+
+\bibitem{MangumDoc}
+Mangum Maintainers, "Mangum: AWS Lambda \& API Gateway support for ASGI," GitHub Repository. \url{https://github.com/jordaneremieff/mangum}
+
+\bibitem{IaCGuerriero}
+M. Guerriero et al., "Adopting Infrastructure as Code: A Systematic Literature Review," in \textit{IEEE Access}, vol. 11, 2023.
+
+\bibitem{Git}
+Git Documentation
+\url{https://git-scm.com/}
+
+\bibitem{TerraformUpAndRunning}
+Y. Brikman, \textit{Terraform: Up and Running: Writing Infrastructure as Code}, O'Reilly Media, 2019.
+
+\bibitem{Terragrunt}
+Gruntwork, "Terragrunt Documentation"
+\url{https://terragrunt.gruntwork.io/docs/getting-started/overview/}
+
+\bibitem{DockerDoc}
+Docker Inc., "Docker Documentation," 2024. [Online]. Available: \url{https://docs.docker.com/}
+
+\bibitem{RedHatInnerLoop}
+Red Hat Developers, "Kubernetes-native inner loop development with Quarkus," 2022. \url{https://developers.redhat.com/articles/2022/12/12/kubernetes-native-inner-loop-development-quarkus}
+
+\bibitem{LocalStackPaper}
+W. Hummer et al., "LocalStack: A Fully Functional Local Cloud Stack," 2023. \url{https://localstack.cloud/}
+
+\bibitem{AccelerateBook}
+N. Forsgren, J. Humble, and G. Kim, \textit{Accelerate: The Science of Lean Software and DevOps}, IT Revolution Press, 2018.
+
+\bibitem{GitOps}
+Red Hat, "What is GitOps".
+\url{https://www.redhat.com/it/topics/devops/what-is-gitops}
+
+\bibitem{MCP}
+The Linux Foundation, "MCP Documentation"
+\url{https://modelcontextprotocol.io/docs/getting-started/intro}
+
+\bibitem{LLMSoftwareEngineering}
+Haolin Jin, Linghan Huang, Haipeng Cai, Jun Yan, Bo Li, Huaming Chen, "From LLMs to LLM-based Agents for Software Engineering: A Survey of Current, Challenges and Future", \textit{
+https://doi.org/10.48550/arXiv.2408.02479}
+
+\bibitem{LLMTool}
+Zhuocheng Shen, "LLM With Tools: A Survey", \textit{
+https://doi.org/10.48550/arXiv.2409.18807}
+
+\bibitem{FastMCP}
+PrefectHQ, "FastMCP Documentation"
+\url{https://github.com/jlowin/fastmcp}
+
+\bibitem{SingleTableDesign}
+AWS, "Creating a single-table design with Amazon DynamoDB",
+\url{https://aws.amazon.com/it/blogs/compute/creating-a-single-table-design-with-amazon-dynamodb/}
+
+\bibitem{Submodules}
+Git Documentation
+\url{https://git-scm.com/book/en/v2/Git-Tools-Submodules}
+
+\bibitem{registry-pattern}
+Martin Fowler, "Patterns of Enterprise Application Architecture", O'Reilly, 2002
+
+\bibitem{Parquet}
+The Apache Software Foundation, "Parquet Documentation"
+\url{https://parquet.apache.org/docs/}
+
+\bibitem{Polars}
+Ritchie Vink, "Polars Documentation"
+\url{https://docs.pola.rs/api/python/stable/reference/index.html}
+
+\bibitem{Snappy}
+Kyle Kovacs, "A Hardware Implementation of the Snappy Compression Algorithm",
+EECS Department, University of California, Berkeley, 2019, \url{http://www2.eecs.berkeley.edu/Pubs/TechRpts/2019/EECS-2019-85.html}
+
+\bibitem{Pynamodb}
+Jharrod LaFon, "PynamoDb Documentation"
+\url{https://pynamodb.readthedocs.io/en/stable/}
+
+\bibitem{ConventionalCommits}
+Conventional Commits Documentation
+\url{https://www.conventionalcommits.org/en/v1.0.0/}
+
+\bibitem{Jinja}
+Pallets, "Jinja Documentation"
+\url{https://jinja.palletsprojects.com/en/stable/}
+
+\bibitem{Typer}
+S. Ramírez, "Typer Documentation,"
+\url{https://typer.tiangolo.com/}
+
+\bibitem{HiveStyle}
+AWS Documentation, "AWS Athena Developer Guide"
+\url{https://docs.aws.amazon.com/athena/latest/ug/partitions.html}
+
+\bibitem{CleanArchitecture}
+Robert C. Martin, "Clean Architecture: A Craftsman's Guide to Software Structure and Design", 2017
+
+\bibitem{GoogleAdManager}
+Google, "Google AdManager SOAP API Documentation"
+\url{https://developers.google.com/ad-manager/api/start?hl=it}
+
+\bibitem{StepFunctions}
+AWS Documentation, "Step Functions"
+\url{https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html}
+
+\end{thebibliography}
+% 
+
+%
+%			APPENDICE
+%
+
+\begin{appendices}
+    \chapter{Configurazioni Infrastrutturali}
+    \include{appendices/iac}
+    \chapter{Automazione del Rilascio (CI/CD)}
+    \include{appendices/CICD}
+    \chapter{Implementazione di Service-Forge}
+    \include{appendices/service-forge}
+    \chapter{Contratti Dati e Payload di Eventi}
+    \include{appendices/etl-payload}
+\end{appendices}
+
+
+\end{document}

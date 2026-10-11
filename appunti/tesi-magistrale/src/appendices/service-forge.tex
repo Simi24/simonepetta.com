@@ -1,0 +1,180 @@
+\section{Inizializzazione e Firme degli Strumenti}
+Il Listato \ref{lst:fastmcp-server} fornisce un estratto architetturalmente rilevante dell'implementazione del server Model Context Protocol (MCP) sviluppato per il framework Service-Forge. Il codice evidenzia esclusivamente l'inizializzazione del servizio, le istruzioni di base fornite al modello linguistico e la registrazione degli strumenti operativi (\emph{tools}) tramite tipizzazione forte, la quale agisce da schema di validazione statica per i payload JSON. Per questioni di leggibilità, la logica procedurale di basso livello è stata omessa.
+
+\begin{lstlisting}[language=Python, label={lst:fastmcp-server}]
+import os
+import sys
+from typing import Any, Dict, List, Optional
+
+from mcp.server.fastmcp import FastMCP
+from cli.profile_setup import ProfileSetup
+from core.engine import GenerationEngine
+
+mcp = FastMCP(
+    "service-forge",
+    instructions=(
+        "Service Forge generates AWS Lambda-based microservices. "
+        "Use get_profiles to discover available profiles and services. "
+        "IMPORTANT: Every AWS service has configurable parameters (bucket names, "
+        "table names, secret names) that you MUST collect from the user. "
+        "Never use default placeholder values without asking the user first. "
+        "Use create_session to start building a configuration, then configure "
+        "properties with configure_service."
+    ),
+)
+
+# ==========================================================
+# Resources - Dati in sola lettura ispezionabili dall'LLM
+# ==========================================================
+
+@mcp.resource("forge://profiles")
+def resource_profiles() -> str:
+    """All available profiles with metadata."""
+    # [... LOGICA PROCEDURALE OMESSA ...]
+    pass
+
+@mcp.resource("forge://aws-services")
+def resource_aws_services() -> str:
+    """All AWS services with their configurable keys, defaults, and descriptions."""
+    # [... LOGICA PROCEDURALE OMESSA ...]
+    pass
+
+# ==========================================================
+# Tools - Azioni invocabili dall'agente LLM
+# ==========================================================
+
+@mcp.tool()
+def check_prerequisites() -> str:
+    """
+    Check if all prerequisites for project generation are met.
+    Call this before generate_project to ensure the environment is ready.
+    """
+    # [... LOGICA PROCEDURALE OMESSA ...]
+    pass
+
+@mcp.tool()
+def get_profiles() -> str:
+    """
+    List all active Service Forge profiles and available AWS services.
+    Call this first to understand what can be generated.
+    """
+    # [... LOGICA PROCEDURALE OMESSA ...]
+    pass
+
+@mcp.tool()
+def create_session() -> str:
+    """
+    Start a new project configuration session.
+    Returns a session_id to use in subsequent tool calls.
+    """
+    # [... LOGICA PROCEDURALE OMESSA ...]
+    pass
+
+@mcp.tool()
+def configure_service(
+    session_id: str,
+    service_name: str,
+    config_values: Optional[Dict[str, str]] = None,
+) -> str:
+    """
+    Add or configure an AWS service for the project.
+    IMPORTANT: Always ask the user for the actual values.
+    """
+    # [... LOGICA PROCEDURALE OMESSA ...]
+    pass
+
+@mcp.tool()
+def validate_config(session_id: str) -> str:
+    """
+    Validate the current session configuration.
+    Returns errors if any, or confirms the config is ready for generation.
+    """
+    # [... LOGICA PROCEDURALE OMESSA ...]
+    pass
+
+@mcp.tool()
+def generate_project(session_id: str) -> str:
+    """
+    Generate the project from the current session configuration.
+    Creates files on disk and initializes a git repository.
+    """
+    # [... LOGICA PROCEDURALE OMESSA ...]
+    pass
+
+@mcp.tool()
+def quick_generate(
+    profile: str,
+    app_name: str,
+    project_path: str,
+    aws_services: Optional[Dict[str, Dict[str, str]]] = None,
+    included_services: Optional[List[str]] = None,
+    runtime: Optional[Dict[str, Any]] = None,
+) -> str:
+    """
+    One-shot project generation without session management.
+    Builds config, validates, and generates in a single call.
+    """
+    # [... LOGICA PROCEDURALE OMESSA ...]
+    pass
+
+if __name__ == "__main__":
+    mcp.run(transport="stdio")
+\end{lstlisting}
+
+\section{Esempio template Jinja}
+Il Listato \ref{lst:template-compose} mostra un esempio dei template generativi basati sul motore Jinja2, in particolare si tratta del template usato per generare il file \texttt{docker-compose.yaml} in tutti i microservizi. La sintassi illustra la separazione netta tra la logica di iniezione dinamica delle variabili e la struttura statica del codice sorgente, garantendo la standardizzazione formale dei microservizi prodotti dal framework aziendale.
+
+\begin{lstlisting}[label={lst:template-compose}]
+services:
+  {{ service_name }}:
+    build:
+      context: .
+      target: dev
+    platform: linux/arm64
+    restart: on-failure
+    environment:
+      {% if app_name -%}
+      APP_NAME: {{ app_name }}
+      {%- else -%}
+      APP_NAME: {{ service_name }}
+      {%- endif %}
+      {%- for key, value in environment.items() %}
+      {{ key }}: {{ value }}
+      {%- endfor %}
+      {%- block aws_services_block %}{%- endblock %}
+      {%- if use_localstack %}
+      AWS_ENDPOINT_URL: http://localstack:4566
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: {{ aws_region }}
+      AWS_LAMBDA_FUNCTION_TIMEOUT: {{ lambda_timeout }}
+      AWS_LAMBDA_FUNCTION_MEMORY_SIZE: {{ lambda_memory_size }}
+      {%- endif %}
+    volumes:
+      - ./app:/var/task
+      - ~/.aws:/root/.aws:ro
+    ports:
+      - {{ service_port }}:8080
+      - 5678:5678
+    {% if profile == 'service' -%}
+    command:
+      sh -c "echo 'Please run the debugger to proceed (F5)' && python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m uvicorn main:app --host 0.0.0.0 --port 8080 --reload --log-level debug"
+    {%- endif  %}
+
+{% if use_localstack %}
+  localstack:
+      image: localstack/localstack
+      ports:
+          - "127.0.0.1:4566:4566"
+          - "127.0.0.1:4510-4559:4510-4559"
+      env_file:
+          - .env.template
+          - .env
+      environment:
+          DEBUG: ${DEBUG:-0}
+      volumes:
+          - "${LOCALSTACK_VOLUME_DIR:-./localstack_volume}:/var/lib/localstack"
+          - "/var/run/docker.sock:/var/run/docker.sock:ro"
+          - "./init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh:ro"
+{%- endif%}
+\end{lstlisting}
