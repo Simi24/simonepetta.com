@@ -160,7 +160,7 @@ test('a bibliography link in a chapter points at the bibliography page, and a lo
 
   assert.throws(
     () => buildFromLatexml({ htmlDir, courseDir, corso: 'tesi', source: source.replace('riga 38', 'riga 38\nriga 39'), latexmlErrors: 0 }),
-    (error) => error instanceof LeakError && error.leaks.some((leak) => /source has 1 code listing\(s\) of 38 line/.test(leak)),
+    (error) => error instanceof LeakError && error.leaks.some((leak) => /source has 1 code listing\(s\) of 39 line/.test(leak)),
   );
 });
 
