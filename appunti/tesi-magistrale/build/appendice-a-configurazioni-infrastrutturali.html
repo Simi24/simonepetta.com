@@ -1,0 +1,565 @@
+<div class="section level1">
+
+
+<section id="S1" class="ltx_section normal">
+<div class="section level1">
+<h1 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">A.1</span> Configurazione dell’orchestratore Terragrunt</h1>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">Il Listato <a title="A.1 Configurazione dell’orchestratore Terragrunt ‣ Appendice A Configurazioni Infrastrutturali ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#S1"><span class="ltx_text ltx_ref_tag">A.1</span></a> riporta la configurazione di base dell’orchestratore Terragrunt e mentre il Listato <a title="A.1 Configurazione dell’orchestratore Terragrunt ‣ Appendice A Configurazioni Infrastrutturali ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#S1"><span class="ltx_text ltx_ref_tag">A.1</span></a> la sua declinazione per l’ambiente di produzione. Il codice illustra il meccanismo di ereditarietà gerarchica adottato per prevenire la duplicazione delle dichiarazioni e definisce l’inizializzazione del backend remoto su Amazon S3, necessario per la gestione concorrente e sicura dello stato infrastrutturale.</p>
+</div>
+<div id="S1.p2" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">locals {</span>
+<span class="ltx_listingline">  env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  aws_region            = "eu-west-1"</span>
+<span class="ltx_listingline">  gcp_project_id_prefix = "company"</span>
+<span class="ltx_listingline">  gcp_project_id        = "${local.gcp_project_id_prefix}-${local.env}"</span>
+<span class="ltx_listingline">  gcp_region            = "europe-west1"</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  aws_account_id = local.env_vars.locals.aws_account_id</span>
+<span class="ltx_listingline">  env            = local.env_vars.locals.env</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  iam_account_role_name = "&lt;role-name&gt;"</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">remote_state {</span>
+<span class="ltx_listingline">  backend = "s3"</span>
+<span class="ltx_listingline">  config = {</span>
+<span class="ltx_listingline">    bucket         = "${local.gcp_project_id_prefix}-tfstate-${local.env}"</span>
+<span class="ltx_listingline">    key            = "${path_relative_to_include()}/terraform.tfstate"</span>
+<span class="ltx_listingline">    region         = local.aws_region</span>
+<span class="ltx_listingline">    encrypt        = true</span>
+<span class="ltx_listingline">    dynamodb_table = "${local.gcp_project_id_prefix}-tfstate-lock-${local.env}"</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    profile = "AdministratorAccess-&lt;account-id&gt;"</span>
+<span class="ltx_listingline">    assume_role = {</span>
+<span class="ltx_listingline">      role_arn = "arn:aws:iam::${local.aws_account_id}:role/&lt;role name&gt;"</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    s3_bucket_tags = {</span>
+<span class="ltx_listingline">      owner = "terragrunt"</span>
+<span class="ltx_listingline">      env   = local.env</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    dynamodb_table_tags = {</span>
+<span class="ltx_listingline">      owner = "terragrunt"</span>
+<span class="ltx_listingline">      env   = local.env</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline">  generate = {</span>
+<span class="ltx_listingline">    path      = "backend.tf"</span>
+<span class="ltx_listingline">    if_exists = "overwrite_terragrunt"</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">generate "provider" {</span>
+<span class="ltx_listingline">  path      = "provider.tf"</span>
+<span class="ltx_listingline">  if_exists = "overwrite_terragrunt"</span>
+<span class="ltx_listingline">  contents  = &lt;&lt;EOF</span>
+<span class="ltx_listingline">provider "aws" {</span>
+<span class="ltx_listingline">  region  = "${local.aws_region}"</span>
+<span class="ltx_listingline">  profile = "AdministratorAccess-&lt;account-id&gt;"</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  assume_role {</span>
+<span class="ltx_listingline">    role_arn = "arn:aws:iam::${local.aws_account_id}:role/${local.iam_account_role_name}"</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">provider "aws" {</span>
+<span class="ltx_listingline">  alias   = "us-east-1"</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  region  = "us-east-1"</span>
+<span class="ltx_listingline">  profile = "AdministratorAccess-&lt;account-id&gt;"</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  assume_role {</span>
+<span class="ltx_listingline">    role_arn = "arn:aws:iam::${local.aws_account_id}:role/${local.iam_account_role_name}"</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">provider "aws" {</span>
+<span class="ltx_listingline">  alias   = "shared"</span>
+<span class="ltx_listingline">  region  = "${local.aws_region}"</span>
+<span class="ltx_listingline">  profile = "AdministratorAccess-&lt;account-id&gt;"</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  assume_role {</span>
+<span class="ltx_listingline">    role_arn = "arn:aws:iam::&lt;shared-account-id&gt;:role/${local.iam_account_role_name}"</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">provider "google" {</span>
+<span class="ltx_listingline">  project = "${local.gcp_project_id}"</span>
+<span class="ltx_listingline">  region  = "${local.gcp_region}"</span>
+<span class="ltx_listingline">  user_project_override = true</span>
+<span class="ltx_listingline">  billing_project = "${local.gcp_project_id}"</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">provider "google-beta" {</span>
+<span class="ltx_listingline">  project = "${local.gcp_project_id}"</span>
+<span class="ltx_listingline">  region  = "${local.gcp_region}"</span>
+<span class="ltx_listingline">  user_project_override = true</span>
+<span class="ltx_listingline">  billing_project = "${local.gcp_project_id}"</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline">EOF</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">generate "vars" {</span>
+<span class="ltx_listingline">  path      = "vars.tf"</span>
+<span class="ltx_listingline">  if_exists = "overwrite_terragrunt"</span>
+<span class="ltx_listingline">  contents  = &lt;&lt;EOF</span>
+<span class="ltx_listingline">variable "env" {</span>
+<span class="ltx_listingline">  description = "The environment name. It is used to create the project name and the VPC name."</span>
+<span class="ltx_listingline">  type        = string</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">data "aws_secretsmanager_secret" "tf-secrets" { name = "tf-secrets-$${var.env}" }</span>
+<span class="ltx_listingline">data "aws_secretsmanager_secret_version" "tf-secrets" { secret_id = data.aws_secretsmanager_secret.tf-secrets.id }</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">locals {</span>
+<span class="ltx_listingline">  envs = {</span>
+<span class="ltx_listingline">    dev = {</span>
+<span class="ltx_listingline">      account-id = "xxxxxxxxxxx"</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline">    test = {</span>
+<span class="ltx_listingline">      account-id = "xxxxxxxxxxx"</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline">    prod = {</span>
+<span class="ltx_listingline">      account-id = "xxxxxxxxxxx"</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline">    shared = {</span>
+<span class="ltx_listingline">      account-id = "xxxxxxxxxxx"</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline">  secrets = jsondecode(data.aws_secretsmanager_secret_version.tf-secrets.secret_string)</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline">EOF</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">inputs = {</span>
+<span class="ltx_listingline">  env = local.env</span>
+<span class="ltx_listingline">}</span></code></pre></div>
+</div>
+<div id="S1.p3" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">include "root" {</span>
+<span class="ltx_listingline">  path = find_in_parent_folders("root.hcl")</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">include "module_defaults" {</span>
+<span class="ltx_listingline">  path = "${get_terragrunt_dir()}/../../_env/000-commons.hcl"</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">inputs = {</span>
+<span class="ltx_listingline">  enable_flow_logs = true</span>
+<span class="ltx_listingline">}</span></code></pre></div>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level1">
+<h1 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">A.2</span> Modulo api-gateway-lambda</h1>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Il Listato <a title="A.2 Modulo api-gateway-lambda ‣ Appendice A Configurazioni Infrastrutturali ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#S2"><span class="ltx_text ltx_ref_tag">A.2</span></a> definisce l’interfaccia pubblica del modulo Terraform. Il blocco di codice accorpa le dichiarazioni di ingresso (<span class="ltx_text ltx_font_typewriter">variables.tf</span>), necessarie per parametrizzare l’ambiente di rilascio, e i valori di uscita (<span class="ltx_text ltx_font_typewriter">outputs.tf</span>), impiegati per esporre gli identificativi univoci delle risorse generate (Amazon Resource Names) agli altri componenti dell’infrastruttura.</p>
+</div>
+<div id="S2.p2" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline"># ==========================================</span>
+<span class="ltx_listingline"># File: variables.tf</span>
+<span class="ltx_listingline"># ==========================================</span>
+<span class="ltx_listingline">variable "name" {</span>
+<span class="ltx_listingline">  type        = string</span>
+<span class="ltx_listingline">  description = ""</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "app_image" {</span>
+<span class="ltx_listingline">  type        = string</span>
+<span class="ltx_listingline">  description = ""</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "lambda_timeout" {</span>
+<span class="ltx_listingline">  type        = number</span>
+<span class="ltx_listingline">  description = "Lambda function timeout in seconds"</span>
+<span class="ltx_listingline">  default     = 60</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  validation {</span>
+<span class="ltx_listingline">    condition     = var.lambda_timeout &gt;= 60 &amp;&amp; var.lambda_timeout &lt;= 900</span>
+<span class="ltx_listingline">    error_message = "Lambda timeout must be between 60 and 900 seconds."</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "lambda_memory_size" {</span>
+<span class="ltx_listingline">  type        = number</span>
+<span class="ltx_listingline">  description = "Lambda function memory size in MB"</span>
+<span class="ltx_listingline">  default     = 512</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "env" {</span>
+<span class="ltx_listingline">  type = string</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "environments" {</span>
+<span class="ltx_listingline">  description = ""</span>
+<span class="ltx_listingline">  default     = {}</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "domain_name" {</span>
+<span class="ltx_listingline">  type        = string</span>
+<span class="ltx_listingline">  description = "Domain name for the API Gateway"</span>
+<span class="ltx_listingline">  default = null</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "dynamodb_table_arn" {</span>
+<span class="ltx_listingline">  type        = string</span>
+<span class="ltx_listingline">  description = "DynamoDB table ARN"</span>
+<span class="ltx_listingline">  default     = null</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "tags" {</span>
+<span class="ltx_listingline">  type        = map(string)</span>
+<span class="ltx_listingline">  description = "Tags to be applied to all resources"</span>
+<span class="ltx_listingline">  default     = {}</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "allow_origins" {</span>
+<span class="ltx_listingline">  description = ""</span>
+<span class="ltx_listingline">  default     = ["*"]</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "allow_methods" {</span>
+<span class="ltx_listingline">  description = ""</span>
+<span class="ltx_listingline">  default     = ["*"]</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "custom_domain_name" {</span>
+<span class="ltx_listingline">  type        = string</span>
+<span class="ltx_listingline">  description = "Custom domain name for the API Gateway"</span>
+<span class="ltx_listingline">  default     = null</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "domain_extension" {</span>
+<span class="ltx_listingline">  type        = string</span>
+<span class="ltx_listingline">  description = "Domain extension for the API Gateway"</span>
+<span class="ltx_listingline">  default     = null</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "acm_certificate_arn" {</span>
+<span class="ltx_listingline">  type        = string</span>
+<span class="ltx_listingline">  description = "ARN of the certificate for the custom domain name"</span>
+<span class="ltx_listingline">  default     = null</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline">variable "cognito_audience" {</span>
+<span class="ltx_listingline">  type        = list(string)</span>
+<span class="ltx_listingline">  description = "Audience (App client IDs) for Cognito JWT authorizer"</span>
+<span class="ltx_listingline">  default     = null</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "cognito_user_pool_id" {</span>
+<span class="ltx_listingline">  type        = string</span>
+<span class="ltx_listingline">  description = "Cognito User Pool ID for JWT authorizer"</span>
+<span class="ltx_listingline">  default     = null</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "aws_region" {</span>
+<span class="ltx_listingline">  type        = string</span>
+<span class="ltx_listingline">  description = "AWS region for Cognito User Pool"</span>
+<span class="ltx_listingline">  default     = null</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline">variable "additional_managed_policy_arns" {</span>
+<span class="ltx_listingline">  type        = list(string)</span>
+<span class="ltx_listingline">  description = "Additional managed policy ARNs to attach to the Lambda role"</span>
+<span class="ltx_listingline">  default     = []</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">variable "additional_iam_statements" {</span>
+<span class="ltx_listingline">  type        = list(any)</span>
+<span class="ltx_listingline">  description = "Additional IAM policy statements (list of maps) to include in the Lambda inline policy"</span>
+<span class="ltx_listingline">  default     = []</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline"># ==========================================</span>
+<span class="ltx_listingline"># File: outputs.tf</span>
+<span class="ltx_listingline"># ==========================================</span>
+<span class="ltx_listingline">output "api_gateway_domain_name" {</span>
+<span class="ltx_listingline">  description = "The domain name configured for the API Gateway."</span>
+<span class="ltx_listingline">  value       = try(aws_apigatewayv2_domain_name.domain[0].domain_name, null)</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">output "api_gateway_target_domain_name" {</span>
+<span class="ltx_listingline">  description = "The target domain name (CloudFront distribution) of the API Gateway custom domain."</span>
+<span class="ltx_listingline">  value       = try(aws_apigatewayv2_domain_name.domain[0].domain_name_configuration[0].target_domain_name, null)</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">output "api_gateway_hosted_zone_id" {</span>
+<span class="ltx_listingline">  description = "The hosted zone ID of the API Gateway custom domain."</span>
+<span class="ltx_listingline">  value       = try(aws_apigatewayv2_domain_name.domain[0].domain_name_configuration[0].hosted_zone_id, null)</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">output "lambda_function_arn" {</span>
+<span class="ltx_listingline">  description = "ARN of the Lambda function"</span>
+<span class="ltx_listingline">  value       = aws_lambda_function.lambda.arn</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">output "lambda_function_name" {</span>
+<span class="ltx_listingline">  description = "Name of the Lambda function"</span>
+<span class="ltx_listingline">  value       = aws_lambda_function.lambda.function_name</span>
+<span class="ltx_listingline">}</span></code></pre></div>
+</div>
+<div id="S2.p3" class="ltx_para">
+<p class="ltx_p">Il listato <a title="A.2 Modulo api-gateway-lambda ‣ Appendice A Configurazioni Infrastrutturali ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#S2"><span class="ltx_text ltx_ref_tag">A.2</span></a> espone la configurazione dei permessi di accesso, redatta in stretta osservanza del principio del privilegio minimo. Il listato riporta le dichiarazioni Terraform per la creazione dei ruoli operativi (<span class="ltx_text ltx_font_typewriter">iam.tf</span>) e i relativi documenti JSON (<span class="ltx_text ltx_font_typewriter">api_gateway_assume_role_policy.json</span> e <span class="ltx_text ltx_font_typewriter">lambda_assume_role_policy.json</span>) che autorizzano esplicitamente i servizi AWS ad assumere tali identità durante l’esecuzione.</p>
+</div>
+<div id="S2.p4" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline"># ==========================================</span>
+<span class="ltx_listingline"># File: iam.tf</span>
+<span class="ltx_listingline"># ==========================================</span>
+<span class="ltx_listingline">resource "aws_iam_policy" "lambda_application_policy" {</span>
+<span class="ltx_listingline">  name        = "app_policy_${var.name}"</span>
+<span class="ltx_listingline">  description = "Policy to allow ${var.name} to perform operation"</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  policy = jsonencode({</span>
+<span class="ltx_listingline">    Version = "2012-10-17"</span>
+<span class="ltx_listingline">    Statement = concat(</span>
+<span class="ltx_listingline">      [</span>
+<span class="ltx_listingline">        {</span>
+<span class="ltx_listingline">          Action = [</span>
+<span class="ltx_listingline">            "logs:CreateLogGroup",</span>
+<span class="ltx_listingline">            "logs:CreateLogStream",</span>
+<span class="ltx_listingline">            "logs:PutLogEvents",</span>
+<span class="ltx_listingline">            "logs:DescribeLogStreams",</span>
+<span class="ltx_listingline">            "logs:GetLogEvents"</span>
+<span class="ltx_listingline">          ]</span>
+<span class="ltx_listingline">          Effect = "Allow"</span>
+<span class="ltx_listingline">          Resource = "arn:aws:logs:*:*:*"</span>
+<span class="ltx_listingline">        }</span>
+<span class="ltx_listingline">      ],</span>
+<span class="ltx_listingline">      var.dynamodb_table_arn != null ? [</span>
+<span class="ltx_listingline">        {</span>
+<span class="ltx_listingline">          Action = [</span>
+<span class="ltx_listingline">            "dynamodb:GetItem",</span>
+<span class="ltx_listingline">            "dynamodb:PutItem",</span>
+<span class="ltx_listingline">            "dynamodb:UpdateItem",</span>
+<span class="ltx_listingline">            "dynamodb:DeleteItem",</span>
+<span class="ltx_listingline">            "dynamodb:Scan",</span>
+<span class="ltx_listingline">            "dynamodb:Query"</span>
+<span class="ltx_listingline">          ]</span>
+<span class="ltx_listingline">          Effect = "Allow"</span>
+<span class="ltx_listingline">          Resource = [ var.dynamodb_table_arn, "${var.dynamodb_table_arn}/*" ]</span>
+<span class="ltx_listingline">        }</span>
+<span class="ltx_listingline">      ] : [],</span>
+<span class="ltx_listingline">      var.additional_iam_statements</span>
+<span class="ltx_listingline">    )</span>
+<span class="ltx_listingline">  })</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline"># ==========================================</span>
+<span class="ltx_listingline"># File: api_gateway_assume_role_policy.json</span>
+<span class="ltx_listingline"># ==========================================</span>
+<span class="ltx_listingline">{</span>
+<span class="ltx_listingline">  "Version": "2012-10-17",</span>
+<span class="ltx_listingline">  "Statement": [</span>
+<span class="ltx_listingline">    {</span>
+<span class="ltx_listingline">      "Action": "sts:AssumeRole",</span>
+<span class="ltx_listingline">      "Effect": "Allow",</span>
+<span class="ltx_listingline">      "Principal": {</span>
+<span class="ltx_listingline">        "Service": "apigateway.amazonaws.com"</span>
+<span class="ltx_listingline">      }</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline">  ]</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline"># ==========================================</span>
+<span class="ltx_listingline"># File: lambda_assume_role_policy.json</span>
+<span class="ltx_listingline"># ==========================================</span>
+<span class="ltx_listingline">{</span>
+<span class="ltx_listingline">  "Version": "2012-10-17",</span>
+<span class="ltx_listingline">  "Statement": [</span>
+<span class="ltx_listingline">    {</span>
+<span class="ltx_listingline">      "Action": "sts:AssumeRole",</span>
+<span class="ltx_listingline">      "Effect": "Allow",</span>
+<span class="ltx_listingline">      "Principal": {</span>
+<span class="ltx_listingline">        "Service": "lambda.amazonaws.com"</span>
+<span class="ltx_listingline">      }</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline">  ]</span>
+<span class="ltx_listingline">}</span></code></pre></div>
+</div>
+<div id="S2.p5" class="ltx_para">
+<p class="ltx_p">Il Listato <a title="A.2 Modulo api-gateway-lambda ‣ Appendice A Configurazioni Infrastrutturali ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#S2"><span class="ltx_text ltx_ref_tag">A.2</span></a> documenta il provisioning fisico delle risorse di calcolo e di rete. Il blocco illustra la configurazione della funzione Serverless (<span class="ltx_text ltx_font_typewriter">lambda.tf</span>), comprensiva dei parametri di memoria e concorrenza, e l’istanziazione dell’interfaccia di esposizione sincrona (<span class="ltx_text ltx_font_typewriter">gateway.tf</span>), responsabile del routing delle richieste HTTP verso il sottostante ambiente di esecuzione.</p>
+</div>
+<div id="S2.p6" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline"># ==========================================</span>
+<span class="ltx_listingline"># File: lambda.tf</span>
+<span class="ltx_listingline"># ==========================================</span>
+<span class="ltx_listingline">resource "aws_lambda_function" "lambda" {</span>
+<span class="ltx_listingline">  function_name = "${var.name}-${var.env}"</span>
+<span class="ltx_listingline">  role          = aws_iam_role.lambda_assume_role.arn</span>
+<span class="ltx_listingline">  package_type  = "Image"</span>
+<span class="ltx_listingline">  image_uri     = var.app_image</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  # ignore changes to the image_uri to prevent unnecessary redeploys</span>
+<span class="ltx_listingline">  lifecycle {</span>
+<span class="ltx_listingline">    ignore_changes = [image_uri]</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  timeout       = var.lambda_timeout</span>
+<span class="ltx_listingline">  memory_size   = var.lambda_memory_size</span>
+<span class="ltx_listingline">  architectures = ["arm64"]</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  environment {</span>
+<span class="ltx_listingline">    variables = merge(</span>
+<span class="ltx_listingline">      var.environments,</span>
+<span class="ltx_listingline">      {</span>
+<span class="ltx_listingline">        CLOUD_ENV = var.env</span>
+<span class="ltx_listingline">        STAGE     = "/api"</span>
+<span class="ltx_listingline">    })</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  tags = var.tags</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">resource "aws_iam_role" "lambda_assume_role" {</span>
+<span class="ltx_listingline">  name               = "${var.name}_lambda_role_${var.env}"</span>
+<span class="ltx_listingline">  assume_role_policy = file("${path.module}/iam/lambda_assume_role_policy.json")</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  tags = var.tags</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {</span>
+<span class="ltx_listingline">  role       = aws_iam_role.lambda_assume_role.name</span>
+<span class="ltx_listingline">  policy_arn = aws_iam_policy.lambda_application_policy.arn</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline"># Attach any additional managed policy ARNs provided by the caller</span>
+<span class="ltx_listingline">resource "aws_iam_role_policy_attachment" "additional_managed_policies" {</span>
+<span class="ltx_listingline">  for_each = toset(var.additional_managed_policy_arns)</span>
+<span class="ltx_listingline">  role     = aws_iam_role.lambda_assume_role.name</span>
+<span class="ltx_listingline">  policy_arn = each.value</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline"># ==========================================</span>
+<span class="ltx_listingline"># File: gateway.tf</span>
+<span class="ltx_listingline"># ==========================================</span>
+<span class="ltx_listingline">resource "aws_apigatewayv2_api" "gateway" {</span>
+<span class="ltx_listingline">  name                         = "${var.name}-${var.env}"</span>
+<span class="ltx_listingline">  description                  = "API Gateway for ${var.name}"</span>
+<span class="ltx_listingline">  version                      = "1.0.0"</span>
+<span class="ltx_listingline">  protocol_type                = "HTTP"</span>
+<span class="ltx_listingline">  disable_execute_api_endpoint = false</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  cors_configuration {</span>
+<span class="ltx_listingline">    allow_origins  = var.allow_origins</span>
+<span class="ltx_listingline">    allow_methods  = setunion(var.allow_methods, ["OPTIONS"])</span>
+<span class="ltx_listingline">    allow_headers  = ["*"]</span>
+<span class="ltx_listingline">    expose_headers = ["*"]</span>
+<span class="ltx_listingline">    max_age        = 86400</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  tags = var.tags</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">resource "aws_apigatewayv2_authorizer" "cognito" {</span>
+<span class="ltx_listingline">  count                      = var.cognito_user_pool_id != null ? 1 : 0</span>
+<span class="ltx_listingline">  name                       = "${var.name}-cognito-authorizer"</span>
+<span class="ltx_listingline">  api_id                     = aws_apigatewayv2_api.gateway.id</span>
+<span class="ltx_listingline">  authorizer_type            = "JWT"</span>
+<span class="ltx_listingline">  identity_sources           = ["$request.header.Authorization"]</span>
+<span class="ltx_listingline">  jwt_configuration {</span>
+<span class="ltx_listingline">    audience = var.cognito_audience</span>
+<span class="ltx_listingline">    issuer   = "https://cognito-idp.${var.aws_region}.amazonaws.com/${var.cognito_user_pool_id}"</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">resource "aws_apigatewayv2_integration" "gateway_integration" {</span>
+<span class="ltx_listingline">  api_id           = aws_apigatewayv2_api.gateway.id</span>
+<span class="ltx_listingline">  integration_type = "AWS_PROXY"</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  connection_type        = "INTERNET"</span>
+<span class="ltx_listingline">  description            = "${var.name} proxy integration"</span>
+<span class="ltx_listingline">  integration_method     = "POST"</span>
+<span class="ltx_listingline">  integration_uri        = aws_lambda_function.lambda.invoke_arn</span>
+<span class="ltx_listingline">  payload_format_version = "2.0"</span>
+<span class="ltx_listingline">  timeout_milliseconds   = 30000</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">locals {</span>
+<span class="ltx_listingline">  allow_methods = [for method in toset(setunion(var.allow_methods, ["OPTIONS"])) : method == "*" ? "ANY" : method]</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">resource "aws_apigatewayv2_route" "this" {</span>
+<span class="ltx_listingline">  for_each = toset(local.allow_methods)</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  api_id    = aws_apigatewayv2_api.gateway.id</span>
+<span class="ltx_listingline">  route_key = strcontains(each.key, " /") ? each.key : "${each.key} /{proxy+}"</span>
+<span class="ltx_listingline">  target    = "integrations/${aws_apigatewayv2_integration.gateway_integration.id}"</span>
+<span class="ltx_listingline">  authorizer_id = (each.key == "OPTIONS" || var.cognito_user_pool_id == null) ? null : aws_apigatewayv2_authorizer.cognito[0].id</span>
+<span class="ltx_listingline">  authorization_type = each.key == "OPTIONS" ? "NONE" : (var.cognito_user_pool_id != null ? "JWT" : "NONE")</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">resource "aws_lambda_permission" "allow_api" {</span>
+<span class="ltx_listingline">  statement_id_prefix = "ExecuteByAPI"</span>
+<span class="ltx_listingline">  action              = "lambda:InvokeFunction"</span>
+<span class="ltx_listingline">  function_name       = aws_lambda_function.lambda.function_name</span>
+<span class="ltx_listingline">  principal           = "apigateway.amazonaws.com"</span>
+<span class="ltx_listingline">  source_arn          = "${aws_apigatewayv2_api.gateway.execution_arn}/*"</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">resource "aws_apigatewayv2_stage" "api" {</span>
+<span class="ltx_listingline">  api_id      = aws_apigatewayv2_api.gateway.id</span>
+<span class="ltx_listingline">  name        = "api"</span>
+<span class="ltx_listingline">  auto_deploy = true</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  access_log_settings {</span>
+<span class="ltx_listingline">    destination_arn = aws_cloudwatch_log_group.main_api_gw.arn</span>
+<span class="ltx_listingline">    format = jsonencode({</span>
+<span class="ltx_listingline">      requestId               = "$context.requestId"</span>
+<span class="ltx_listingline">      sourceIp                = "$context.identity.sourceIp"</span>
+<span class="ltx_listingline">      requestTime             = "$context.requestTime"</span>
+<span class="ltx_listingline">      protocol                = "$context.protocol"</span>
+<span class="ltx_listingline">      httpMethod              = "$context.httpMethod"</span>
+<span class="ltx_listingline">      resourcePath            = "$context.resourcePath"</span>
+<span class="ltx_listingline">      routeKey                = "$context.routeKey"</span>
+<span class="ltx_listingline">      status                  = "$context.status"</span>
+<span class="ltx_listingline">      responseLength          = "$context.responseLength"</span>
+<span class="ltx_listingline">      integrationErrorMessage = "$context.integrationErrorMessage"</span>
+<span class="ltx_listingline">      }</span>
+<span class="ltx_listingline">    )</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline">  depends_on = [aws_cloudwatch_log_group.main_api_gw]</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  tags = var.tags</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">resource "aws_cloudwatch_log_group" "main_api_gw" {</span>
+<span class="ltx_listingline">  name              = "/aws/api-gw/${aws_apigatewayv2_api.gateway.name}"</span>
+<span class="ltx_listingline">  retention_in_days = 30</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  tags = var.tags</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">resource "aws_apigatewayv2_domain_name" "domain" {</span>
+<span class="ltx_listingline">  count = var.custom_domain_name != null ? 1 : 0</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  domain_name = "${var.custom_domain_name}${var.env == "prod" ? "" : "-${var.env}"}.${var.domain_extension}"</span>
+<span class="ltx_listingline">  domain_name_configuration {</span>
+<span class="ltx_listingline">    certificate_arn = var.acm_certificate_arn</span>
+<span class="ltx_listingline">    endpoint_type   = "REGIONAL"</span>
+<span class="ltx_listingline">    security_policy = "TLS_1_2"</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  tags = var.tags</span>
+<span class="ltx_listingline">}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">resource "aws_apigatewayv2_api_mapping" "domain_mapping" {</span>
+<span class="ltx_listingline">  count = var.custom_domain_name != null ? 1 : 0</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  api_id      = aws_apigatewayv2_api.gateway.id</span>
+<span class="ltx_listingline">  domain_name = aws_apigatewayv2_domain_name.domain[0].id</span>
+<span class="ltx_listingline">  stage       = aws_apigatewayv2_stage.api.name</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  depends_on = [aws_apigatewayv2_stage.api]</span>
+<span class="ltx_listingline">}</span></code></pre></div>
+</div>
+</div>
+</section>
+</div>

@@ -1,0 +1,288 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">Il presente capitolo illustra l’analisi dei requisiti e la progettazione architetturale del sistema. La struttura del capitolo segue un approccio incrementale: si definiscono i requisiti operativi, si progetta l’infrastruttura Cloud di base (strategia Multi-Account e Serverless), si modella il livello di persistenza e i flussi dati (Event-Driven, S3, DynamoDB) e si definisce l’architettura interna del software applicativo. Infine, vengono delineati i processi di automazione e le pratiche di Infrastructure as Code necessari a governare il ciclo di vita del software. L’obiettivo è fornire una giustificazione formale e ingegneristica per ogni scelta tecnologica, ponendo le basi per l’implementazione descritta nel capitolo successivo.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.1</span> Analisi del Contesto Operativo e Definizione dei Requisiti</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">L’analisi del contesto operativo esamina le criticità intrinseche alle infrastrutture tradizionali impiegate nel settore dell’advertising digitale. Questo dominio applicativo impone l’elaborazione di elevati volumi di dati in tempo reale e richiede la gestione di carichi di rete altamente variabili. L’ispezione delle architetture legacy evidenzia limitazioni strutturali derivanti dall’eterogeneità dei servizi e dall’esecuzione parzialmente manuale delle procedure di rilascio. L’assenza di un sistema di versionamento dichiarativo impedisce la tracciabilità delle modifiche infrastrutturali e compromette la riproducibilità degli ambienti operativi. Tale debito tecnico costringe i sistemi a un’allocazione statica delle risorse computazionali, la quale risulta indipendente dal carico effettivo e incapace di adattarsi dinamicamente alle fluttuazioni del traffico.</p>
+</div>
+<div id="S1.p2" class="ltx_para">
+<p class="ltx_p">L’identificazione di questi colli di bottiglia operativi determina la formulazione di tre requisiti architetturali primari per la progettazione del nuovo sistema Cloud-Native.</p>
+</div>
+<div id="S1.p3" class="ltx_para">
+<p class="ltx_p">Il primo requisito definisce la necessità di una scalabilità elastica. L’architettura deve allocare e deallocare dinamicamente le risorse computazionali per assorbire i picchi di traffico imprevisti. Questa elasticità deve garantire latenze di elaborazione minime senza richiedere alcun intervento di ridimensionamento manuale da parte di un operatore.</p>
+</div>
+<div id="S1.p4" class="ltx_para">
+<p class="ltx_p">Il secondo vincolo architetturale impone l’isolamento degli ambienti operativi. Il sistema deve garantire una separazione logica e fisica rigorosa tra le risorse destinate alla programmazione, alle fasi di collaudo e all’ambiente di produzione. Tale segregazione previene interferenze tra i carichi di lavoro e assicura che i test non impattino le prestazioni dei servizi esposti agli utenti finali.</p>
+</div>
+<div id="S1.p5" class="ltx_para">
+<p class="ltx_p">Infine, il terzo requisito prescrive la tracciabilità e l’automazione integrale dei flussi operativi. La progettazione deve vincolare la gestione dei componenti cloud all’utilizzo di codice dichiarativo, trattando l’infrastruttura alla stregua del software applicativo. Parallelamente, il sistema deve implementare pipeline automatizzate per disciplinare i processi di integrazione e di rilascio continuo (CI/CD), eliminando le operazioni manuali.</p>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.2</span> Progettazione dell’Infrastruttura Cloud</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Per soddisfare i requisiti prestazionali, l’architettura si basa sul paradigma Serverless <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib3">3</a>]</cite>, implementato tramite Amazon Web Services (AWS). Questa scelta rimuove l’onere della gestione di macchine virtuali e introduce un modello di costo calcolato sui tempi di esecuzione effettivi.</p>
+</div>
+<div id="S2.p2" class="ltx_para">
+<p class="ltx_p">Come illustrato nello schema logico in Figura <a title="Figura 7 ‣ 3.2 Progettazione dell’Infrastruttura Cloud ‣ Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F7"><span class="ltx_text ltx_ref_tag">7</span></a>, per garantire la modularità l’architettura è stata concettualmente divisa in due categorie funzionali: i servizi di backend (Services), deputati all’esposizione di interfacce di programmazione sincrone, e i componenti asincroni (Workers), dedicati all’elaborazione in background dei dati.</p>
+</div>
+<figure id="F7" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-services_workers.drawio.webp" width="865" height="397" loading="lazy" alt="Diagramma dentro AWS Cloud con due aree. SERVICES (interfacce API backend): un client raggiunge API Gateway, poi una Lambda FastAPI, che scrive su DynamoDB. WORKERS (elaborazione asincrona, event-driven): Event Bridge attiva una Lambda Data Processing, che scrive su un Data Lake su S3."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 7</span>: </span><span class="ltx_text">Schema concettuale dell’architettura Serverless su AWS, illustrante la separazione tra Services (interfacce sincrone) e Workers (elaborazione asincrona) [Elaborazione dell’autore].</span></figcaption>
+</figure>
+<section id="S2.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.2.1</span> Strategia Multi-Account e Segregazione delle Risorse</h3>
+
+<div id="S2.SS1.p1" class="ltx_para">
+<p class="ltx_p">L’impiego di un singolo account AWS per l’intero ciclo di vita del software estende pericolosamente il dominio di faglia in caso di incidenti e complica il controllo degli accessi. La progettazione ha quindi previsto una strategia Multi-Account, la cui topologia è rappresentata in Figura <a title="Figura 8 ‣ 3.2.1 Strategia Multi-Account e Segregazione delle Risorse ‣ 3.2 Progettazione dell’Infrastruttura Cloud ‣ Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F8"><span class="ltx_text ltx_ref_tag">8</span></a>, strutturata su tre ambienti isolati: Sviluppo (Dev), Produzione (Prod) e Condiviso (Shared).</p>
+</div>
+<div id="S2.SS1.p2" class="ltx_para">
+<p class="ltx_p">Gli account Dev e Prod sono copie speculari, garantendo che le configurazioni validate in sviluppo si comportino in modo deterministico in produzione. L’account Shared agisce come nodo centralizzato, ospitando le risorse accessibili trasversalmente: i registri Amazon ECR <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib20">20</a>]</cite> per le immagini Docker e i bucket S3 per gli artefatti statici. Questa topologia centralizzata previene la duplicazione dei pacchetti e permette ai flussi di deployment di prelevare gli artefatti da un’unica sorgente sicura.</p>
+</div>
+<figure id="F8" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-aws-multi-account.drawio.webp" width="829" height="361" loading="lazy" alt="Tre colonne: Shared Account (repository centralizzato) con ECR Registries e S3 Buckets per gli artefatti; Dev Account e Prod Account (ambienti isolati), ciascuno con una funzione Lambda e un servizio di distribuzione di contenuti. Frecce con etichetta Read-only access (Deployment Flows) vanno dall'account Shared agli account Dev e Prod."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 8</span>: </span><span class="ltx_text">Topologia della strategia Multi-Account su AWS. L’account Shared centralizza gli artefatti, referenziati in sola lettura per il deployment negli ambienti isolati [Elaborazione dell’autore].</span></figcaption>
+</figure>
+</div>
+</section>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.3</span> Progettazione del Livello Dati e Flussi Asincroni</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">L’architettura separa le responsabilità tra l’archiviazione di volumi massivi per l’analisi e la memorizzazione transazionale a bassa latenza, introducendo un netto disaccoppiamento tra produttori e consumatori di dati.</p>
+</div>
+<section id="S3.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.3.1</span> Decomposizione Event-Driven ed ETL Serverless</h3>
+
+<div id="S3.SS1.p1" class="ltx_para">
+<p class="ltx_p">I processi di elaborazione dati sono stati re-ingegnerizzati applicando il pattern Event-Driven <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib5">5</a>]</cite>. I flussi di estrazione e trasformazione (ETL) sono composti da microservizi specializzati asincroni.
+Come delineato in Figura <a title="Figura 9 ‣ 3.3.1 Decomposizione Event-Driven ed ETL Serverless ‣ 3.3 Progettazione del Livello Dati e Flussi Asincroni ‣ Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F9"><span class="ltx_text ltx_ref_tag">9</span></a>, i servizi di estrazione depositano i dati grezzi in un Data Lake su Amazon S3 <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib17">17</a>]</cite>. L’inserimento di un file innesca automaticamente l’esecuzione di funzioni AWS Lambda <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib9">9</a>]</cite> o processi AWS Glue <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib18">18</a>]</cite>. Questi componenti applicano le regole di pulizia e salvano i dati nel formato colonnare Parquet.</p>
+</div>
+<figure id="F9" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-elaborazione-serverless.drawio.webp" width="613" height="322" loading="lazy" alt="Diagramma: un Clean data bucket (S3, CSV) passa per un servizio di Cataloging verso un Data Catalog (bucket); dal catalogo un Interactive Querying Service (SQL) serve le Applications."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 9</span>: </span><span class="ltx_text">Pipeline di elaborazione dati Serverless. AWS Glue trasforma i dati grezzi su S3 rendendoli interrogabili tramite Athena [Elaborazione dell’autore].</span></figcaption>
+</figure>
+</div>
+</section>
+<section id="S3.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.3.2</span> Partizionamento Hive-Style del Data Lake</h3>
+
+<div id="S3.SS2.p1" class="ltx_para">
+<p class="ltx_p">Per ottimizzare le prestazioni e mitigare i costi operativi, il Data Lake è diviso in due zone logiche distinte: Raw (per i dati estratti nel formato originale) e Clean (per i dati trasformati e standardizzati). I dati immagazzinati nella zona Clean sono archiviati applicando rigorosamente un partizionamento Hive-style <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib57">57</a>]</cite>. Questo paradigma organizza i file in percorsi gerarchici auto-descrittivi basati su coordinate temporali, ad esempio, <span class="ltx_text ltx_font_typewriter">anno=2024/mese=10/giorno=25/</span>, come visualizzato nella gerarchia di Figura <a title="Figura 10 ‣ 3.3.2 Partizionamento Hive-Style del Data Lake ‣ 3.3 Progettazione del Livello Dati e Flussi Asincroni ‣ Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F10"><span class="ltx_text ltx_ref_tag">10</span></a>.</p>
+</div>
+<figure id="F10" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-partition-pruning.webp" width="1001" height="466" loading="lazy" alt="Un bucket S3 contiene la cartella raw/, con dati non strutturati, e la cartella clean/, che contiene yy=2024/, poi mm=10/, poi dd=25/. Una freccia da un'icona di Athena verso dd=25/ è etichettata «Partition Pruning: scansione limitata al path richiesto»."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 10</span>: </span><span class="ltx_text">Struttura gerarchica del Data Lake su Amazon S3 basata su partizionamento Hive-style. L’organizzazione abilita il partition pruning da parte di Amazon Athena [Elaborazione dell’autore].</span></figcaption>
+</figure>
+<div id="S3.SS2.p2" class="ltx_para">
+<p class="ltx_p">Questo design logico permette ad Amazon Athena <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib19">19</a>]</cite> di eseguire l’operazione di partition pruning, ignorando sistematicamente le directory non pertinenti alla query SQL in esecuzione. Per quantificare l’impatto architetturale di tale scelta, si consideri l’esecuzione di un’interrogazione analitica tipica per l’estrazione delle metriche giornaliere relative a una specifica campagna pubblicitaria:</p>
+</div>
+<div id="S3.SS2.p3" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">SELECT campaign_id, SUM(impressions) AS total_impressions</span>
+<span class="ltx_listingline">FROM impressions_table</span>
+<span class="ltx_listingline">WHERE campaign_id = ’ABC-123’</span>
+<span class="ltx_listingline">  AND year = ’2024’ AND month = ’10’ AND day = ’25’;</span></code></pre></div>
+</div>
+<div id="S3.SS2.p4" class="ltx_para">
+<p class="ltx_p">In un Data Lake privo di partizionamento logico, il motore di query distribuito è costretto a leggere sequenzialmente l’intero volume di dati archiviato nel bucket Amazon S3 per individuare i record. Assumendo un volume di 1 Terabyte (TB) di dati storici, l’operazione comporta la scansione dell’intero Terabyte, incorrendo nel costo fisso per TB associato ad Athena.</p>
+</div>
+<div id="S3.SS2.p5" class="ltx_para">
+<p class="ltx_p">Sfruttando il partizionamento, il motore interroga preventivamente il catalogo dati per risolvere i predicati della clausola WHERE associati alle chiavi di partizione. Questa operazione permette ad Athena di accedere esclusivamente al prefisso S3 isolato. Se il volume di dati generato nella singola giornata ammonta a 10 Gigabyte (GB), il sistema scansiona esclusivamente tale frazione, traducendosi in una riduzione del 99% dei dati elaborati, con un conseguente abbattimento dei costi e della latenza.</p>
+</div>
+</div>
+</section>
+<section id="S3.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.3.3</span> Modellazione NoSQL: Single Table Design</h3>
+
+<div id="S3.SS3.p1" class="ltx_para">
+<p class="ltx_p">La persistenza dello stato transazionale dei microservizi è demandata ad Amazon DynamoDB <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib16">16</a>]</cite>. La progettazione adotta massicciamente il Single Table Design <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib47">47</a>]</cite>, memorizzando entità eterogenee all’interno di un’unica tabella, come esemplificato in Figura <a title="Figura 11 ‣ 3.3.3 Modellazione NoSQL: Single Table Design ‣ 3.3 Progettazione del Livello Dati e Flussi Asincroni ‣ Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F11"><span class="ltx_text ltx_ref_tag">11</span></a>. Sfruttando chiavi primarie composite (Partition Key e Sort Key) progettate ad hoc, il sistema recupera relazioni complesse con una singola operazione di lettura, minimizzando il consumo di Read Capacity Units (RCU).</p>
+</div>
+<figure id="F11" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-single-table-design.webp" width="1044" height="388" loading="lazy" alt="Tabella con colonne PK, SK e results. Righe: racer-1, race-1, {&quot;second-1&quot;: 1.3, &quot;second-2&quot;: 2.4}; racer-2, race-1, {&quot;second-1&quot;: 1.2, &quot;second-2&quot;: 2.1}; race-1, racer-1, 2.4; race-1, racer-2, 2.1; race-1, results, {&quot;racer-1&quot;: 2.4, &quot;racer-2&quot;: 2.1}."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 11</span>: </span><span class="ltx_text">Esempio di Single Table Design per la memorizzazione di entità eterogenee in una singola tabella <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib47">47</a>]</cite>.</span></figcaption>
+</figure>
+</div>
+</section>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.4</span> Progettazione dei Servizi Applicativi</h2>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">I microservizi che espongono API sincrone richiedono un rigore strutturale per garantire la manutenibilità del codice e la stabilità delle interfacce pubbliche.</p>
+</div>
+<section id="S4.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.4.1</span> Framework API e Validazione dei Dati</h3>
+
+<div id="S4.SS1.p1" class="ltx_para">
+<p class="ltx_p">Per lo sviluppo dei microservizi è stato selezionato il framework Python FastAPI <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib32">32</a>]</cite>. In questo contesto, la libreria Pydantic assume un ruolo centrale per l’ispezione statica dei tipi e la validazione a runtime. Ogni payload JSON deve superare una convalida formale contro schemi predefiniti.</p>
+</div>
+<div id="S4.SS1.p2" class="ltx_para">
+<p class="ltx_p">L’implementazione di questo meccanismo si fonda sulla definizione di Data Transfer Object (DTO). Di seguito è illustrato un modello rappresentativo per l’accettazione di un payload relativo a una campagna pubblicitaria:</p>
+</div>
+<div id="S4.SS1.p3" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">from pydantic import BaseModel, Field, HttpUrl</span>
+<span class="ltx_listingline">from datetime import date</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">class CampaignCreateDTO(BaseModel):</span>
+<span class="ltx_listingline">    campaign_name: str = Field(..., min_length=3, max_length=100)</span>
+<span class="ltx_listingline">    budget: float = Field(..., gt=0)</span>
+<span class="ltx_listingline">    target_url: HttpUrl</span>
+<span class="ltx_listingline">    start_date: date</span></code></pre></div>
+</div>
+<div id="S4.SS1.p4" class="ltx_para">
+<p class="ltx_p">Quando il microservizio riceve una richiesta HTTP POST, il framework esegue la conversione automatica dei tipi e la validazione dei vincoli dichiarativi. Qualora il payload non rispetti i vincoli, ad esempio un budget negativo, l’istanza dell’oggetto non viene creata e la logica di business non viene invocata. Il framework genera in automatico una risposta HTTP 422, fornendo un corpo JSON che localizza l’errore:</p>
+</div>
+<div id="S4.SS1.p5" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">{</span>
+<span class="ltx_listingline">  "detail": [</span>
+<span class="ltx_listingline">    {</span>
+<span class="ltx_listingline">      "loc": ["body", "budget"],</span>
+<span class="ltx_listingline">      "msg": "Input should be greater than 0",</span>
+<span class="ltx_listingline">      "type": "greater_than",</span>
+<span class="ltx_listingline">      "ctx": {"gt": 0}</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline">  ]</span>
+<span class="ltx_listingline">}</span></code></pre></div>
+</div>
+<div id="S4.SS1.p6" class="ltx_para">
+<p class="ltx_p">Questa tipologia di validazione minimizza la necessità di scrivere codice procedurale per la gestione delle eccezioni.</p>
+</div>
+</div>
+</section>
+<section id="S4.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.4.2</span> Architettura Interna: Clean Architecture e Dependency Injection</h3>
+
+<div id="S4.SS2.p1" class="ltx_para">
+<p class="ltx_p">Per prevenire un elevato accoppiamento strutturale, la base di codice aderisce ai principi della Clean Architecture <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib58">58</a>]</cite>. Come mostrato in Figura <a title="Figura 12 ‣ 3.4.2 Architettura Interna: Clean Architecture e Dependency Injection ‣ 3.4 Progettazione dei Servizi Applicativi ‣ Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F12"><span class="ltx_text ltx_ref_tag">12</span></a>, il software è stratificato in tre livelli funzionali.</p>
+</div>
+<figure id="F12" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-clean-architecture.drawio.webp" width="469" height="375" loading="lazy" alt="Tre livelli impilati con frecce verso il basso: Router / API Layer (FastAPI + Pydantic), Service Layer (Business logic), Data Access Layer (PynamoDB). A destra la nota Dependency Rule: i livelli superiori chiamano quelli inferiori, mai il contrario."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 12</span>: </span><span class="ltx_text">Stratificazione interna dei microservizi secondo i principi della Clean Architecture. Il flusso di controllo è unidirezionale dal livello di presentazione verso il livello di accesso ai dati [Elaborazione dell’autore].</span></figcaption>
+</figure>
+<div id="S4.SS2.p2" class="ltx_para">
+<p class="ltx_p">Il primo strato è il Router Layer, che gestisce esclusivamente il routing HTTP. Il secondo è il Service Layer, contenente la logica di business agnostica rispetto a database e framework web. Il terzo è il Repository Layer, che incapsula le interazioni con S3 e DynamoDB.
+Il passaggio di informazioni e dipendenze tra i livelli sfrutta il pattern Dependency Injection. Oltre all’iniezione delle dipendenze strutturali, il meccanismo è impiegato per le validazioni di dominio preliminari, permettendo ai controller di rimanere snelli.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S5" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.5</span> Osservabilità e Gestione delle Anomalie</h2>
+
+<div id="S5.p1" class="ltx_para">
+<p class="ltx_p">In ambienti Serverless distribuiti, l’assenza di server fisici impone l’adozione di meccanismi di tracciamento centralizzati e proattivi. Tutti i microservizi implementano un logger egualmente configurato che produce output in formato JSON strutturato, incanalato in Amazon CloudWatch.</p>
+</div>
+<div id="S5.p2" class="ltx_para">
+<p class="ltx_p">Per la gestione degli errori nei flussi asincroni, il design prevede l’utilizzo di Dead Letter Queue (DLQ), come illustrato in Figura <a title="Figura 13 ‣ 3.5 Osservabilità e Gestione delle Anomalie ‣ Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F13"><span class="ltx_text ltx_ref_tag">13</span></a>. I messaggi non elaborabili, dopo aver esaurito la politica di retry, vengono isolati in questa coda. L’evento di inserimento innesca notifiche tramite EventBridge <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib13">13</a>]</cite> verso i canali operativi aziendali, minimizzando i tempi di rilevamento.</p>
+</div>
+<figure id="F13" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-dlq-logging.webp" width="995" height="458" loading="lazy" alt="Due schemi. Lambda Logging Flow: tre funzioni Lambda inviano log stream in formato JSON ad Amazon CloudWatch. Asynchronous Error Handling (DLQ &amp; Alerting): una sorgente di eventi (ad esempio un bucket S3 o API Gateway) attiva una funzione Lambda; in caso di errore l'evento fallito va in una coda SQS DLQ, che con un webhook invia un allarme a Slack."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 13</span>: </span><span class="ltx_text">Flusso architetturale della telemetria. I log strutturati confluiscono in Amazon CloudWatch; i messaggi non processabili vengono isolati in una Dead Letter Queue (DLQ) innescando sistemi di notifica [Elaborazione dell’autore].</span></figcaption>
+</figure>
+</div>
+</section>
+<section id="S6" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">3.6</span> Automazione e Infrastructure as Code (IaC)</h2>
+
+<div id="S6.p1" class="ltx_para">
+<p class="ltx_p">La garanzia di riproducibilità è assicurata dalla traduzione dell’intera infrastruttura in codice dichiarativo e dall’automazione delle pipeline di rilascio.</p>
+</div>
+<section id="S6.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.6.1</span> Topologia Architetturale del Codice IaC</h3>
+
+<div id="S6.SS1.p1" class="ltx_para">
+<p class="ltx_p">Le risorse cloud sono modellate tramite Terraform <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib34">34</a>, <a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib36">36</a>]</cite>. Per agevolare la governance, la progettazione adotta un singolo repository infrastrutturale centralizzato. Tuttavia, la gestione di un’infrastruttura di livello enterprise tramite un singolo file di stato (state file) monolitico costituisce un anti-pattern ingegneristico. Un file di stato di grandi dimensioni dilata i tempi di calcolo del grafo delle dipendenze e amplifica il raggio di impatto (blast radius) in caso di corruzione accidentale dello stesso.</p>
+</div>
+<div id="S6.SS1.p2" class="ltx_para">
+<p class="ltx_p">Per mitigare tali criticità, la topologia del repository implementa un’architettura a strati, come schematizzato nella Figura <a title="Figura 14 ‣ 3.6.1 Topologia Architetturale del Codice IaC ‣ 3.6 Automazione e Infrastructure as Code (IaC) ‣ Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F14"><span class="ltx_text ltx_ref_tag">14</span></a>. Il design impone una netta segregazione logica tra la definizione astratta delle risorse e la loro effettiva istanziazione negli ambienti cloud di destinazione.</p>
+</div>
+<figure id="F14" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-flusso_iac.webp" width="1007" height="468" loading="lazy" alt="A sinistra il repository centralizzato di infrastruttura (Git) con definizioni Terraform (.tf) e file di stato (.tfstate). Terraform Execution (Plan &amp; Apply) propaga le modifiche all'ambiente DEV e all'ambiente PROD, entrambi isolati e con EC2, S3 e RDS. In basso: State Locking (controllo della concorrenza)."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 14</span>: </span><span class="ltx_text">Flusso di lavoro Infrastructure as Code: versionamento dello stato dichiarativo e propagazione delle modifiche tramite Terraform [Elaborazione dell’autore].</span></figcaption>
+</figure>
+<div id="S6.SS1.p3" class="ltx_para">
+<p class="ltx_p">Il primo livello di questa astrazione è costituito dai moduli riutilizzabili. Ogni modulo incapsula i dettagli implementativi di un dominio architetturale specifico, come il provisioning di un cluster containerizzato o la configurazione di un database, ed espone esclusivamente un’interfaccia controllata di variabili in ingresso. Questo approccio garantisce che la logica di creazione delle risorse venga scritta e sottoposta a revisione una singola volta.</p>
+</div>
+<div id="S6.SS1.p4" class="ltx_para">
+<p class="ltx_p">Per governare la topologia a strati e garantire il rispetto del principio DRY (<span class="ltx_text ltx_font_italic">Don’t Repeat Yourself</span>), la progettazione architetturale prescrive l’adozione dell’orchestratore Terragrunt. Il livello di istanziazione (definito <span class="ltx_text ltx_font_italic">Live Environment</span>) delega a questo strumento la mappatura della topologia degli account AWS isolati (<span class="ltx_text ltx_font_typewriter">dev</span>, <span class="ltx_text ltx_font_typewriter">prod</span> e <span class="ltx_text ltx_font_typewriter">shared</span>). Al fine di prevenire derive di configurazione (<span class="ltx_text ltx_font_italic">configuration drift</span>) tra i diversi ambienti, il design centralizza le definizioni, evitando la duplicazione manuale del codice dichiarativo.</p>
+</div>
+<div id="S6.SS1.p5" class="ltx_para">
+<p class="ltx_p">Il sistema adotta un modello a ereditarietà basato sui file di configurazione dell’orchestratore. Un livello base comune definisce la struttura logica dell’intera infrastruttura, suddivisa in moduli dipendenti e sequenziali: le fondamenta di rete, i sistemi di messaggistica, lo strato di persistenza e il livello applicativo. Le directory relative ai singoli ambienti ereditano questo template tramite specifiche direttive di inclusione, sovrascrivendo unicamente i parametri operativi di competenza, quali il dimensionamento delle istanze computazionali, i limiti di auto-scaling o i riferimenti ai certificati crittografici.</p>
+</div>
+<div id="S6.SS1.p6" class="ltx_para">
+<p class="ltx_p">Infine, la scomposizione dello stato infrastrutturale in strati funzionali indipendenti assicura che l’aggiornamento di un componente isolato, ad esempio, un singolo microservizio, non inneschi la lettura o la validazione dello stato dell’infrastruttura di rete o dei database sottostanti. Questa granularità ottimizza le prestazioni delle pipeline di integrazione continua, abilitando aggiornamenti paralleli e riducendo il raggio d’impatto in caso di anomalie durante le procedure di rilascio.</p>
+</div>
+</div>
+</section>
+<section id="S6.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.6.2</span> Containerizzazione e Pipeline GitOps</h3>
+
+<div id="S6.SS2.p1" class="ltx_para">
+<p class="ltx_p">L’incapsulamento del software avviene tramite immagini Docker <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib38">38</a>]</cite>, garantendo parità crittografica tra gli artefatti testati in sviluppo e quelli rilasciati in produzione.</p>
+</div>
+<div id="S6.SS2.p2" class="ltx_para">
+<p class="ltx_p">Il flusso di rilascio, descritto nella Figura <a title="Figura 15 ‣ 3.6.2 Containerizzazione e Pipeline GitOps ‣ 3.6 Automazione e Infrastructure as Code (IaC) ‣ Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F15"><span class="ltx_text ltx_ref_tag">15</span></a>, implementa il Trunk-Based Development <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib41">41</a>]</cite>, in cui lo sviluppo converge rapidamente verso un singolo ramo <span class="ltx_text ltx_font_typewriter">main</span>. Le pipeline CI/CD, basate sul paradigma GitOps <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib42">42</a>]</cite>, sono innescate dal versionamento semantico definito dai Conventional Commits <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib54">54</a>]</cite>. L’artefatto compilato è univoco e viene promosso progressivamente dagli ambienti di test alla produzione senza necessitare di successive ricompilazioni.</p>
+</div>
+<figure id="F15" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-flusso-commit.webp" width="972" height="441" loading="lazy" alt="Schema del flusso: dallo sviluppo locale un feature branch, con commit e PR review, confluisce nel main branch (unica fonte di verità) tramite commit convenzionali (ad esempio feat:, fix:). La pipeline CI/CD (GitHub Actions) esegue build e package di un unico artefatto, un'immagine Docker, distribuito all'ambiente DEV (test di integrazione) e promosso all'ambiente PROD con approvazione."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 15</span>: </span><span class="ltx_text">Flusso architetturale della pipeline CI/CD basata sul Trunk-Based Development. L’unione sul branch principale innesca la generazione dell’artefatto promosso nei vari ambienti [Elaborazione dell’autore].</span></figcaption>
+</figure>
+</div>
+</section>
+<section id="S6.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">3.6.3</span> Design dell’Interfaccia MCP per l’Automazione Infrastrutturale</h3>
+
+<div id="S6.SS3.p1" class="ltx_para">
+<p class="ltx_p">L’adozione rigorosa dell’Infrastructure as Code (IaC) e dei flussi CI/CD basati su GitOps assicura la stabilità e la sicurezza del sistema, ma introduce inevitabilmente una barriera all’ingresso per gli sviluppatori focalizzati unicamente sul dominio applicativo. Per generare un nuovo microservizio, l’operatore è tipicamente tenuto a conoscere la topologia del repository Terraform, le convenzioni di nomenclatura, la sintassi Docker e i costrutti delle pipeline GitHub Actions.</p>
+</div>
+<div id="S6.SS3.p2" class="ltx_para">
+<p class="ltx_p">Al fine di mitigare questo sovraccarico cognitivo, la fase di progettazione ha previsto l’ingegnerizzazione di <span class="ltx_text ltx_font_italic">Service-Forge</span>, un framework di automazione interno. L’innovazione architetturale risiede nella decisione di non limitare tale strumento a una tradizionale interfaccia a riga di comando (CLI), bensì di esporne le funzionalità attraverso un server conforme al Model Context Protocol (MCP).</p>
+</div>
+<div id="S6.SS3.p3" class="ltx_para">
+<p class="ltx_p">Il design prevede che il generatore di microservizi (Service-Forge) agisca come un Server MCP indipendente, sviluppato avvalendosi della libreria Python FastMCP. L’ambiente di sviluppo integrato (IDE) in uso presso l’azienda, dotato di funzionalità di assistenza tramite Large Language Models, funge invece da Client MCP.
+Quando uno sviluppatore richiede la creazione di un nuovo servizio fornendo specifiche in linguaggio naturale, l’agente LLM si connette al server FastMCP per ottenere la firma dei metodi disponibili.</p>
+</div>
+<figure id="F16" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-mcp-architecture.webp" width="1600" height="860" loading="lazy" alt="Diagramma: nell'ambiente di sviluppo/IDE (client MCP) un operatore umano dà un prompt in linguaggio naturale a un agente LLM. Un livello di trasporto (MCP, JSON-RPC, stdio/SSE, solo JSON) lo collega a Service-Forge (server MCP), con un wrapper FastMCP e la validazione dei dati (DTO Pydantic). L'input validato va a uno scaffolding engine deterministico, che produce artefatti (codice sorgente, configurazione CI/CD .yaml) verso un repository Git o file system."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 16</span>: </span><span class="ltx_text">Architettura logica dell’integrazione MCP. Il diagramma illustra la separazione delle responsabilità tra l’IDE (Client MCP) delegato all’estrazione semantica tramite LLM, e Service-Forge (Server MCP) responsabile della validazione Pydantic e dell’esecuzione deterministica dello scaffolding [Elaborazione dell’autore].</span></figcaption>
+</figure>
+<div id="S6.SS3.p4" class="ltx_para">
+<p class="ltx_p">L’architettura delega all’Intelligenza Artificiale esclusivamente l’estrazione semantica dei parametri (es. il nome del servizio, il pattern architetturale desiderato) e la relativa formattazione in una struttura dati JSON valida, come illustrato nello schema di Figura <a title="Figura 16 ‣ 3.6.3 Design dell’Interfaccia MCP per l’Automazione Infrastrutturale ‣ 3.6 Automazione e Infrastructure as Code (IaC) ‣ Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F16"><span class="ltx_text ltx_ref_tag">16</span></a>. Il nucleo deterministico del sistema (Service-Forge) riceve tale payload, lo sottopone a una rigorosa validazione sintattica tramite schemi Pydantic e, in caso di esito positivo, avvia l’esecuzione del codice di scaffolding.
+Questo pattern di progettazione, comunemente noto come AI-Augmented Platform Engineering, confina la non-determinabilità dell’LLM all’interfaccia utente, mantenendo il controllo assoluto e deterministico sulla generazione degli artefatti software e infrastrutturali aziendali.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>

@@ -1,6 +1,6 @@
 ---
 import { site } from '../../config/site.ts';
-import type { Capitolo } from '../../lib/corso-build.ts';
+import { capitoloNumero, type Capitolo } from '../../lib/corso-build.ts';
 import type { CorsoMeta } from '../../lib/corso-meta.ts';
 import { corsoNotice, degreeProgramme } from '../../lib/corso-presentation.ts';
 import type { StatoCorso } from '../../lib/corso-stato.ts';
@@ -78,7 +78,7 @@ const fonti = corso.fonti ?? [];
           {capitoli.map((capitolo) => (
             <li>
               <a href={`/appunti/${slug}/${capitolo.slug}/`}>
-                <span class="num">{capitolo.numero}</span> {capitolo.titolo}
+                {capitoloNumero(capitolo) && <span class="num">{capitoloNumero(capitolo)}</span>} {capitolo.titolo}
               </a>
             </li>
           ))}

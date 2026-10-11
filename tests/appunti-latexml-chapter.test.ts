@@ -27,6 +27,13 @@ test('a page of a book that is not a numbered chapter is read for what it is', (
   assert.deepEqual(readChapterHead(fixture('thesis-bib.html')), { titolo: 'Bibliografia', bibliografia: true });
 });
 
+test('quotes in a code listing come out straight: LaTeXML curls them, the code needs the apostrophe', () => {
+  const page = fixture('thesis-A4.html').replace('eventVersion', 'eventVersion = ’2.1’');
+  const { html } = processChapter(page, { corso: 'tesi', chapterSlugs: {} });
+  assert.match(html, /eventVersion = '2\.1'/);
+  assert.doesNotMatch(/<pre class="listing"[\s\S]*?<\/pre>/.exec(html)![0], /[’‘]/);
+});
+
 test('throws on a page with no chapter rather than guessing one', () => {
   assert.throws(() => readChapterHead('<html><body><p>niente</p></body></html>'));
 });

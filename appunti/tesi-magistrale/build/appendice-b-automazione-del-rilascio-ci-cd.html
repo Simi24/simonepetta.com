@@ -1,0 +1,318 @@
+<div class="section level1">
+
+
+<section id="S1" class="ltx_section normal">
+<div class="section level1">
+<h1 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">B.1</span> Flusso di Continuous Integration</h1>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">Il Listato <a title="B.1 Flusso di Continuous Integration ‣ Appendice B Automazione del Rilascio (CI/CD) ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#S1"><span class="ltx_text ltx_ref_tag">B.1</span></a> descrive il flusso di Continuous Integration codificato tramite sintassi YAML per la piattaforma GitHub Actions. Il processo automatizza il checkout del codice, la risoluzione dei submodules privati e demanda a un’azione esterna la compilazione dell’immagine container, condizionando l’esecuzione alla presenza di un versionamento semantico formale del codice sorgente.</p>
+</div>
+<div id="S1.p2" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">name: Dev CI, docker image build and push</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">on:</span>
+<span class="ltx_listingline">  push:</span>
+<span class="ltx_listingline">    branches:</span>
+<span class="ltx_listingline">      - main</span>
+<span class="ltx_listingline">      - master</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">permissions:</span>
+<span class="ltx_listingline">  id-token: write</span>
+<span class="ltx_listingline">  contents: write</span>
+<span class="ltx_listingline">  pull-requests: write</span>
+<span class="ltx_listingline">  issues: write</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">env:</span>
+<span class="ltx_listingline">  IMAGE_CACHE_DIR: /tmp/cache/docker-image</span>
+<span class="ltx_listingline">  IMAGE_CACHE_KEY: cache-image</span>
+<span class="ltx_listingline">  IMAGE_KEY_VERSION: 1</span>
+<span class="ltx_listingline">  SERVICE_NAME: default</span>
+<span class="ltx_listingline">  REPO_NAME: ${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">jobs:</span>
+<span class="ltx_listingline">  build-and-push:</span>
+<span class="ltx_listingline">    name: Setup, Build and Publish</span>
+<span class="ltx_listingline">    runs-on: ubuntu-latest</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    steps:</span>
+<span class="ltx_listingline">      - name: Checkout code</span>
+<span class="ltx_listingline">        uses: actions/checkout@v4</span>
+<span class="ltx_listingline">        with:</span>
+<span class="ltx_listingline">          submodules: false</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">      - uses: actions/create-github-app-token@v1</span>
+<span class="ltx_listingline">        id: app-token</span>
+<span class="ltx_listingline">        with:</span>
+<span class="ltx_listingline">          app-id: ${{ vars.COMMON_SUBLIBS_APP_ID }}</span>
+<span class="ltx_listingline">          private-key: ${{ secrets.COMMON_SUBLIBS_APP_PRIVATE_KEY }}</span>
+<span class="ltx_listingline">          owner: ${{ github.repository_owner }}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">      - name: Checkout Submodule con Token Personalizzato</span>
+<span class="ltx_listingline">        run: |</span>
+<span class="ltx_listingline">          git config --global url."https://git:${{ steps.app-token.outputs.token }}@github.com/".insteadOf "https://github.com/"</span>
+<span class="ltx_listingline">          git config --global url."https://git:${{ steps.app-token.outputs.token }}@github.com/".insteadOf "git@github.com:"</span>
+<span class="ltx_listingline">          git submodule update --init --recursive</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">      - uses: devredops/cicd-release-action@main</span>
+<span class="ltx_listingline">        id: release</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">      - name: Set ENV variables</span>
+<span class="ltx_listingline">        run: |</span>
+<span class="ltx_listingline">          echo "REPO_NAME=${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}" &gt;&gt; $GITHUB_ENV</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">      - name: Build and Push Docker Image to ECR</span>
+<span class="ltx_listingline">        if: ${{ steps.release.outputs.release-created }}</span>
+<span class="ltx_listingline">        uses: Company/gha-build-and-push-on-ecr@main</span>
+<span class="ltx_listingline">        with:</span>
+<span class="ltx_listingline">          aws-role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME_OLD }}</span>
+<span class="ltx_listingline">          ecr-repository: ${{ env.REPO_NAME }}</span>
+<span class="ltx_listingline">          release-version: ${{ steps.release.outputs.release-version }}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">      - name: Build and Push Docker Image to ECR</span>
+<span class="ltx_listingline">        if: ${{ steps.release.outputs.release-created }}</span>
+<span class="ltx_listingline">        uses: Company/gha-build-and-push-on-ecr@main</span>
+<span class="ltx_listingline">        with:</span>
+<span class="ltx_listingline">          aws-role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}</span>
+<span class="ltx_listingline">          ecr-repository: ${{ env.REPO_NAME }}</span>
+<span class="ltx_listingline">          release-version: ${{ steps.release.outputs.release-version }}</span></code></pre></div>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level1">
+<h1 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">B.2</span> Azione Composita per la Pubblicazione su Amazon ECR</h1>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Il Listato <a title="B.2 Azione Composita per la Pubblicazione su Amazon ECR ‣ Appendice B Automazione del Rilascio (CI/CD) ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#S2"><span class="ltx_text ltx_ref_tag">B.2</span></a> espone l’azione GitHub composita richiamata dalla pipeline principale. Il codice astrae la logica di autenticazione al provider cloud tramite ruoli IAM, gestisce l’istanziazione condizionale del registro contenitori qualora non sia presente, e orchestra l’effettiva compilazione e pubblicazione dell’immagine, garantendo la standardizzazione del processo di build aziendale.</p>
+</div>
+<div id="S2.p2" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">name: ’gha-build-and-push-on-ecr’</span>
+<span class="ltx_listingline">description: ’Automates the process of building, tagging, and pushing a Docker image to Amazon ECR.’</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">inputs:</span>
+<span class="ltx_listingline">  aws-role-to-assume:</span>
+<span class="ltx_listingline">    description: "AWS Role to assume"</span>
+<span class="ltx_listingline">    required: true</span>
+<span class="ltx_listingline">  aws-region:</span>
+<span class="ltx_listingline">    description: "AWS Region"</span>
+<span class="ltx_listingline">    default: "eu-west-1"</span>
+<span class="ltx_listingline">    required: true</span>
+<span class="ltx_listingline">  ecr-repository:</span>
+<span class="ltx_listingline">    description: ’Registry Domain’</span>
+<span class="ltx_listingline">    required: true</span>
+<span class="ltx_listingline">  build-platform:</span>
+<span class="ltx_listingline">    description: "Build Platform"</span>
+<span class="ltx_listingline">    default: "linux/arm64"</span>
+<span class="ltx_listingline">    required: true</span>
+<span class="ltx_listingline">  build-folder:</span>
+<span class="ltx_listingline">    default: "."</span>
+<span class="ltx_listingline">    description: "Folder where Dockerfile is located"</span>
+<span class="ltx_listingline">    required: true</span>
+<span class="ltx_listingline">  release-version:</span>
+<span class="ltx_listingline">    description: "Release version es: 1.0.0"</span>
+<span class="ltx_listingline">    required: true</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">outputs:</span>
+<span class="ltx_listingline">  image-ecr-url:</span>
+<span class="ltx_listingline">    description: ""</span>
+<span class="ltx_listingline">    value: "https://${{ inputs.ecr-repository }}:${{ inputs.release-version }}"</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">runs:</span>
+<span class="ltx_listingline">  using: "composite"</span>
+<span class="ltx_listingline">  steps:</span>
+<span class="ltx_listingline">    - name: Checkout</span>
+<span class="ltx_listingline">      uses: actions/checkout@v4</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    - name: Configure AWS Credentials</span>
+<span class="ltx_listingline">      uses: aws-actions/configure-aws-credentials@v4</span>
+<span class="ltx_listingline">      with:</span>
+<span class="ltx_listingline">        role-to-assume: ${{ inputs.aws-role-to-assume }}</span>
+<span class="ltx_listingline">        aws-region: ${{ inputs.aws-region }}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    - name: Login to Amazon ECR</span>
+<span class="ltx_listingline">      id: login-ecr</span>
+<span class="ltx_listingline">      uses: aws-actions/amazon-ecr-login@v2</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    - name: Create Amazon ECR, if not exist</span>
+<span class="ltx_listingline">      shell: bash</span>
+<span class="ltx_listingline">      run: |</span>
+<span class="ltx_listingline">        aws ecr describe-repositories --repository-names ${{ inputs.ecr-repository }} || aws ecr create-repository --image-tag-mutability IMMUTABLE --image-scanning-configuration scanOnPush=true --repository-name ${{ inputs.ecr-repository }}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    - name: Apply ECR Repository Policy</span>
+<span class="ltx_listingline">      shell: bash</span>
+<span class="ltx_listingline">      run: |</span>
+<span class="ltx_listingline">        CURRENT_POLICY=$(aws ecr get-repository-policy --repository-name ${{ inputs.ecr-repository }} --query ’policyText’ --output text 2&gt;/dev/null || echo "")</span>
+<span class="ltx_listingline">        LOCAL_POLICY=$(cat ${{ github.action_path }}/ecr-policy.json)</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">        if [ "$(echo "$CURRENT_POLICY" | jq -S .)" == "$(echo "$LOCAL_POLICY" | jq -S .)" ]; then</span>
+<span class="ltx_listingline">          echo "ECR repository policy is already up-to-date. Skipping."</span>
+<span class="ltx_listingline">        else</span>
+<span class="ltx_listingline">          echo "Applying ECR repository policy."</span>
+<span class="ltx_listingline">          aws ecr set-repository-policy --repository-name ${{ inputs.ecr-repository }} --policy-text file://${{ github.action_path }}/ecr-policy.json</span>
+<span class="ltx_listingline">        fi</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    - name: Set up QEMU</span>
+<span class="ltx_listingline">      uses: docker/setup-qemu-action@v3</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    - name: Build, tag, and push image to Amazon ECR</span>
+<span class="ltx_listingline">      id: build-publish</span>
+<span class="ltx_listingline">      shell: bash</span>
+<span class="ltx_listingline">      env:</span>
+<span class="ltx_listingline">        ECR_REPOSITORY: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repository }}</span>
+<span class="ltx_listingline">        IMAGE_TAG: ${{ inputs.release-version }}</span>
+<span class="ltx_listingline">      run: |</span>
+<span class="ltx_listingline">        docker build --platform ${{ inputs.build-platform }} --provenance=false -t "$ECR_REPOSITORY:$IMAGE_TAG" ${{ inputs.build-folder }}</span>
+<span class="ltx_listingline">        docker push "$ECR_REPOSITORY:$IMAGE_TAG"</span>
+<span class="ltx_listingline">        echo "IMAGE $IMAGE_TAG is pushed to $ECR_REPOSITORY"</span>
+<span class="ltx_listingline">        echo "image_tag=$IMAGE_TAG"</span>
+<span class="ltx_listingline">        echo "full_image=$ECR_REPOSITORY:$IMAGE_TAG"</span></code></pre></div>
+</div>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level1">
+<h1 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">B.3</span> Flusso di Continuous Deployment</h1>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">Il Listato <a title="B.3 Flusso di Continuous Deployment ‣ Appendice B Automazione del Rilascio (CI/CD) ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#S3"><span class="ltx_text ltx_ref_tag">B.3</span></a> dettaglia la pipeline di Continuous Deployment per la propagazione degli artefatti. Questa action richiede, a differenza delle precedenti, un innesco esplicito (evento <span class="ltx_text ltx_font_typewriter">workflow_dispatch</span>) da parte dell’operatore per selezionare l’ambiente di destinazione e distribuire le immagini validate verso gli account segregati di dev o prod.</p>
+</div>
+<div id="S3.p2" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">name: Deploy to Environment</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">on:</span>
+<span class="ltx_listingline">  workflow_dispatch:</span>
+<span class="ltx_listingline">    inputs:</span>
+<span class="ltx_listingline">      environment:</span>
+<span class="ltx_listingline">        description: ’The environment to deploy to’</span>
+<span class="ltx_listingline">        required: true</span>
+<span class="ltx_listingline">        type: choice</span>
+<span class="ltx_listingline">        options:</span>
+<span class="ltx_listingline">        - dev</span>
+<span class="ltx_listingline">        - prod</span>
+<span class="ltx_listingline">        default: ’dev’</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">permissions:</span>
+<span class="ltx_listingline">  id-token: write</span>
+<span class="ltx_listingline">  contents: read</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">env:</span>
+<span class="ltx_listingline">  IMAGE_CACHE_DIR: /tmp/cache/docker-image</span>
+<span class="ltx_listingline">  IMAGE_CACHE_KEY: cache-image</span>
+<span class="ltx_listingline">  IMAGE_KEY_VERSION: 1</span>
+<span class="ltx_listingline">  SERVICE_NAME: default</span>
+<span class="ltx_listingline">  REPO_NAME: ${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">jobs:</span>
+<span class="ltx_listingline">  deploy:</span>
+<span class="ltx_listingline">    name: Deploy to ${{ github.event.inputs.environment }} Environment</span>
+<span class="ltx_listingline">    runs-on: ubuntu-latest</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    steps:</span>
+<span class="ltx_listingline">      - name: Set release version tag in env</span>
+<span class="ltx_listingline">        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/v}" &gt;&gt; $GITHUB_ENV</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">      - name: Echo</span>
+<span class="ltx_listingline">        run: |</span>
+<span class="ltx_listingline">          echo "Tag founded is: ${{ env.RELEASE_VERSION }}"</span>
+<span class="ltx_listingline">          echo "repo name is: ${{ env.REPO_NAME }}"</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">      - name: Get Release Tag</span>
+<span class="ltx_listingline">        run: echo "RELEASE_TAG=${{ github.ref_name }}" &gt;&gt; $GITHUB_ENV</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">      - name: Echo Release Tag</span>
+<span class="ltx_listingline">        run: "echo Deploying release tag: ${{ env.RELEASE_TAG }} to ${{ github.event.inputs.environment }}"</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">      - name: Set Lambda Function Name</span>
+<span class="ltx_listingline">        run: |</span>
+<span class="ltx_listingline">            REPO_NAME=${{ env.REPO_NAME }}</span>
+<span class="ltx_listingline">            LAMBDA_NAME="${{ env.REPO_NAME }}-${{ github.event.inputs.environment }}"</span>
+<span class="ltx_listingline">            echo "LAMBDA_FUNCTION_NAME=$LAMBDA_NAME" &gt;&gt; $GITHUB_ENV</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">      - name: Update Lambda Image (Dev)</span>
+<span class="ltx_listingline">        if: github.event.inputs.environment == ’dev’</span>
+<span class="ltx_listingline">        uses: Company/gha-lambda-image-upload@main</span>
+<span class="ltx_listingline">        with:</span>
+<span class="ltx_listingline">          lambda-function-name: ${{ env.LAMBDA_FUNCTION_NAME }}</span>
+<span class="ltx_listingline">          ecr-repository-uri: ${{ vars.ECR_REPOSITORY_URI }}${{ env.REPO_NAME }}</span>
+<span class="ltx_listingline">          image-tag: ${{ env.RELEASE_VERSION }}</span>
+<span class="ltx_listingline">          aws-role-to-assume: ${{ vars.AWS_ROLE_DEPLOY_DEV }}</span>
+<span class="ltx_listingline">          aws-region: ${{ vars.AWS_REGION }}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">      - name: Update Lambda Image (Prod)</span>
+<span class="ltx_listingline">        if: github.event.inputs.environment == ’prod’</span>
+<span class="ltx_listingline">        uses: Company/gha-lambda-image-upload@main</span>
+<span class="ltx_listingline">        with:</span>
+<span class="ltx_listingline">          lambda-function-name: ${{ env.LAMBDA_FUNCTION_NAME }}</span>
+<span class="ltx_listingline">          ecr-repository-uri: ${{ vars.ECR_REPOSITORY_URI }}${{ env.REPO_NAME }}</span>
+<span class="ltx_listingline">          image-tag: ${{ env.RELEASE_VERSION }}</span>
+<span class="ltx_listingline">          aws-role-to-assume: ${{ vars.AWS_ROLE_DEPLOY_PROD }}</span>
+<span class="ltx_listingline">          aws-region: ${{ vars.AWS_REGION }}</span></code></pre></div>
+</div>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level1">
+<h1 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">B.4</span> Azione Composita per l’aggiornamento dell’immagine ECR</h1>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">Il Listato <a title="B.4 Azione Composita per l’aggiornamento dell’immagine ECR ‣ Appendice B Automazione del Rilascio (CI/CD) ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#S4"><span class="ltx_text ltx_ref_tag">B.4</span></a> espone l’azione GitHub composita responsabile dell’aggiornamento del codice applicativo. Il modulo automatizza l’invocazione delle interfacce a riga di comando (CLI) del provider cloud, istruendo l’infrastruttura ad agganciare il nuovo identificativo di versione dell’immagine container e implementando un meccanismo di attesa sincrona per validare l’effettivo completamento del rilascio.</p>
+</div>
+<div id="S4.p2" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">name: ’Update Lambda ECR Image’</span>
+<span class="ltx_listingline">description: ’Updates an AWS Lambda function to use a new ECR image tag.’</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">inputs:</span>
+<span class="ltx_listingline">  lambda-function-name:</span>
+<span class="ltx_listingline">    description: "The name of the Lambda function to update."</span>
+<span class="ltx_listingline">    required: true</span>
+<span class="ltx_listingline">  ecr-repository-uri:</span>
+<span class="ltx_listingline">    description: "The full URI of the ECR repository."</span>
+<span class="ltx_listingline">    required: true</span>
+<span class="ltx_listingline">  image-tag:</span>
+<span class="ltx_listingline">    description: "The new image tag to deploy (e.g., the release version)."</span>
+<span class="ltx_listingline">    required: true</span>
+<span class="ltx_listingline">  aws-role-to-assume:</span>
+<span class="ltx_listingline">    description: "The ARN of the AWS IAM role to assume for deployment."</span>
+<span class="ltx_listingline">    required: true</span>
+<span class="ltx_listingline">  aws-region:</span>
+<span class="ltx_listingline">    description: "The AWS region where the resources are located."</span>
+<span class="ltx_listingline">    required: true</span>
+<span class="ltx_listingline">    default: "eu-west-1"</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">runs:</span>
+<span class="ltx_listingline">  using: "composite"</span>
+<span class="ltx_listingline">  steps:</span>
+<span class="ltx_listingline">    - name: Configure AWS Credentials</span>
+<span class="ltx_listingline">      uses: aws-actions/configure-aws-credentials@v4</span>
+<span class="ltx_listingline">      with:</span>
+<span class="ltx_listingline">        role-to-assume: ${{ inputs.aws-role-to-assume }}</span>
+<span class="ltx_listingline">        aws-region: ${{ inputs.aws-region }}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    - name: Log Update Details</span>
+<span class="ltx_listingline">      shell: bash</span>
+<span class="ltx_listingline">      run: |</span>
+<span class="ltx_listingline">        echo "Updating Lambda function: ${{ inputs.lambda-function-name }}"</span>
+<span class="ltx_listingline">        echo "Using image URI: ${{ inputs.ecr-repository-uri }}:${{ inputs.image-tag }}"</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    - name: Update Lambda Function Code</span>
+<span class="ltx_listingline">      shell: bash</span>
+<span class="ltx_listingline">      run: |</span>
+<span class="ltx_listingline">        aws lambda update-function-code \</span>
+<span class="ltx_listingline">          --function-name ${{ inputs.lambda-function-name }} \</span>
+<span class="ltx_listingline">          --image-uri ${{ inputs.ecr-repository-uri }}:${{ inputs.image-tag }}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    - name: Wait for Lambda Update to Complete</span>
+<span class="ltx_listingline">      shell: bash</span>
+<span class="ltx_listingline">      run: |</span>
+<span class="ltx_listingline">        echo "Waiting for the update to complete..."</span>
+<span class="ltx_listingline">        aws lambda wait function-updated-v2 --function-name ${{ inputs.lambda-function-name }}</span>
+<span class="ltx_listingline">        echo "Update for ’${{ inputs.lambda-function-name }}’ completed successfully."</span></code></pre></div>
+</div>
+</div>
+</section>
+</div>

@@ -1,39 +1,44 @@
 ---
-import type { Capitolo } from '../../lib/corso-build.ts';
+import { capitoloEtichetta, type Capitolo } from '../../lib/corso-build.ts';
 
 interface Props {
   capitolo: Capitolo;
 }
 
 const { capitolo } = Astro.props;
+const etichetta = capitoloEtichetta(capitolo);
 ---
 
 <!-- Focusable: a long table of contents scrolls inside the sticky box, and a keyboard user must reach it. -->
-<aside class="toc" aria-label="Indice del capitolo" tabindex="0" data-pagefind-ignore>
-  <p class="toc-title">Capitolo {capitolo.numero}</p>
-  <ol>
-    {
-      capitolo.sezioni.map((sezione) => (
-        <li>
-          <a href={`#${sezione.id}`}>
-            {sezione.numero} {sezione.titolo}
-          </a>
-          {sezione.sottosezioni.length > 0 && (
-            <ol>
-              {sezione.sottosezioni.map((sotto) => (
-                <li>
-                  <a href={`#${sotto.id}`}>
-                    {sotto.numero} {sotto.titolo}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          )}
-        </li>
-      ))
-    }
-  </ol>
-</aside>
+{
+  capitolo.sezioni.length > 0 && (
+  <aside class="toc" aria-label="Indice del capitolo" tabindex="0" data-pagefind-ignore>
+    {etichetta && <p class="toc-title">{etichetta}</p>}
+    <ol>
+      {
+        capitolo.sezioni.map((sezione) => (
+          <li>
+            <a href={`#${sezione.id}`}>
+              {sezione.numero} {sezione.titolo}
+            </a>
+            {sezione.sottosezioni.length > 0 && (
+              <ol>
+                {sezione.sottosezioni.map((sotto) => (
+                  <li>
+                    <a href={`#${sotto.id}`}>
+                      {sotto.numero} {sotto.titolo}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+  </aside>
+  )
+}
 
 <style>
   .toc {

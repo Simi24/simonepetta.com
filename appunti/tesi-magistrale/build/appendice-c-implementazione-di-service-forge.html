@@ -1,0 +1,197 @@
+<div class="section level1">
+
+
+<section id="S1" class="ltx_section normal">
+<div class="section level1">
+<h1 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">C.1</span> Inizializzazione e Firme degli Strumenti</h1>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">Il Listato <a title="C.1 Inizializzazione e Firme degli Strumenti ‣ Appendice C Implementazione di Service-Forge ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#S1"><span class="ltx_text ltx_ref_tag">C.1</span></a> fornisce un estratto architetturalmente rilevante dell’implementazione del server Model Context Protocol (MCP) sviluppato per il framework Service-Forge. Il codice evidenzia esclusivamente l’inizializzazione del servizio, le istruzioni di base fornite al modello linguistico e la registrazione degli strumenti operativi (<em class="ltx_emph ltx_font_italic">tools</em>) tramite tipizzazione forte, la quale agisce da schema di validazione statica per i payload JSON. Per questioni di leggibilità, la logica procedurale di basso livello è stata omessa.</p>
+</div>
+<div id="S1.p2" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">import os</span>
+<span class="ltx_listingline">import sys</span>
+<span class="ltx_listingline">from typing import Any, Dict, List, Optional</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">from mcp.server.fastmcp import FastMCP</span>
+<span class="ltx_listingline">from cli.profile_setup import ProfileSetup</span>
+<span class="ltx_listingline">from core.engine import GenerationEngine</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">mcp = FastMCP(</span>
+<span class="ltx_listingline">    "service-forge",</span>
+<span class="ltx_listingline">    instructions=(</span>
+<span class="ltx_listingline">        "Service Forge generates AWS Lambda-based microservices. "</span>
+<span class="ltx_listingline">        "Use get_profiles to discover available profiles and services. "</span>
+<span class="ltx_listingline">        "IMPORTANT: Every AWS service has configurable parameters (bucket names, "</span>
+<span class="ltx_listingline">        "table names, secret names) that you MUST collect from the user. "</span>
+<span class="ltx_listingline">        "Never use default placeholder values without asking the user first. "</span>
+<span class="ltx_listingline">        "Use create_session to start building a configuration, then configure "</span>
+<span class="ltx_listingline">        "properties with configure_service."</span>
+<span class="ltx_listingline">    ),</span>
+<span class="ltx_listingline">)</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline"># ==========================================================</span>
+<span class="ltx_listingline"># Resources - Dati in sola lettura ispezionabili dall’LLM</span>
+<span class="ltx_listingline"># ==========================================================</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">@mcp.resource("forge://profiles")</span>
+<span class="ltx_listingline">def resource_profiles() -&gt; str:</span>
+<span class="ltx_listingline">    """All available profiles with metadata."""</span>
+<span class="ltx_listingline">    # [... LOGICA PROCEDURALE OMESSA ...]</span>
+<span class="ltx_listingline">    pass</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">@mcp.resource("forge://aws-services")</span>
+<span class="ltx_listingline">def resource_aws_services() -&gt; str:</span>
+<span class="ltx_listingline">    """All AWS services with their configurable keys, defaults, and descriptions."""</span>
+<span class="ltx_listingline">    # [... LOGICA PROCEDURALE OMESSA ...]</span>
+<span class="ltx_listingline">    pass</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline"># ==========================================================</span>
+<span class="ltx_listingline"># Tools - Azioni invocabili dall’agente LLM</span>
+<span class="ltx_listingline"># ==========================================================</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">@mcp.tool()</span>
+<span class="ltx_listingline">def check_prerequisites() -&gt; str:</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    Check if all prerequisites for project generation are met.</span>
+<span class="ltx_listingline">    Call this before generate_project to ensure the environment is ready.</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    # [... LOGICA PROCEDURALE OMESSA ...]</span>
+<span class="ltx_listingline">    pass</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">@mcp.tool()</span>
+<span class="ltx_listingline">def get_profiles() -&gt; str:</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    List all active Service Forge profiles and available AWS services.</span>
+<span class="ltx_listingline">    Call this first to understand what can be generated.</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    # [... LOGICA PROCEDURALE OMESSA ...]</span>
+<span class="ltx_listingline">    pass</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">@mcp.tool()</span>
+<span class="ltx_listingline">def create_session() -&gt; str:</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    Start a new project configuration session.</span>
+<span class="ltx_listingline">    Returns a session_id to use in subsequent tool calls.</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    # [... LOGICA PROCEDURALE OMESSA ...]</span>
+<span class="ltx_listingline">    pass</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">@mcp.tool()</span>
+<span class="ltx_listingline">def configure_service(</span>
+<span class="ltx_listingline">    session_id: str,</span>
+<span class="ltx_listingline">    service_name: str,</span>
+<span class="ltx_listingline">    config_values: Optional[Dict[str, str]] = None,</span>
+<span class="ltx_listingline">) -&gt; str:</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    Add or configure an AWS service for the project.</span>
+<span class="ltx_listingline">    IMPORTANT: Always ask the user for the actual values.</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    # [... LOGICA PROCEDURALE OMESSA ...]</span>
+<span class="ltx_listingline">    pass</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">@mcp.tool()</span>
+<span class="ltx_listingline">def validate_config(session_id: str) -&gt; str:</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    Validate the current session configuration.</span>
+<span class="ltx_listingline">    Returns errors if any, or confirms the config is ready for generation.</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    # [... LOGICA PROCEDURALE OMESSA ...]</span>
+<span class="ltx_listingline">    pass</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">@mcp.tool()</span>
+<span class="ltx_listingline">def generate_project(session_id: str) -&gt; str:</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    Generate the project from the current session configuration.</span>
+<span class="ltx_listingline">    Creates files on disk and initializes a git repository.</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    # [... LOGICA PROCEDURALE OMESSA ...]</span>
+<span class="ltx_listingline">    pass</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">@mcp.tool()</span>
+<span class="ltx_listingline">def quick_generate(</span>
+<span class="ltx_listingline">    profile: str,</span>
+<span class="ltx_listingline">    app_name: str,</span>
+<span class="ltx_listingline">    project_path: str,</span>
+<span class="ltx_listingline">    aws_services: Optional[Dict[str, Dict[str, str]]] = None,</span>
+<span class="ltx_listingline">    included_services: Optional[List[str]] = None,</span>
+<span class="ltx_listingline">    runtime: Optional[Dict[str, Any]] = None,</span>
+<span class="ltx_listingline">) -&gt; str:</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    One-shot project generation without session management.</span>
+<span class="ltx_listingline">    Builds config, validates, and generates in a single call.</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    # [... LOGICA PROCEDURALE OMESSA ...]</span>
+<span class="ltx_listingline">    pass</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">if __name__ == "__main__":</span>
+<span class="ltx_listingline">    mcp.run(transport="stdio")</span></code></pre></div>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level1">
+<h1 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">C.2</span> Esempio template Jinja</h1>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Il Listato <a title="C.2 Esempio template Jinja ‣ Appendice C Implementazione di Service-Forge ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#S2"><span class="ltx_text ltx_ref_tag">C.2</span></a> mostra un esempio dei template generativi basati sul motore Jinja2, in particolare si tratta del template usato per generare il file <span class="ltx_text ltx_font_typewriter">docker-compose.yaml</span> in tutti i microservizi. La sintassi illustra la separazione netta tra la logica di iniezione dinamica delle variabili e la struttura statica del codice sorgente, garantendo la standardizzazione formale dei microservizi prodotti dal framework aziendale.</p>
+</div>
+<div id="S2.p2" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">services:</span>
+<span class="ltx_listingline">  {{ service_name }}:</span>
+<span class="ltx_listingline">    build:</span>
+<span class="ltx_listingline">      context: .</span>
+<span class="ltx_listingline">      target: dev</span>
+<span class="ltx_listingline">    platform: linux/arm64</span>
+<span class="ltx_listingline">    restart: on-failure</span>
+<span class="ltx_listingline">    environment:</span>
+<span class="ltx_listingline">      {% if app_name -%}</span>
+<span class="ltx_listingline">      APP_NAME: {{ app_name }}</span>
+<span class="ltx_listingline">      {%- else -%}</span>
+<span class="ltx_listingline">      APP_NAME: {{ service_name }}</span>
+<span class="ltx_listingline">      {%- endif %}</span>
+<span class="ltx_listingline">      {%- for key, value in environment.items() %}</span>
+<span class="ltx_listingline">      {{ key }}: {{ value }}</span>
+<span class="ltx_listingline">      {%- endfor %}</span>
+<span class="ltx_listingline">      {%- block aws_services_block %}{%- endblock %}</span>
+<span class="ltx_listingline">      {%- if use_localstack %}</span>
+<span class="ltx_listingline">      AWS_ENDPOINT_URL: http://localstack:4566</span>
+<span class="ltx_listingline">      AWS_ACCESS_KEY_ID: test</span>
+<span class="ltx_listingline">      AWS_SECRET_ACCESS_KEY: test</span>
+<span class="ltx_listingline">      AWS_DEFAULT_REGION: {{ aws_region }}</span>
+<span class="ltx_listingline">      AWS_LAMBDA_FUNCTION_TIMEOUT: {{ lambda_timeout }}</span>
+<span class="ltx_listingline">      AWS_LAMBDA_FUNCTION_MEMORY_SIZE: {{ lambda_memory_size }}</span>
+<span class="ltx_listingline">      {%- endif %}</span>
+<span class="ltx_listingline">    volumes:</span>
+<span class="ltx_listingline">      - ./app:/var/task</span>
+<span class="ltx_listingline">      - ~/.aws:/root/.aws:ro</span>
+<span class="ltx_listingline">    ports:</span>
+<span class="ltx_listingline">      - {{ service_port }}:8080</span>
+<span class="ltx_listingline">      - 5678:5678</span>
+<span class="ltx_listingline">    {% if profile == ’service’ -%}</span>
+<span class="ltx_listingline">    command:</span>
+<span class="ltx_listingline">      sh -c "echo ’Please run the debugger to proceed (F5)’ &amp;&amp; python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m uvicorn main:app --host 0.0.0.0 --port 8080 --reload --log-level debug"</span>
+<span class="ltx_listingline">    {%- endif  %}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">{% if use_localstack %}</span>
+<span class="ltx_listingline">  localstack:</span>
+<span class="ltx_listingline">      image: localstack/localstack</span>
+<span class="ltx_listingline">      ports:</span>
+<span class="ltx_listingline">          - "127.0.0.1:4566:4566"</span>
+<span class="ltx_listingline">          - "127.0.0.1:4510-4559:4510-4559"</span>
+<span class="ltx_listingline">      env_file:</span>
+<span class="ltx_listingline">          - .env.template</span>
+<span class="ltx_listingline">          - .env</span>
+<span class="ltx_listingline">      environment:</span>
+<span class="ltx_listingline">          DEBUG: ${DEBUG:-0}</span>
+<span class="ltx_listingline">      volumes:</span>
+<span class="ltx_listingline">          - "${LOCALSTACK_VOLUME_DIR:-./localstack_volume}:/var/lib/localstack"</span>
+<span class="ltx_listingline">          - "/var/run/docker.sock:/var/run/docker.sock:ro"</span>
+<span class="ltx_listingline">          - "./init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh:ro"</span>
+<span class="ltx_listingline">{%- endif%}</span></code></pre></div>
+</div>
+</div>
+</section>
+</div>

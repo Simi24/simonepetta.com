@@ -1,0 +1,910 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">Questo capitolo descrive l’implementazione tecnica della soluzione architetturale progettata nel Capitolo <a title="Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="/appunti/tesi-magistrale/3-analisi-e-design/"><span class="ltx_text ltx_ref_tag">3</span></a>. La trattazione segue un approccio bottom-up, partendo dalla base infrastrutturale fino ad arrivare agli strumenti di automazione per gli sviluppatori. La prima fase dell’implementazione riguarda la traduzione della topologia cloud in codice Terraform, necessaria per istanziare gli ambienti di base. Successivamente, il capitolo dettaglia la scrittura del codice applicativo, separando i processi asincroni del livello dati dall’implementazione delle API sincrone di backend. Una volta definiti i componenti cloud e applicativi, la trattazione si sposta sulle metodologie adottate per garantire la testabilità del codice sulla workstation dello sviluppatore tramite emulazione locale. Il consolidamento di questi processi culmina nell’implementazione delle pipeline di Continuous Integration e Continuous Deployment, che eliminano l’intervento manuale nei rilasci. Infine, illustra lo sviluppo di Service-Forge, il framework interno creato per automatizzare la generazione di nuovi microservizi interfacciando l’infrastruttura prodotta con agenti basati su Large Language Models.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.1</span> Provisioning dell’Infrastruttura tramite Terraform</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">L’adozione di un approccio Infrastructure as Code (IaC) garantisce la riproducibilità, la tracciabilità e la coerenza degli ambienti cloud. Il repository oggetto di questa sezione traduce la topologia cloud, descritta nei capitoli precedenti, in codice HCL (HashiCorp Configuration Language), il linguaggio dichiarativo utilizzato da Terraform per definire risorse infrastrutturali. Ogni componente trova una corrispondenza diretta in moduli Terraform versionati e organizzati secondo una struttura gerarchica.</p>
+</div>
+<div id="S1.p2" class="ltx_para">
+<p class="ltx_p">Come discusso nel Capitolo <a title="Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="/appunti/tesi-magistrale/3-analisi-e-design/"><span class="ltx_text ltx_ref_tag">3</span></a>, la scelta di Terraform come strumento di provisioning deriva da tre fattori tecnici: la natura dichiarativa del linguaggio, che delega al motore il calcolo del piano di esecuzione; il supporto multi-provider, essenziale per gestire risorse AWS, Google Cloud Platform e MongoDB Atlas in un singolo repository; e l’ecosistema di moduli riutilizzabili.</p>
+</div>
+<div id="S1.p3" class="ltx_para">
+<p class="ltx_p">La gestione dello stato per ambienti multipli richiede l’utilizzo di Terragrunt come orchestratore. Terragrunt opera come wrapper per Terraform, aggiungendo funzionalità di gestione dello stato remoto, generazione automatica di file di configurazione e risoluzione delle dipendenze tra moduli <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib37">37</a>]</cite>. Questa combinazione applica il principio Don’t Repeat Yourself alla definizione dell’infrastruttura.</p>
+</div>
+<div id="S1.p4" class="ltx_para">
+<p class="ltx_p">La struttura logica di questa sezione segue il flusso di astrazione dell’infrastruttura: la scomposizione iniziale del repository illustra la separazione tra configurazione e implementazione; le sezioni successive dettagliano l’orchestrazione dello stato, la segregazione degli ambienti (multi-account) e, infine, la logica interna dei moduli riutilizzabili sviluppati per la piattaforma.</p>
+</div>
+<section id="S1.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.1.1</span> Struttura del Repository</h3>
+
+<div id="S1.SS1.p1" class="ltx_para">
+<p class="ltx_p">Il repository implementa una separazione netta tra tre livelli logici, come illustrato in Figura <a title="Figura 17 ‣ 4.1.1 Struttura del Repository ‣ 4.1 Provisioning dell’Infrastruttura tramite Terraform ‣ Capitolo 4 Implementazione ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F17"><span class="ltx_text ltx_ref_tag">17</span></a>: le configurazioni Terragrunt specifiche per ambiente (directory <span class="ltx_text ltx_font_typewriter">infra/</span>), le definizioni delle risorse Terraform raggruppate per dominio funzionale (directory <span class="ltx_text ltx_font_typewriter">resources/</span>) e i moduli riutilizzabili (directory <span class="ltx_text ltx_font_typewriter">utils/modules/</span>).</p>
+</div>
+<div id="S1.SS1.p2" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">devops-farm-tf/</span>
+<span class="ltx_listingline">|-- infra/                          # Configurazioni Terragrunt</span>
+<span class="ltx_listingline">|   |-- root.hcl                    # Configurazione globale</span>
+<span class="ltx_listingline">|   |-- _env/                       # Template di modulo (env-agnostic)</span>
+<span class="ltx_listingline">|   |   |-- 000-commons.hcl</span>
+<span class="ltx_listingline">|   |   |-- 010-networkings.hcl</span>
+<span class="ltx_listingline">|   |   |-- 020-messaging.hcl</span>
+<span class="ltx_listingline">|   |   |-- 050-integrations.hcl</span>
+<span class="ltx_listingline">|   |   |-- 060-mongodb.hcl</span>
+<span class="ltx_listingline">|   |   |-- 070-microservices.hcl</span>
+<span class="ltx_listingline">|   |   +-- 090-dwh.hcl</span>
+<span class="ltx_listingline">|   |-- dev/                        # Ambiente di sviluppo</span>
+<span class="ltx_listingline">|   |   |-- env.hcl</span>
+<span class="ltx_listingline">|   |   |-- 000-commons/</span>
+<span class="ltx_listingline">|   |   |-- 010-networkings/</span>
+<span class="ltx_listingline">|   |   |-- 020-messaging/</span>
+<span class="ltx_listingline">|   |   |-- 070-microservices/</span>
+<span class="ltx_listingline">|   |   +-- ...</span>
+<span class="ltx_listingline">|   |-- prod/                       # Ambiente di produzione</span>
+<span class="ltx_listingline">|   +-- shared/                     # Account condiviso</span>
+<span class="ltx_listingline">|       |-- main/                   # Organizzazione AWS</span>
+<span class="ltx_listingline">|       +-- shared/                 # Risorse condivise (ECR, domini)</span>
+<span class="ltx_listingline">|</span>
+<span class="ltx_listingline">|-- resources/                      # Definizioni Terraform per dominio</span>
+<span class="ltx_listingline">|   |-- 000-commons/                # OIDC GitHub, API GCP, IAP</span>
+<span class="ltx_listingline">|   |-- 010-networkings/            # VPC, subnet, NAT Gateway</span>
+<span class="ltx_listingline">|   |-- 020-messaging/              # Topic SNS</span>
+<span class="ltx_listingline">|   |-- 050-integrations/           # Service account GCP</span>
+<span class="ltx_listingline">|   |-- 060-mongodb/                # Cluster MongoDB Atlas</span>
+<span class="ltx_listingline">|   |-- 070-microservices/          # Cognito, Lambda, ECS, S3, DynamoDB</span>
+<span class="ltx_listingline">|   |-- 090-dwh/                    # Athena, Glue, Data Warehouse</span>
+<span class="ltx_listingline">|   |-- main/                       # AWS Organizations, SSO, IAM</span>
+<span class="ltx_listingline">|   +-- shared/                     # ECR, domini Route53</span>
+<span class="ltx_listingline">|</span>
+<span class="ltx_listingline">+-- utils/modules/                  # Moduli Terraform riutilizzabili</span>
+<span class="ltx_listingline">    |-- api-gateway-lambda/         # API Gateway HTTP + Lambda + Cognito</span>
+<span class="ltx_listingline">    |-- datasource-etl/             # Pipeline ETL: Extr + Tran + Glue + Athena</span>
+<span class="ltx_listingline">    |-- scheduled-lambda/           # EventBridge + Lambda schedulata</span>
+<span class="ltx_listingline">    +-- sns-consumer-lambda/        # SNS -&gt; Lambda consumer</span></code></pre></div>
+</div>
+<div id="S1.SS1.p3" class="ltx_para">
+<p class="ltx_p">La numerazione progressiva delle directory sotto <span class="ltx_text ltx_font_typewriter">resources/</span> (es. 000, 010, 020) riflette rigorosamente l’ordine di applicazione delle risorse e le dipendenze logiche: le risorse di rete (010) precedono il deployment dei microservizi (070).</p>
+</div>
+<figure id="F17" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-architettura_repo_devops.webp" width="1006" height="500" loading="lazy" alt="Tre livelli. Livello superiore, orchestrazione Terragrunt (infra/): root.hcl (configurazione globale) e _env/ (template serverless condivisi) sono ereditati dalle configurazioni di ambiente dev, test e prod. Livello intermedio, definizioni Terraform di dominio (resources/): 010-base-infrastructure, 060-data-layer, 070-backend-api, istanziati dagli ambienti. Livello inferiore, moduli riutilizzabili (utils/modules/): lambda-function, api-gateway, dynamodb-table, s3-bucket, inclusi dalle definizioni di dominio."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 17</span>: </span><span class="ltx_text">Architettura logica del repository di Infrastructure as Code. Il diagramma illustra la gerarchia di orchestrazione tra le configurazioni di ambiente gestite tramite Terragrunt (livello superiore), le definizioni dei domini funzionali (livello intermedio) e i moduli Terraform di base riutilizzabili (livello inferiore) [Elaborazione dell’autore].</span></figcaption>
+</figure>
+</div>
+</section>
+<section id="S1.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.1.2</span> Orchestrazione con Terragrunt</h3>
+
+<div id="S1.SS2.p1" class="ltx_para">
+<p class="ltx_p">Terragrunt introduce un livello di astrazione che risolve la configurazione del backend remoto, la generazione dei file provider e la gestione delle dipendenze tra moduli.</p>
+</div>
+<section id="S1.SS2.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Gestione dello Stato Remoto e Provider</h4>
+
+<div id="S1.SS2.SSSx1.p1" class="ltx_para">
+<p class="ltx_p">Lo stato di Terraform contiene la mappatura tra le risorse dichiarate nel codice e quelle allocate nel cloud. Per garantire persistenza, cifratura server-side e mutua esclusione durante le operazioni concorrenti, il repository utilizza un backend Amazon S3 con meccanismo di lock affidato ad Amazon DynamoDB.</p>
+</div>
+<div id="S1.SS2.SSSx1.p2" class="ltx_para">
+<p class="ltx_p">Terragrunt genera automaticamente il file <span class="ltx_text ltx_font_typewriter">provider.tf</span> per ogni modulo. La piattaforma richiede tre provider AWS distinti e un provider Google Cloud per gestire risorse eterogenee.</p>
+</div>
+</div>
+</section>
+<section id="S1.SS2.SSSx2" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Gerarchia di Inclusione e Dipendenze</h4>
+
+<div id="S1.SS2.SSSx2.p1" class="ltx_para">
+<p class="ltx_p">Ogni modulo in un ambiente specifico è rappresentato da un file <span class="ltx_text ltx_font_typewriter">terragrunt.hcl</span> che combina la configurazione globale con il template del modulo e le dipendenze specifiche. Questa composizione a tre livelli (root, template, ambiente) centralizza la logica. Ad esempio, il blocco <span class="ltx_text ltx_font_typewriter">dependency</span> consente di estrapolare gli output di un modulo già applicato (es. l’infrastruttura di messaggistica) e passarli come input al modulo corrente (es. i microservizi).</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S1.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.1.3</span> Architettura Multi-Account</h3>
+
+<div id="S1.SS3.p1" class="ltx_para">
+<p class="ltx_p">La piattaforma opera su un’organizzazione AWS composta da ambienti segregati (dev, prod, shared), la cui topologia è schematizzata in Figura <a title="Figura 8 ‣ 3.2.1 Strategia Multi-Account e Segregazione delle Risorse ‣ 3.2 Progettazione dell’Infrastruttura Cloud ‣ Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="/appunti/tesi-magistrale/3-analisi-e-design/#F8"><span class="ltx_text ltx_ref_tag">8</span></a>. L’utilizzo del servizio AWS Organizations permette di istanziare account separati, assegnando indirizzi email univoci e ruoli amministrativi per l’assunzione di identità cross-account.</p>
+</div>
+<div id="S1.SS3.p2" class="ltx_para">
+<p class="ltx_p">L’accesso degli operatori è regolato tramite IAM Identity Center. Il modulo definisce gruppi e permission set specifici; ad esempio, il gruppo assegnato all’analisi dati riceve esclusivamente i permessi di lettura per interrogare il data warehouse tramite Amazon Athena, senza facoltà di modifica sulle risorse.</p>
+</div>
+</div>
+</section>
+<section id="S1.SS4" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.1.4</span> Moduli Riutilizzabili</h3>
+
+<div id="S1.SS4.p1" class="ltx_para">
+<p class="ltx_p">La directory <span class="ltx_text ltx_font_typewriter">utils/modules/</span> contiene i moduli Terraform che incapsulano i pattern architetturali ricorrenti.</p>
+</div>
+<section id="S1.SS4.SSSx1" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Modulo <span class="ltx_text ltx_font_typewriter">api-gateway-lambda</span>
+</h4>
+
+<div id="S1.SS4.SSSx1.p1" class="ltx_para">
+<p class="ltx_p">Questo modulo rappresenta il pattern standard per il deployment dei microservizi serverless. Crea un endpoint HTTP (API Gateway v2), una funzione Lambda, un authorizer JWT <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib22">22</a>]</cite> opzionale basato su Amazon Cognito e i relativi gruppi di log in CloudWatch.</p>
+</div>
+<div id="S1.SS4.SSSx1.p2" class="ltx_para">
+<p class="ltx_p">Un aspetto ingegneristico rilevante risiede nella separazione tra il ciclo di vita dell’infrastruttura e quello del codice applicativo. Nel blocco di definizione della funzione Lambda, l’attributo <span class="ltx_text ltx_font_typewriter">image_uri</span> viene escluso dal monitoraggio dello stato di Terraform:</p>
+</div>
+<div id="S1.SS4.SSSx1.p3" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">resource "aws_lambda_function" "lambda" {</span>
+<span class="ltx_listingline">  function_name = "${var.name}-${var.env}"</span>
+<span class="ltx_listingline">  role          = aws_iam_role.lambda_assume_role.arn</span>
+<span class="ltx_listingline">  package_type  = "Image"</span>
+<span class="ltx_listingline">  image_uri     = var.app_image</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  lifecycle {</span>
+<span class="ltx_listingline">    ignore_changes = [image_uri]</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  timeout       = var.lambda_timeout</span>
+<span class="ltx_listingline">  memory_size   = var.lambda_memory_size</span>
+<span class="ltx_listingline">  architectures = ["arm64"]</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  environment {</span>
+<span class="ltx_listingline">    variables = merge(</span>
+<span class="ltx_listingline">      var.environments,</span>
+<span class="ltx_listingline">      {</span>
+<span class="ltx_listingline">        CLOUD_ENV = var.env</span>
+<span class="ltx_listingline">        STAGE     = "/api"</span>
+<span class="ltx_listingline">    })</span>
+<span class="ltx_listingline">  }</span>
+<span class="ltx_listingline">}</span></code></pre></div>
+</div>
+<div id="S1.SS4.SSSx1.p4" class="ltx_para">
+<p class="ltx_p">Questa direttiva impedisce a Terraform di ripristinare una versione precedente dell’immagine Docker qualora l’applicazione sia stata aggiornata in modo asincrono dalle pipeline di Continuous Deployment. La policy IAM della funzione viene costruita dinamicamente componendo i permessi di base (scrittura dei log) con istruzioni opzionali passate dal modulo chiamante, consentendo un’applicazione granulare del principio del minimo privilegio.</p>
+</div>
+</div>
+</section>
+<section id="S1.SS4.SSSx2" class="ltx_subsubsection normal">
+<div class="section level4">
+<h4 class="ltx_title ltx_title_subsubsection">Modulo <span class="ltx_text ltx_font_typewriter">datasource-etl</span>
+</h4>
+
+<div id="S1.SS4.SSSx2.p1" class="ltx_para">
+<p class="ltx_p">Questo modulo definisce la pipeline ETL (Extract, Transform, Load) per l’ingestione dei dati. L’architettura di questo componente, dettagliata in Figura <a title="Figura 9 ‣ 3.3.1 Decomposizione Event-Driven ed ETL Serverless ‣ 3.3 Progettazione del Livello Dati e Flussi Asincroni ‣ Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="/appunti/tesi-magistrale/3-analisi-e-design/#F9"><span class="ltx_text ltx_ref_tag">9</span></a>, prevede una netta separazione fisica e logica dei dati: un prefisso S3 <span class="ltx_text ltx_font_typewriter">raw/</span> per i dati grezzi e un prefisso <span class="ltx_text ltx_font_typewriter">clean/</span> per i dati trasformati in formato Apache Parquet.</p>
+</div>
+<div id="S1.SS4.SSSx2.p2" class="ltx_para">
+<p class="ltx_p">L’orchestrazione si divide in due fasi computazionali. La fase di estrazione (Extractor) utilizza una funzione Lambda invocata temporalmente tramite regole Amazon EventBridge. Per evitare la duplicazione dei dati grezzi in caso di errori temporanei della sorgente, i retry automatici dell’invocazione asincrona sono disabilitati (<span class="ltx_text ltx_font_typewriter">maximum_retry_attempts = 0</span>).</p>
+</div>
+<div id="S1.SS4.SSSx2.p3" class="ltx_para">
+<p class="ltx_p">La fase di trasformazione è puramente event-driven: viene attivata dalle notifiche S3 alla creazione di un nuovo oggetto nel prefisso <span class="ltx_text ltx_font_typewriter">raw/</span>. Le policy IAM dei due componenti riflettono il flusso dei dati: l’Extractor ha permessi di sola scrittura su <span class="ltx_text ltx_font_typewriter">raw/</span>, mentre il Transformer legge da <span class="ltx_text ltx_font_typewriter">raw/</span> e scrive esclusivamente su <span class="ltx_text ltx_font_typewriter">clean/</span>.</p>
+</div>
+<div id="S1.SS4.SSSx2.p4" class="ltx_para">
+<p class="ltx_p">I dati elaborati vengono resi interrogabili tramite l’integrazione con AWS Glue Catalog e Amazon Athena. Il modulo implementa la funzionalità di Partition Projection per ottimizzare le query; le partizioni temporali (anno, mese, giorno) vengono calcolate matematicamente dal motore di Athena in base a range predefiniti, eliminando la necessità di eseguire operazioni di scansione sincrona (crawler) sui bucket S3.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S1.SS5" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.1.5</span> Risorse Condivise e Continuous Integration</h3>
+
+<div id="S1.SS5.p1" class="ltx_para">
+<p class="ltx_p">L’account condiviso ospita i repository Elastic Container Registry (ECR). L’accesso da parte dei sistemi di Continuous Integration (GitHub Actions) avviene senza lo scambio di credenziali, sfruttando il protocollo OIDC (OpenID Connect). Il provider di identità assume un ruolo IAM temporaneo che garantisce unicamente i permessi di push sui repository di destinazione.</p>
+</div>
+</div>
+</section>
+<section id="S1.SS6" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.1.6</span> Strategia di Tagging</h3>
+
+<div id="S1.SS6.p1" class="ltx_para">
+<p class="ltx_p">Ogni risorsa gestita tramite IaC riceve un set di tag obbligatori (<span class="ltx_text ltx_font_typewriter">terraform</span>, <span class="ltx_text ltx_font_typewriter">environment</span>, <span class="ltx_text ltx_font_typewriter">project</span>, <span class="ltx_text ltx_font_typewriter">subproject</span>). Oltre all’identificazione visiva, questi metadati sono integrati con AWS Cost Explorer come Cost Allocation Tags, permettendo l’analisi e la ripartizione dei costi infrastrutturali per specifico dominio funzionale o ambiente.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.2</span> Sviluppo del Flusso ETL Event-Driven</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Questa sezione dettaglia l’implementazione applicativa della pipeline di ingestione dati. L’analisi procede seguendo il ciclo di vita dell’evento asincrono: l’inizializzazione e validazione del payload di estrazione, l’instradamento dinamico verso i moduli di integrazione esterni e, infine, la trasformazione del dato in memoria con conseguente serializzazione nel formato colonnare Parquet. La logica software è progettata per operare all’interno dei limiti computazionali ed effimeri del runtime serverless descritto nel Capitolo <a title="Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="/appunti/tesi-magistrale/3-analisi-e-design/"><span class="ltx_text ltx_ref_tag">3</span></a>.</p>
+</div>
+<section id="S2.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.2.1</span> Logica Applicativa di Estrazione</h3>
+
+<div id="S2.SS1.p1" class="ltx_para">
+<p class="ltx_p">L’estrattore ETL opera come un componente senza stato che interroga una sorgente esterna per produrre dati grezzi in risposta a un evento asincrono. Per standardizzare lo sviluppo ed evitare la duplicazione del codice tra i vari microservizi, il sistema integra un repository condiviso importato come submodule Git <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib48">48</a>]</cite>. Questo modulo isola il codice infrastrutturale di base, offrendo un livello di astrazione per l’interazione con le risorse cloud e permettendo all’estrattore di concentrarsi unicamente sulla logica di recupero dati.</p>
+</div>
+<div id="S2.SS1.p2" class="ltx_para">
+<p class="ltx_p">L’innesco del processo avviene tramite un payload JSON strutturato, il quale definisce il contesto dell’operazione. Il contratto dei dati prevede quattro parametri essenziali: l’identificativo del servizio da interrogare (<span class="ltx_text ltx_font_typewriter">service</span>), la finestra temporale dell’estrazione, una chiave di partizionamento (<span class="ltx_text ltx_font_typewriter">iterator</span>) per supportare esecuzioni parallele in ambienti multi-tenant, e i metadati per il tracciamento distribuito.</p>
+</div>
+<div id="S2.SS1.p3" class="ltx_para">
+<p class="ltx_p">La validazione a runtime del payload è demandata alla libreria Pydantic. L’istanziamento rigoroso del modello dati, mostrato nel Listato <a title="Listing 1 ‣ 4.2.1 Logica Applicativa di Estrazione ‣ 4.2 Sviluppo del Flusso ETL Event-Driven ‣ Capitolo 4 Implementazione ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#LST1"><span class="ltx_text ltx_ref_tag">1</span></a>, implementa un meccanismo di interruzione rapida (fail-fast): il sistema scarta istantaneamente le richieste malformate prima di allocare risorse o inizializzare connessioni di rete verso i provider esterni.</p>
+</div>
+<figure id="LST1" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">from pydantic import BaseModel, Field</span>
+<span class="ltx_listingline">from datetime import datetime</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">class ExtractorInput(BaseModel):</span>
+<span class="ltx_listingline">    service: str = Field(..., description="Identificativo del servizio da interrogare")</span>
+<span class="ltx_listingline">    start_date: datetime</span>
+<span class="ltx_listingline">    end_date: datetime</span>
+<span class="ltx_listingline">    iterator: int = Field(..., description="Chiave di partizionamento")</span>
+<span class="ltx_listingline">    application_name: str</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.1: </span>Modello Pydantic per la validazione formale del payload in ingresso</figcaption>
+</figure>
+<div id="S2.SS1.p4" class="ltx_para">
+<p class="ltx_p">Il controllo del flusso interno all’estrattore impiega un meccanismo di instradamento basato sul parametro <span class="ltx_text ltx_font_typewriter">service</span>. Per rispettare il principio Open/Closed e garantire l’estensibilità della piattaforma, l’architettura adotta il pattern architetturale Registry. Questo schema, illustrato nel Listato <a title="Listing 2 ‣ 4.2.1 Logica Applicativa di Estrazione ‣ 4.2 Sviluppo del Flusso ETL Event-Driven ‣ Capitolo 4 Implementazione ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#LST2"><span class="ltx_text ltx_ref_tag">2</span></a>, mappa in modo statico ogni servizio esterno alla propria funzione di estrazione dedicata, eliminando la necessità di costrutti condizionali centralizzati (anti-pattern spesso riscontrabile in architetture monolitiche).</p>
+</div>
+<figure id="LST2" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">from typing import Callable, Dict</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">class ServiceRegistry:</span>
+<span class="ltx_listingline">_registry: Dict[str, Callable] = {}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">@classmethod</span>
+<span class="ltx_listingline">def register(cls, service_name: str) -&gt; Callable:</span>
+<span class="ltx_listingline">    def decorator(func: Callable):</span>
+<span class="ltx_listingline">        cls._registry[service_name] = func</span>
+<span class="ltx_listingline">        return func</span>
+<span class="ltx_listingline">    return decorator</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">@classmethod</span>
+<span class="ltx_listingline">def get_handler(cls, service_name: str) -&gt; Callable:</span>
+<span class="ltx_listingline">    handler = cls._registry.get(service_name)</span>
+<span class="ltx_listingline">    if not handler:</span>
+<span class="ltx_listingline">        raise ValueError(f"Nessun handler per: {service_name}")</span>
+<span class="ltx_listingline">    return handler</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.2: </span>Implementazione del pattern Registry per l’instradamento disaccoppiato dei servizi</figcaption>
+</figure>
+<div id="S2.SS1.p5" class="ltx_para">
+<p class="ltx_p">L’aggiunta di una nuova sorgente dati risulta perciò un’operazione circoscritta: l’ingegnere implementa la specifica logica di chiamata HTTP e la annota con il decoratore <span class="ltx_text ltx_font_typewriter">ServiceRegistry.register("nome_servizio")</span>. L’applicativo carica questi moduli dinamicamente durante la fase di avvio del runtime (cold start), abilitando un comportamento strettamente modulare.</p>
+</div>
+<div id="S2.SS1.p6" class="ltx_para">
+<p class="ltx_p">La robustezza dell’estrattore è garantita da ulteriori decoratori applicativi, sviluppati per uniformare la gestione delle anomalie di rete. Il sistema classifica le eccezioni in errori temporanei (es. <em class="ltx_emph ltx_font_italic">rate limit</em>, latenze del server remoto), che giustificano un successivo ritentativo, ed errori fatali (es. permessi mancanti), che interrompono definitivamente l’esecuzione. Il Listato <a title="Listing 3 ‣ 4.2.1 Logica Applicativa di Estrazione ‣ 4.2 Sviluppo del Flusso ETL Event-Driven ‣ Capitolo 4 Implementazione ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#LST3"><span class="ltx_text ltx_ref_tag">3</span></a> mostra come il decoratore isoli l’esecuzione del gestore, traducendo le eccezioni generiche in classi di errore di dominio per il corretto instradamento verso l’infrastruttura di scarto (Dead Letter Queue).</p>
+</div>
+<figure id="LST3" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">import functools</span>
+<span class="ltx_listingline">import re</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">DEFAULT_RETRYABLE = [r"rate limit", r"502", r"QUOTA"]</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">class EtlRetryableError(Exception): pass</span>
+<span class="ltx_listingline">class EtlFatalError(Exception): pass</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">def handle_etl_errors(func):</span>
+<span class="ltx_listingline">@functools.wraps(func)</span>
+<span class="ltx_listingline">def wrapper(*args, **kwargs):</span>
+<span class="ltx_listingline">    try:</span>
+<span class="ltx_listingline">        return func(*args, **kwargs)</span>
+<span class="ltx_listingline">    except Exception as e:</span>
+<span class="ltx_listingline">        if any(re.search(p, str(e), re.I) for p in DEFAULT_RETRYABLE):</span>
+<span class="ltx_listingline">            raise EtlRetryableError(f"{func.name}: {e}") from e</span>
+<span class="ltx_listingline">        raise EtlFatalError(f"{func.name}: {e}") from e</span>
+<span class="ltx_listingline">    return wrapper</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.3: </span>Decoratore per la classificazione e gestione uniforme degli errori di rete</figcaption>
+</figure>
+<div id="S2.SS1.p7" class="ltx_para">
+<p class="ltx_p">Al termine dell’elaborazione in memoria, l’estrattore finalizza il processo confinando il payload grezzo ottenuto nel livello di archiviazione persistente. L’estrattore salva il file all’interno del prefisso <span class="ltx_text ltx_font_typewriter">raw/</span> del bucket di destinazione, utilizzando una chiave deterministica contenente il nome del servizio utilizzato per l’estrazione basata sui parametri del payload originale. Una volta confermata la scrittura remota, la funzione termina l’esecuzione, concludendo il ciclo vitale del worker e innescando, a livello infrastrutturale, l’evento per la successiva fase di trasformazione.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.2.2</span> Trasformazione del Dato e Serializzazione in Parquet</h3>
+
+<div id="S2.SS2.p1" class="ltx_para">
+<p class="ltx_p">Il componente di trasformazione esegue l’elaborazione dei dati grezzi estratti nella fase precedente. L’inserimento di un nuovo file nel percorso <span class="ltx_text ltx_font_typewriter">raw/</span> del bucket Amazon S3 genera un evento asincrono che innesca automaticamente l’esecuzione della funzione AWS Lambda. L’handler della funzione intercetta il payload dell’evento, estrae la chiave identificativa dell’oggetto S3 e procede al download del file grezzo nell’ambiente di esecuzione temporaneo (<span class="ltx_text ltx_font_typewriter">/tmp</span>). Una volta caricato in memoria, il software applica le logiche di pulizia, valida lo schema dei dati e serializza le informazioni nel formato colonnare Parquet, archiviando infine il risultato nel percorso <span class="ltx_text ltx_font_typewriter">clean/</span> del Data Lake.</p>
+</div>
+<div id="S2.SS2.p2" class="ltx_para">
+<p class="ltx_p">L’adozione della libreria Python Polars <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib51">51</a>]</cite> per la manipolazione dei dati in memoria è motivata da tre fattori principali. Il primo fattore riguarda l’efficienza delle operazioni di I/O: l’utilizzo di un motore di esecuzione interno ottimizzato riduce la pressione sulla memoria allocata, mitigando le restrizioni intrinseche ai runtime effimeri come AWS Lambda. Il secondo fattore concerne la tipizzazione esplicita: Polars applica un cast rigoroso verso tipi di dato primitivi (quali interi a 64 bit o timestamp), uniformando in modo deterministico le discrepanze presenti nei set di dati JSON in ingresso. Il terzo fattore è la disponibilità di trasformazioni vettoriali, le quali permettono di eseguire operazioni di validazione e manipolazione su intere colonne simultaneamente, ottimizzando i tempi di esecuzione rispetto a un’iterazione procedurale.</p>
+</div>
+<figure id="LST4" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">from urllib.parse import unquote_plus</span>
+<span class="ltx_listingline">import polars as pl</span>
+<span class="ltx_listingline">import os</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">def get_path_from_event(event: dict) -&gt; str:</span>
+<span class="ltx_listingline">    record = event["Records"][0]</span>
+<span class="ltx_listingline">    return unquote_plus(record["s3"]["object"]["key"])</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">def read_s3_file(s3_client, key: str) -&gt; pl.DataFrame:</span>
+<span class="ltx_listingline">    local_path = f"/tmp/{os.path.basename(key)}"</span>
+<span class="ltx_listingline">    s3_client.download_file(key, local_path)</span>
+<span class="ltx_listingline">    return pl.read_json(local_path)</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.4: </span>Estrazione della chiave dall’evento S3 e caricamento del file JSON in un DataFrame Polars</figcaption>
+</figure>
+<div id="S2.SS2.p3" class="ltx_para">
+<p class="ltx_p">Per orchestrare le molteplici varianti strutturali dei formati in ingresso, l’architettura implementa un costrutto logico che combina il pattern Factory con un registro statico. Ogni classe concreta, dedicata a una specifica strategia di trasformazione, dichiara la propria registrazione tramite un decoratore sintattico, associandosi a una stringa identificativa univoca. Durante l’elaborazione, il sistema ispeziona la configurazione per estrarre la chiave di instradamento e istanzia dinamicamente la classe corretta. Questo design, illustrato nel Listato <a title="Listing 5 ‣ 4.2.2 Trasformazione del Dato e Serializzazione in Parquet ‣ 4.2 Sviluppo del Flusso ETL Event-Driven ‣ Capitolo 4 Implementazione ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#LST5"><span class="ltx_text ltx_ref_tag">5</span></a>, separa il contratto di base dalle implementazioni specifiche di dominio, eliminando i costrutti condizionali monolitici e agevolando l’estensione del codice.</p>
+</div>
+<figure id="LST5" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">from typing import Type, Dict</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">STRATEGY_REGISTRY: Dict[str, Type] = {}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">def register_strategy(strategy_name: str):</span>
+<span class="ltx_listingline">    def decorator(cls):</span>
+<span class="ltx_listingline">        if strategy_name in STRATEGY_REGISTRY:</span>
+<span class="ltx_listingline">            raise ValueError(f"Strategia ’{strategy_name}’ gia’ registrata")</span>
+<span class="ltx_listingline">        STRATEGY_REGISTRY[strategy_name] = cls</span>
+<span class="ltx_listingline">        return cls</span>
+<span class="ltx_listingline">    return decorator</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">def create_transformer(config_key: str, payload: dict):</span>
+<span class="ltx_listingline">    strategy_name = get_strategy_from_config(config_key)</span>
+<span class="ltx_listingline">    transformer_cls = STRATEGY_REGISTRY.get(strategy_name)</span>
+<span class="ltx_listingline">    if not transformer_cls:</span>
+<span class="ltx_listingline">        raise ValueError(f"Strategia ’{strategy_name}’ non trovata")</span>
+<span class="ltx_listingline">    return transformer_cls(payload)</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.5: </span>Registrazione delle strategie di trasformazione e risoluzione dinamica tramite pattern Factory</figcaption>
+</figure>
+<div id="S2.SS2.p4" class="ltx_para">
+<p class="ltx_p">Il processo di sanificazione dei dati si articola su due livelli logici distinti. Il primo livello, incapsulato all’interno della classe astratta di base, applica le regole di validazione comuni a tutti i flussi operativi. La classe base esegue la rimozione degli spazi bianchi superflui (trimming) su tutte le stringhe e normalizza i token testuali anomali, convertendoli nel tipo nullo nativo del linguaggio. Il codice gestisce inoltre l’adeguamento delle unità di misura, come la conversione di valori finanziari in micro-unità tramite divisione scalare, e forza la standardizzazione dei formati temporali.</p>
+</div>
+<div id="S2.SS2.p5" class="ltx_para">
+<p class="ltx_p">Il secondo livello di sanificazione è demandato ai trasformatori concreti, i quali gestiscono le difformità strutturali di specifici set di dati. A titolo esemplificativo, le classi specializzate eseguono la fusione di colonne separate per data e ora in un singolo timestamp, oppure applicano operazioni di <em class="ltx_emph ltx_font_italic">flattening</em> per convertire le strutture nidificate dei documenti JSON in schemi tabellari piatti. Al termine di questi processi di pulizia, il trasformatore formatta il DataFrame risultante in Parquet e il client delegato lo trasferisce definitivamente nella directory <span class="ltx_text ltx_font_typewriter">clean/</span> del bucket S3, predisponendo i dati per l’interrogazione analitica.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.2.3</span> Interrogazione Analitica e Viste Materializzate in Athena</h3>
+
+<div id="S2.SS3.p1" class="ltx_para">
+<p class="ltx_p">Il livello analitico del sistema si fonda su Amazon Athena e implementa una duplice strategia di interrogazione e strutturazione dei dati. La prima operazione consiste nella materializzazione fisica dei risultati all’interno del livello di archiviazione. Il processo impiega l’istruzione SQL <span class="ltx_text ltx_font_typewriter">UNLOAD</span> per generare e depositare i dataset analitici direttamente su Amazon S3. L’operazione serializza i dati in Parquet e applica l’algoritmo di compressione Snappy <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib52">52</a>]</cite>, organizzando i file fisici secondo una gerarchia di directory basata sulle partizioni temporali (anno, mese, giorno).</p>
+</div>
+<figure id="LST6" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">UNLOAD (</span>
+<span class="ltx_listingline">    SELECT *</span>
+<span class="ltx_listingline">    FROM &lt;table_name&gt;_raw</span>
+<span class="ltx_listingline">    WHERE date_parse(year || ’-’ || month || ’-’ || day, ’%Y-%m-%d’)</span>
+<span class="ltx_listingline">        BETWEEN DATE ’&lt;date_start&gt;’ AND DATE ’&lt;date_end&gt;’</span>
+<span class="ltx_listingline">        AND iterator = ’&lt;iterator&gt;’</span>
+<span class="ltx_listingline">)</span>
+<span class="ltx_listingline">TO ’s3://&lt;bucket&gt;/athena-results/&lt;table_name&gt;/year=&lt;YYYY&gt;/month=&lt;MM&gt;/day=&lt;DD&gt;/’</span>
+<span class="ltx_listingline">WITH (</span>
+<span class="ltx_listingline">    format = ’PARQUET’,</span>
+<span class="ltx_listingline">    compression = ’SNAPPY’</span>
+<span class="ltx_listingline">);</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.6: </span>Materializzazione dei risultati partizionati tramite UNLOAD in fase di esecuzione ETL</figcaption>
+</figure>
+<div id="S2.SS3.p2" class="ltx_para">
+<p class="ltx_p">La seconda operazione analitica riguarda l’accesso trasparente ai dati in continua mutazione. L’architettura adotta un pattern organizzativo che separa i dati recenti (volatili o di <em class="ltx_emph ltx_font_italic">staging</em>) dai dati storici consolidati (identificati come <em class="ltx_emph ltx_font_italic">freeze</em>). Per fornire un singolo punto di accesso logico alle applicazioni a valle, l’infrastruttura istanzia una vista virtuale unificata. Tale costrutto relazionale impiega l’operatore <span class="ltx_text ltx_font_typewriter">UNION ALL</span> per concatenare dinamicamente le due tabelle sottostanti, schermando la complessità strutturale ai consumatori finali.</p>
+</div>
+<figure id="LST7" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">CREATE OR REPLACE VIEW daily_creatives_delivery_unified_view AS</span>
+<span class="ltx_listingline">    SELECT * FROM daily_creatives_delivery_staging</span>
+<span class="ltx_listingline">    UNION ALL</span>
+<span class="ltx_listingline">    SELECT * FROM daily_creatives_delivery_freeze;</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.7: </span>Dichiarazione DDL per la creazione della vista unificata staging e freeze</figcaption>
+</figure>
+<div id="S2.SS3.p3" class="ltx_para">
+<p class="ltx_p">L’estrazione delle metriche di business richiede interrogazioni di aggregazione strutturate. Una delle operazioni principali riguarda il monitoraggio dell’erogazione giornaliera delle creatività pubblicitarie. Il motore Athena esegue un’interrogazione che aggrega le impressioni e i clic generati, escludendo a priori il traffico attribuibile a sistemi automatizzati (<math id="S2.SS3.p3.m1" class="ltx_Math" alttext="is\_robot=false" display="inline"><semantics><mrow><mrow><mi>i</mi><mo>⁢</mo><mi>s</mi><mo>⁢</mo><mi mathvariant="normal">_</mi><mo>⁢</mo><mi>r</mi><mo>⁢</mo><mi>o</mi><mo>⁢</mo><mi>b</mi><mo>⁢</mo><mi>o</mi><mo>⁢</mo><mi>t</mi></mrow><mo>=</mo><mrow><mi>f</mi><mo>⁢</mo><mi>a</mi><mo>⁢</mo><mi>l</mi><mo>⁢</mo><mi>s</mi><mo>⁢</mo><mi>e</mi></mrow></mrow></semantics></math>). Il costrutto logico utilizza le <em class="ltx_emph ltx_font_italic">Common Table Expressions</em> (CTE) per pre-calcolare le metriche sulle tabelle dei fatti, eseguendo successivamente un’operazione di <span class="ltx_text ltx_font_typewriter">LEFT JOIN</span> con le tabelle dimensionali contenenti i metadati delle campagne e dei posizionamenti.</p>
+</div>
+<figure id="LST8" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">WITH imps AS (</span>
+<span class="ltx_listingline">    SELECT</span>
+<span class="ltx_listingline">        i.year,</span>
+<span class="ltx_listingline">        i.month,</span>
+<span class="ltx_listingline">        i.day,</span>
+<span class="ltx_listingline">        campaign_id,</span>
+<span class="ltx_listingline">        placement_id_activity_id,</span>
+<span class="ltx_listingline">        banner_id_ad_group_id,</span>
+<span class="ltx_listingline">        COUNT(*) AS impression,</span>
+<span class="ltx_listingline">        SUM(rtb_cost) AS rtb_cost</span>
+<span class="ltx_listingline">    FROM "adform-prod"."impression" AS i</span>
+<span class="ltx_listingline">    WHERE is_robot = false</span>
+<span class="ltx_listingline">    GROUP BY 1, 2, 3, 4, 5, 6</span>
+<span class="ltx_listingline">),</span>
+<span class="ltx_listingline">cls AS (</span>
+<span class="ltx_listingline">    SELECT</span>
+<span class="ltx_listingline">        c.year,</span>
+<span class="ltx_listingline">        c.month,</span>
+<span class="ltx_listingline">        c.day,</span>
+<span class="ltx_listingline">        campaign_id,</span>
+<span class="ltx_listingline">        placement_id_activity_id,</span>
+<span class="ltx_listingline">        banner_id_ad_group_id,</span>
+<span class="ltx_listingline">        COUNT(*) AS click</span>
+<span class="ltx_listingline">    FROM "adform-prod"."click" AS c</span>
+<span class="ltx_listingline">    WHERE is_robot = false</span>
+<span class="ltx_listingline">    GROUP BY 1, 2, 3, 4, 5, 6</span>
+<span class="ltx_listingline">)</span>
+<span class="ltx_listingline">SELECT</span>
+<span class="ltx_listingline">    DATE(i.year || ’-’ || i.month || ’-’ || i.day) AS date,</span>
+<span class="ltx_listingline">    c.name AS campaign,</span>
+<span class="ltx_listingline">    p.name AS line_item,</span>
+<span class="ltx_listingline">    b.name AS creative,</span>
+<span class="ltx_listingline">    i.impression,</span>
+<span class="ltx_listingline">    COALESCE(cls.click, 0) AS click,</span>
+<span class="ltx_listingline">    i.rtb_cost AS cost</span>
+<span class="ltx_listingline">FROM imps i</span>
+<span class="ltx_listingline">LEFT JOIN cls</span>
+<span class="ltx_listingline">    ON  i.year = cls.year</span>
+<span class="ltx_listingline">    AND i.month = cls.month</span>
+<span class="ltx_listingline">    AND i.day = cls.day</span>
+<span class="ltx_listingline">    AND i.campaign_id = cls.campaign_id</span>
+<span class="ltx_listingline">    AND i.placement_id_activity_id = cls.placement_id_activity_id</span>
+<span class="ltx_listingline">    AND i.banner_id_ad_group_id = cls.banner_id_ad_group_id</span>
+<span class="ltx_listingline">LEFT JOIN "adform-prod"."campaigns" c</span>
+<span class="ltx_listingline">    ON c.id = i.campaign_id</span>
+<span class="ltx_listingline">LEFT JOIN "adform-prod"."placements_activities" p</span>
+<span class="ltx_listingline">    ON p.id = i.placement_id_activity_id</span>
+<span class="ltx_listingline">LEFT JOIN "adform-prod"."banners_adgroups" b</span>
+<span class="ltx_listingline">    ON b.id = i.banner_id_ad_group_id;</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.8: </span>Interrogazione analitica con CTE per l’aggregazione delle metriche di erogazione giornaliera</figcaption>
+</figure>
+<div id="S2.SS3.p4" class="ltx_para">
+<p class="ltx_p">Il calcolo del Click-Through Rate (CTR) esemplifica l’efficacia del partizionamento dei dati. La metrica è definita come il rapporto percentuale tra i clic ricevuti e le impressioni erogate:</p>
+</div>
+<div id="S2.SS3.p5" class="ltx_para">
+<div id="E1" class="ltx_equation bml_equation bml_equation_container ltx_align_baseline" role="region" aria-labelledby="bml-auto-id1">
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" id="bml-auto-id1"><span class="bml_sr_only">equation </span>(1)</span>
+<span class="ltx_tag ltx_tag_equation ltx_eqn_eqno" aria-hidden="true">(1)</span>
+<div class="ltx_Math ltx_math_unparsed bml_eqn_cell ltx_align_center"><math id="E1.m1" class="ltx_math_unparsed" alttext="\text{CTR}(\%)=\frac{\text{click}}{\text{impression}}\times 100" display="block"><semantics><mrow><mtext>CTR</mtext><mrow><mo stretchy="false">(</mo><mo>%</mo><mo stretchy="false">)</mo></mrow><mo>=</mo><mfrac><mtext>click</mtext><mtext>impression</mtext></mfrac><mo lspace="0.222em" rspace="0.222em">×</mo><mn>100</mn></mrow></semantics></math></div>
+</div>
+</div>
+<div id="S2.SS3.p6" class="ltx_para">
+<p class="ltx_p">L’estrazione di questo valore impone l’applicazione di filtri espliciti sulle colonne di partizionamento temporale. La dichiarazione esplicita dell’anno e del mese all’interno della clausola <span class="ltx_text ltx_font_typewriter">WHERE</span> istruisce il motore di esecuzione a ignorare i dati non pertinenti alla finestra temporale analizzata.</p>
+</div>
+<figure id="LST9" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">WITH imp AS (</span>
+<span class="ltx_listingline">    SELECT</span>
+<span class="ltx_listingline">        campaign_id,</span>
+<span class="ltx_listingline">        COUNT(*) AS impressions</span>
+<span class="ltx_listingline">    FROM "adform-prod"."impression"</span>
+<span class="ltx_listingline">    WHERE is_robot = false</span>
+<span class="ltx_listingline">        AND year = ’2024’</span>
+<span class="ltx_listingline">        AND month = ’02’</span>
+<span class="ltx_listingline">    GROUP BY campaign_id</span>
+<span class="ltx_listingline">),</span>
+<span class="ltx_listingline">clk AS (</span>
+<span class="ltx_listingline">    SELECT</span>
+<span class="ltx_listingline">        campaign_id,</span>
+<span class="ltx_listingline">        COUNT(*) AS clicks</span>
+<span class="ltx_listingline">    FROM "adform-prod"."click"</span>
+<span class="ltx_listingline">    WHERE is_robot = false</span>
+<span class="ltx_listingline">        AND year = ’2024’</span>
+<span class="ltx_listingline">        AND month = ’02’</span>
+<span class="ltx_listingline">    GROUP BY campaign_id</span>
+<span class="ltx_listingline">)</span>
+<span class="ltx_listingline">SELECT</span>
+<span class="ltx_listingline">    i.campaign_id,</span>
+<span class="ltx_listingline">    i.impressions,</span>
+<span class="ltx_listingline">    COALESCE(c.clicks, 0) AS clicks,</span>
+<span class="ltx_listingline">    100.0 * COALESCE(c.clicks, 0) / NULLIF(i.impressions, 0) AS ctr_pct</span>
+<span class="ltx_listingline">FROM imp i</span>
+<span class="ltx_listingline">LEFT JOIN clk c</span>
+<span class="ltx_listingline">    ON c.campaign_id = i.campaign_id</span>
+<span class="ltx_listingline">ORDER BY ctr_pct DESC;</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.9: </span>Estrazione del KPI con applicazione dei predicati di partizionamento temporale</figcaption>
+</figure>
+<div id="S2.SS3.p7" class="ltx_para">
+<p class="ltx_p">L’implementazione di questo modello architetturale comporta quattro conseguenze dirette. In primo luogo, la combinazione del formato colonnare Parquet con la compressione Snappy ottimizza i tempi di caricamento e i costi di I/O. In secondo luogo, la clausola <span class="ltx_text ltx_font_typewriter">WHERE</span> applicata alle partizioni temporali limita il volume di dati scansionati dal motore serverless per singola query. Il terzo aspetto riguarda la governabilità, garantita dalla segregazione logica tra le elaborazioni recenti e l’archivio storico. Infine, la definizione della vista unificata fornisce un’interfaccia stabile e disaccoppiata per i sistemi di visualizzazione e i cruscotti analitici a valle.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.3</span> Implementazione dei Servizi Backend</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">Questa sezione analizza l’implementazione del livello applicativo sincrono, strutturata seguendo il ciclo di vita di una richiesta HTTP. L’analisi parte dal livello di instradamento, dove le richieste vengono intercettate e validate tramite iniezione delle dipendenze; prosegue illustrando il <em class="ltx_emph ltx_font_italic">wrapper</em> necessario all’esecuzione del framework all’interno del runtime serverless; e si conclude nel livello di persistenza, descrivendo la mappatura a oggetti per il database NoSQL e la gestione della coerenza transazionale distribuita.</p>
+</div>
+<section id="S3.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.3.1</span> Iniezione delle dipendenze e validazione tramite Pydantic</h3>
+
+<div id="S3.SS1.p1" class="ltx_para">
+<p class="ltx_p">L’architettura dei servizi di backend sfrutta il pattern <em class="ltx_emph ltx_font_italic">Dependency Injection</em> per disaccoppiare la logica di business dalla risoluzione dei componenti tecnici e dalle precondizioni di dominio. Questo approccio, nativamente supportato da FastAPI, permette al sistema di eseguire controlli preliminari, quali la verifica dell’esistenza di una risorsa, l’autenticazione o il blocco di inserimenti duplicati, prima che la richiesta raggiunga il gestore principale.</p>
+</div>
+<figure id="LST10" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">@router.post("/", response_model=EntityResponse, status_code=status.HTTP_202_ACCEPTED)</span>
+<span class="ltx_listingline">def create_resource(</span>
+<span class="ltx_listingline">    payload: EntityCreateRequest = Depends(),</span>
+<span class="ltx_listingline">    storage_client = Depends(get_storage_client),</span>
+<span class="ltx_listingline">    parent_entity: BaseModel = Depends(ensure_entity_does_not_exist),</span>
+<span class="ltx_listingline">    user = Depends(get_authenticated_user)</span>
+<span class="ltx_listingline">):</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    Gestore della creazione risorsa con dipendenze pre-validate.</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    return process_resource_creation(parent_entity, storage_client, payload, user)</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.10: </span>Esempio di iniezione delle dipendenze per la validazione semantica a livello di instradamento</figcaption>
+</figure>
+<div id="S3.SS1.p2" class="ltx_para">
+<p class="ltx_p">Per la validazione strutturale del payload, il framework impiega la libreria Pydantic. Il processo di convalida estende il controllo statico dei tipi, integrando trasformazioni dei dati e vincoli semantici direttamente nella definizione del modello.</p>
+</div>
+<figure id="LST11" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">from pydantic import BaseModel, model_validator</span>
+<span class="ltx_listingline">import re</span>
+<span class="ltx_listingline">import unicodedata</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">class BaseEntityModel(BaseModel):</span>
+<span class="ltx_listingline">    name: str</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    @model_validator(mode="before")</span>
+<span class="ltx_listingline">    @classmethod</span>
+<span class="ltx_listingline">    def normalize_identifier(cls, data):</span>
+<span class="ltx_listingline">        if not isinstance(data, dict):</span>
+<span class="ltx_listingline">            return data</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">        name = data.get("name")</span>
+<span class="ltx_listingline">        if name:</span>
+<span class="ltx_listingline">            # Normalizzazione Unicode e rimozione spazi</span>
+<span class="ltx_listingline">            normalized = unicodedata.normalize(’NFC’, name).casefold().strip()</span>
+<span class="ltx_listingline">            # Sostituzione spazi con underscore per slug/ID</span>
+<span class="ltx_listingline">            data[’normalized_name’] = re.sub(r’\s+’, ’_’, normalized)</span>
+<span class="ltx_listingline">        return data</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.11: </span>Validazione avanzata e trasformazione dei dati tramite i validatori di modello Pydantic</figcaption>
+</figure>
+</div>
+</section>
+<section id="S3.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.3.2</span> Adattamento del runtime FastAPI su AWS Lambda</h3>
+
+<div id="S3.SS2.p1" class="ltx_para">
+<p class="ltx_p">L’esposizione di interfacce API sincrone tramite AWS Lambda e API Gateway impone un disaccoppiamento dei protocolli. L’implementazione utilizza l’adattatore <span class="ltx_text ltx_font_typewriter">Mangum</span> per operare questa traduzione (da evento Lambda a standard ASGI) all’interno del codice sorgente.</p>
+</div>
+<figure id="LST12" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">from fastapi import FastAPI</span>
+<span class="ltx_listingline">from mangum import Mangum</span>
+<span class="ltx_listingline">from api.routers import primary_router, secondary_router</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">app = FastAPI(title="Backend Service API")</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline"># Inclusione dei router divisionali</span>
+<span class="ltx_listingline">app.include_router(primary_router.router, prefix="/v1/primary")</span>
+<span class="ltx_listingline">app.include_router(secondary_router.router, prefix="/v1/secondary")</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline"># Handler per convertire l’evento API Gateway in richiesta ASGI</span>
+<span class="ltx_listingline">lambda_handler = Mangum(app)</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.12: </span>Involucro dell’applicazione FastAPI tramite l’adattatore Mangum per l’esecuzione serverless</figcaption>
+</figure>
+</div>
+</section>
+<section id="S3.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.3.3</span> Interazione con DynamoDB e Single Table Design in codice</h3>
+
+<div id="S3.SS3.p1" class="ltx_para">
+<p class="ltx_p">Il livello di persistenza interagisce con Amazon DynamoDB applicando il pattern Single Table Design. Il sistema memorizza entità eterogenee all’interno di un’unica tabella fisica, impiegando chiavi primarie logiche e composite per definire i percorsi di accesso. Per l’interazione con il database, l’architettura adotta la libreria PynamoDB <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib53">53</a>]</cite> in sostituzione del client standard <span class="ltx_text ltx_font_typewriter">boto3</span>. Questa scelta ingegneristica permette di astrarre le chiamate di rete a basso livello e fornisce un Object-Document Mapper (ODM) per l’ecosistema Python. L’implementazione governa il polimorfismo applicativo definendo una classe base astratta e molteplici sottoclassi specializzate, distinte da un attributo discriminatore gestito direttamente in modo dichiarativo dalla libreria.</p>
+</div>
+<figure id="LST13" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">from pynamodb.models import Model</span>
+<span class="ltx_listingline">from pynamodb.attributes import UnicodeAttribute, NumberAttribute</span>
+<span class="ltx_listingline">import os</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">class BaseEntityModel(Model):</span>
+<span class="ltx_listingline">    class Meta:</span>
+<span class="ltx_listingline">        table_name = os.environ.get("DYNAMODB_TABLE")</span>
+<span class="ltx_listingline">        region = os.environ.get("AWS_REGION", "eu-west-1")</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    normalized_name = UnicodeAttribute(hash_key=True)</span>
+<span class="ltx_listingline">    entity_type = UnicodeAttribute(range_key=True)</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">class SpecificEntityModel(BaseEntityModel, discriminator=’specific_type’):</span>
+<span class="ltx_listingline">    external_provider_id = UnicodeAttribute()</span>
+<span class="ltx_listingline">    configuration_flags = NumberAttribute(default=0)</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.13: </span>Definizione dei modelli ODM in PynamoDB per l’implementazione del Single Table Design e del polimorfismo</figcaption>
+</figure>
+<div id="S3.SS3.p2" class="ltx_para">
+<p class="ltx_p">Per supportare schemi di interrogazione complessi senza eseguire scansioni sequenziali dispendiose, lo schema dati include Indici Secondari Globali (GSI) specializzati. Il sistema definisce un indice dedicato all’impaginazione temporale globale e un indice sparso progettato per localizzare rapidamente i record tramite identificatori generati da sistemi di terze parti.</p>
+</div>
+<div id="S3.SS3.p3" class="ltx_para">
+<p class="ltx_p">Infine, per garantire la coerenza transazionale durante la creazione di risorse che richiedono la comunicazione con servizi esterni, la logica applicativa utilizza un pattern di prenotazione (reservation pattern). Il microservizio effettua una scrittura condizionata su DynamoDB, inserendo un record con uno stato provvisorio. Successivamente, invoca l’API del provider esterno. In caso di risposta positiva, il sistema aggiorna l’elemento con l’identificativo definitivo; in caso di fallimento della chiamata di rete, l’applicativo esegue un rollback eliminando il record provvisorio e restituendo un codice di errore HTTP al client.</p>
+</div>
+</div>
+</section>
+<section id="S3.SS4" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.3.4</span> Emulazione delle Risorse AWS tramite LocalStack</h3>
+
+<div id="S3.SS4.p1" class="ltx_para">
+<p class="ltx_p">Per simulare l’infrastruttura cloud senza richiedere connettività di rete o incorrere in costi di fatturazione, l’ambiente di sviluppo esegue l’applicativo LocalStack <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib40">40</a>]</cite> all’interno di un container dedicato. Questo strumento espone un singolo endpoint di rete locale in grado di emulare le API di molteplici servizi AWS, tra cui Amazon DynamoDB, Amazon S3 e Amazon SNS.</p>
+</div>
+<div id="S3.SS4.p2" class="ltx_para">
+<p class="ltx_p">I microservizi applicativi reindirizzano il traffico verso le risorse simulate decodificando specifiche variabili d’ambiente. Come mostrato nel Listato <a title="Listing 14 ‣ 4.3.4 Emulazione delle Risorse AWS tramite LocalStack ‣ 4.3 Implementazione dei Servizi Backend ‣ Capitolo 4 Implementazione ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#LST14"><span class="ltx_text ltx_ref_tag">14</span></a>, la configurazione inietta l’URL dell’emulatore (<span class="ltx_text ltx_font_typewriter">AWS_ENDPOINT_URL</span>) e credenziali crittografiche fittizie. Questo pattern di progettazione mantiene inalterata la semantica del codice sorgente, istruendo l’SDK (Boto3) del fornitore cloud senza richiederne la modifica.</p>
+</div>
+<figure id="LST14" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">services:</span>
+<span class="ltx_listingline">  task:</span>
+<span class="ltx_listingline">    environment:</span>
+<span class="ltx_listingline">      AWS_ENDPOINT_URL: http://localstack:4566</span>
+<span class="ltx_listingline">      AWS_ACCESS_KEY_ID: test</span>
+<span class="ltx_listingline">      AWS_SECRET_ACCESS_KEY: test</span>
+<span class="ltx_listingline">      AWS_DEFAULT_REGION: eu-west-1</span>
+<span class="ltx_listingline">      DYNAMODB_TABLE: proximity-campaign</span>
+<span class="ltx_listingline">      S3_BUCKET_NAME: proximity-campaign</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">  localstack:</span>
+<span class="ltx_listingline">    image: localstack/localstack:latest</span>
+<span class="ltx_listingline">    ports:</span>
+<span class="ltx_listingline">      - "4566:4566"</span>
+<span class="ltx_listingline">    volumes:</span>
+<span class="ltx_listingline">      - "./init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh:ro"</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.14: </span>Configurazione Docker Compose per l’iniezione delle variabili d’ambiente e l’avvio di LocalStack</figcaption>
+</figure>
+<div id="S3.SS4.p3" class="ltx_para">
+<p class="ltx_p">Il demone Docker orchestra l’inizializzazione dell’ambiente emulato eseguendo uno script shell (<span class="ltx_text ltx_font_typewriter">init-aws.sh</span>) montato come volume di sola lettura. Questo script provvede a istanziare le risorse cloud effimere e a popolare le basi di dati con le informazioni necessarie per il collaudo al momento dell’avvio.</p>
+</div>
+<div id="S3.SS4.p4" class="ltx_para">
+<p class="ltx_p">Un’operazione fondamentale riguarda la generazione delle tabelle DynamoDB per i servizi backend. Il comando di inizializzazione, esposto nel Listato <a title="Listing 15 ‣ 4.3.4 Emulazione delle Risorse AWS tramite LocalStack ‣ 4.3 Implementazione dei Servizi Backend ‣ Capitolo 4 Implementazione ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#LST15"><span class="ltx_text ltx_ref_tag">15</span></a>, dichiara esplicitamente lo schema delle chiavi primarie e alloca gli Indici Secondari Globali (GSI) necessari per supportare i medesimi pattern di accesso definiti nell’ambiente di produzione.</p>
+</div>
+<figure id="LST15" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">awslocal dynamodb create-table \</span>
+<span class="ltx_listingline">    --table-name proximity-campaign \</span>
+<span class="ltx_listingline">    --attribute-definitions \</span>
+<span class="ltx_listingline">        AttributeName=normalized_campaign_name,AttributeType=S \</span>
+<span class="ltx_listingline">        AttributeName=type_bucket,AttributeType=S \</span>
+<span class="ltx_listingline">        AttributeName=created_at,AttributeType=S \</span>
+<span class="ltx_listingline">        AttributeName=adsquare_config_id,AttributeType=S \</span>
+<span class="ltx_listingline">    --key-schema \</span>
+<span class="ltx_listingline">        AttributeName=normalized_campaign_name,KeyType=HASH \</span>
+<span class="ltx_listingline">    --global-secondary-indexes ’[</span>
+<span class="ltx_listingline">        {</span>
+<span class="ltx_listingline">            "IndexName": "timeline-index",</span>
+<span class="ltx_listingline">            "KeySchema": [</span>
+<span class="ltx_listingline">                {"AttributeName": "type_bucket", "KeyType": "HASH"},</span>
+<span class="ltx_listingline">                {"AttributeName": "created_at", "KeyType": "RANGE"}</span>
+<span class="ltx_listingline">            ],</span>
+<span class="ltx_listingline">            "Projection": {"ProjectionType": "ALL"},</span>
+<span class="ltx_listingline">            "ProvisionedThroughput": {"ReadCapacityUnits": 5, "WriteCapacityUnits": 5}</span>
+<span class="ltx_listingline">        },</span>
+<span class="ltx_listingline">        {</span>
+<span class="ltx_listingline">            "IndexName": "adsquare-config-index",</span>
+<span class="ltx_listingline">            "KeySchema": [</span>
+<span class="ltx_listingline">                {"AttributeName": "adsquare_config_id", "KeyType": "HASH"}</span>
+<span class="ltx_listingline">            ],</span>
+<span class="ltx_listingline">            "Projection": {"ProjectionType": "ALL"},</span>
+<span class="ltx_listingline">            "ProvisionedThroughput": {"ReadCapacityUnits": 5, "WriteCapacityUnits": 5}</span>
+<span class="ltx_listingline">        }</span>
+<span class="ltx_listingline">    ]’</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.15: </span>Script bash di avvio per la creazione automatizzata della tabella DynamoDB emulata</figcaption>
+</figure>
+<div id="S3.SS4.p5" class="ltx_para">
+<p class="ltx_p">Lo script assolve a una seconda funzione critica per il collaudo dei worker asincroni (pipeline ETL). Il codice provvede a caricare i file JSON di test all’interno dei bucket S3 emulati, replicando l’esatta gerarchia dei percorsi (<span class="ltx_text ltx_font_typewriter">raw/</span>) attesa in produzione. Questa pre-inizializzazione dello stato consente di validare la logica di estrazione, la sanificazione e la trasformazione nel formato Parquet operando esclusivamente sulla memoria e sul disco locale.</p>
+</div>
+<div id="S3.SS4.p6" class="ltx_para">
+<p class="ltx_p">Questa configurazione architetturale genera un ambiente di sviluppo locale isomorfo all’infrastruttura di destinazione. L’isolamento delle dipendenze garantisce un ciclo di collaudo deterministico e un riscontro immediato su eventuali difetti logici, riducendo il tempo necessario per le iterazioni di sviluppo prima del rilascio in ambiente cloud.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.4</span> Automazione del Rilascio e Pipeline GitOps (CI/CD)</h2>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">Questa sezione illustra la topologia dell’infrastruttura di <em class="ltx_emph ltx_font_italic">Continuous Integration</em> e <em class="ltx_emph ltx_font_italic">Continuous Delivery</em> (CI/CD) implementata per il ciclo di vita del software. L’analisi procede separando logicamente tre fasi: la compilazione automatizzata e il versionamento semantico (CI), il meccanismo di promozione controllata verso gli ambienti di esecuzione (CD) e, infine, l’imposizione formale delle policy di sicurezza e <em class="ltx_emph ltx_font_italic">rollback</em>.</p>
+</div>
+<section id="S4.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.4.1</span> Versionamento Semantico e Compilazione (CI)</h3>
+
+<div id="S4.SS1.p1" class="ltx_para">
+<p class="ltx_p">L’architettura adotta un modello di distribuzione basato su release. Il processo determina il versionamento semantico analizzando la cronologia dei commit e innesca la compilazione dell’artefatto esclusivamente al momento della generazione effettiva di una nuova release. Il sistema di automazione esegue il job di compilazione e caricamento dell’immagine Docker solo se l’indicatore booleano conferma l’avvenuta creazione della release.</p>
+</div>
+<figure id="LST16" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">on:</span>
+<span class="ltx_listingline">  push:</span>
+<span class="ltx_listingline">    branches: [main, master]</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">jobs:</span>
+<span class="ltx_listingline">  build:</span>
+<span class="ltx_listingline">    runs-on: ubuntu-latest</span>
+<span class="ltx_listingline">    steps:</span>
+<span class="ltx_listingline">      - uses: devredops/cicd-release-action@main</span>
+<span class="ltx_listingline">        id: release</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">      - name: Build and Push Docker Image to ECR</span>
+<span class="ltx_listingline">        if: ${{ steps.release.outputs.release-created }}</span>
+<span class="ltx_listingline">        uses: Company/gha-build-and-push-on-ecr@main</span>
+<span class="ltx_listingline">        with:</span>
+<span class="ltx_listingline">          ecr-repository: ${{ env.REPO_NAME }}</span>
+<span class="ltx_listingline">          release-version: ${{ steps.release.outputs.release-version }}</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.16: </span>Definizione del job GitHub Actions di compilazione condizionato alla creazione della release</figcaption>
+</figure>
+</div>
+</section>
+<section id="S4.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.4.2</span> Pipeline GitOps e Promotion Gate (CD)</h3>
+
+<div id="S4.SS2.p1" class="ltx_para">
+<p class="ltx_p">Al termine della compilazione e del push dell’immagine Docker sul registro Amazon ECR, il sistema interrompe l’esecuzione automatizzata. La distribuzione (<em class="ltx_emph ltx_font_italic">deployment</em>) richiede un innesco esplicito tramite l’evento <span class="ltx_text ltx_font_typewriter">workflow_dispatch</span>, che introduce un <em class="ltx_emph ltx_font_italic">promotion gate</em>.</p>
+</div>
+<figure id="LST17" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">on:</span>
+<span class="ltx_listingline">  workflow_dispatch:</span>
+<span class="ltx_listingline">    inputs:</span>
+<span class="ltx_listingline">      environment:</span>
+<span class="ltx_listingline">        type: choice</span>
+<span class="ltx_listingline">        description: ’Ambiente di destinazione’</span>
+<span class="ltx_listingline">        options: [dev, prod]</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">jobs:</span>
+<span class="ltx_listingline">  deploy:</span>
+<span class="ltx_listingline">    runs-on: ubuntu-latest</span>
+<span class="ltx_listingline">    steps:</span>
+<span class="ltx_listingline">      - name: Update Lambda Image (Dev)</span>
+<span class="ltx_listingline">        if: github.event.inputs.environment == ’dev’</span>
+<span class="ltx_listingline">        uses: Company/gha-lambda-image-upload@main</span>
+<span class="ltx_listingline">        with:</span>
+<span class="ltx_listingline">          image-tag: ${{ env.RELEASE_VERSION }}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">      - name: Update Lambda Image (Prod)</span>
+<span class="ltx_listingline">        if: github.event.inputs.environment == ’prod’</span>
+<span class="ltx_listingline">        uses: Company/gha-lambda-image-upload@main</span>
+<span class="ltx_listingline">        with:</span>
+<span class="ltx_listingline">          image-tag: ${{ env.RELEASE_VERSION }}</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.17: </span>Configurazione del trigger manuale per la promozione controllata degli artefatti nei vari ambienti</figcaption>
+</figure>
+<div id="S4.SS2.p2" class="ltx_para">
+<p class="ltx_p">L’azione composita responsabile del caricamento incapsula le interazioni con l’infrastruttura AWS, inclusa la creazione idempotente del repository ECR e la compilazione per architettura ARM64.</p>
+</div>
+<figure id="LST18" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline"># Verifica esistenza repository o creazione con scansione attiva</span>
+<span class="ltx_listingline">aws ecr describe-repositories --repository-names "$ECR_REPOSITORY" || \</span>
+<span class="ltx_listingline">aws ecr create-repository \</span>
+<span class="ltx_listingline">    --image-tag-mutability IMMUTABLE \</span>
+<span class="ltx_listingline">    --image-scanning-configuration scanOnPush=true \</span>
+<span class="ltx_listingline">    --repository-name "$ECR_REPOSITORY"</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline"># Build multi-platform per Lambda ARM64</span>
+<span class="ltx_listingline">docker build --platform linux/arm64 --provenance=false \</span>
+<span class="ltx_listingline">    -t "$REGISTRY/$ECR_REPOSITORY:$RELEASE_VERSION" .</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">docker push "$REGISTRY/$ECR_REPOSITORY:$RELEASE_VERSION"</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.18: </span>Script bash per la creazione idempotente del repository ECR e la compilazione dell’immagine ARM64</figcaption>
+</figure>
+</div>
+</section>
+<section id="S4.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.4.3</span> Controlli di Sicurezza e Procedure di Rollback</h3>
+
+<div id="S4.SS3.p1" class="ltx_para">
+<p class="ltx_p">La pipeline integra meccanismi di sicurezza governati direttamente dal codice sorgente. L’immutabilità delle etichette (<span class="ltx_text ltx_font_typewriter">IMMUTABLE</span>) previene la sovrascrittura accidentale delle release. Inoltre, il sistema applica le policy di accesso (<em class="ltx_emph ltx_font_italic">Resource-based policy</em>) solo in caso di discrepanze rilevate tramite <span class="ltx_text ltx_font_typewriter">jq</span>, mitigando il <em class="ltx_emph ltx_font_italic">Configuration Drift</em>.</p>
+</div>
+<figure id="LST19" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline"># Recupero policy attuale e confronto con quella locale</span>
+<span class="ltx_listingline">CURRENT_POLICY=$(aws ecr get-repository-policy --repository-name "$ECR_REPOSITORY" || echo "")</span>
+<span class="ltx_listingline">LOCAL_POLICY=$(cat ecr-policy.json)</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">if [ "$(echo "$CURRENT_POLICY" | jq -S .)" != "$(echo "$LOCAL_POLICY" | jq -S .)" ]; then</span>
+<span class="ltx_listingline">    echo "Rilevata discrepanza nella policy. Applicazione modifiche..."</span>
+<span class="ltx_listingline">    aws ecr set-repository-policy \</span>
+<span class="ltx_listingline">        --repository-name "$ECR_REPOSITORY" \</span>
+<span class="ltx_listingline">        --policy-text file://ecr-policy.json</span>
+<span class="ltx_listingline">fi</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.19: </span>Logica idempotente per l’allineamento della Resource-based policy di Amazon ECR</figcaption>
+</figure>
+<div id="S4.SS3.p2" class="ltx_para">
+<p class="ltx_p">L’adozione di tag immutabili costituisce il fondamento per le procedure di <em class="ltx_emph ltx_font_italic">rollback</em>. Qualora si verifichi una regressione, l’operatore innesca nuovamente il flusso di distribuzione manuale iniettando il tag della versione stabile precedente, forzando il runtime serverless ad avviare i container basati sull’artefatto già validato.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S5" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">4.5</span> Implementazione di Service-Forge e Integrazione MCP</h2>
+
+<div id="S5.p1" class="ltx_para">
+<p class="ltx_p">L’implementazione del framework Service-Forge adotta una rigorosa separazione delle responsabilità, strutturata su quattro livelli logici contigui come raffigurato in Figura <a title="Figura 18 ‣ 4.5 Implementazione di Service-Forge e Integrazione MCP ‣ Capitolo 4 Implementazione ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F18"><span class="ltx_text ltx_ref_tag">18</span></a>. L’interfaccia applicativa espone sia una Command Line Interface (CLI) sia un server Model Context Protocol (MCP). Le richieste in ingresso convergono verso il motore centrale, deputato all’orchestrazione del processo di scaffolding. La generazione effettiva del codice sorgente è delegata a Jinja2 <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib55">55</a>]</cite>; la scelta di questo motore di templating, nativo per l’ecosistema Python, è motivata dal supporto integrato per costrutti condizionali, iterazioni e meccanismi di ereditarietà tra template base. Infine, il livello di persistenza isola gli effetti collaterali, incapsulando la scrittura fisica dei file e l’inizializzazione del sistema di controllo di versione Git. Questa stratificazione garantisce il riutilizzo totale della logica di base indipendentemente dal canale di interazione prescelto dall’utente.</p>
+</div>
+<figure id="F18" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-strati_forge.webp" width="554" height="530" loading="lazy" alt="Quattro cerchi concentrici dall'esterno all'interno, con frecce verso il basso: Livello 1 (alto), interfacce (Typer CLI, FastMCP Server); Livello 2, Core Orchestrator (validazione, sessione); Livello 3, Template Engine (Jinja2); Livello 4 (basso), File System e Git (effetti collaterali di I/O)."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 18</span>: </span><span class="ltx_text">Separazione delle responsabilità di service-forge [Elaborazione dell’autore].</span></figcaption>
+</figure>
+<div id="S5.p2" class="ltx_para">
+<p class="ltx_p">A livello architetturale, il sistema concretizza la sua logica tramite pattern di progettazione consolidati. La Dependency Injection disaccoppia i componenti per agevolarne il testing unitario. Un pattern Factory istanzia dinamicamente i generatori appropriati in base al profilo di progetto selezionato (es. API sincrona, worker ETL). La separazione tra la generazione dei contenuti testuali e la loro persistenza su disco è mediata da un pattern Observer, mentre l’astrazione Strategy permette di mutare il comportamento di scaffolding in funzione del dominio applicativo.</p>
+</div>
+<section id="S5.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.5.1</span> Sviluppo della Command Line Interface (CLI)</h3>
+
+<div id="S5.SS1.p1" class="ltx_para">
+<p class="ltx_p">L’interfaccia a riga di comando, sviluppata tramite la libreria Typer <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib56">56</a>]</cite>, guida l’operatore nella composizione interattiva della configurazione di progetto. Il flusso di esecuzione procede sequenzialmente: parte dalla selezione del profilo architetturale e dalla definizione del percorso fisico, per poi richiedere la configurazione dei servizi AWS necessari e dei parametri del runtime serverless. A valle dell’inserimento, il sistema esegue una validazione formale prima di delegare al motore centrale la generazione degli artefatti.</p>
+</div>
+<div id="S5.SS1.p2" class="ltx_para">
+<p class="ltx_p">La CLI funge esclusivamente da livello di presentazione. Non contenendo logiche di scaffolding codificate rigidamente, essa raccoglie l’input e lo trasferisce al livello sottostante. Questa delega totale assicura una rigorosa coerenza comportamentale tra l’esecuzione manuale da terminale e l’esecuzione automatizzata tramite assistenti IA.</p>
+</div>
+</div>
+</section>
+<section id="S5.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.5.2</span> Esposizione dei tool tramite Model Context Protocol (MCP)</h3>
+
+<div id="S5.SS2.p1" class="ltx_para">
+<p class="ltx_p">L’integrazione del framework con gli assistenti basati su Large Language Models operanti negli IDE avviene tramite un server conforme al Model Context Protocol, implementato avvalendosi della libreria FastMCP. Il server espone due categorie di astrazioni: risorse in sola lettura per la scoperta dei profili architetturali supportati, e strumenti operativi (Tools) necessari per la configurazione e la generazione del codice sorgente.</p>
+</div>
+<div id="S5.SS2.p2" class="ltx_para">
+<p class="ltx_p">Durante la fase di inizializzazione, il server inietta nell’agente conversazionale un set di istruzioni testuali di sistema. Come illustrato nel Listato <a title="Listing 20 ‣ 4.5.2 Esposizione dei tool tramite Model Context Protocol (MCP) ‣ 4.5 Implementazione di Service-Forge e Integrazione MCP ‣ Capitolo 4 Implementazione ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#LST20"><span class="ltx_text ltx_ref_tag">20</span></a>, queste direttive vincolano il modello logico a richiedere esplicitamente all’operatore umano i parametri infrastrutturali reali (es. identificativi dei bucket S3 o nomi delle tabelle DynamoDB), prevenendo categoricamente la generazione di codice cloud contenente valori placeholder.</p>
+</div>
+<figure id="LST20" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">from fastmcp import FastMCP</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">mcp = FastMCP(</span>
+<span class="ltx_listingline">    "service-forge",</span>
+<span class="ltx_listingline">    instructions=(</span>
+<span class="ltx_listingline">        "Service Forge generates AWS Lambda-based microservices. "</span>
+<span class="ltx_listingline">        "Use get_profiles to discover available profiles and services. "</span>
+<span class="ltx_listingline">        "IMPORTANT: Every AWS service has configurable parameters. "</span>
+<span class="ltx_listingline">        "Never use default placeholder values without asking the user first. "</span>
+<span class="ltx_listingline">        "Use create_session to start, then configure_service. "</span>
+<span class="ltx_listingline">        "Be sure to run check_prerequisites first."</span>
+<span class="ltx_listingline">    ),</span>
+<span class="ltx_listingline">)</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.20: </span>Inizializzazione del server FastMCP con iniezione delle direttive operative e dei vincoli per l’agente LLM</figcaption>
+</figure>
+</div>
+</section>
+<section id="S5.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">4.5.3</span> Interazione deterministica con i Large Language Models</h3>
+
+<div id="S5.SS3.p1" class="ltx_para">
+<p class="ltx_p">Il disaccoppiamento introdotto dall’MCP presenta una sfida architetturale: la comunicazione tra l’LLM e il server locale è intrinsecamente stateless. Per forzare un’interazione deterministica e limitare le allucinazioni del modello, il sistema delega il controllo del flusso al server locale tramite quattro vincoli architetturali: l’imposizione di una sequenza operativa rigorosa, la validazione strutturata dei payload di configurazione tramite Pydantic, l’obbligo di formattare le risposte in formato JSON standardizzato e l’integrazione di una funzionalità di simulazione (dry-run) per ispezionare l’astrazione generata senza alterare il file system.</p>
+</div>
+<div id="S5.SS3.p2" class="ltx_para">
+<p class="ltx_p">Per supportare la sequenzialità delle operazioni, il server implementa un registro in memoria che associa a ogni sessione di interazione un identificativo alfanumerico univoco. Il Listato <a title="Listing 21 ‣ 4.5.3 Interazione deterministica con i Large Language Models ‣ 4.5 Implementazione di Service-Forge e Integrazione MCP ‣ Capitolo 4 Implementazione ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#LST21"><span class="ltx_text ltx_ref_tag">21</span></a> dimostra come l’invocazione dello strumento <span class="ltx_text ltx_font_typewriter">create_session</span> istanzi una struttura dati predefinita contenente le dipendenze AWS e le configurazioni del runtime.</p>
+</div>
+<figure id="LST21" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">import uuid</span>
+<span class="ltx_listingline">from typing import Dict, Any</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">_sessions: Dict[str, Dict[str, Any]] = {}</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">@mcp.tool()</span>
+<span class="ltx_listingline">def create_session() -&gt; str:</span>
+<span class="ltx_listingline">    session_id = str(uuid.uuid4())[:8]</span>
+<span class="ltx_listingline">    _sessions[session_id] = {</span>
+<span class="ltx_listingline">        "aws_services": {},</span>
+<span class="ltx_listingline">        "included_services": [],</span>
+<span class="ltx_listingline">        "runtime": dict(GenerationEngine.DEFAULT_RUNTIME),</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline">    return _json({"session_id": session_id})</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.21: </span>Gestione del ciclo di vita e dello stato di sessione in memoria all’interno del server MCP</figcaption>
+</figure>
+<div id="S5.SS3.p3" class="ltx_para">
+<p class="ltx_p">Ogni successiva invocazione di uno strumento di configurazione o generazione richiede il passaggio obbligatorio di tale <span class="ltx_text ltx_font_typewriter">session_id</span> e modifica esclusivamente la porzione di stato isolata. Questo paradigma operativo riduce le ambiguità contestuali e assicura che il processo di generazione del microservizio rimanga prevedibile e tracciabile, indipendentemente dall’ambiente di sviluppo integrato (IDE) adottato dallo sviluppatore.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>

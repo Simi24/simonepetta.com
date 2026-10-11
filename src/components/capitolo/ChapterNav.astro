@@ -1,5 +1,5 @@
 ---
-import type { Capitolo } from '../../lib/corso-build.ts';
+import { capitoloNumero, type Capitolo } from '../../lib/corso-build.ts';
 
 interface Props {
   corsoSlug: string;
@@ -17,7 +17,7 @@ const href = (capitolo: Capitolo): string => `/appunti/${corsoSlug}/${capitolo.s
       <a class="prev" href={href(previous)}>
         <span class="dir">Capitolo precedente</span>
         <span class="name">
-          {previous.numero} {previous.titolo}
+          {capitoloNumero(previous)} {previous.titolo}
         </span>
       </a>
     )
@@ -27,7 +27,7 @@ const href = (capitolo: Capitolo): string => `/appunti/${corsoSlug}/${capitolo.s
       <a class="next" href={href(next)}>
         <span class="dir">Capitolo successivo</span>
         <span class="name">
-          {next.numero} {next.titolo}
+          {capitoloNumero(next)} {next.titolo}
         </span>
       </a>
     )

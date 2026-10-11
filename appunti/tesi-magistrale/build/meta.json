@@ -1,0 +1,543 @@
+{
+  "capitoli": [
+    {
+      "slug": "ringraziamenti",
+      "titolo": "Ringraziamenti",
+      "sezioni": [],
+      "math": false
+    },
+    {
+      "numero": 1,
+      "slug": "1-introduzione",
+      "titolo": "Introduzione",
+      "sezioni": [],
+      "math": false
+    },
+    {
+      "numero": 2,
+      "slug": "2-background-tecnologico",
+      "titolo": "Background Tecnologico",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "2.1",
+          "titolo": "Architetture Distribuite e Cloud Computing",
+          "sottosezioni": [
+            {
+              "id": "S1.SS1",
+              "numero": "2.1.1",
+              "titolo": "Il modello a Microservizi: vantaggi e complessità operativa"
+            },
+            {
+              "id": "S1.SS2",
+              "numero": "2.1.2",
+              "titolo": "Serverless Computing e Function-as-a-Service (FaaS)"
+            }
+          ]
+        },
+        {
+          "id": "S2",
+          "numero": "2.2",
+          "titolo": "Stack Tecnologico per High-Throughput su AWS",
+          "sottosezioni": [
+            {
+              "id": "S2.SS1",
+              "numero": "2.2.1",
+              "titolo": "Compute Layer: AWS Lambda"
+            },
+            {
+              "id": "S2.SS2",
+              "numero": "2.2.2",
+              "titolo": "Gestione delle API: Amazon API Gateway"
+            },
+            {
+              "id": "S2.SS3",
+              "numero": "2.2.3",
+              "titolo": "Orchestrazione Eventi e Scheduling: Amazon EventBridge"
+            },
+            {
+              "id": "S2.SS4",
+              "numero": "2.2.4",
+              "titolo": "Messaggistica Asincrona e Pattern Publish-Subscribe: Amazon SNS"
+            },
+            {
+              "id": "S2.SS5",
+              "numero": "2.2.5",
+              "titolo": "Container Registry: Amazon ECR"
+            },
+            {
+              "id": "S2.SS6",
+              "numero": "2.2.6",
+              "titolo": "Gestione della persistenza: Amazon DynamoDB e S3"
+            },
+            {
+              "id": "S2.SS7",
+              "numero": "2.2.7",
+              "titolo": "Integrazione Dati: AWS Glue e Amazon Athena"
+            },
+            {
+              "id": "S2.SS8",
+              "numero": "2.2.8",
+              "titolo": "Sicurezza, Identità e Controllo Accessi: IAM e Cognito"
+            },
+            {
+              "id": "S2.SS9",
+              "numero": "2.2.9",
+              "titolo": "Osservabilità e Monitoraggio: Amazon CloudWatch"
+            },
+            {
+              "id": "S2.SS10",
+              "numero": "2.2.10",
+              "titolo": "Gestione Finanziaria e FinOps: AWS Cost Explorer"
+            }
+          ]
+        },
+        {
+          "id": "S3",
+          "numero": "2.3",
+          "titolo": "Sviluppo Applicativo: Servizi e Worker",
+          "sottosezioni": [
+            {
+              "id": "S3.SS1",
+              "numero": "2.3.1",
+              "titolo": "Sviluppo di Backend API con FastAPI"
+            },
+            {
+              "id": "S3.SS2",
+              "numero": "2.3.2",
+              "titolo": "Elaborazione Asincrona: Event-Driven Workers"
+            },
+            {
+              "id": "S3.SS3",
+              "numero": "2.3.3",
+              "titolo": "Adattamento al runtime Lambda: Mangum e Lambda RIC"
+            }
+          ]
+        },
+        {
+          "id": "S4",
+          "numero": "2.4",
+          "titolo": "Infrastructure as Code con Terraform",
+          "sottosezioni": [
+            {
+              "id": "S4.SS1",
+              "numero": "2.4.1",
+              "titolo": "Il paradigma dell’Infrastruttura Immutabile"
+            },
+            {
+              "id": "S4.SS2",
+              "numero": "2.4.2",
+              "titolo": "Modularità e Gestione dello Stato"
+            },
+            {
+              "id": "S4.SS3",
+              "numero": "2.4.3",
+              "titolo": "Orchestrazione dell’Infrastruttura e principio DRY: Terragrunt"
+            }
+          ]
+        },
+        {
+          "id": "S5",
+          "numero": "2.5",
+          "titolo": "Automazione del Ciclo di Vita del Software (SDLC)",
+          "sottosezioni": [
+            {
+              "id": "S5.SS1",
+              "numero": "2.5.1",
+              "titolo": "Containerizzazione e parità degli ambienti"
+            },
+            {
+              "id": "S5.SS2",
+              "numero": "2.5.2",
+              "titolo": "Emulazione Cloud per lo sviluppo locale: LocalStack"
+            },
+            {
+              "id": "S5.SS3",
+              "numero": "2.5.3",
+              "titolo": "Continuous Integration e Delivery (CI/CD)"
+            }
+          ]
+        },
+        {
+          "id": "S6",
+          "numero": "2.6",
+          "titolo": "Evoluzione dell’Automazione: LLM e Model Context Protocol",
+          "sottosezioni": []
+        }
+      ],
+      "math": false
+    },
+    {
+      "numero": 3,
+      "slug": "3-analisi-e-design",
+      "titolo": "Analisi e Design",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "3.1",
+          "titolo": "Analisi del Contesto Operativo e Definizione dei Requisiti",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "3.2",
+          "titolo": "Progettazione dell’Infrastruttura Cloud",
+          "sottosezioni": [
+            {
+              "id": "S2.SS1",
+              "numero": "3.2.1",
+              "titolo": "Strategia Multi-Account e Segregazione delle Risorse"
+            }
+          ]
+        },
+        {
+          "id": "S3",
+          "numero": "3.3",
+          "titolo": "Progettazione del Livello Dati e Flussi Asincroni",
+          "sottosezioni": [
+            {
+              "id": "S3.SS1",
+              "numero": "3.3.1",
+              "titolo": "Decomposizione Event-Driven ed ETL Serverless"
+            },
+            {
+              "id": "S3.SS2",
+              "numero": "3.3.2",
+              "titolo": "Partizionamento Hive-Style del Data Lake"
+            },
+            {
+              "id": "S3.SS3",
+              "numero": "3.3.3",
+              "titolo": "Modellazione NoSQL: Single Table Design"
+            }
+          ]
+        },
+        {
+          "id": "S4",
+          "numero": "3.4",
+          "titolo": "Progettazione dei Servizi Applicativi",
+          "sottosezioni": [
+            {
+              "id": "S4.SS1",
+              "numero": "3.4.1",
+              "titolo": "Framework API e Validazione dei Dati"
+            },
+            {
+              "id": "S4.SS2",
+              "numero": "3.4.2",
+              "titolo": "Architettura Interna: Clean Architecture e Dependency Injection"
+            }
+          ]
+        },
+        {
+          "id": "S5",
+          "numero": "3.5",
+          "titolo": "Osservabilità e Gestione delle Anomalie",
+          "sottosezioni": []
+        },
+        {
+          "id": "S6",
+          "numero": "3.6",
+          "titolo": "Automazione e Infrastructure as Code (IaC)",
+          "sottosezioni": [
+            {
+              "id": "S6.SS1",
+              "numero": "3.6.1",
+              "titolo": "Topologia Architetturale del Codice IaC"
+            },
+            {
+              "id": "S6.SS2",
+              "numero": "3.6.2",
+              "titolo": "Containerizzazione e Pipeline GitOps"
+            },
+            {
+              "id": "S6.SS3",
+              "numero": "3.6.3",
+              "titolo": "Design dell’Interfaccia MCP per l’Automazione Infrastrutturale"
+            }
+          ]
+        }
+      ],
+      "math": false
+    },
+    {
+      "numero": 4,
+      "slug": "4-implementazione",
+      "titolo": "Implementazione",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "4.1",
+          "titolo": "Provisioning dell’Infrastruttura tramite Terraform",
+          "sottosezioni": [
+            {
+              "id": "S1.SS1",
+              "numero": "4.1.1",
+              "titolo": "Struttura del Repository"
+            },
+            {
+              "id": "S1.SS2",
+              "numero": "4.1.2",
+              "titolo": "Orchestrazione con Terragrunt"
+            },
+            {
+              "id": "S1.SS3",
+              "numero": "4.1.3",
+              "titolo": "Architettura Multi-Account"
+            },
+            {
+              "id": "S1.SS4",
+              "numero": "4.1.4",
+              "titolo": "Moduli Riutilizzabili"
+            },
+            {
+              "id": "S1.SS5",
+              "numero": "4.1.5",
+              "titolo": "Risorse Condivise e Continuous Integration"
+            },
+            {
+              "id": "S1.SS6",
+              "numero": "4.1.6",
+              "titolo": "Strategia di Tagging"
+            }
+          ]
+        },
+        {
+          "id": "S2",
+          "numero": "4.2",
+          "titolo": "Sviluppo del Flusso ETL Event-Driven",
+          "sottosezioni": [
+            {
+              "id": "S2.SS1",
+              "numero": "4.2.1",
+              "titolo": "Logica Applicativa di Estrazione"
+            },
+            {
+              "id": "S2.SS2",
+              "numero": "4.2.2",
+              "titolo": "Trasformazione del Dato e Serializzazione in Parquet"
+            },
+            {
+              "id": "S2.SS3",
+              "numero": "4.2.3",
+              "titolo": "Interrogazione Analitica e Viste Materializzate in Athena"
+            }
+          ]
+        },
+        {
+          "id": "S3",
+          "numero": "4.3",
+          "titolo": "Implementazione dei Servizi Backend",
+          "sottosezioni": [
+            {
+              "id": "S3.SS1",
+              "numero": "4.3.1",
+              "titolo": "Iniezione delle dipendenze e validazione tramite Pydantic"
+            },
+            {
+              "id": "S3.SS2",
+              "numero": "4.3.2",
+              "titolo": "Adattamento del runtime FastAPI su AWS Lambda"
+            },
+            {
+              "id": "S3.SS3",
+              "numero": "4.3.3",
+              "titolo": "Interazione con DynamoDB e Single Table Design in codice"
+            },
+            {
+              "id": "S3.SS4",
+              "numero": "4.3.4",
+              "titolo": "Emulazione delle Risorse AWS tramite LocalStack"
+            }
+          ]
+        },
+        {
+          "id": "S4",
+          "numero": "4.4",
+          "titolo": "Automazione del Rilascio e Pipeline GitOps (CI/CD)",
+          "sottosezioni": [
+            {
+              "id": "S4.SS1",
+              "numero": "4.4.1",
+              "titolo": "Versionamento Semantico e Compilazione (CI)"
+            },
+            {
+              "id": "S4.SS2",
+              "numero": "4.4.2",
+              "titolo": "Pipeline GitOps e Promotion Gate (CD)"
+            },
+            {
+              "id": "S4.SS3",
+              "numero": "4.4.3",
+              "titolo": "Controlli di Sicurezza e Procedure di Rollback"
+            }
+          ]
+        },
+        {
+          "id": "S5",
+          "numero": "4.5",
+          "titolo": "Implementazione di Service-Forge e Integrazione MCP",
+          "sottosezioni": [
+            {
+              "id": "S5.SS1",
+              "numero": "4.5.1",
+              "titolo": "Sviluppo della Command Line Interface (CLI)"
+            },
+            {
+              "id": "S5.SS2",
+              "numero": "4.5.2",
+              "titolo": "Esposizione dei tool tramite Model Context Protocol (MCP)"
+            },
+            {
+              "id": "S5.SS3",
+              "numero": "4.5.3",
+              "titolo": "Interazione deterministica con i Large Language Models"
+            }
+          ]
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 5,
+      "slug": "5-caso-di-studio",
+      "titolo": "Caso di Studio",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "5.1",
+          "titolo": "Obiettivi della Valutazione",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "5.2",
+          "titolo": "Metodologia di Collaudo e Strumenti di Telemetria",
+          "sottosezioni": []
+        },
+        {
+          "id": "S3",
+          "numero": "5.3",
+          "titolo": "Caso di Studio I: Pipeline ETL Asincrona",
+          "sottosezioni": [
+            {
+              "id": "S3.SS1",
+              "numero": "5.3.1",
+              "titolo": "Scenario Operativo e Prestazioni di Estrazione"
+            },
+            {
+              "id": "S3.SS2",
+              "numero": "5.3.2",
+              "titolo": "Efficienza della Trasformazione in Memoria"
+            },
+            {
+              "id": "S3.SS3",
+              "numero": "5.3.3",
+              "titolo": "Ottimizzazione dell’Interrogazione tramite Partition Pruning"
+            }
+          ]
+        },
+        {
+          "id": "S4",
+          "numero": "5.4",
+          "titolo": "Analisi quantitativa dei costi",
+          "sottosezioni": []
+        },
+        {
+          "id": "S5",
+          "numero": "5.5",
+          "titolo": "Caso di Studio II: Servizio Backend Sincrono",
+          "sottosezioni": [
+            {
+              "id": "S5.SS1",
+              "numero": "5.5.1",
+              "titolo": "Modello Dati ad Alta Efficienza"
+            },
+            {
+              "id": "S5.SS2",
+              "numero": "5.5.2",
+              "titolo": "Distribuzione Statistica della Latenza e Cold Start"
+            }
+          ]
+        },
+        {
+          "id": "S6",
+          "numero": "5.6",
+          "titolo": "Valutazione dell’Automazione Infrastrutturale (Service-Forge)",
+          "sottosezioni": []
+        }
+      ],
+      "math": true
+    },
+    {
+      "numero": 6,
+      "slug": "6-conclusioni",
+      "titolo": "Conclusioni",
+      "sezioni": [
+        {
+          "id": "S1",
+          "numero": "6.1",
+          "titolo": "Sintesi del Lavoro Svolto e Risultati Ottenuti",
+          "sottosezioni": []
+        },
+        {
+          "id": "S2",
+          "numero": "6.2",
+          "titolo": "Sviluppi Futuri: Evoluzione Architetturale e Osservabilità",
+          "sottosezioni": [
+            {
+              "id": "S2.SS1",
+              "numero": "6.2.1",
+              "titolo": "Transizione da Coreografia a Orchestrazione tramite AWS Step Functions"
+            },
+            {
+              "id": "S2.SS2",
+              "numero": "6.2.2",
+              "titolo": "Evoluzione del Data Lake verso Formati di Archiviazione Transazionali"
+            },
+            {
+              "id": "S2.SS3",
+              "numero": "6.2.3",
+              "titolo": "Evoluzione di Service-Forge: Generazione IaC e Sistemi Multi-Agente"
+            }
+          ]
+        }
+      ],
+      "math": true
+    },
+    {
+      "slug": "bibliografia",
+      "titolo": "Bibliografia",
+      "sezioni": [],
+      "math": false
+    },
+    {
+      "etichetta": "Appendice A",
+      "slug": "appendice-a-configurazioni-infrastrutturali",
+      "titolo": "Configurazioni Infrastrutturali",
+      "sezioni": [],
+      "math": false
+    },
+    {
+      "etichetta": "Appendice B",
+      "slug": "appendice-b-automazione-del-rilascio-ci-cd",
+      "titolo": "Automazione del Rilascio (CI/CD)",
+      "sezioni": [],
+      "math": false
+    },
+    {
+      "etichetta": "Appendice C",
+      "slug": "appendice-c-implementazione-di-service-forge",
+      "titolo": "Implementazione di Service-Forge",
+      "sezioni": [],
+      "math": false
+    },
+    {
+      "etichetta": "Appendice D",
+      "slug": "appendice-d-contratti-dati-e-payload-di-eventi",
+      "titolo": "Contratti Dati e Payload di Eventi",
+      "sezioni": [],
+      "math": false
+    }
+  ]
+}
