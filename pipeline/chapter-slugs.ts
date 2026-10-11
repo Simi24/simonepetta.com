@@ -1,5 +1,8 @@
 export interface ChapterRef {
-  numero: number;
+  /** A numbered chapter. */
+  numero?: number | undefined;
+  /** A lettered appendix ("Appendice A"). A page with neither is unnumbered, like the acknowledgements. */
+  etichetta?: string | undefined;
   titolo: string;
 }
 
@@ -17,8 +20,12 @@ export function kebabCase(title: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
+/** What identifies a page apart from its title: the chapter number or the appendix letter. */
+const position = (chapter: ChapterRef): string | undefined => chapter.etichetta ?? (chapter.numero === undefined ? undefined : String(chapter.numero));
+
 /**
- * The slug of every chapter, in order (SPEC.md §7.3): `<number>-<kebab-title>` the first time,
+ * The slug of every chapter, in order (SPEC.md §7.3): `<number>-<kebab-title>` the first time
+ * (`<appendix>-<kebab-title>` for an appendix, the title alone for an unnumbered page),
  * and whatever was recorded in `build/meta.json` afterwards, so URLs never change.
  *
  * A chapter finds its recorded slug by title first (so inserting a chapter before it does not
@@ -38,13 +45,13 @@ export function assignChapterSlugs(chapters: readonly ChapterRef[], previous: re
   };
 
   chapters.forEach((chapter, i) => claim(i, (recorded) => recorded.titolo === chapter.titolo));
-  chapters.forEach((chapter, i) => claim(i, (recorded) => recorded.numero === chapter.numero));
+  chapters.forEach((chapter, i) => claim(i, (recorded) => position(recorded) !== undefined && position(recorded) === position(chapter)));
 
   const taken = new Set(reused.filter((slug): slug is string => slug !== undefined));
   return chapters.map((chapter, i) => {
     const existing = reused[i];
     if (existing !== undefined) return existing;
-    const base = `${chapter.numero}-${kebabCase(chapter.titolo)}`;
+    const base = [position(chapter), kebabCase(chapter.titolo)].filter((part) => part !== undefined).map((part) => kebabCase(part!)).join('-');
     let slug = base;
     for (let n = 2; taken.has(slug); n++) slug = `${base}-${n}`;
     taken.add(slug);

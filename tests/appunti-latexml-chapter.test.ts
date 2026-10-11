@@ -20,6 +20,13 @@ test('reads the chapter number and title from the chapter heading', () => {
   assert.deepEqual(readChapterHead(fixture('gpu-Ch1.html')), { numero: 1, titolo: 'Introduzione' });
 });
 
+test('a page of a book that is not a numbered chapter is read for what it is', () => {
+  // The master's thesis: unnumbered acknowledgements, a lettered appendix and the bibliography.
+  assert.deepEqual(readChapterHead(fixture('thesis-Chx1.html')), { titolo: 'Ringraziamenti' });
+  assert.deepEqual(readChapterHead(fixture('thesis-A4.html')), { etichetta: 'Appendice D', titolo: 'Contratti Dati e Payload di Eventi' });
+  assert.deepEqual(readChapterHead(fixture('thesis-bib.html')), { titolo: 'Bibliografia', bibliografia: true });
+});
+
 test('throws on a page with no chapter rather than guessing one', () => {
   assert.throws(() => readChapterHead('<html><body><p>niente</p></body></html>'));
 });

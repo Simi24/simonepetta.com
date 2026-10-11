@@ -4,12 +4,13 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { buildFromLatexml } from '../pipeline/appunti-build.ts';
 import { checkCourses } from '../pipeline/appunti-check.ts';
+import { gpuCh1Source } from './support/gpu-ch1-source.ts';
 import { makeTempDir } from './support/temp-root.ts';
 
 const LATEXML = new URL('./fixtures/latexml/', import.meta.url).pathname;
 const SIMT = 'images/simtvssimd.png';
 const WEBP = Uint8Array.from([0x52, 0x49, 0x46, 0x46, 1, 2, 3]);
-const SOURCE = `\\chapter{Introduzione}\n\\includegraphics{${SIMT}}\n`;
+const SOURCE = gpuCh1Source(SIMT);
 
 const MANIFEST = 'titolo: "Fixture"\ntipo: corso\nlivello: triennale\nanno: 1\naa: "2021/22"\nfonte: github\n';
 

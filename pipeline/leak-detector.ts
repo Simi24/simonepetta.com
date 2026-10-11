@@ -9,7 +9,11 @@ import { MAX_RASTER_WIDTH } from './figures.ts';
  */
 
 export interface ReportedChapter {
-  numero: number;
+  /** A numbered chapter. */
+  numero?: number | undefined;
+  /** A lettered appendix. A page with neither is unnumbered; the bibliography is flagged. */
+  etichetta?: string | undefined;
+  bibliografia?: boolean | undefined;
   titolo: string;
   html: string;
   /** Absent when the output no longer records them (a committed `build/`): the box checks are then skipped. */
@@ -86,6 +90,33 @@ function describeMismatch(label: string, expected: number, actual: number, relat
   return fine ? undefined : `the source has ${expected} ${label}, the output ${relation === 'exactly' ? 'has' : 'has only'} ${actual}`;
 }
 
+/** The lines of each `lstlisting` of the source, in order: the option block and the line holding `\\end` are not code. */
+function listingLinesInSource(source: string): number[] {
+  const lines: number[] = [];
+  for (const match of source.matchAll(/\\begin\{lstlisting\}/g)) {
+    let start = match.index + match[0].length;
+    if (source[start] === '[') {
+      let depth = 0;
+      for (; start < source.length; start++) {
+        if (source[start] === '{') depth++;
+        else if (source[start] === '}') depth--;
+        else if (source[start] === ']' && depth === 0) break;
+      }
+      start++;
+    }
+    const code = source.slice(start, source.indexOf('\\end{lstlisting}', start));
+    // The rest of the `\\begin` line is not code, and neither is the indentation before `\\end`.
+    const body = code.includes('\n') ? code.slice(code.indexOf('\n') + 1).replace(/\n?[ \t]*$/, '') : '';
+    lines.push(body === '' ? 0 : body.split('\n').length);
+  }
+  return lines;
+}
+
+/** The lines of each code listing of the output (`<pre class="listing">`), in order. */
+function listingLinesInOutput(html: string): number[] {
+  return [...html.matchAll(/<pre class="listing"[^>]*>([\s\S]*?)<\/pre>/g)].map((match) => count(match[1]!, /class="ltx_listingline"/g));
+}
+
 const lastSegment = (path: string): string => path.slice(path.lastIndexOf('/') + 1);
 
 /** What is wrong with the figures of the output: images and SVGs, each with its description. */
@@ -136,7 +167,24 @@ export function detectLeaks(report: ConversionReport): string[] {
     if (chapter.html.length < MIN_CHAPTER_HTML_LENGTH) leaks.push(`chapter ${chapter.numero} "${chapter.titolo}" is empty`);
   }
 
-  check(describeMismatch('chapter(s)', count(source, /\\chapter\s*[{[]/g), report.chapters.length, 'exactly'));
+  const isBibliography = (chapter: ReportedChapter): boolean => chapter.bibliografia === true;
+  const isUnnumbered = (chapter: ReportedChapter): boolean => !isBibliography(chapter) && chapter.numero === undefined && chapter.etichetta === undefined;
+  check(describeMismatch('chapter(s)', count(source, /\\chapter\s*[{[]/g), report.chapters.filter((c) => !isBibliography(c) && !isUnnumbered(c)).length, 'exactly'));
+  check(
+    describeMismatch('unnumbered page(s) (\\chapter*, \\prefacesection)', count(source, /\\(?:chapter\*|prefacesection)\s*\{/g), report.chapters.filter(isUnnumbered).length, 'exactly'),
+  );
+  check(
+    describeMismatch('bibliography(ies)', count(source, /\\begin\{thebibliography\}|\\bibliography\s*\{/g), report.chapters.filter(isBibliography).length, 'exactly'),
+  );
+  check(describeMismatch('bibliography entry(ies) (\\bibitem)', count(source, /\\bibitem\b/g), count(output, /class="ltx_bibitem"/g), 'exactly'));
+
+  const sourceListings = listingLinesInSource(source);
+  const outputListings = report.chapters.flatMap((chapter) => listingLinesInOutput(chapter.html));
+  check(describeMismatch('code listing(s) (lstlisting)', sourceListings.length, outputListings.length, 'exactly'));
+  sourceListings.forEach((lines, i) => {
+    const produced = outputListings[i];
+    if (produced !== undefined && produced !== lines) leaks.push(`code listing ${i + 1} has ${lines} line(s) in the source and ${produced} in the output`);
+  });
 
   const figures = figureLeaks(report.chapters, report.figureFiles);
   check(describeMismatch('image(s) (\\includegraphics)', count(source, /\\includegraphics\b/g), figures.images, 'exactly'));

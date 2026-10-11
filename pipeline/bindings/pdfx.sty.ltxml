@@ -1,0 +1,10 @@
+# -*- mode: Perl -*-
+# Stand-in for pdfx, used by the conversion only (never by the PDF build).
+# pdfx only makes the PDF archival (PDF/A, XMP metadata) and pulls in raw expl3 and colour
+# profiles LaTeXML cannot digest. HTML has nothing to gain from it, so it is accepted and ignored.
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+1;

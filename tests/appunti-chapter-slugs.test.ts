@@ -68,3 +68,39 @@ test('two chapters with the same title and number never share a slug', () => {
   );
   assert.equal(new Set(slugs).size, 2);
 });
+
+test('an appendix is named after its letter and an unnumbered page after its title alone', () => {
+  const slugs = assignChapterSlugs(
+    [
+      { titolo: 'Ringraziamenti' },
+      { numero: 1, titolo: 'Introduzione' },
+      { titolo: 'Bibliografia' },
+      { etichetta: 'Appendice A', titolo: 'Configurazioni Infrastrutturali' },
+      { etichetta: 'Appendice B', titolo: 'Automazione del Rilascio (CI/CD)' },
+    ],
+    [],
+  );
+  assert.deepEqual(slugs, [
+    'ringraziamenti',
+    '1-introduzione',
+    'bibliografia',
+    'appendice-a-configurazioni-infrastrutturali',
+    'appendice-b-automazione-del-rilascio-ci-cd',
+  ]);
+});
+
+test('a renamed appendix keeps its URL, matched by its letter', () => {
+  const slugs = assignChapterSlugs(
+    [{ etichetta: 'Appendice A', titolo: 'Configurazioni' }],
+    [{ etichetta: 'Appendice A', titolo: 'Configurazioni Infrastrutturali', slug: 'appendice-a-configurazioni-infrastrutturali' }],
+  );
+  assert.deepEqual(slugs, ['appendice-a-configurazioni-infrastrutturali']);
+});
+
+test('an appendix never takes over the URL of a chapter with the same position', () => {
+  const slugs = assignChapterSlugs(
+    [{ etichetta: 'Appendice A', titolo: 'Altro' }],
+    [{ numero: 1, titolo: 'Introduzione', slug: '1-introduzione' }],
+  );
+  assert.deepEqual(slugs, ['appendice-a-altro']);
+});

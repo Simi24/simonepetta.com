@@ -13,9 +13,15 @@ import {
 } from './html-tokens.ts';
 import { NO_FIGURES, rasterTag, tikzSvg, type FigureAssets } from './figures.ts';
 
+/**
+ * What a page of the book is: a numbered chapter (`numero`), a lettered appendix (`etichetta`,
+ * "Appendice A"), or an unnumbered page such as the acknowledgements; the bibliography is flagged.
+ */
 export interface ChapterHead {
-  numero: number;
+  numero?: number;
+  etichetta?: string;
   titolo: string;
+  bibliografia?: true;
 }
 
 export interface Voce {
@@ -79,8 +85,10 @@ function splitHeading(tokens: readonly Token[], heading: number): { tag: string;
   };
 }
 
+const PAGE_SECTIONS = ['ltx_chapter', 'ltx_appendix', 'ltx_bibliography'];
+
 function chapterBounds(tokens: readonly Token[]): { start: number; end: number } {
-  const start = findOpen(tokens, 0, (t) => t.type === 'open' && t.name === 'section' && hasClass(t, 'ltx_chapter'));
+  const start = findOpen(tokens, 0, (t) => t.type === 'open' && t.name === 'section' && PAGE_SECTIONS.some((name) => hasClass(t, name)));
   if (start < 0) throw new Error('no chapter (<section class="ltx_chapter">) found in the LaTeXML page');
   return { start, end: elementEnd(tokens, start) };
 }
@@ -91,9 +99,11 @@ export function readChapterHead(page: string): ChapterHead {
   const heading = findOpen(tokens, start, (t) => t.type === 'open' && t.name === 'h1');
   if (heading < 0) throw new Error('the chapter has no <h1> heading');
   const { tag, title } = splitHeading(tokens, heading);
-  const numero = /\d+/.exec(tag)?.[0];
-  if (numero === undefined || title === '') throw new Error(`cannot read the chapter number and title from "${tag} ${title}"`);
-  return { numero: Number(numero), titolo: title };
+  if (title === '') throw new Error(`cannot read the chapter title from "${tag}"`);
+  if (hasClass(tokens[start]!, 'ltx_bibliography')) return { titolo: title, bibliografia: true };
+  if (tag === '') return { titolo: title };
+  const numero = /^\D*(\d+)$/.exec(tag)?.[1];
+  return numero === undefined ? { etichetta: tag, titolo: title } : { numero: Number(numero), titolo: title };
 }
 
 function readVoce(tokens: readonly Token[], index: number, level: 'h2' | 'h3'): Voce | undefined {
@@ -240,8 +250,9 @@ function renumberAlgorithmLines(tokens: readonly Token[]): Token[] {
   return out;
 }
 
-/** Listing captions say "Listing 3: "; the PDF numbers them per chapter, "Listing 7.3: ". */
-function numberListingsPerChapter(tokens: readonly Token[], chapter: number): Token[] {
+/** Listing captions say "Listing 3: "; the PDF numbers them per chapter, "Listing 7.3: " ("Listing A.1: " in an appendix). */
+function numberListingsPerChapter(tokens: readonly Token[], chapter: string | undefined): Token[] {
+  if (chapter === undefined) return [...tokens];
   let count = 0;
   return tokens.map((token, i): Token => {
     const open = tokens[i - 1];
@@ -339,7 +350,7 @@ export function processChapter(page: string, links: LinkTargets, figures: Figure
   tokens = dropElements(tokens, (t) => t.type === 'open' && (t.name === 'button' || t.name === 'annotation' || hasClass(t, 'ltx_listing_data')));
   tokens = flattenCodeListings(tokens);
   tokens = renumberAlgorithmLines(tokens);
-  tokens = numberListingsPerChapter(tokens, head.numero);
+  tokens = numberListingsPerChapter(tokens, head.numero?.toString() ?? head.etichetta?.split(' ').pop());
   tokens = keepTabularsOnOneLine(tokens);
   tokens = makeWideMathFocusable(tokens);
 

@@ -165,3 +165,57 @@ test('a report whose chapters do not record tcolorboxes (a committed build) is n
   const source = '\\chapter{Uno}\n\\begin{tcolorbox}[title=Titolo]\nA\n\\end{tcolorbox}\n';
   assert.deepEqual(detectLeaks(report({ source })), []);
 });
+
+const LISTING = (...lines: string[]): string =>
+  `<pre class="listing" tabindex="0"><code>${lines.map((line) => `<span class="ltx_listingline">${line}</span>`).join('\n')}</code></pre>`;
+
+const SOURCE_WITH_LISTINGS =
+  '\\chapter{Uno}\n\\begin{lstlisting}[label={lst:a}]\nprimo\n\n  terzo\n  \\end{lstlisting}\n\\begin{lstlisting}\nsolo\n\\end{lstlisting}\n';
+
+test('a code listing and each of its lines must come out: a faithful conversion has no leaks', () => {
+  const html = LISTING('primo', '', '  terzo') + LISTING('solo');
+  assert.deepEqual(detectLeaks(report({ source: SOURCE_WITH_LISTINGS, chapters: [chapter(html)] })), []);
+});
+
+test('a lost code listing is a leak, and so is an extra one', () => {
+  assert.match(detectLeaks(report({ source: SOURCE_WITH_LISTINGS, chapters: [chapter(LISTING('primo', '', '  terzo'))] })).join('\n'), /2 code listing.*1/);
+  assert.match(detectLeaks(report({ source: SOURCE_WITH_LISTINGS, chapters: [chapter(LISTING('primo', '', '  terzo') + LISTING('solo') + LISTING('x'))] })).join('\n'), /2 code listing.*3/);
+});
+
+test('a listing that lost lines is a leak that says which listing, even when the total still matches', () => {
+  const leaks = detectLeaks(report({ source: SOURCE_WITH_LISTINGS, chapters: [chapter(LISTING('primo', 'terzo') + LISTING('solo', 'extra'))] })).join('\n');
+  assert.match(leaks, /code listing 1 .*3 line.*2/);
+  assert.match(leaks, /code listing 2 .*1 line.*2/);
+});
+
+test('commented-out listings are not counted, and a listing with no code has no lines', () => {
+  const source = '\\chapter{Uno}\n% \\begin{lstlisting}\n% x\n% \\end{lstlisting}\n\\begin{lstlisting}\n\\end{lstlisting}\n';
+  assert.deepEqual(detectLeaks(report({ source, chapters: [chapter(LISTING())] })), []);
+});
+
+const BOOK_SOURCE =
+  '\\prefacesection{Ringraziamenti}\nGrazie.\n\\chapter{Uno}\n\\begin{thebibliography}{00}\n\\bibitem{a} A.\n\\bibitem{b} B.\n\\end{thebibliography}\n\\begin{appendices}\n\\chapter{Config}\n\\end{appendices}\n';
+const page = (head: Partial<ConversionReport['chapters'][number]>, body = ''): ConversionReport['chapters'][number] => ({
+  titolo: 'Pagina',
+  html: `<div class="ltx_para"><p>${'testo '.repeat(20)}</p></div>${body}`,
+  ...head,
+});
+const BIB_ITEMS = '<li class="ltx_bibitem">A.</li><li class="ltx_bibitem">B.</li>';
+const BOOK = [
+  page({ titolo: 'Ringraziamenti' }),
+  page({ numero: 1, titolo: 'Uno' }),
+  page({ titolo: 'Bibliografia', bibliografia: true }, BIB_ITEMS),
+  page({ etichetta: 'Appendice A', titolo: 'Config' }),
+];
+
+test('acknowledgements, chapters, bibliography and appendices are each counted against their source', () => {
+  assert.deepEqual(detectLeaks(report({ source: BOOK_SOURCE, chapters: BOOK })), []);
+  assert.match(detectLeaks(report({ source: BOOK_SOURCE, chapters: BOOK.filter((p) => p.etichetta === undefined) })).join('\n'), /2 chapter.*1/);
+  assert.match(detectLeaks(report({ source: BOOK_SOURCE, chapters: BOOK.filter((p) => p.titolo !== 'Ringraziamenti') })).join('\n'), /1 unnumbered.*0/);
+  assert.match(detectLeaks(report({ source: BOOK_SOURCE, chapters: BOOK.filter((p) => p.bibliografia === undefined) })).join('\n'), /1 bibliography.*0/);
+});
+
+test('every \\bibitem of the source must come out as an entry of the bibliography', () => {
+  const lost = BOOK.map((p) => (p.bibliografia ? { ...p, html: p.html.replace('<li class="ltx_bibitem">B.</li>', '') } : p));
+  assert.match(detectLeaks(report({ source: BOOK_SOURCE, chapters: lost })).join('\n'), /2 bibliography entr.*1/);
+});
