@@ -1,0 +1,520 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">La validazione empirica di un’architettura distribuita richiede un’analisi quantitativa volta a isolare le prestazioni dei singoli strati computazionali e di persistenza. Poiché i moderni paradigmi cloud-native disaccoppiano le fasi di ingestione, trasformazione e presentazione delle informazioni, una valutazione olistica risulterebbe imprecisa. Per tale motivo logico, il presente capitolo frammenta l’indagine in tre fasi distinte, progettate per misurare progressivamente l’impatto delle singole scelte implementative. La prima fase definisce la metodologia di collaudo. La seconda fase analizza le prestazioni dei processi asincroni di elaborazione dati. Infine, la terza fase quantifica le latenze dei servizi sincroni e i tempi di approvvigionamento infrastrutturale.</p>
+</div>
+<div id="p2" class="ltx_para">
+<p class="ltx_p">L’ambiente di collaudo consiste in un’infrastruttura di laboratorio progettata per fungere da setting simulato di un ecosistema aziendale operante nel dominio dell’advertising digitale. Per garantire la validità scientifica delle misurazioni senza fare affidamento su generatori di traffico sintetico, l’ambiente isolato si interfaccia direttamente con le piattaforme esterne di produzione. Il sistema elabora parametri e volumi di traffico estratti da un reale caso industriale aziendale, il quale ha fornito le autorizzazioni necessarie per l’interrogazione dei dati.</p>
+</div>
+<div id="p3" class="ltx_para">
+<p class="ltx_p">Questo approccio metodologico garantisce che i volumi di carico, quantificati in circa trenta Gigabyte mensili di dati grezzi, e le latenze di rete registrate riflettano fedelmente la complessità operativa di uno scenario autentico. L’infrastruttura di monitoraggio delega la raccolta dei dati ai componenti nativi del provider cloud, come Amazon CloudWatch e Amazon Athena, generando metriche oggettive sul comportamento del sistema sotto sforzo.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">5.1</span> Obiettivi della Valutazione</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">L’implementazione dell’architettura software fornisce i componenti tecnici per l’elaborazione dei flussi informativi ad alto volume. Tuttavia, la sola definizione dell’infrastruttura tramite il paradigma Infrastructure as Code governato da Terraform non è sufficiente a dimostrare il superamento dei limiti operativi riscontrati nei sistemi tradizionali. Un’architettura distribuita necessita di una validazione quantitativa per confermare la scalabilità e la stabilità delle prestazioni sotto carico.</p>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">5.2</span> Metodologia di Collaudo e Strumenti di Telemetria</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Il collaudo dell’architettura prescinde dall’iniezione di traffico artificiale, adottando una metodologia di analisi osservazionale basata sui carichi di lavoro organici estratti da sistemi in produzione. La validazione empirica aggrega e analizza statisticamente i dati di telemetria raccolti in un arco temporale definito, valutando il comportamento del sistema a regime. L’esclusione di strumenti di stress testing attivi garantisce che le misurazioni riflettano le latenze di rete effettive e i pattern di accesso tipici delle integrazioni tra sistemi distribuiti.</p>
+</div>
+<div id="S2.p2" class="ltx_para">
+<p class="ltx_p">La piattaforma cloud delega la raccolta dei dati a due servizi nativi. Il primo strumento è Amazon CloudWatch, impiegato per il campionamento delle metriche prestazionali a livello di infrastruttura. L’analisi estrae tramite questo servizio i tempi di esecuzione delle funzioni AWS Lambda (metrica <span class="ltx_text ltx_font_typewriter">Duration</span>), l’allocazione della memoria e il consumo di capacità di lettura e scrittura delle tabelle Amazon DynamoDB. Il servizio provvede inoltre al calcolo automatico dei percentili statistici (<math id="S2.p2.m1" class="ltx_Math" alttext="p50" display="inline"><semantics><mrow><mi>p</mi><mo>⁢</mo><mn>50</mn></mrow></semantics></math>, <math id="S2.p2.m2" class="ltx_Math" alttext="p90" display="inline"><semantics><mrow><mi>p</mi><mo>⁢</mo><mn>90</mn></mrow></semantics></math>, <math id="S2.p2.m3" class="ltx_Math" alttext="p99" display="inline"><semantics><mrow><mi>p</mi><mo>⁢</mo><mn>99</mn></mrow></semantics></math>) relativi alle latenze di integrazione esposte da Amazon API Gateway.</p>
+</div>
+<div id="S2.p3" class="ltx_para">
+<p class="ltx_p">Il secondo strumento di validazione quantitativa risiede nelle metriche di esecuzione di Amazon Athena. Il motore di query traccia il volume di dati scansionati e i millisecondi di elaborazione per ciascuna transazione SQL. L’incrocio di questi valori con la topologia del partizionamento fisico su Amazon S3 fornisce le evidenze necessarie per dimostrare il contenimento della complessità computazionale e il conseguente abbattimento dei costi operativi.</p>
+</div>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">5.3</span> Caso di Studio I: Pipeline ETL Asincrona</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">Il primo caso di studio esamina la pipeline ETL incaricata di ingerire la reportistica generata da piattaforme esterne di ad-serving <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib59">59</a>]</cite>. L’elaborazione di tali flussi informativi estrae metriche granulari sulle campagne pubblicitarie, fornendo dati aggregati su impressioni, costi e formati. L’architettura applica i pattern definiti nei capitoli precedenti per eseguire l’estrazione periodica di questi dataset complessi. L’obiettivo dell’analisi consiste nel validare la stabilità del runtime Serverless in elaborazioni prolungate e misurare l’efficienza della compressione dei dati.</p>
+</div>
+<section id="S3.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.3.1</span> Scenario Operativo e Prestazioni di Estrazione</h3>
+
+<div id="S3.SS1.p1" class="ltx_para">
+<p class="ltx_p">Lo scenario operativo impiega regole temporali su Amazon EventBridge, le quali governano l’esecuzione del livello di estrazione isolando le singole transazioni. Come illustrato nella Figura <a title="Figura 19 ‣ 5.3.1 Scenario Operativo e Prestazioni di Estrazione ‣ 5.3 Caso di Studio I: Pipeline ETL Asincrona ‣ Capitolo 5 Caso di Studio ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F19"><span class="ltx_text ltx_ref_tag">19</span></a>, l’aggregazione delle metriche rileva un regime stabile di circa 140-150 invocazioni giornaliere. Il sistema dimostra la capacità di scalare orizzontalmente, assorbendo picchi di oltre 3.200 invocazioni giornaliere senza registrare degrado prestazionale durante le fasi di ri-computazione dei dati storici.</p>
+</div>
+<figure id="F19" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-invocations-durations-extractor.webp" width="1600" height="436" loading="lazy" alt="Grafico CloudWatch della settimana dal 18 al 23 febbraio per la funzione Extractor, con due linee: Duration, che resta tra circa 10.800 e 16.490 millisecondi, e Invocations, che scende da un valore iniziale basso a zero e vi resta. Il riquadro sul punto del 23 febbraio 2026, ore 15:00 UTC, indica Duration 14.104,249216 e Invocations 153."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 19</span>: </span><span class="ltx_text">Grafico CloudWatch illustrante il volume di invocazioni e la metrica Duration del livello Extractor.</span></figcaption>
+</figure>
+<div id="S3.SS1.p2" class="ltx_para">
+<p class="ltx_p">L’analisi della metrica di durata evidenzia un tempo medio di esecuzione per l’estrazione dati compreso tra <math id="S3.SS1.p2.m1" class="ltx_Math" alttext="14.000" display="inline"><semantics><mn>14.000</mn></semantics></math> e <math id="S3.SS1.p2.m2" class="ltx_Math" alttext="16.350" display="inline"><semantics><mn>16.350</mn></semantics></math> millisecondi per singola invocazione. Questo valore certifica che il componente opera con un margine di tolleranza elevato rispetto al vincolo massimo di 900 secondi imposto dal provider. Il tasso di errore di rete, registrato allo <math id="S3.SS1.p2.m3" class="ltx_Math" alttext="1,3\%" display="inline"><semantics><mrow><mn>1</mn><mo>,</mo><mrow><mn>3</mn><mo>%</mo></mrow></mrow></semantics></math>, giustifica empiricamente l’implementazione della logica di ritentativo applicativo e l’uso delle Dead Letter Queue (DLQ).</p>
+</div>
+</div>
+</section>
+<section id="S3.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.3.2</span> Efficienza della Trasformazione in Memoria</h3>
+
+<div id="S3.SS2.p1" class="ltx_para">
+<p class="ltx_p">La fase di trasformazione, responsabile dell’appiattimento e della sanificazione dei documenti JSON, sfrutta la libreria Polars per l’elaborazione vettoriale in memoria. Le metriche documentano un tempo medio di esecuzione pari a <math id="S3.SS2.p1.m1" class="ltx_Math" alttext="1.160" display="inline"><semantics><mn>1.160</mn></semantics></math> millisecondi, con un tasso di errore dello <math id="S3.SS2.p1.m2" class="ltx_Math" alttext="0\%" display="inline"><semantics><mrow><mn>0</mn><mo>%</mo></mrow></semantics></math>, come indicato nella Figura <a title="Figura 20 ‣ 5.3.2 Efficienza della Trasformazione in Memoria ‣ 5.3 Caso di Studio I: Pipeline ETL Asincrona ‣ Capitolo 5 Caso di Studio ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F20"><span class="ltx_text ltx_ref_tag">20</span></a>. Tale efficienza computazionale previene la saturazione della memoria preallocata all’interno dei container.</p>
+</div>
+<figure id="F20" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-invocations-durations-transformer.webp" width="1600" height="443" loading="lazy" alt="Grafico CloudWatch della settimana dal 18 al 23 febbraio per la funzione Transformer, con due linee: Duration, tra circa 600 e 1.750 millisecondi con un picco finale, e Invocations, che scende da circa 1.000 a zero. Il riquadro sul punto del 23 febbraio 2026, ore 15:00 UTC, indica Duration 1.691,8045161 e Invocations 62."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 20</span>: </span><span class="ltx_text">Grafico CloudWatch illustrante il volume di invocazioni e la metrica Duration del livello Transformer.</span></figcaption>
+</figure>
+<div id="S3.SS2.p2" class="ltx_para">
+<p class="ltx_p">Come riportato nella Tabella <a title="Tabella 1 ‣ 5.3.2 Efficienza della Trasformazione in Memoria ‣ 5.3 Caso di Studio I: Pipeline ETL Asincrona ‣ Capitolo 5 Caso di Studio ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#T1"><span class="ltx_text ltx_ref_tag">1</span></a>, la serializzazione finale in formato Apache Parquet con algoritmo di compressione Snappy produce una riduzione misurabile del footprint di archiviazione.</p>
+</div>
+<figure id="T1" class="ltx_table">
+<figcaption class="ltx_caption"><span class="ltx_tag ltx_tag_table"><span class="ltx_text">Tabella 1</span>: </span><span class="ltx_text">Confronto dimensionale empirico tra i payload estratti (Raw JSON/CSV) e i file ottimizzati (Clean Parquet).</span></figcaption><div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_tt"><span class="ltx_text ltx_font_bold">Tipologia di Report</span></td>
+<td class="ltx_td ltx_align_justify ltx_border_tt">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text ltx_font_bold">Dimensione Raw</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_tt">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text ltx_font_bold">Dimensione Clean (Parquet)</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t"><span class="ltx_text">get_all_line_items</span></td>
+<td class="ltx_td ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">654.6 MB</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">1.6 MB</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left"><span class="ltx_text">open_header_bidding</span></td>
+<td class="ltx_td ltx_align_justify">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">161.2 MB</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">45.7 MB</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left"><span class="ltx_text">key_value</span></td>
+<td class="ltx_td ltx_align_justify">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">24.4 MB</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">40.9 MB</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left"><span class="ltx_text">kpis_by_hour</span></td>
+<td class="ltx_td ltx_align_justify">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">3.7 MB</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">2.0 MB</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left"><span class="ltx_text">adrequest_by_hour</span></td>
+<td class="ltx_td ltx_align_justify">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">1.4 MB</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">921.3 KB</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_bb"><span class="ltx_text">get_all_custom_fields</span></td>
+<td class="ltx_td ltx_align_justify ltx_border_bb">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">27.1 KB</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_bb">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">6.0 KB</span></span>
+</span>
+</td>
+</tr>
+</table>
+</div>
+</figure>
+<div id="S3.SS2.p3" class="ltx_para">
+<p class="ltx_p">Il fattore di compressione incide in misura maggiore sui documenti di grandi dimensioni, riducendo il file <span class="ltx_text ltx_font_typewriter">get_all_line_items</span> di un fattore superiore a 400. Eventuali incrementi dimensionali su file nell’ordine dei byte costituiscono un comportamento fisiologico imputabile alla dimensione minima dei metadati intrinseci richiesti dallo schema Parquet.</p>
+</div>
+</div>
+</section>
+<section id="S3.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.3.3</span> Ottimizzazione dell’Interrogazione tramite Partition Pruning</h3>
+
+<div id="S3.SS3.p1" class="ltx_para">
+<p class="ltx_p">L’ultima fase del collaudo per la pipeline asincrona valuta l’impatto del partizionamento logico sui costi operativi e sulle latenze di Amazon Athena. L’indagine quantifica l’efficienza algoritmica della topologia a partizioni multiple, organizzata gerarchicamente per anno, mese e giorno. Il test esegue una serie di interrogazioni SQL sulla tabella non aggregata relativa alle impressioni pubblicitarie. La Tabella <a title="Tabella 2 ‣ 5.3.3 Ottimizzazione dell’Interrogazione tramite Partition Pruning ‣ 5.3 Caso di Studio I: Pipeline ETL Asincrona ‣ Capitolo 5 Caso di Studio ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#T2"><span class="ltx_text ltx_ref_tag">2</span></a> sintetizza i risultati prestazionali estratti dal servizio cloud.</p>
+</div>
+<figure id="T2" class="ltx_table">
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table"><span class="ltx_text">Tabella 2</span>: </span><span class="ltx_text">Confronto analitico delle prestazioni di scansione del motore distribuito Amazon Athena.</span></figcaption><div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_justify ltx_border_tt">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text ltx_font_bold">Modalità di Interrogazione</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_right ltx_border_tt"><span class="ltx_text ltx_font_bold">Tempo di Esecuzione</span></td>
+<td class="ltx_td ltx_align_right ltx_border_tt"><span class="ltx_text ltx_font_bold">Dati Scansionati</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">Scansione Completa (Assenza di partizioni)</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_right ltx_border_t"><span class="ltx_text">15,37 secondi</span></td>
+<td class="ltx_td ltx_align_right ltx_border_t"><span class="ltx_text">3,82 GB</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_justify ltx_border_bb">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">Scansione Ottimizzata (Partition Pruning applicato)</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_right ltx_border_bb"><span class="ltx_text">541 millisecondi</span></td>
+<td class="ltx_td ltx_align_right ltx_border_bb"><span class="ltx_text">3,90 MB</span></td>
+</tr>
+</table>
+</div>
+</figure>
+<div id="S3.SS3.p2" class="ltx_para">
+<p class="ltx_p">Il primo scenario di test definisce l’esecuzione di una query aggregata sull’intero storico dei dati. L’assenza di predicati temporali forza il motore distribuito a eseguire una scansione sequenziale completa dei file archiviati. Come illustrato nella Figura <a title="Figura 21 ‣ 5.3.3 Ottimizzazione dell’Interrogazione tramite Partition Pruning ‣ 5.3 Caso di Studio I: Pipeline ETL Asincrona ‣ Capitolo 5 Caso di Studio ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F21"><span class="ltx_text ltx_ref_tag">21</span></a>, l’operazione comporta la lettura di <math id="S3.SS3.p2.m1" class="ltx_Math" alttext="3,82" display="inline"><semantics><mrow><mn>3</mn><mo>,</mo><mn>82</mn></mrow></semantics></math> GB di dati in <math id="S3.SS3.p2.m2" class="ltx_Math" alttext="15,3" display="inline"><semantics><mrow><mn>15</mn><mo>,</mo><mn>3</mn></mrow></semantics></math> secondi, impegnando le risorse in modo direttamente proporzionale alla dimensione totale del Data Lake.</p>
+</div>
+<figure id="F21" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-athena_full_scan.webp" width="1600" height="1080" loading="lazy" alt="Console di Amazon Athena con una query SQL che calcola COUNT(guid) come total_impressions e SUM(rtb_cost) come total_cost dalla tabella impression con la condizione is_robot = false, senza filtri su anno, mese e giorno. Query completata: tempo in coda 122 ms, esecuzione 15,377 secondi, dati scansionati 3,82 GB. Risultato: total_impressions 180691958, total_cost 253026.6."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 21</span>: </span><span class="ltx_text">Interfaccia di Amazon Athena: esecuzione di una query priva di partizionamento.</span></figcaption>
+</figure>
+<div id="S3.SS3.p3" class="ltx_para">
+<p class="ltx_p">Il secondo scenario applica il meccanismo di partition pruning, introducendo predicati temporali nella clausola <span class="ltx_text ltx_font_typewriter">WHERE</span> per restringere il perimetro di ricerca a una singola giornata operativa. Il motore di Athena interroga il catalogo dati per escludere i prefissi non pertinenti prima di accedere allo storage. La Figura <a title="Figura 22 ‣ 5.3.3 Ottimizzazione dell’Interrogazione tramite Partition Pruning ‣ 5.3 Caso di Studio I: Pipeline ETL Asincrona ‣ Capitolo 5 Caso di Studio ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F22"><span class="ltx_text ltx_ref_tag">22</span></a> riporta i risultati prestazionali di questa seconda esecuzione.</p>
+</div>
+<figure id="F22" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-athena_optimized_scan.webp" width="1600" height="1079" loading="lazy" alt="Console di Amazon Athena con la stessa query sulla tabella impression, con in più le condizioni year = '2026', month = '02' e day = '20'. Query completata: tempo in coda 68 ms, esecuzione 541 ms, dati scansionati 3,90 MB. Risultato: total_impressions 180060, total_cost 248.32301."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 22</span>: </span><span class="ltx_text">Interfaccia di Amazon Athena: esecuzione di una query ottimizzata tramite partition pruning.</span></figcaption>
+</figure>
+<div id="S3.SS3.p4" class="ltx_para">
+<p class="ltx_p">Il partizionamento logico riduce il volume dei dati scansionati a <math id="S3.SS3.p4.m1" class="ltx_Math" alttext="3,90" display="inline"><semantics><mrow><mn>3</mn><mo>,</mo><mn>90</mn></mrow></semantics></math> MB e abbatte il tempo di elaborazione a <math id="S3.SS3.p4.m2" class="ltx_Math" alttext="541" display="inline"><semantics><mn>541</mn></semantics></math> millisecondi. L’abbattimento delle letture su disco dimostra che l’isolamento deterministico dei prefissi disaccoppia il tempo e il costo di interrogazione dalla mole totale dei dati immagazzinati nel sistema.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">5.4</span> Analisi quantitativa dei costi</h2>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">L’indagine economica valuta l’impatto del paradigma Serverless confrontando il modello a consumo con l’allocazione statica delle risorse, impiegando i parametri di fatturazione per la regione eu-west-1. L’analisi utilizza i dati volumetrici misurati nel primo caso di studio durante una settimana operativa. La quantificazione economica si struttura su due vettori di costo: il livello di archiviazione per le interrogazioni interattive e il livello computazionale per la trasformazione dei dati.</p>
+</div>
+<div id="S4.p2" class="ltx_para">
+<p class="ltx_p">Il primo parametro esaminato riguarda il livello di interrogazione tramite Amazon Athena, il cui modello prevede un costo fisso di <math id="S4.p2.m1" class="ltx_Math" alttext="\$5.00" display="inline"><semantics><mrow><mo rspace="0.167em">$</mo><mn>5.00</mn></mrow></semantics></math> per terabyte scansionato. La sorgente dati genera 994 Megabyte di dati grezzi giornalieri, equivalenti a circa 30 Gigabyte mensili. In assenza di ottimizzazioni, una singola query sulla giornata imporrebbe la lettura dell’intero archivio, generando un addebito di <math id="S4.p2.m2" class="ltx_Math" alttext="\$0.14" display="inline"><semantics><mrow><mo rspace="0.167em">$</mo><mn>0.14</mn></mrow></semantics></math>. Il processo ETL converte i file in formato Parquet riducendo l’impronta a 107 Megabyte giornalieri, e il partizionamento logico istruisce il motore a leggere unicamente questa frazione. La convergenza di queste tecniche porta il costo della singola operazione a <math id="S4.p2.m3" class="ltx_Math" alttext="\$0.0005" display="inline"><semantics><mrow><mo rspace="0.167em">$</mo><mn>0.0005</mn></mrow></semantics></math>, confermando la sostenibilità finanziaria del sistema analitico.</p>
+</div>
+<div id="S4.p3" class="ltx_para">
+<p class="ltx_p">Il secondo parametro economico concerne l’elaborazione computazionale. La funzione AWS Lambda di estrazione esegue 4079 invocazioni settimanali (50244 secondi di calcolo), mentre la trasformazione registra 1498 invocazioni (1215 secondi). Entrambe richiedono 6 Gigabyte di memoria. Proiettando le metriche su base mensile, l’infrastruttura consuma circa <math id="S4.p3.m1" class="ltx_Math" alttext="1.32" display="inline"><semantics><mn>1.32</mn></semantics></math> milioni di Gigabyte-secondo, traducendosi in una spesa di <math id="S4.p3.m2" class="ltx_Math" alttext="\$17.65" display="inline"><semantics><mrow><mo rspace="0.167em">$</mo><mn>17.65</mn></mrow></semantics></math> mensili sull’architettura ARM. Un’architettura tradizionale basata su un’istanza Amazon EC2 <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib27">27</a>]</cite> di classe c6g.xlarge (4 vCPU, 8 GB RAM) imporrebbe un costo fisso di <math id="S4.p3.m3" class="ltx_Math" alttext="\$103.95" display="inline"><semantics><mrow><mo rspace="0.167em">$</mo><mn>103.95</mn></mrow></semantics></math>. Il modello basato su eventi riduce i costi di elaborazione dell’<math id="S4.p3.m4" class="ltx_Math" alttext="83\%" display="inline"><semantics><mrow><mn>83</mn><mo>%</mo></mrow></semantics></math>, eliminando il dispendio economico intrinseco ai periodi di inattività.</p>
+</div>
+</div>
+</section>
+<section id="S5" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">5.5</span> Caso di Studio II: Servizio Backend Sincrono</h2>
+
+<div id="S5.p1" class="ltx_para">
+<p class="ltx_p">Il secondo caso di studio valuta l’architettura a fronte di carichi operativi sincroni. Il perimetro di analisi coinvolge un’API interna sviluppata tramite il framework FastAPI ed esposta via API Gateway, concepita per la registrazione e il recupero dei metadati relativi a presentazioni multimediali. L’implementazione applica i paradigmi di astrazione precedentemente descritti per misurare le latenze di un’infrastruttura di backend interamente gestita dal cloud provider.</p>
+</div>
+<section id="S5.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.5.1</span> Modello Dati ad Alta Efficienza</h3>
+
+<div id="S5.SS1.p1" class="ltx_para">
+<p class="ltx_p">La memorizzazione dello stato sfrutta il database NoSQL Amazon DynamoDB. La progettazione adotta il paradigma Single Table Design, modellato tramite la libreria PynamoDB. L’entità definisce una chiave di partizione primaria per l’accesso puntuale a complessità costante. Per supportare le interrogazioni sulle collezioni, la struttura implementa un Global Secondary Index (GSI) con chiave di partizione statica e chiave di ordinamento cronologica, come mostrato nel Listato <a title="Listing 22 ‣ 5.5.1 Modello Dati ad Alta Efficienza ‣ 5.5 Caso di Studio II: Servizio Backend Sincrono ‣ Capitolo 5 Caso di Studio ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#LST22"><span class="ltx_text ltx_ref_tag">5.1</span></a>.</p>
+</div>
+<figure id="LST22" class="ltx_float ltx_lstlisting">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">from pynamodb.models import Model</span>
+<span class="ltx_listingline">from pynamodb.attributes import UnicodeAttribute, BooleanAttribute</span>
+<span class="ltx_listingline">from pynamodb.indexes import GlobalSecondaryIndex, AllProjection</span>
+<span class="ltx_listingline">import os</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">class CreationDateIndex(GlobalSecondaryIndex):</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    This class represents a GSI for querying previews by creation_date.</span>
+<span class="ltx_listingline">    """</span>
+<span class="ltx_listingline">    class Meta:</span>
+<span class="ltx_listingline">        index_name = 'creation-date-index'</span>
+<span class="ltx_listingline">        projection = AllProjection()</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    # This attribute will be the partition key for the GSI</span>
+<span class="ltx_listingline">    entity_type = UnicodeAttribute(hash_key=True)</span>
+<span class="ltx_listingline">    creation_date = UnicodeAttribute(range_key=True)</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">class Preview(Model):</span>
+<span class="ltx_listingline">    class Meta:</span>
+<span class="ltx_listingline">        table_name = os.environ.get("DYNAMODB_TABLE")</span>
+<span class="ltx_listingline">        region = os.getenv("AWS_DEFAULT_REGION")</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    # GSI for sorting by creation_date</span>
+<span class="ltx_listingline">    creation_date_index = CreationDateIndex()</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    # Primary key</span>
+<span class="ltx_listingline">    slug = UnicodeAttribute(hash_key=True)</span>
+<span class="ltx_listingline">    SLUG_MAX_ATTEMPTS = 10</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    # GSI partition key - a static value to query all previews</span>
+<span class="ltx_listingline">    entity_type = UnicodeAttribute(default="PREVIEW")</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    # Client and campaign information</span>
+<span class="ltx_listingline">    customer = UnicodeAttribute()</span>
+<span class="ltx_listingline">    normalized_customer = UnicodeAttribute()</span>
+<span class="ltx_listingline">    campaign = UnicodeAttribute()</span>
+<span class="ltx_listingline">    normalized_campaign = UnicodeAttribute()</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    # Categorization fields</span>
+<span class="ltx_listingline">    vertical = UnicodeAttribute()</span>
+<span class="ltx_listingline">    format = UnicodeAttribute()</span>
+<span class="ltx_listingline">    type = UnicodeAttribute()</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    # Technical fields</span>
+<span class="ltx_listingline">    webpage = UnicodeAttribute()</span>
+<span class="ltx_listingline">    script = UnicodeAttribute()</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    # Configuration flags</span>
+<span class="ltx_listingline">    confidential = BooleanAttribute(default=False)</span>
+<span class="ltx_listingline">    live = BooleanAttribute(default=False)</span>
+<span class="ltx_listingline">    device = UnicodeAttribute(default="Mobile")</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    # Location and language</span>
+<span class="ltx_listingline">    delivery_country = UnicodeAttribute(default="Italy")</span>
+<span class="ltx_listingline">    language = UnicodeAttribute(default="Italian")</span>
+<span class="ltx_listingline">    country = UnicodeAttribute(default="Simulated Entity")</span>
+<span class="ltx_listingline"></span>
+<span class="ltx_listingline">    # Creation date</span>
+<span class="ltx_listingline">    creation_date = UnicodeAttribute(null=True)</span></code></pre></div>
+<figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 5.1: </span>Modellazione Object-Relational Mapping (ORM) su DynamoDB.</figcaption>
+</figure>
+<div id="S5.SS1.p2" class="ltx_para">
+<p class="ltx_p">Come evidenziato nella Tabella <a title="Tabella 3 ‣ 5.5.1 Modello Dati ad Alta Efficienza ‣ 5.5 Caso di Studio II: Servizio Backend Sincrono ‣ Capitolo 5 Caso di Studio ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#T3"><span class="ltx_text ltx_ref_tag">3</span></a> e nella Figura <a title="Figura 23 ‣ 5.5.1 Modello Dati ad Alta Efficienza ‣ 5.5 Caso di Studio II: Servizio Backend Sincrono ‣ Capitolo 5 Caso di Studio ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F23"><span class="ltx_text ltx_ref_tag">23</span></a>, la standardizzazione degli accessi limita il consumo delle unità di capacità di lettura e scrittura.</p>
+</div>
+<figure id="T3" class="ltx_table">
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table"><span class="ltx_text">Tabella 3</span>: </span><span class="ltx_text">Medie di consumo orario delle unità di capacità sul livello DynamoDB.</span></figcaption><div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_tt"><span class="ltx_text ltx_font_bold">Metrica di Capacità (Media Oraria)</span></td>
+<td class="ltx_td ltx_align_right ltx_border_tt"><span class="ltx_text ltx_font_bold">Valore Rilevato</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">Consumed Read Capacity Units (RCU)</td>
+<td class="ltx_td ltx_align_right ltx_border_t">0.005</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_bb">Consumed Write Capacity Units (WCU)</td>
+<td class="ltx_td ltx_align_right ltx_border_bb">0.062</td>
+</tr>
+</table>
+</div>
+</figure>
+<figure id="F23" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-capacity-dynamo.webp" width="1600" height="435" loading="lazy" alt="Grafico CloudWatch della settimana dal 18 al 24 febbraio con ConsumedReadCapacityUnits e ConsumedWriteCapacityUnits di DynamoDB. La lettura scende da circa 0,11 a quasi zero verso il 21 febbraio e poi risale; la scrittura resta vicina a zero. Il riquadro del 23 febbraio 2026, ore 14:00 UTC, indica lettura circa 0,0872 e scrittura circa 0,0097."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 23</span>: </span><span class="ltx_text">Grafico CloudWatch illustrante l’andamento temporale della capacity di DynamoDB per il servizio.</span></figcaption>
+</figure>
+<div id="S5.SS1.p3" class="ltx_para">
+<p class="ltx_p">Il contenimento delle capacità consumate garantisce la scalabilità del catalogo limitando l’impatto economico associato alle operazioni concorrenti.</p>
+</div>
+</div>
+</section>
+<section id="S5.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">5.5.2</span> Distribuzione Statistica della Latenza e Cold Start</h3>
+
+<div id="S5.SS2.p1" class="ltx_para">
+<p class="ltx_p">L’esecuzione del framework web all’interno dell’ambiente di calcolo effimero necessita dell’adattatore Mangum. La telemetria calcola i percentili statistici dei tempi di integrazione esposti all’utente per misurare l’incidenza di questo strato di traduzione. I dati aggregati sono presentati nella Tabella <a title="Tabella 4 ‣ 5.5.2 Distribuzione Statistica della Latenza e Cold Start ‣ 5.5 Caso di Studio II: Servizio Backend Sincrono ‣ Capitolo 5 Caso di Studio ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#T4"><span class="ltx_text ltx_ref_tag">4</span></a> e graficati nella Figura <a title="Figura 24 ‣ 5.5.2 Distribuzione Statistica della Latenza e Cold Start ‣ 5.5 Caso di Studio II: Servizio Backend Sincrono ‣ Capitolo 5 Caso di Studio ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F24"><span class="ltx_text ltx_ref_tag">24</span></a>.</p>
+</div>
+<figure id="T4" class="ltx_table">
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table"><span class="ltx_text">Tabella 4</span>: </span><span class="ltx_text">Distribuzione statistica dei percentili di latenza di integrazione (in millisecondi).</span></figcaption><div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_tt"><span class="ltx_text ltx_font_bold">Percentile Statistico</span></td>
+<td class="ltx_td ltx_align_right ltx_border_tt"><span class="ltx_text ltx_font_bold">Latenza Rilevata (ms)</span></td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t">50° Percentile (<math id="T4.m1" class="ltx_Math" alttext="p50" display="inline"><semantics><mrow><mi>p</mi><mo>⁢</mo><mn>50</mn></mrow></semantics></math> - Mediana)</td>
+<td class="ltx_td ltx_align_right ltx_border_t">19.5 ms</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left">90° Percentile (<math id="T4.m2" class="ltx_Math" alttext="p90" display="inline"><semantics><mrow><mi>p</mi><mo>⁢</mo><mn>90</mn></mrow></semantics></math>)</td>
+<td class="ltx_td ltx_align_right">708.5 ms</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_bb">99° Percentile (<math id="T4.m3" class="ltx_Math" alttext="p99" display="inline"><semantics><mrow><mi>p</mi><mo>⁢</mo><mn>99</mn></mrow></semantics></math>)</td>
+<td class="ltx_td ltx_align_right ltx_border_bb">1751.9 ms</td>
+</tr>
+</table>
+</div>
+</figure>
+<figure id="F24" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-percentili-api-gateway.webp" width="1600" height="686" loading="lazy" alt="Grafico CloudWatch della metrica IntegrationLatency di API Gateway, in millisecondi, dal 18 al 24 febbraio, con tre linee: P50, vicino a zero con una lieve salita attorno al 22 febbraio; P90, tra circa 300 e 1.900; P99, tra circa 1.600 e 1.950. Il riquadro del 22 febbraio 2026, ore 14:00 UTC, indica P99 1.781,4536565, P90 674,28747323, P50 18,641171908. Periodo di un giorno."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 24</span>: </span><span class="ltx_text">Grafico CloudWatch illustrante l’andamento temporale dei percentili di latenza p50, p90 e p99.</span></figcaption>
+</figure>
+<div id="S5.SS2.p2" class="ltx_para">
+<p class="ltx_p">Il tempo di risposta mediano (<math id="S5.SS2.p2.m1" class="ltx_Math" alttext="p50" display="inline"><semantics><mrow><mi>p</mi><mo>⁢</mo><mn>50</mn></mrow></semantics></math>) attesta che l’adattatore non introduce sovraccarichi penalizzanti nei container già in esecuzione. L’analisi dei percentili di coda (<math id="S5.SS2.p2.m2" class="ltx_Math" alttext="p90" display="inline"><semantics><mrow><mi>p</mi><mo>⁢</mo><mn>90</mn></mrow></semantics></math> e <math id="S5.SS2.p2.m3" class="ltx_Math" alttext="p99" display="inline"><semantics><mrow><mi>p</mi><mo>⁢</mo><mn>99</mn></mrow></semantics></math>) quantifica empiricamente il peso delle latenze di inizializzazione dell’ambiente (Cold Start), le quali portano i tempi di risposta oltre la soglia dei 1700 millisecondi. La varianza rientra nei limiti di tolleranza per i requisiti non funzionali del sistema in analisi.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S6" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">5.6</span> Valutazione dell’Automazione Infrastrutturale (Service-Forge)</h2>
+
+<div id="S6.p1" class="ltx_para">
+<p class="ltx_p">L’ultima fase dell’analisi quantifica l’impatto architetturale derivante dall’adozione del framework interno dedicato allo scaffolding. Il sistema standardizza il provisioning di nuovi microservizi astraendo la complessità dichiarativa dell’Infrastructure as Code (IaC). La valutazione esamina tre distinte metodologie di generazione, misurando per ciascun approccio il carico cognitivo richiesto all’operatore, l’esposizione al rischio operativo e i tempi di esecuzione. La Tabella <a title="Tabella 5 ‣ 5.6 Valutazione dell’Automazione Infrastrutturale (Service-Forge) ‣ Capitolo 5 Caso di Studio ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#T5"><span class="ltx_text ltx_ref_tag">5</span></a> sintetizza il confronto.</p>
+</div>
+<figure id="T5" class="ltx_table">
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_table"><span class="ltx_text">Tabella 5</span>: </span><span class="ltx_text">Confronto analitico tra le metodologie di generazione infrastrutturale (Scaffolding).</span></figcaption><div class="bml-overflow-wrapper">
+<table class="ltx_tabular ltx_centering ltx_align_middle">
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_tt"><span class="ltx_text ltx_font_bold">Metrica di Valutazione</span></td>
+<td class="ltx_td ltx_align_justify ltx_border_tt">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text ltx_font_bold">Scaffolding Manuale</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_tt">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text ltx_font_bold">Scaffolding CLI (Typer)</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_tt">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text ltx_font_bold">Scaffolding MCP (FastMCP)</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_t"><span class="ltx_text">Tempo di approvvigionamento</span></td>
+<td class="ltx_td ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">Misurabile in ore</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">Misurabile in minuti</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_t">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">Limitato a pochi secondi</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left"><span class="ltx_text">Deriva di Configurazione</span></td>
+<td class="ltx_td ltx_align_justify">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">Alta esposizione</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">Assente (uso di Jinja2)</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">Assente (motore AI confinato)</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left"><span class="ltx_text">Carico Cognitivo Operatore</span></td>
+<td class="ltx_td ltx_align_justify">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">Livello elevato</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">Livello moderato</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">Livello minimo</span></span>
+</span>
+</td>
+</tr>
+<tr class="ltx_tr">
+<td class="ltx_td ltx_align_left ltx_border_bb"><span class="ltx_text">Aderenza al Least Privilege</span></td>
+<td class="ltx_td ltx_align_justify ltx_border_bb">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">Dipendente dall’operatore</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_bb">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">Garantita dal template</span></span>
+</span>
+</td>
+<td class="ltx_td ltx_align_justify ltx_border_bb">
+<span class="ltx_inline-block ltx_align_top">
+<span class="ltx_p"><span class="ltx_text">Rigorosamente applicata</span></span>
+</span>
+</td>
+</tr>
+</table>
+</div>
+</figure>
+<div id="S6.p2" class="ltx_para">
+<p class="ltx_p">Le metodologie analizzate seguono tre approcci procedurali. La prima metodologia prevede la configurazione integralmente manuale degli artefatti. L’operatore definisce i moduli Terraform, le configurazioni Docker e i flussi CI/CD scrivendo direttamente il codice sorgente. Questo approccio impone un livello di attenzione elevato e richiede all’operatore una conoscenza pregressa e trasversale dello stack tecnologico. L’esecuzione manuale espone il sistema a un’alta probabilità di deriva di configurazione. I tempi di approvvigionamento per un singolo microservizio risultano quantificabili nell’ordine delle ore.</p>
+</div>
+<div id="S6.p3" class="ltx_para">
+<p class="ltx_p">La seconda metodologia impiega un’interfaccia a riga di comando (CLI) in grado di elaborare template deterministici basati sul motore Jinja2. Il sistema inietta i parametri forniti dall’utente all’interno di strutture predefinite. L’astrazione riduce i tempi operativi a pochi minuti ed elimina il rischio di deriva di configurazione, poiché i template impongono l’applicazione rigorosa dei vincoli di sicurezza. Lo strumento mantiene un vincolo operativo: l’operatore deve conoscere a priori la nomenclatura esatta e la tipologia dei parametri infrastrutturali richiesti.</p>
+</div>
+<div id="S6.p4" class="ltx_para">
+<p class="ltx_p">La terza metodologia introduce il Model Context Protocol (MCP) per delegare l’interazione iniziale a un agente basato su Large Language Models (LLM). L’architettura confina la comunicazione non deterministica alla sola interfaccia testuale dell’ambiente di sviluppo integrato. L’agente estrae le specifiche dal linguaggio naturale e invoca la logica di generazione deterministica sottostante tramite chiamate strutturate. Questa interazione riduce il tempo di generazione a pochi secondi e minimizza il carico cognitivo.</p>
+</div>
+<div id="S6.p5" class="ltx_para">
+<p class="ltx_p">L’impiego dei modelli linguistici introduce problematiche intrinseche di affidabilità, legate alla natura probabilistica della generazione del testo. L’analisi del comportamento dell’agente conversazionale evidenzia scenari in cui il modello interrompe prematuramente la negoziazione dei parametri, tentando di avviare il processo di scaffolding senza fornire identificativi obbligatori. Il server FastMCP previene questa inesattezza applicando una validazione statica dei tipi sui payload JSON in ingresso. Il motore intercetta le richieste malformate, blocca preventivamente l’esecuzione e restituisce l’errore semantico all’ambiente di sviluppo, forzando l’LLM a reiterare la richiesta verso l’utente umano.</p>
+</div>
+</div>
+</section>
+</div>

@@ -1,0 +1,90 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">Il presente capitolo conclude la trattazione del lavoro di tesi, sintetizzando i risultati ottenuti rispetto agli obiettivi iniziali e definendo gli scenari evolutivi per le iterazioni future del sistema. La struttura del testo risponde a una duplice necessità valutativa: confermare la solidità dell’infrastruttura prodotta tramite metriche oggettive e individuare in modo analitico i margini di miglioramento architetturale.</p>
+</div>
+<div id="p2" class="ltx_para">
+<p class="ltx_p">Seguendo questa logica, la prima sezione ripercorre le soluzioni implementate per la mitigazione del debito tecnico, validando le scelte operative attraverso i riscontri quantitativi emersi in fase di collaudo. La seconda sezione esamina i limiti intrinseci dell’architettura attuale e formalizza gli assi di sviluppo futuri, focalizzandosi sulla transizione verso un modello di orchestrazione esplicita tramite macchine a stati finiti, sull’adozione di formati transazionali per il Data Lake e sull’estensione del framework di automazione infrastrutturale.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.1</span> Sintesi del Lavoro Svolto e Risultati Ottenuti</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">Questa tesi descrive la riprogettazione di un’infrastruttura software operante nel dominio dell’advertising digitale, strutturata per superare le limitazioni di scalabilità e la complessità operativa delle architetture tradizionali. L’analisi preliminare del contesto ha evidenziato come l’allocazione statica delle risorse e l’assenza di procedure di rilascio automatizzate costituissero un collo di bottiglia per l’elaborazione dei flussi informativi ad alto volume. Per risolvere tali criticità, il sistema proposto adotta i paradigmi Cloud-Native e Serverless. Questa configurazione demanda l’onere del provisioning infrastrutturale al provider cloud e allinea i costi operativi al consumo effettivo delle risorse di calcolo.</p>
+</div>
+<div id="S1.p2" class="ltx_para">
+<p class="ltx_p">La progettazione dell’infrastruttura ha imposto una rigorosa segregazione degli ambienti operativi mediante una topologia Multi-Account. Questa separazione logica garantisce l’isolamento dei carichi di lavoro in produzione rispetto agli ambienti di sviluppo, centralizzando la gestione degli artefatti in un registro condiviso. L’infrastruttura è stata tradotta in codice dichiarativo tramite Terraform. L’adozione di un’architettura a strati per i file di stato ha mitigato il rischio di corruzione, isolando i domini di faglia e abilitando aggiornamenti paralleli. Questo paradigma assicura la riproducibilità degli ambienti e assoggetta le modifiche infrastrutturali ai processi di revisione del software.</p>
+</div>
+<div id="S1.p3" class="ltx_para">
+<p class="ltx_p">Per l’elaborazione dei dati, il sistema ha sostituito i processi batch tradizionali con una pipeline Extract, Transform, Load (ETL) guidata da eventi. L’inserimento dei dati grezzi nel Data Lake su Amazon S3 innesca l’esecuzione asincrona di funzioni AWS Lambda e processi AWS Glue, i quali standardizzano le informazioni nel formato colonnare Parquet. Il collaudo ha dimostrato empiricamente che l’organizzazione dello storage secondo uno schema gerarchico a partizioni multiple abilita il motore Amazon Athena a escludere i segmenti non pertinenti durante le interrogazioni. La misurazione sul campo ha rilevato una riduzione dei costi di scansione superiore al <math id="S1.p3.m1" class="ltx_Math" alttext="90\%" display="inline"><semantics><mrow><mn>90</mn><mo>%</mo></mrow></semantics></math> e un decremento proporzionale delle latenze di risposta.</p>
+</div>
+<div id="S1.p4" class="ltx_para">
+<p class="ltx_p">Il livello applicativo sincrono, preposto all’esposizione delle interfacce API, ha impiegato il framework Python FastAPI. L’applicazione dei principi della Clean Architecture ha disaccoppiato la logica di dominio dai dettagli di persistenza. L’utilizzo della libreria Pydantic ha delegato la validazione semantica dei payload a un livello di ispezione statica, riducendo la necessità di codice procedurale per la gestione delle eccezioni. La persistenza transazionale è stata implementata tramite il database NoSQL Amazon DynamoDB, modellato secondo il pattern Single Table Design per contenere il consumo di capacità in lettura pur mantenendo relazioni logiche complesse.</p>
+</div>
+<div id="S1.p5" class="ltx_para">
+<p class="ltx_p">L’ultima fase del lavoro ha affrontato la complessità procedurale imposta agli sviluppatori dal nuovo ecosistema DevOps. Al fine di standardizzare la creazione di microservizi, è stato sviluppato Service-Forge, un framework operante come server compatibile con il Model Context Protocol (MCP). L’integrazione di questo protocollo permette agli agenti basati su Large Language Models di tradurre le specifiche in linguaggio naturale in parametri strutturati. La validazione formale interposta tra l’agente e il motore di scaffolding mitiga il rischio di allucinazioni del modello, garantendo la generazione di impalcature di codice e pipeline CI/CD aderenti alle policy di sicurezza. La stesura dei moduli Terraform rimane attualmente in carico all’operatore, mantenendo un controllo umano esplicito sull’allocazione delle risorse fisiche.</p>
+</div>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">6.2</span> Sviluppi Futuri: Evoluzione Architetturale e Osservabilità</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Le direzioni per l’evoluzione del sistema si articolano su tre filoni d’intervento. Il primo filone prevede il parziale superamento del pattern Event-Driven a favore di un’orchestrazione centralizzata per i flussi di lavoro complessi. Il secondo filone mira all’introduzione di formati di archiviazione transazionali nel Data Lake. Il terzo filone riguarda l’estensione delle capacità generative del framework Service-Forge verso l’Infrastructure as Code (IaC).</p>
+</div>
+<section id="S2.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.2.1</span> Transizione da Coreografia a Orchestrazione tramite AWS Step Functions</h3>
+
+<div id="S2.SS1.p1" class="ltx_para">
+<p class="ltx_p">L’architettura asincrona sviluppata implementa un pattern di integrazione classificabile come coreografia. In questo modello, i microservizi operano in totale indipendenza: l’inserimento di un artefatto su S3 produce un evento che attiva l’estrazione; la conseguente scrittura genera un ulteriore evento che innesca la trasformazione. Sebbene questo disaccoppiamento favorisca lo scaling orizzontale, introduce opacità strutturale. Nessun componente possiede la visibilità dell’intera pipeline ETL e le dipendenze logiche rimangono implicite nelle regole di instradamento degli eventi.</p>
+</div>
+<div id="S2.SS1.p2" class="ltx_para">
+<p class="ltx_p">Questa topologia distribuita complica la gestione delle anomalie. Qualora una funzione AWS Lambda fallisca l’elaborazione, il messaggio viene isolato all’interno di una Dead Letter Queue (DLQ). L’operatore riceve la diagnostica, ma il ripristino richiede un intervento manuale. Nei flussi aziendali più articolati, l’approccio coreografico dilata i tempi di risoluzione degli incidenti e rende complessa la misurazione del tempo totale di attraversamento del dato.</p>
+</div>
+<div id="S2.SS1.p3" class="ltx_para">
+<p class="ltx_p">Lo sviluppo futuro prevede l’adozione di AWS Step Functions <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib60">60</a>]</cite> per la gestione dei flussi ETL critici. Questo servizio implementa il pattern di orchestrazione, permettendo la definizione di macchine a stati finiti in formato dichiarativo. L’introduzione di un orchestratore esplicito risolve l’opacità della coreografia: il flusso viene mappato in un grafo che definisce rigidamente le sequenze, le esecuzioni parallele e le diramazioni logiche, invocando in modo diretto i calcoli necessari.</p>
+</div>
+<div id="S2.SS1.p4" class="ltx_para">
+<p class="ltx_p">L’adozione di macchine a stati introduce vantaggi misurabili nell’osservabilità e nella resilienza. Il sistema traccia nativamente il percorso di esecuzione, conservando in memoria lo stato e i payload scambiati tra i passaggi, eliminando la dipendenza da database temporanei. Inoltre, fornisce costrutti per la gestione delle eccezioni (<em class="ltx_emph ltx_font_italic">Catch</em>) e per la pianificazione di ritentativi con backoff esponenziale (<em class="ltx_emph ltx_font_italic">Retry</em>), demandando all’infrastruttura cloud la logica di tolleranza ai guasti.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.2.2</span> Evoluzione del Data Lake verso Formati di Archiviazione Transazionali</h3>
+
+<div id="S2.SS2.p1" class="ltx_para">
+<p class="ltx_p">Il secondo filone di sviluppo affronta le limitazioni semantiche dello storage a oggetti. Attualmente, l’integrità del partizionamento Hive-style si basa sull’assenza di aggiornamenti concorrenti. L’architettura gestisce in modo efficiente gli inserimenti in modalità <em class="ltx_emph ltx_font_italic">append-only</em>, ma risulta subottimale negli scenari che richiedono modifiche retroattive o cancellazioni puntuali di record in ossequio alle normative sul trattamento dei dati (es. GDPR). La modifica di un singolo record Parquet archiviato su S3 impone oggi la lettura dell’intero file, la sua alterazione in memoria e la successiva sovrascrittura integrale.</p>
+</div>
+<div id="S2.SS2.p2" class="ltx_para">
+<p class="ltx_p">L’evoluzione prevista contempla l’introduzione di formati di archiviazione open-source ad alte prestazioni, quali Apache Iceberg o Delta Lake, operanti al di sopra dello storage S3. Tali astrazioni estendono le capacità del Data Lake introducendo garanzie di atomicità, coerenza, isolamento e durabilità (ACID). L’implementazione manterrà i benefici del paradigma <em class="ltx_emph ltx_font_italic">schema-on-read</em>, ma abiliterà l’esecuzione di comandi SQL di manipolazione dei dati (Merge, Update, Delete) a livello di singola riga. L’adozione di un <em class="ltx_emph ltx_font_italic">Transaction Log</em> nativo permetterà di eseguire interrogazioni su versioni precedenti del catalogo (<em class="ltx_emph ltx_font_italic">Time Travel</em>), offrendo un meccanismo di ripristino istantaneo in caso di corruzione logica introdotta da pipeline difettose.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">6.2.3</span> Evoluzione di Service-Forge: Generazione IaC e Sistemi Multi-Agente</h3>
+
+<div id="S2.SS3.p1" class="ltx_para">
+<p class="ltx_p">Il terzo asse di sviluppo si concentra sull’estensione delle capacità operative del framework Service-Forge. Come analizzato, l’implementazione attuale si limita alla generazione del codice applicativo di base e alla configurazione delle pipeline di integrazione continua. L’operatore mantiene l’onere della stesura manuale dei moduli Terraform per il provisioning delle risorse cloud. L’obiettivo a medio termine prevede il superamento di questa limitazione funzionale.</p>
+</div>
+<div id="S2.SS3.p2" class="ltx_para">
+<p class="ltx_p">L’integrazione consentirà al framework di compilare dinamicamente i file dichiarativi necessari all’Infrastructure as Code. Quando l’agente conversazionale riceverà le specifiche del nuovo microservizio, Service-Forge tradurrà i requisiti di memoria, concorrenza e archiviazione direttamente in costrutti HCL (HashiCorp Configuration Language). Questo approccio garantirà l’allineamento rigoroso tra le dipendenze richieste nel codice sorgente e le risorse fisicamente allocate, mitigando il rischio di disallineamento operativo.</p>
+</div>
+<div id="S2.SS3.p3" class="ltx_para">
+<p class="ltx_p">Un’ulteriore prospettiva di evoluzione riguarda la transizione verso i sistemi multi-agente. Questa topologia informatica prevede l’orchestrazione di diverse istanze LLM, ciascuna specializzata in un dominio circoscritto del ciclo di sviluppo. Il flusso delegherà l’analisi dei requisiti a un agente pianificatore (<em class="ltx_emph ltx_font_italic">Planner</em>), incaricato di scomporre le specifiche in compiti programmatici atomici. Successivamente, agenti implementatori paralleli (<em class="ltx_emph ltx_font_italic">Coders</em>) svilupperanno i singoli strati applicativi: dalla validazione Pydantic, al routing FastAPI, fino all’accesso ai dati in DynamoDB. Il server FastMCP assumerà il ruolo di supervisore deterministico, verificando la coerenza sintattica del codice prodotto. Questa evoluzione mira a trasformare Service-Forge in un sistema di sviluppo assistito integrale, riposizionando lo sviluppatore in un ruolo di supervisione e validazione architetturale.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+</div>

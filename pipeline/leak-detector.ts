@@ -9,7 +9,11 @@ import { MAX_RASTER_WIDTH } from './figures.ts';
  */
 
 export interface ReportedChapter {
-  numero: number;
+  /** A numbered chapter. */
+  numero?: number | undefined;
+  /** A lettered appendix. A page with neither is unnumbered; the bibliography is flagged. */
+  etichetta?: string | undefined;
+  bibliografia?: boolean | undefined;
   titolo: string;
   html: string;
   /** Absent when the output no longer records them (a committed `build/`): the box checks are then skipped. */
@@ -35,6 +39,29 @@ const MIN_CHAPTER_HTML_LENGTH = 40;
 const withoutComments = (source: string): string => source.replace(/(^|[^\\])%.*$/gm, '$1');
 
 const count = (text: string, pattern: RegExp): number => text.match(pattern)?.length ?? 0;
+
+/** The source without the bodies of `\\newenvironment`: `\\begin{theorem}` inside one is a definition, not a use. */
+function withoutEnvironmentDefinitions(source: string): string {
+  let out = '';
+  let from = 0;
+  for (const match of source.matchAll(/\\(?:re)?newenvironment\*?\s*\{[^}]*\}(?:\s*\[[^\]]*\])*/g)) {
+    if (match.index < from) continue;
+    let end = match.index + match[0].length;
+    for (let groups = 0; groups < 2; groups++) {
+      while (/\s/.test(source[end] ?? '')) end++;
+      if (source[end] !== '{') break;
+      let depth = 0;
+      do {
+        if (source[end] === '{') depth++;
+        else if (source[end] === '}') depth--;
+        end++;
+      } while (depth > 0 && end < source.length);
+    }
+    out += source.slice(from, match.index);
+    from = end;
+  }
+  return out + source.slice(from);
+}
 
 function theoremNames(source: string): string[] {
   return [...source.matchAll(/\\newtheorem\*?\{([^}]+)\}/g)].map((match) => match[1]!);
@@ -86,6 +113,64 @@ function describeMismatch(label: string, expected: number, actual: number, relat
   return fine ? undefined : `the source has ${expected} ${label}, the output ${relation === 'exactly' ? 'has' : 'has only'} ${actual}`;
 }
 
+/**
+ * Not counted in a listing: blanks (listings expands a tab by its own tab size, wherever it is in the line, and LaTeXML
+ * drops trailing blanks) and quotes (LaTeXML curls them, the pipeline puts them back, and when a string is left open
+ * on a line it closes it with one more, which the PDF does not show).
+ */
+const UNCOUNTED = /[\s'\u2018\u2019`]/g;
+
+/** A listing's size: its lines and the characters on them that count, so a line cut short is seen too. */
+interface ListingSize {
+  lines: number;
+  characters: number;
+}
+
+/**
+ * The size of each `lstlisting` of the raw source (a `%` inside one is code, so comments are not stripped first),
+ * and how many are never closed: the option block and the line holding `\\end` are not code.
+ */
+function listingsInSource(source: string): { sizes: ListingSize[]; unclosed: number } {
+  const sizes: ListingSize[] = [];
+  let unclosed = 0;
+  for (const match of source.matchAll(/\\begin\{lstlisting\}/g)) {
+    const lineStart = source.lastIndexOf('\n', match.index) + 1;
+    if (withoutComments(source.slice(lineStart, match.index)) !== source.slice(lineStart, match.index)) continue;
+    let start = match.index + match[0].length;
+    if (source[start] === '[') {
+      let depth = 0;
+      for (; start < source.length; start++) {
+        if (source[start] === '{') depth++;
+        else if (source[start] === '}') depth--;
+        else if (source[start] === ']' && depth === 0) break;
+      }
+      start++;
+    }
+    const end = source.indexOf('\\end{lstlisting}', start);
+    if (end < 0) {
+      unclosed++;
+      continue;
+    }
+    const code = source.slice(start, end);
+    // The rest of the `\\begin` line is not code, and neither is the indentation before `\\end`.
+    const body = code.includes('\n') ? code.slice(code.indexOf('\n') + 1).replace(/\n?[ \t]*$/, '') : '';
+    const lines = body === '' ? [] : body.split('\n');
+    sizes.push({ lines: lines.length, characters: lines.reduce((total, line) => total + [...line.replace(UNCOUNTED, '')].length, 0) });
+  }
+  return { sizes, unclosed };
+}
+
+const unescapeHtml = (text: string): string =>
+  text.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0*39;/g, "'").replace(/&amp;/g, '&');
+
+/** The size of each code listing of the output (`<pre class="listing">`), in order. */
+function listingsInOutput(html: string): ListingSize[] {
+  return [...html.matchAll(/<pre class="listing"[^>]*>([\s\S]*?)<\/pre>/g)].map((match) => {
+    const lines = [...match[1]!.matchAll(/<span class="ltx_listingline">([^<]*)<\/span>/g)].map((line) => unescapeHtml(line[1]!));
+    return { lines: lines.length, characters: lines.reduce((total, line) => total + [...line.replace(UNCOUNTED, '')].length, 0) };
+  });
+}
+
 const lastSegment = (path: string): string => path.slice(path.lastIndexOf('/') + 1);
 
 /** What is wrong with the figures of the output: images and SVGs, each with its description. */
@@ -121,7 +206,7 @@ function figureLeaks(chapters: readonly ReportedChapter[], figureFiles: readonly
 }
 
 export function detectLeaks(report: ConversionReport): string[] {
-  const source = withoutComments(report.source);
+  const source = withoutEnvironmentDefinitions(withoutComments(report.source));
   const output = report.chapters.map((chapter) => chapter.html).join('\n');
   const leaks: string[] = [];
   const check = (message: string | undefined): void => {
@@ -132,11 +217,38 @@ export function detectLeaks(report: ConversionReport): string[] {
 
   for (const file of report.extraOutputFiles) leaks.push(`LaTeXML wrote ${file}, which the pipeline does not convert`);
 
+  const isBibliography = (chapter: ReportedChapter): boolean => chapter.bibliografia === true;
+  const isUnnumbered = (chapter: ReportedChapter): boolean => !isBibliography(chapter) && chapter.numero === undefined && chapter.etichetta === undefined;
+  const nameOf = (chapter: ReportedChapter): string => {
+    if (isBibliography(chapter)) return `bibliography "${chapter.titolo}"`;
+    if (chapter.etichetta !== undefined) return `appendix "${chapter.etichetta}: ${chapter.titolo}"`;
+    return chapter.numero === undefined ? `unnumbered page "${chapter.titolo}"` : `chapter ${chapter.numero} "${chapter.titolo}"`;
+  };
   for (const chapter of report.chapters) {
-    if (chapter.html.length < MIN_CHAPTER_HTML_LENGTH) leaks.push(`chapter ${chapter.numero} "${chapter.titolo}" is empty`);
+    if (chapter.html.length < MIN_CHAPTER_HTML_LENGTH) leaks.push(`${nameOf(chapter)} is empty`);
   }
+  check(describeMismatch('chapter(s)', count(source, /\\chapter\s*[{[]/g), report.chapters.filter((c) => !isBibliography(c) && !isUnnumbered(c)).length, 'exactly'));
+  check(
+    describeMismatch('unnumbered page(s) (\\chapter*, \\prefacesection)', count(source, /\\(?:chapter\*|prefacesection)\s*\{/g), report.chapters.filter(isUnnumbered).length, 'exactly'),
+  );
+  check(
+    describeMismatch('bibliography(ies)', count(source, /\\begin\{thebibliography\}|\\bibliography\s*\{/g), report.chapters.filter(isBibliography).length, 'exactly'),
+  );
+  check(describeMismatch('bibliography entry(ies) (\\bibitem)', count(source, /\\bibitem\b/g), count(output, /class="ltx_bibitem"/g), 'exactly'));
 
-  check(describeMismatch('chapter(s)', count(source, /\\chapter\s*[{[]/g), report.chapters.length, 'exactly'));
+  const { sizes: sourceListings, unclosed } = listingsInSource(report.source);
+  if (unclosed > 0) leaks.push(`the source has ${unclosed} \\begin{lstlisting} with no \\end{lstlisting}: its listings cannot be checked`);
+  const outputListings = report.chapters.flatMap((chapter) => listingsInOutput(chapter.html));
+  check(describeMismatch('code listing(s) (lstlisting)', sourceListings.length, outputListings.length, 'exactly'));
+  // The source files are not in book order, so listings are compared as a multiset of (lines, characters), not by position.
+  const sizeKey = (size: ListingSize): string => `${size.lines} line(s) and ${size.characters} character(s)`;
+  const sourceKeys = sourceListings.map(sizeKey);
+  const outputKeys = outputListings.map(sizeKey);
+  for (const key of new Set([...sourceKeys, ...outputKeys])) {
+    const expected = sourceKeys.filter((k) => k === key).length;
+    const produced = outputKeys.filter((k) => k === key).length;
+    if (expected !== produced) leaks.push(`the source has ${expected} code listing(s) of ${key}, the output has ${produced}`);
+  }
 
   const figures = figureLeaks(report.chapters, report.figureFiles);
   check(describeMismatch('image(s) (\\includegraphics)', count(source, /\\includegraphics\b/g), figures.images, 'exactly'));

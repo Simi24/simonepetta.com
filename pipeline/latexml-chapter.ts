@@ -13,9 +13,15 @@ import {
 } from './html-tokens.ts';
 import { NO_FIGURES, rasterTag, tikzSvg, type FigureAssets } from './figures.ts';
 
+/**
+ * What a page of the book is: a numbered chapter (`numero`), a lettered appendix (`etichetta`,
+ * "Appendice A"), or an unnumbered page such as the acknowledgements; the bibliography is flagged.
+ */
 export interface ChapterHead {
-  numero: number;
+  numero?: number;
+  etichetta?: string;
   titolo: string;
+  bibliografia?: true;
 }
 
 export interface Voce {
@@ -79,8 +85,10 @@ function splitHeading(tokens: readonly Token[], heading: number): { tag: string;
   };
 }
 
+const PAGE_SECTIONS = ['ltx_chapter', 'ltx_appendix', 'ltx_bibliography'];
+
 function chapterBounds(tokens: readonly Token[]): { start: number; end: number } {
-  const start = findOpen(tokens, 0, (t) => t.type === 'open' && t.name === 'section' && hasClass(t, 'ltx_chapter'));
+  const start = findOpen(tokens, 0, (t) => t.type === 'open' && t.name === 'section' && PAGE_SECTIONS.some((name) => hasClass(t, name)));
   if (start < 0) throw new Error('no chapter (<section class="ltx_chapter">) found in the LaTeXML page');
   return { start, end: elementEnd(tokens, start) };
 }
@@ -91,9 +99,11 @@ export function readChapterHead(page: string): ChapterHead {
   const heading = findOpen(tokens, start, (t) => t.type === 'open' && t.name === 'h1');
   if (heading < 0) throw new Error('the chapter has no <h1> heading');
   const { tag, title } = splitHeading(tokens, heading);
-  const numero = /\d+/.exec(tag)?.[0];
-  if (numero === undefined || title === '') throw new Error(`cannot read the chapter number and title from "${tag} ${title}"`);
-  return { numero: Number(numero), titolo: title };
+  if (title === '') throw new Error(`cannot read the chapter title from "${tag}"`);
+  if (hasClass(tokens[start]!, 'ltx_bibliography')) return { titolo: title, bibliografia: true };
+  if (tag === '') return { titolo: title };
+  const numero = /^\D*(\d+)$/.exec(tag)?.[1];
+  return numero === undefined ? { etichetta: tag, titolo: title } : { numero: Number(numero), titolo: title };
 }
 
 function readVoce(tokens: readonly Token[], index: number, level: 'h2' | 'h3'): Voce | undefined {
@@ -187,7 +197,8 @@ function replaceElements(tokens: readonly Token[], predicate: (token: Token) => 
 /**
  * A `lstlisting` becomes plain preformatted text: LaTeXML wraps every token in a colored,
  * inline-styled span (colors that ignore the theme) and adds copy/download buttons that run
- * JS and carry the code a second time as a data URI. Only the code text is kept. The block
+ * JS and carry the code a second time as a data URI. Only the code text is kept, with the
+ * quotes LaTeXML curled put back: ’ was an apostrophe, ‘ a backtick. The block
  * scrolls sideways, so it takes focus: a keyboard user can scroll it (WCAG 2.1.1).
  */
 function flattenCodeListings(tokens: readonly Token[]): Token[] {
@@ -206,7 +217,7 @@ function flattenCodeListings(tokens: readonly Token[]): Token[] {
       const lineEnd = elementEnd(tokens, j);
       const code = findOpen(tokens, j, (t) => t.type === 'open' && t.name === 'code');
       const codeEnd = code >= 0 && code < lineEnd ? elementEnd(tokens, code) : -1;
-      lines.push(codeEnd < 0 ? '' : textOf(tokens, code, codeEnd).replace(/\r?\n/g, ''));
+      lines.push(codeEnd < 0 ? '' : textOf(tokens, code, codeEnd).replace(/\r?\n/g, '').replace(/\u2019/g, "'").replace(/\u2018/g, '`'));
       j = lineEnd;
     }
     const body = lines.map((line) => `<span class="ltx_listingline">${line}</span>`).join('\n');
@@ -240,13 +251,35 @@ function renumberAlgorithmLines(tokens: readonly Token[]): Token[] {
   return out;
 }
 
-/** Listing captions say "Listing 3: "; the PDF numbers them per chapter, "Listing 7.3: ". */
-function numberListingsPerChapter(tokens: readonly Token[], chapter: number): Token[] {
+/**
+ * LaTeXML numbers listings across the book: the caption says "Listing 3: " and a reference "3".
+ * The PDF numbers them per chapter, "Listing 7.3: " ("Listing A.1: " in an appendix), and so must
+ * the references to them ("Listato 7.3"), which are matched to their caption by the listing's id.
+ */
+function numberListingsPerChapter(tokens: readonly Token[], chapter: string | undefined): Token[] {
+  if (chapter === undefined) return [...tokens];
   let count = 0;
-  return tokens.map((token, i): Token => {
+  let figureId = '';
+  const labels = new Map<string, string>();
+  const out = tokens.map((token, i): Token => {
+    if (token.type === 'open' && token.name === 'figure' && hasClass(token, 'ltx_lstlisting')) figureId = attribute(token, 'id') ?? '';
     const open = tokens[i - 1];
     if (token.type !== 'text' || open?.type !== 'open' || !hasClass(open, 'ltx_tag_float') || !/^Listing\s\d+:/.test(token.raw)) return token;
-    return { ...token, raw: token.raw.replace(/^(Listing\s)\d+:/, `$1${chapter}.${++count}:`) };
+    const label = `${chapter}.${++count}`;
+    labels.set(figureId, label);
+    return { ...token, raw: token.raw.replace(/^(Listing\s)\d+:/, `$1${label}:`) };
+  });
+  let target: string | undefined;
+  return out.map((token, i): Token => {
+    if (token.type === 'open' && token.name === 'a') {
+      const href = attribute(token, 'href') ?? '';
+      target = /^#LST\d+$/.test(href) ? href.slice(1) : undefined;
+    }
+    const open = out[i - 1];
+    if (target === undefined || token.type !== 'text' || open?.type !== 'open' || !hasClass(open, 'ltx_ref_tag')) return token;
+    const label = labels.get(target);
+    if (label === undefined) throw new Error(`the reference to listing "${target}" points at no listing of its page, so it cannot be numbered like the PDF`);
+    return { ...token, raw: label };
   });
 }
 
@@ -339,7 +372,7 @@ export function processChapter(page: string, links: LinkTargets, figures: Figure
   tokens = dropElements(tokens, (t) => t.type === 'open' && (t.name === 'button' || t.name === 'annotation' || hasClass(t, 'ltx_listing_data')));
   tokens = flattenCodeListings(tokens);
   tokens = renumberAlgorithmLines(tokens);
-  tokens = numberListingsPerChapter(tokens, head.numero);
+  tokens = numberListingsPerChapter(tokens, head.numero?.toString() ?? head.etichetta?.split(' ').pop());
   tokens = keepTabularsOnOneLine(tokens);
   tokens = makeWideMathFocusable(tokens);
 

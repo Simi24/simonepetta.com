@@ -3,6 +3,8 @@ import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, write
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { buildFromLatexml, LeakError, parseLatexmlErrors, parseLatexmlPostErrors } from '../pipeline/appunti-build.ts';
+import { gpuCh1Source } from './support/gpu-ch1-source.ts';
+import { thesisA4Code } from './support/thesis-a4-code.ts';
 import { makeTempDir } from './support/temp-root.ts';
 
 const FIXTURES = new URL('./fixtures/latexml/', import.meta.url).pathname;
@@ -109,6 +111,60 @@ test('a chapter inserted before an existing one does not take its URL', () => {
   assert.equal(slugs[2], first[1], 'the old chapter 2 kept its URL after moving to position 3');
 });
 
+/** The master's thesis shape: acknowledgements, bibliography and an appendix with one listing, besides the chapters. */
+function setupBook(): { htmlDir: string; courseDir: string; source: string } {
+  const { htmlDir, courseDir } = setup();
+  rmSync(join(htmlDir, 'Ch1.html'));
+  rmSync(join(htmlDir, 'Ch2.html'));
+  for (const [from, to] of [['thesis-Chx1.html', 'Chx1.html'], ['thesis-bib.html', 'bib.html'], ['thesis-A4.html', 'A4.html']] as const) {
+    cpSync(join(FIXTURES, from), join(htmlDir, to));
+  }
+  const code = thesisA4Code();
+  const source = [
+    '\\prefacesection{Ringraziamenti}',
+    '\\begin{thebibliography}{00}\n\\bibitem{a} A.\n\\bibitem{b} B.\n\\bibitem{c} C.\n\\end{thebibliography}',
+    '\\begin{appendices}\n\\chapter{Contratti Dati e Payload di Eventi}',
+    `\\begin{lstlisting}\n${code}\n\\end{lstlisting}`,
+    '\\end{appendices}',
+  ].join('\n');
+  return { htmlDir, courseDir, source };
+}
+
+test('acknowledgements, bibliography and appendices become pages in the book\'s order, with URLs that say what they are', () => {
+  const { htmlDir, courseDir, source } = setupBook();
+  buildFromLatexml({ htmlDir, courseDir, corso: 'tesi', source, latexmlErrors: 0 });
+
+  assert.deepEqual(readdirSync(join(courseDir, 'build')).sort(), [
+    'appendice-d-contratti-dati-e-payload-di-eventi.html',
+    'bibliografia.html',
+    'meta.json',
+    'ringraziamenti.html',
+  ]);
+  const capitoli = readMeta(courseDir).capitoli;
+  assert.deepEqual(
+    capitoli.map(({ slug, numero, etichetta, titolo }: Record<string, unknown>) => ({ slug, numero, etichetta, titolo })),
+    [
+      { slug: 'ringraziamenti', numero: undefined, etichetta: undefined, titolo: 'Ringraziamenti' },
+      { slug: 'bibliografia', numero: undefined, etichetta: undefined, titolo: 'Bibliografia' },
+      { slug: 'appendice-d-contratti-dati-e-payload-di-eventi', numero: undefined, etichetta: 'Appendice D', titolo: 'Contratti Dati e Payload di Eventi' },
+    ],
+  );
+  assert.match(readFileSync(join(courseDir, 'build/bibliografia.html'), 'utf8'), /class="ltx_bibitem"/);
+  assert.match(readFileSync(join(courseDir, 'build/appendice-d-contratti-dati-e-payload-di-eventi.html'), 'utf8'), /<pre class="listing"/);
+});
+
+test('a bibliography link in a chapter points at the bibliography page, and a lost listing line fails the conversion', () => {
+  const { htmlDir, courseDir, source } = setupBook();
+  writeFileSync(join(htmlDir, 'Chx1.html'), readFileSync(join(htmlDir, 'Chx1.html'), 'utf8').replace('Desidero', '<a href="bib.html#bib2">[2]</a> Desidero'));
+  buildFromLatexml({ htmlDir, courseDir, corso: 'tesi', source, latexmlErrors: 0 });
+  assert.match(readFileSync(join(courseDir, 'build/ringraziamenti.html'), 'utf8'), /href="\/appunti\/tesi\/bibliografia\/#bib2"/);
+
+  assert.throws(
+    () => buildFromLatexml({ htmlDir, courseDir, corso: 'tesi', source: source.replace(/x+\n(?=\\end\{lstlisting\})/, 'x\nxx\n'), latexmlErrors: 0 }),
+    (error) => error instanceof LeakError && error.leaks.some((leak) => /source has 1 code listing\(s\) of 39 line/.test(leak)),
+  );
+});
+
 test('a leak fails the conversion and leaves the last good build/ untouched', () => {
   const { htmlDir, courseDir, source } = setup();
   buildFromLatexml({ htmlDir, courseDir, corso: 'mini', source, latexmlErrors: 0 });
@@ -149,7 +205,7 @@ function setupWithFigure(alt: Record<string, string>) {
     htmlDir,
     courseDir,
     corso: 'gpu',
-    source: `\\chapter{Introduzione}\n\\includegraphics{${SIMT}}\n`,
+    source: gpuCh1Source(SIMT),
     latexmlErrors: 0,
     figures: {
       rasters: new Map([[SIMT, { name: 'images-simtvssimd.webp', width: 830, height: 316 }]]),

@@ -1,0 +1,291 @@
+\section{Flusso di Continuous Integration}
+Il Listato \ref{lst:ci-workflow} descrive il flusso di Continuous Integration codificato tramite sintassi YAML per la piattaforma GitHub Actions. Il processo automatizza il checkout del codice, la risoluzione dei submodules privati e demanda a un'azione esterna la compilazione dell'immagine container, condizionando l'esecuzione alla presenza di un versionamento semantico formale del codice sorgente.
+
+\begin{lstlisting}[label={lst:ci-workflow}]
+name: Dev CI, docker image build and push
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  IMAGE_CACHE_DIR: /tmp/cache/docker-image
+  IMAGE_CACHE_KEY: cache-image
+  IMAGE_KEY_VERSION: 1
+  SERVICE_NAME: default
+  REPO_NAME: ${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}
+
+jobs:
+  build-and-push:
+    name: Setup, Build and Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+          
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.COMMON_SUBLIBS_APP_ID }}
+          private-key: ${{ secrets.COMMON_SUBLIBS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          
+      - name: Checkout Submodule con Token Personalizzato
+        run: |
+          git config --global url."https://git:${{ steps.app-token.outputs.token }}@github.com/".insteadOf "https://github.com/"
+          git config --global url."https://git:${{ steps.app-token.outputs.token }}@github.com/".insteadOf "git@github.com:"
+          git submodule update --init --recursive
+          
+      - uses: devredops/cicd-release-action@main
+        id: release
+        
+      - name: Set ENV variables
+        run: |
+          echo "REPO_NAME=${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}" >> $GITHUB_ENV
+          
+      - name: Build and Push Docker Image to ECR
+        if: ${{ steps.release.outputs.release-created }}
+        uses: Company/gha-build-and-push-on-ecr@main
+        with:
+          aws-role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME_OLD }}
+          ecr-repository: ${{ env.REPO_NAME }}
+          release-version: ${{ steps.release.outputs.release-version }}
+          
+      - name: Build and Push Docker Image to ECR
+        if: ${{ steps.release.outputs.release-created }}
+        uses: Company/gha-build-and-push-on-ecr@main
+        with:
+          aws-role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          ecr-repository: ${{ env.REPO_NAME }}
+          release-version: ${{ steps.release.outputs.release-version }}
+\end{lstlisting}
+
+
+\section{Azione Composita per la Pubblicazione su Amazon ECR}
+Il Listato \ref{lst:ecr-composite-action} espone l'azione GitHub composita richiamata dalla pipeline principale. Il codice astrae la logica di autenticazione al provider cloud tramite ruoli IAM, gestisce l'istanziazione condizionale del registro contenitori qualora non sia presente, e orchestra l'effettiva compilazione e pubblicazione dell'immagine, garantendo la standardizzazione del processo di build aziendale.
+
+\begin{lstlisting}[label={lst:ecr-composite-action}]
+name: 'gha-build-and-push-on-ecr'
+description: 'Automates the process of building, tagging, and pushing a Docker image to Amazon ECR.'
+
+inputs:
+  aws-role-to-assume:
+    description: "AWS Role to assume"
+    required: true
+  aws-region:
+    description: "AWS Region"
+    default: "eu-west-1"
+    required: true
+  ecr-repository:
+    description: 'Registry Domain'
+    required: true
+  build-platform:
+    description: "Build Platform"
+    default: "linux/arm64"
+    required: true
+  build-folder:
+    default: "."
+    description: "Folder where Dockerfile is located"
+    required: true
+  release-version:
+    description: "Release version es: 1.0.0"
+    required: true
+
+outputs:
+  image-ecr-url:
+    description: ""
+    value: "https://${{ inputs.ecr-repository }}:${{ inputs.release-version }}"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.aws-role-to-assume }}
+        aws-region: ${{ inputs.aws-region }}
+        
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+      
+    - name: Create Amazon ECR, if not exist
+      shell: bash
+      run: |
+        aws ecr describe-repositories --repository-names ${{ inputs.ecr-repository }} || aws ecr create-repository --image-tag-mutability IMMUTABLE --image-scanning-configuration scanOnPush=true --repository-name ${{ inputs.ecr-repository }}
+        
+    - name: Apply ECR Repository Policy
+      shell: bash
+      run: |
+        CURRENT_POLICY=$(aws ecr get-repository-policy --repository-name ${{ inputs.ecr-repository }} --query 'policyText' --output text 2>/dev/null || echo "")
+        LOCAL_POLICY=$(cat ${{ github.action_path }}/ecr-policy.json)
+
+        if [ "$(echo "$CURRENT_POLICY" | jq -S .)" == "$(echo "$LOCAL_POLICY" | jq -S .)" ]; then
+          echo "ECR repository policy is already up-to-date. Skipping."
+        else
+          echo "Applying ECR repository policy."
+          aws ecr set-repository-policy --repository-name ${{ inputs.ecr-repository }} --policy-text file://${{ github.action_path }}/ecr-policy.json
+        fi
+        
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+      
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-publish
+      shell: bash
+      env:
+        ECR_REPOSITORY: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repository }}
+        IMAGE_TAG: ${{ inputs.release-version }}
+      run: |
+        docker build --platform ${{ inputs.build-platform }} --provenance=false -t "$ECR_REPOSITORY:$IMAGE_TAG" ${{ inputs.build-folder }}
+        docker push "$ECR_REPOSITORY:$IMAGE_TAG"
+        echo "IMAGE $IMAGE_TAG is pushed to $ECR_REPOSITORY"
+        echo "image_tag=$IMAGE_TAG" 
+        echo "full_image=$ECR_REPOSITORY:$IMAGE_TAG"
+\end{lstlisting}
+
+
+\section{Flusso di Continuous Deployment}
+Il Listato \ref{lst:cd-workflow} dettaglia la pipeline di Continuous Deployment per la propagazione degli artefatti. Questa action richiede, a differenza delle precedenti, un innesco esplicito (evento \texttt{workflow\_dispatch}) da parte dell'operatore per selezionare l'ambiente di destinazione e distribuire le immagini validate verso gli account segregati di dev o prod.
+
+\begin{lstlisting}[label={lst:cd-workflow}]
+name: Deploy to Environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'The environment to deploy to'
+        required: true
+        type: choice
+        options:
+        - dev
+        - prod
+        default: 'dev'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  IMAGE_CACHE_DIR: /tmp/cache/docker-image
+  IMAGE_CACHE_KEY: cache-image
+  IMAGE_KEY_VERSION: 1
+  SERVICE_NAME: default
+  REPO_NAME: ${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment }} Environment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set release version tag in env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/v}" >> $GITHUB_ENV
+
+      - name: Echo
+        run: |
+          echo "Tag founded is: ${{ env.RELEASE_VERSION }}"
+          echo "repo name is: ${{ env.REPO_NAME }}"
+
+      - name: Get Release Tag
+        run: echo "RELEASE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Echo Release Tag
+        run: "echo Deploying release tag: ${{ env.RELEASE_TAG }} to ${{ github.event.inputs.environment }}"
+
+      - name: Set Lambda Function Name
+        run: |
+            REPO_NAME=${{ env.REPO_NAME }}
+            LAMBDA_NAME="${{ env.REPO_NAME }}-${{ github.event.inputs.environment }}"
+            echo "LAMBDA_FUNCTION_NAME=$LAMBDA_NAME" >> $GITHUB_ENV
+
+      - name: Update Lambda Image (Dev)
+        if: github.event.inputs.environment == 'dev'
+        uses: Company/gha-lambda-image-upload@main
+        with:
+          lambda-function-name: ${{ env.LAMBDA_FUNCTION_NAME }}
+          ecr-repository-uri: ${{ vars.ECR_REPOSITORY_URI }}${{ env.REPO_NAME }}
+          image-tag: ${{ env.RELEASE_VERSION }}
+          aws-role-to-assume: ${{ vars.AWS_ROLE_DEPLOY_DEV }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Update Lambda Image (Prod)
+        if: github.event.inputs.environment == 'prod'
+        uses: Company/gha-lambda-image-upload@main
+        with:
+          lambda-function-name: ${{ env.LAMBDA_FUNCTION_NAME }}
+          ecr-repository-uri: ${{ vars.ECR_REPOSITORY_URI }}${{ env.REPO_NAME }}
+          image-tag: ${{ env.RELEASE_VERSION }}
+          aws-role-to-assume: ${{ vars.AWS_ROLE_DEPLOY_PROD }}
+          aws-region: ${{ vars.AWS_REGION }}
+\end{lstlisting}
+
+\section{Azione Composita per l'aggiornamento dell'immagine ECR}
+Il Listato \ref{lst:lambda-update-action} espone l'azione GitHub composita responsabile dell'aggiornamento del codice applicativo. Il modulo automatizza l'invocazione delle interfacce a riga di comando (CLI) del provider cloud, istruendo l'infrastruttura ad agganciare il nuovo identificativo di versione dell'immagine container e implementando un meccanismo di attesa sincrona per validare l'effettivo completamento del rilascio.
+
+\begin{lstlisting}[label={lst:lambda-update-action}]
+name: 'Update Lambda ECR Image'
+description: 'Updates an AWS Lambda function to use a new ECR image tag.'
+
+inputs:
+  lambda-function-name:
+    description: "The name of the Lambda function to update."
+    required: true
+  ecr-repository-uri:
+    description: "The full URI of the ECR repository."
+    required: true
+  image-tag:
+    description: "The new image tag to deploy (e.g., the release version)."
+    required: true
+  aws-role-to-assume:
+    description: "The ARN of the AWS IAM role to assume for deployment."
+    required: true
+  aws-region:
+    description: "The AWS region where the resources are located."
+    required: true
+    default: "eu-west-1"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.aws-role-to-assume }}
+        aws-region: ${{ inputs.aws-region }}
+
+    - name: Log Update Details
+      shell: bash
+      run: |
+        echo "Updating Lambda function: ${{ inputs.lambda-function-name }}"
+        echo "Using image URI: ${{ inputs.ecr-repository-uri }}:${{ inputs.image-tag }}"
+
+    - name: Update Lambda Function Code
+      shell: bash
+      run: |
+        aws lambda update-function-code \
+          --function-name ${{ inputs.lambda-function-name }} \
+          --image-uri ${{ inputs.ecr-repository-uri }}:${{ inputs.image-tag }}
+
+    - name: Wait for Lambda Update to Complete
+      shell: bash
+      run: |
+        echo "Waiting for the update to complete..."
+        aws lambda wait function-updated-v2 --function-name ${{ inputs.lambda-function-name }}
+        echo "Update for '${{ inputs.lambda-function-name }}' completed successfully."
+\end{lstlisting}

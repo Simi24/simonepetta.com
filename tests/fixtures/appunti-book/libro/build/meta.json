@@ -1,0 +1,14 @@
+{
+  "capitoli": [
+    { "slug": "ringraziamenti", "titolo": "Ringraziamenti", "sezioni": [], "math": false },
+    { "numero": 1, "slug": "1-introduzione", "titolo": "Introduzione", "sezioni": [], "math": false },
+    { "slug": "bibliografia", "titolo": "Bibliografia", "sezioni": [], "math": false },
+    {
+      "etichetta": "Appendice A",
+      "slug": "appendice-a-configurazioni",
+      "titolo": "Configurazioni",
+      "sezioni": [{ "id": "S1", "numero": "A.1", "titolo": "Terragrunt", "sottosezioni": [] }],
+      "math": false
+    }
+  ]
+}

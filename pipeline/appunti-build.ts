@@ -8,7 +8,12 @@ import { processChapter, readChapterHead, type ProcessedChapter, type Sezione } 
 
 /** One chapter as recorded in `build/meta.json`, which the site build reads (`src/lib/corso-build.ts`). */
 export interface CapitoloRecord {
-  numero: number;
+  /** A numbered chapter; absent for an appendix and for unnumbered pages (acknowledgements, bibliography). */
+  numero?: number | undefined;
+  /** A lettered appendix ("Appendice A"). */
+  etichetta?: string | undefined;
+  /** The bibliography page, which the leak detector counts apart from the chapters. */
+  bibliografia?: true;
   slug: string;
   titolo: string;
   sezioni: Sezione[];
@@ -69,13 +74,24 @@ export interface BuildInput {
 /** Where the re-encoded images live inside `build/`. */
 export const FIGURE_DIR = 'figure';
 
-const CHAPTER_FILE = /^Ch(\d+)\.html$/;
+/**
+ * The pages of a book that become chapters, in the order a book has them: the unnumbered front
+ * matter (`Chx1`), the numbered chapters (`Ch1`), the bibliography (`bib`), the appendices (`A1`).
+ */
+const PAGE_FILES = [/^Chx(\d+)\.html$/, /^Ch(\d+)\.html$/, /^bib\.html$/, /^A(\d+)\.html$/];
+
+function pageOrder(file: string): number[] {
+  const group = PAGE_FILES.findIndex((pattern) => pattern.test(file));
+  return group < 0 ? [] : [group, Number(PAGE_FILES[group]!.exec(file)![1] ?? 0)];
+}
+
+const isPage = (file: string): boolean => pageOrder(file).length > 0;
 
 function readPreviousSlugs(courseDir: string): RecordedChapter[] {
   const path = join(courseDir, 'build', 'meta.json');
   if (!existsSync(path)) return [];
   const meta = JSON.parse(readFileSync(path, 'utf8')) as Partial<BuildMeta>;
-  return (meta.capitoli ?? []).map(({ numero, titolo, slug }) => ({ numero, titolo, slug }));
+  return (meta.capitoli ?? []).map(({ numero, etichetta, titolo, slug }) => ({ numero, etichetta, titolo, slug }));
 }
 
 /** The `build/` folder as a staged entry for `swapIn`. */
@@ -105,10 +121,12 @@ export interface PreparedBuild {
  */
 export function prepareBuild(input: BuildInput): PreparedBuild {
   const outputFiles = readdirSync(input.htmlDir);
-  const chapterFiles = outputFiles
-    .filter((file) => CHAPTER_FILE.test(file))
-    .sort((a, b) => Number(CHAPTER_FILE.exec(a)![1]) - Number(CHAPTER_FILE.exec(b)![1]));
-  const extraOutputFiles = outputFiles.filter((file) => file.endsWith('.html') && file !== 'index.html' && !CHAPTER_FILE.test(file));
+  const chapterFiles = outputFiles.filter(isPage).sort((a, b) => {
+    const [groupA = 0, numberA = 0] = pageOrder(a);
+    const [groupB = 0, numberB = 0] = pageOrder(b);
+    return groupA - groupB || numberA - numberB;
+  });
+  const extraOutputFiles = outputFiles.filter((file) => file.endsWith('.html') && file !== 'index.html' && !isPage(file));
 
   const pages = chapterFiles.map((file) => ({ file, html: readFileSync(join(input.htmlDir, file), 'utf8') }));
   const heads = pages.map((page) => readChapterHead(page.html));
@@ -141,7 +159,9 @@ export function prepareBuild(input: BuildInput): PreparedBuild {
 
   const meta: BuildMeta = {
     capitoli: chapters.map((chapter, i) => ({
-      numero: chapter.numero,
+      ...(chapter.numero === undefined ? {} : { numero: chapter.numero }),
+      ...(chapter.etichetta === undefined ? {} : { etichetta: chapter.etichetta }),
+      ...(chapter.bibliografia === true ? { bibliografia: true as const } : {}),
       slug: slugs[i]!,
       titolo: chapter.titolo,
       sezioni: chapter.sezioni,

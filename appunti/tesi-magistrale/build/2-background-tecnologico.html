@@ -1,0 +1,350 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">Il presente capitolo illustra i paradigmi architetturali e le tecnologie che costituiscono le fondamenta del lavoro di tesi. La ratio logica di questa sezione segue un approccio top-down: si analizzano inizialmente i pattern architetturali distribuiti per giustificare la scelta del modello Serverless; successivamente, si esamina lo specifico stack tecnologico offerto da Amazon Web Services (AWS) per l’implementazione di tali pattern; infine, si descrivono gli strumenti di automazione e le metodologie operative necessari per gestire in modo rigoroso l’infrastruttura e il ciclo di sviluppo.</p>
+</div>
+<section id="S1" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">2.1</span> Architetture Distribuite e Cloud Computing</h2>
+
+<div id="S1.p1" class="ltx_para">
+<p class="ltx_p">L’ingegneria del software moderna privilegia l’adozione di sistemi distribuiti e modulari rispetto alle tradizionali architetture monolitiche, al fine di garantire una maggiore tolleranza ai guasti e un’allocazione scalabile delle risorse.</p>
+</div>
+<section id="S1.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.1.1</span> Il modello a Microservizi: vantaggi e complessità operativa</h3>
+
+<div id="S1.SS1.p1" class="ltx_para">
+<p class="ltx_p">L’architettura a microservizi scompone un’applicazione in un insieme di servizi indipendenti, ciascuno eseguito in un proprio processo e comunicante tramite protocolli leggeri, tipicamente API HTTP, come formalizzato da Dragoni et al. <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib1">1</a>]</cite>. Questa suddivisione, illustrata in Figura <a title="Figura 1 ‣ 2.1.1 Il modello a Microservizi: vantaggi e complessità operativa ‣ 2.1 Architetture Distribuite e Cloud Computing ‣ Capitolo 2 Background Tecnologico ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F1"><span class="ltx_text ltx_ref_tag">1</span></a>, consente lo scaling orizzontale dei singoli componenti e disaccoppia i cicli di sviluppo dei vari team.
+La letteratura scientifica concorda nell’affermare che tale paradigma introduce un elevato grado di complessità operativa <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib2">2</a>]</cite>. Nello specifico, la gestione di chiamate di rete, il mantenimento della consistenza dei dati in sistemi distribuiti e l’orchestrazione del deployment di molteplici unità indipendenti richiedono infrastrutture di automazione rigorose.</p>
+</div>
+<figure id="F1" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-monolitevsmicro.drawio.webp" width="694" height="379" loading="lazy" alt="A sinistra l'architettura monolitica: tre cerchi sovrapposti, UI, Business Logic e Data Access Layer, collegati a un solo Database. A destra l'architettura a microservizi: una UI collegata a tre cerchi Microservice, ciascuno con il proprio Database."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 1</span>: </span><span class="ltx_text">Confronto strutturale tra architettura Monolitica e a Microservizi [Elaborazione dell’autore]</span></figcaption>
+</figure>
+</div>
+</section>
+<section id="S1.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.1.2</span> Serverless Computing e Function-as-a-Service (FaaS)</h3>
+
+<div id="S1.SS2.p1" class="ltx_para">
+<p class="ltx_p">Il Serverless Computing delega al fornitore Cloud la completa gestione dell’allocazione e del provisioning delle risorse computazionali. Come definito da Jonas et al. <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib3">3</a>]</cite>, questo modello combina servizi di backend gestiti con il paradigma Function-as-a-Service (FaaS).
+L’operatore fornisce il codice sorgente sotto forma di funzioni, le quali vengono eseguite esclusivamente in reazione a specifici eventi. Questo approccio elimina la manutenzione dei server virtuali e introduce un modello di tariffazione basato sul consumo reale: i costi derivano dal tempo di esecuzione, misurato in millisecondi, e dalla memoria allocata, differenziandosi dai modelli basati sulla disponibilità fissa delle istanze <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib27">27</a>]</cite>.
+L’infrastruttura Serverless risulta particolarmente indicata per la gestione di carichi di lavoro discontinui. La presenza di piani tariffari gratuiti per i bassi volumi di traffico consente inoltre di mantenere i costi infrastrutturali prossimi allo zero per gli ambienti di test e per ambienti a basso carico <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib4">4</a>]</cite>.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S2" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">2.2</span> Stack Tecnologico per High-Throughput su AWS</h2>
+
+<div id="S2.p1" class="ltx_para">
+<p class="ltx_p">Amazon Web Services (AWS) eroga una suite di servizi per l’implementazione di architetture Serverless. La selezione di tale fornitore si basa sull’integrazione nativa tra i componenti di calcolo, archiviazione ed elaborazione dati.</p>
+</div>
+<section id="S2.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.2.1</span> Compute Layer: AWS Lambda</h3>
+
+<div id="S2.SS1.p1" class="ltx_para">
+<p class="ltx_p">AWS Lambda è il servizio di calcolo guidato da eventi che esegue la logica applicativa dell’architettura proposta. Nei sistemi event-driven, il flusso di esecuzione è innescato da variazioni di stato, come il caricamento di un file o la ricezione di una richiesta di rete <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib5">5</a>]</cite>.</p>
+</div>
+<div id="S2.SS1.p2" class="ltx_para">
+<p class="ltx_p">Le funzioni Lambda sono definite da due proprietà tecniche fondamentali. La prima è l’assenza di stato (stateless): l’ambiente di esecuzione non conserva memoria delle invocazioni precedenti, rendendo necessario l’utilizzo di servizi di storage esterni per la persistenza dei dati.
+La seconda proprietà riguarda l’effimerità dell’ambiente di calcolo. Il container che ospita il codice viene istanziato al verificarsi dell’evento e sospeso o terminato al completamento dell’esecuzione. Questa dinamica introduce il fenomeno noto come Cold Start, visibile in Figura <a title="Figura 2 ‣ 2.2.1 Compute Layer: AWS Lambda ‣ 2.2 Stack Tecnologico per High-Throughput su AWS ‣ Capitolo 2 Background Tecnologico ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F2"><span class="ltx_text ltx_ref_tag">2</span></a>, ovvero una latenza aggiuntiva dovuta al tempo di inizializzazione del runtime durante la prima invocazione, che necessita di specifiche strategie di mitigazione <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib11">11</a>]</cite>.</p>
+</div>
+<figure id="F2" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-lambda_cold_start.webp" width="534" height="127" loading="lazy" alt="Grafico a linea della latenza in millisecondi (asse da 0 a 200) per AWS nell'arco di 168 ore: la linea oscilla intorno a 170-190 ms lungo tutto il periodo, con un valore iniziale leggermente più alto."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 2</span>: </span><span class="ltx_text">Latenza introdotta dal Cold Start (in ms) nell’arco di 168 ore. La prima invocazione richiede l’inizializzazione del runtime [Fonte: Wang et al., 2018]</span></figcaption>
+</figure>
+</div>
+</section>
+<section id="S2.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.2.2</span> Gestione delle API: Amazon API Gateway</h3>
+
+<div id="S2.SS2.p1" class="ltx_para">
+<p class="ltx_p">Amazon API Gateway funge da interfaccia per l’esposizione di API su protocollo HTTP/HTTPS, indirizzando le richieste client verso i servizi backend. Le funzionalità principali includono il controllo degli accessi, la limitazione della frequenza delle richieste (throttling) e il monitoraggio del traffico.
+L’integrazione tramite Lambda Proxy demanda la formattazione della richiesta e della risposta direttamente alla funzione Lambda associata, semplificando la topologia di instradamento <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib12">12</a>]</cite>.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.2.3</span> Orchestrazione Eventi e Scheduling: Amazon EventBridge</h3>
+
+<div id="S2.SS3.p1" class="ltx_para">
+<p class="ltx_p">L’integrazione tra microservizi asincroni richiede un sistema di messaggistica affidabile. Amazon EventBridge è un bus di eventi che orchestra la comunicazione tra applicazioni e servizi AWS. Esso implementa anche meccanismi di pianificazione, abilitando l’esecuzione di funzioni Lambda a intervalli regolari. Questa caratteristica è essenziale per automatizzare l’avvio di pipeline di estrazione, trasformazione e caricamento (ETL) e processi batch <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib13">13</a>]</cite>.</p>
+</div>
+<figure id="F3" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-pipeline-etl.drawio.webp" width="505" height="413" loading="lazy" alt="Diagramma della pipeline ETL: Event Bridge avvia la Lambda Extractor, che scrive nel percorso raw/ di un bucket S3. Un evento di scrittura su raw attiva la Lambda Transformer, che scrive clean/file.parquet nel bucket. Un evento di scrittura su clean attiva Glue, che aggiorna data_catalog/. Athena interroga il bucket."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 3</span>: </span><span class="ltx_text">Topologia di una pipeline ETL Serverless. Il flusso evidenzia l’estrazione da S3, la trasformazione via AWS Glue e l’esposizione per l’interrogazione tramite Amazon Athena [Elaborazione dell’autore]</span></figcaption>
+</figure>
+</div>
+</section>
+<section id="S2.SS4" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.2.4</span> Messaggistica Asincrona e Pattern Publish-Subscribe: Amazon SNS</h3>
+
+<div id="S2.SS4.p1" class="ltx_para">
+<p class="ltx_p">Nelle architetture a microservizi guidate da eventi, il disaccoppiamento tra i componenti produttori di dati e i componenti consumatori rappresenta un requisito primario per garantire la scalabilità indipendente. Tale disaccoppiamento è tipicamente implementato attraverso il pattern architetturale Publish-Subscribe (Pub/Sub) <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib15">15</a>]</cite>.</p>
+</div>
+<div id="S2.SS4.p2" class="ltx_para">
+<p class="ltx_p">All’interno della piattaforma cloud in esame, questo pattern è concretizzato tramite Amazon Simple Notification Service (SNS). SNS opera come un servizio di messaggistica distribuito che facilita l’invio di messaggi (eventi) da un singolo applicativo (publisher) verso molteplici destinazioni (subscriber) in modalità asincrona. L’entità logica centrale è il <em class="ltx_emph ltx_font_italic">topic</em>, un canale di comunicazione a cui i publisher inviano i messaggi e a cui i subscriber, come ad esempio funzioni AWS Lambda o endpoint HTTP, si registrano per riceverli <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib14">14</a>]</cite>. Questa configurazione abilita il <em class="ltx_emph ltx_font_italic">fan-out</em> architetturale: un singolo evento innesca parallelamente molteplici flussi di elaborazione indipendenti, senza che il sistema originario debba gestire la logica di smistamento o conoscere a priori l’identità dei destinatari.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS5" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.2.5</span> Container Registry: Amazon ECR</h3>
+
+<div id="S2.SS5.p1" class="ltx_para">
+<p class="ltx_p">Le prassi standard di deployment prevedono l’utilizzo di immagini conformi alle specifiche OCI (Open Container Initiative) per incapsulare il software e le relative dipendenze. Amazon Elastic Container Registry (ECR) ospita le immagini Docker destinate all’esecuzione su AWS Lambda. Questo approccio sfrutta la memorizzazione nella cache dei livelli dell’immagine per ottimizzare i tempi di rilascio e permette l’inclusione di librerie scientifiche complesse, aggirando i limiti dimensionali dei tradizionali pacchetti compressi <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib20">20</a>]</cite>.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS6" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.2.6</span> Gestione della persistenza: Amazon DynamoDB e S3</h3>
+
+<div id="S2.SS6.p1" class="ltx_para">
+<p class="ltx_p">La natura stateless delle funzioni Lambda impone l’adozione di sistemi di persistenza in grado di supportare l’elevata concorrenza generata dal livello di calcolo. L’architettura fa affidamento su due soluzioni distinte.
+La prima soluzione è Amazon DynamoDB, un database NoSQL di tipo chiave-valore. A differenza dei database relazionali, DynamoDB implementa uno scaling orizzontale, garantendo latenze ridotte anche durante i picchi di traffico. L’utilizzo di questo servizio implica la progettazione di schemi dati specifici, come il Single Table Design, per ottimizzare i percorsi di lettura e scrittura <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib16">16</a>]</cite>.</p>
+</div>
+<div id="S2.SS6.p2" class="ltx_para">
+<p class="ltx_p">La seconda soluzione per la persistenza è Amazon S3, un servizio di archiviazione a oggetti. Esso assolve la funzione di repository per i dati non strutturati e agisce come livello di storage persistente per l’implementazione del Data Lake aziendale <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib17">17</a>]</cite>.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS7" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.2.7</span> Integrazione Dati: AWS Glue e Amazon Athena</h3>
+
+<div id="S2.SS7.p1" class="ltx_para">
+<p class="ltx_p">L’elaborazione dei dati all’interno del sistema richiede l’implementazione di pipeline ETL, il cui scopo è estrarre dati grezzi, trasformarli in formati analitici e caricarli nelle destinazioni finali. A tal fine, vengono impiegati due servizi cooperanti.
+Il primo componente è AWS Glue, utilizzato nel sistema principalmente come Data Catalog. In questa architettura, il servizio non viene impiegato per l’esecuzione di cluster Spark <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib30">30</a>]</cite> distribuiti, bensì per il mantenimento di un catalogo di metadati centralizzato che descrive la struttura dei file Parquet <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib50">50</a>]</cite> depositati nelle zone di archiviazione. L’operatore definisce tramite Glue gli schemi delle tabelle e la gerarchia delle partizioni temporali. Questo meccanismo permette al sistema di mappare i percorsi fisici su S3 verso entità logiche interrogate dai motori di calcolo superiori.
+Il secondo componente è Amazon Athena, un motore di query interattivo basato su standard SQL che implementa il paradigma schema-on-read. Il servizio interroga direttamente il Data Catalog di Glue per risolvere la struttura dei dati e i predicati di partizionamento, senza la necessità di caricare preventivamente le informazioni in un database relazionale dedicato. Questa integrazione permette di eseguire analisi complesse sui dataset consolidati nel Data Lake, garantendo prestazioni elevate e una riduzione dei volumi di scansione tramite l’esclusione sistematica delle directory non pertinenti alla finestra temporale analizzata<cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib18">18</a>]</cite>.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS8" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.2.8</span> Sicurezza, Identità e Controllo Accessi: IAM e Cognito</h3>
+
+<div id="S2.SS8.p1" class="ltx_para">
+<p class="ltx_p">In un’architettura distribuita basata su cloud, la sicurezza e l’isolamento delle risorse richiedono meccanismi di autenticazione e autorizzazione rigorosi, operanti a due livelli distinti: infrastrutturale e applicativo.</p>
+</div>
+<div id="S2.SS8.p2" class="ltx_para">
+<p class="ltx_p">Il controllo degli accessi a livello infrastrutturale è governato da AWS Identity and Access Management (IAM). Questo servizio consente di definire in modo granulare quali entità (utenti umani, servizi o risorse di calcolo) dispongano delle autorizzazioni per invocare specifiche API cloud <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib21">21</a>]</cite>. La piattaforma in oggetto applica rigidamente il principio del privilegio minimo (Principle of Least Privilege): ogni microservizio, implementato tramite AWS Lambda, assume un ruolo IAM temporaneo dotato esclusivamente dei permessi strettamente necessari per l’esecuzione del proprio task, riducendo drasticamente la superficie di attacco <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib6">6</a>]</cite>.</p>
+</div>
+<div id="S2.SS8.p3" class="ltx_para">
+<p class="ltx_p">A livello applicativo, la gestione delle identità degli utenti finali è demandata ad Amazon Cognito, come illustrato in Figura <a title="Figura 4 ‣ 2.2.8 Sicurezza, Identità e Controllo Accessi: IAM e Cognito ‣ 2.2 Stack Tecnologico per High-Throughput su AWS ‣ Capitolo 2 Background Tecnologico ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F4"><span class="ltx_text ltx_ref_tag">4</span></a>. Cognito agisce come Identity Provider (IdP) e si integra nativamente con API Gateway per validare le richieste in ingresso. Al superamento delle credenziali, il servizio emette token aderenti allo standard JSON Web Token (JWT) <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib22">22</a>]</cite>. API Gateway intercetta questi token, ne verifica crittograficamente la firma e autorizza l’inoltro della richiesta al livello di calcolo sottostante, disaccoppiando così la logica di autenticazione dalla logica di business applicativa <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib23">23</a>]</cite>.</p>
+</div>
+<figure id="F4" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-cognito-api.drawio.webp" width="505" height="289" loading="lazy" alt="Diagramma dentro il riquadro AWS Cloud: un utente comunica in entrambe le direzioni con API Gateway; API Gateway invia richieste a una funzione Lambda e ne riceve la risposta, e invia la richiesta a un servizio di identità (Cognito) da cui riceve la risposta."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 4</span>: </span><span class="ltx_text">Schema del flusso di comunicazione tra Api Gateway, Lambda e Cognito [Elaborazione dell’autore]</span></figcaption>
+</figure>
+</div>
+</section>
+<section id="S2.SS9" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.2.9</span> Osservabilità e Monitoraggio: Amazon CloudWatch</h3>
+
+<div id="S2.SS9.p1" class="ltx_para">
+<p class="ltx_p">La natura effimera e asincrona delle architetture Serverless rende inapplicabili i tradizionali approcci di debugging basati sull’accesso diretto ai server. Di conseguenza, l’osservabilità diviene un requisito architetturale primario per garantire la tracciabilità e la diagnostica del sistema <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib7">7</a>]</cite>.</p>
+</div>
+<div id="S2.SS9.p2" class="ltx_para">
+<p class="ltx_p">Il servizio Amazon CloudWatch costituisce il fulcro dell’infrastruttura di monitoraggio. Esso espleta tre funzioni essenziali: l’aggregazione centralizzata dei log generati dai container Lambda, la raccolta di metriche prestazionali (quali latenza di esecuzione, tasso di errore e consumo di memoria) e la gestione di allarmi automatizzati <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib24">24</a>]</cite>. L’integrazione di CloudWatch garantisce agli operatori la visibilità sullo stato di salute dell’intero stack applicativo, fornendo i dati necessari per ottimizzare le risorse allocate e risolvere eventuali anomalie operative.</p>
+</div>
+</div>
+</section>
+<section id="S2.SS10" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.2.10</span> Gestione Finanziaria e FinOps: AWS Cost Explorer</h3>
+
+<div id="S2.SS10.p1" class="ltx_para">
+<p class="ltx_p">Il paradigma del Cloud Computing trasforma le spese in conto capitale (CapEx) in spese operative (OpEx), introducendo un modello di fatturazione basato sul consumo effettivo (pay-as-you-go). In architetture ad alta densità di eventi, la frammentazione dei componenti serverless rende il monitoraggio finanziario un requisito ingegneristico fondamentale, inquadrato nella disciplina del Cloud Financial Management o FinOps <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib8">8</a>]</cite>.</p>
+</div>
+<div id="S2.SS10.p2" class="ltx_para">
+<p class="ltx_p">L’analisi e l’ottimizzazione della spesa all’interno della piattaforma sono demandate ad AWS Cost Explorer. Questo servizio elabora i dati di telemetria finanziaria fornendo interfacce per la visualizzazione storica, l’identificazione delle anomalie e la previsione dei costi futuri <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib25">25</a>]</cite>.</p>
+</div>
+<div id="S2.SS10.p3" class="ltx_para">
+<p class="ltx_p">Un meccanismo essenziale per la ripartizione dei costi in ambienti complessi è costituito dai Cost Allocation Tags. Attraverso l’applicazione di metadati strutturati alle singole risorse infrastrutturali, Cost Explorer aggrega la spesa per dominio logico (ad esempio, per ambiente di rilascio, centro di costo o specifico microservizio). Questa aggregazione abilita il tracciamento granulare del costo per singola transazione e garantisce la tracciabilità economica dell’intero stack applicativo <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib26">26</a>]</cite>.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S3" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">2.3</span> Sviluppo Applicativo: Servizi e Worker</h2>
+
+<div id="S3.p1" class="ltx_para">
+<p class="ltx_p">I microservizi sviluppati si dividono in due categorie funzionali: i servizi di backend che espongono API sincrone e i worker asincroni adibiti all’elaborazione dei dati.</p>
+</div>
+<section id="S3.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.3.1</span> Sviluppo di Backend API con FastAPI</h3>
+
+<div id="S3.SS1.p1" class="ltx_para">
+<p class="ltx_p">La programmazione dei servizi API si avvale di Python, ampiamente adottato per lo sviluppo backend <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib31">31</a>]</cite>, e del framework FastAPI. Oltre al supporto nativo per la concorrenza asincrona, FastAPI utilizza la libreria Pydantic per validare a runtime la struttura dei dati in ingresso e in uscita. Questo meccanismo previene gli errori legati alla tipizzazione e garantisce l’aderenza delle richieste ai formati attesi <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib32">32</a>]</cite>. Il framework genera inoltre autonomamente la specifica OpenAPI, facilitando la documentazione delle interfacce.</p>
+</div>
+</div>
+</section>
+<section id="S3.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.3.2</span> Elaborazione Asincrona: Event-Driven Workers</h3>
+
+<div id="S3.SS2.p1" class="ltx_para">
+<p class="ltx_p">A differenza dei servizi API, che seguono un paradigma richiesta-risposta sincrono, i worker operano in modalità totalmente asincrona e disaccoppiata, come illustrato nello schema in Figura <a title="Figura 9 ‣ 3.3.1 Decomposizione Event-Driven ed ETL Serverless ‣ 3.3 Progettazione del Livello Dati e Flussi Asincroni ‣ Capitolo 3 Analisi e Design ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="/appunti/tesi-magistrale/3-analisi-e-design/#F9"><span class="ltx_text ltx_ref_tag">9</span></a>. In un’architettura guidata da eventi, un worker è un componente software incaricato di eseguire operazioni ad alta intensità computazionale o processi di background, quali le trasformazioni ETL (Extract, Transform, Load), la pulizia dei dati o la sincronizzazione con sistemi di terze parti.</p>
+</div>
+<div id="S3.SS2.p2" class="ltx_para">
+<p class="ltx_p">L’esecuzione di un worker non è innescata da una chiamata HTTP diretta, bensì da eventi di sistema emessi dall’infrastruttura cloud. Tali eventi includono il caricamento di un oggetto in un bucket Amazon S3, la pubblicazione di un messaggio su un topic SNS, o lo scoccare di una regola cronologica definita in Amazon EventBridge. Questo radicale disaccoppiamento garantisce la scalabilità indipendente dei processi di elaborazione dati, impedendo che i carichi di lavoro intensivi saturino le risorse o aumentino la latenza delle interfacce esposte agli utenti <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib5">5</a>]</cite>.</p>
+</div>
+</div>
+</section>
+<section id="S3.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.3.3</span> Adattamento al runtime Lambda: Mangum e Lambda RIC</h3>
+
+<div id="S3.SS3.p1" class="ltx_para">
+<p class="ltx_p">L’esecuzione del codice all’interno dell’ambiente AWS Lambda necessita di moduli di interfaccia specifici per colmare la differenza tra i protocolli standard e gli eventi proprietari del cloud provider.
+Per i servizi API, viene utilizzato Mangum, come illustrato in Figura <a title="Figura 5 ‣ 2.3.3 Adattamento al runtime Lambda: Mangum e Lambda RIC ‣ 2.3 Sviluppo Applicativo: Servizi e Worker ‣ Capitolo 2 Background Tecnologico ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#F5"><span class="ltx_text ltx_ref_tag">5</span></a>. Questo adattatore converte i payload JSON forniti da API Gateway in richieste HTTP standardizzate, permettendo l’esecuzione di applicazioni conformi allo standard ASGI (come FastAPI) all’interno di Lambda <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib33">33</a>]</cite>.
+Per i worker asincroni, si impiega l’AWS Lambda Runtime Interface Client (RIC). Tale libreria espone l’API del runtime Lambda ai container Docker personalizzati, consentendo l’esecuzione di script Python generici in risposta a eventi non HTTP.</p>
+</div>
+<figure id="F5" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-mangum.drawio.webp" width="685" height="208" loading="lazy" alt="Diagramma: un client invia HTTP Request e riceve HTTP Response da API Gateway. Dentro AWS Lambda, API Gateway passa un AWS JSON Event all'adattatore Mangum, che passa un ASGI Scope a FastAPI; FastAPI risponde con ASGI Send a Mangum, che restituisce una AWS JSON Response ad API Gateway."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 5</span>: </span><span class="ltx_text">Schema del flusso di adattamento tramite Mangum. L’evento AWS viene tradotto in una richiesta compatibile con l’interfaccia ASGI [Elaborazione dell’autore]</span></figcaption>
+</figure>
+</div>
+</section>
+</div>
+</section>
+<section id="S4" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">2.4</span> Infrastructure as Code con Terraform</h2>
+
+<div id="S4.p1" class="ltx_para">
+<p class="ltx_p">La configurazione manuale tramite interfaccia grafica di infrastrutture complesse risulta soggetta a errori e non replicabile. L’approccio Infrastructure as Code (IaC) mitiga queste problematiche definendo l’infrastruttura tramite file di testo strutturati.</p>
+</div>
+<section id="S4.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.4.1</span> Il paradigma dell’Infrastruttura Immutabile</h3>
+
+<div id="S4.SS1.p1" class="ltx_para">
+<p class="ltx_p">L’IaC abilita il controllo di versione per l’infrastruttura tramite Git <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib35">35</a>]</cite>, assoggettandola ai medesimi processi di revisione del codice software. Strumenti come Terraform utilizzano un approccio dichiarativo: l’ingegnere specifica lo stato finale atteso per le risorse cloud, ed è responsabilità del software calcolare il piano di esecuzione e applicare le mutazioni necessarie per allineare l’ambiente reale alla configurazione definita <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib34">34</a>]</cite>.</p>
+</div>
+</div>
+</section>
+<section id="S4.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.4.2</span> Modularità e Gestione dello Stato</h3>
+
+<div id="S4.SS2.p1" class="ltx_para">
+<p class="ltx_p">Terraform mappa la configurazione dichiarata con le risorse allocate sul cloud attraverso un file di stato remoto. Al fine di standardizzare la creazione delle risorse ed evitare la duplicazione del codice, l’architettura fa ampio uso dei moduli Terraform. L’incapsulamento delle definizioni infrastrutturali all’interno di moduli riutilizzabili assicura che ogni nuovo servizio ereditato rispetti intrinsecamente i parametri di sicurezza e di tracciamento aziendali <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib36">36</a>]</cite>.</p>
+</div>
+</div>
+</section>
+<section id="S4.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.4.3</span> Orchestrazione dell’Infrastruttura e principio DRY: Terragrunt</h3>
+
+<div id="S4.SS3.p1" class="ltx_para">
+<p class="ltx_p">La gestione di architetture multi-ambiente tramite il solo framework Terraform impone la replicazione del codice dichiarativo per ogni contesto di esecuzione, incrementando il debito tecnico. Per risolvere questa limitazione strutturale, l’architettura si avvale di Terragrunt. Terragrunt è un orchestratore open-source che agisce come livello di astrazione (wrapper) superiore rispetto all’eseguibile nativo di Terraform. Il software intercetta i comandi operativi impartiti dall’utente e inietta dinamicamente i parametri di configurazione prima di delegarne l’esecuzione al motore di provisioning sottostante.</p>
+</div>
+<div id="S4.SS3.p2" class="ltx_para">
+<p class="ltx_p">L’adozione di questo orchestratore abilita l’applicazione rigorosa del principio ingegneristico Don’t Repeat Yourself. L’ingegnere definisce la logica di creazione delle risorse una singola volta all’interno di moduli Terraform generici e isolati. Successivamente, tramite i file di configurazione proprietari di Terragrunt, il sistema instaura delle gerarchie di ereditarietà. Le directory che mappano gli ambienti fisici (come lo sviluppo o la produzione) si limitano a ereditare la logica del modulo base, sovrascrivendo unicamente le variabili specifiche del contesto, quali il dimensionamento computazionale o i puntamenti di rete.</p>
+</div>
+<div id="S4.SS3.p3" class="ltx_para">
+<p class="ltx_p">Oltre alla deduplicazione del codice, l’orchestratore automatizza la gestione dello stato remoto (remote state). Terragrunt genera e configura dinamicamente i backend di archiviazione per ogni singolo ambiente, prevenendo errori di configurazione manuale che causerebbero la corruzione dello stato infrastrutturale. Questa standardizzazione assicura che i file di stato rimangano rigorosamente segregati per ciascun account cloud aziendale.</p>
+</div>
+<div id="S4.SS3.p4" class="ltx_para">
+<p class="ltx_p">Infine, il framework introduce costrutti dichiarativi espliciti per la risoluzione delle dipendenze inter-modulo. Terraform nativamente non permette di orchestrare moduli situati in directory distinte; Terragrunt supera questo ostacolo calcolando il grafo topologico dell’intera infrastruttura. Questa funzionalità permette al sistema di passare le variabili di output di un modulo (come l’identificativo di una rete appena creata) come parametri di input per un modulo dipendente (come un cluster di calcolo), garantendo il rispetto della corretta sequenza logica durante le operazioni di rilascio. <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib37">37</a>]</cite></p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S5" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">2.5</span> Automazione del Ciclo di Vita del Software (SDLC)</h2>
+
+<div id="S5.p1" class="ltx_para">
+<p class="ltx_p">L’automazione del ciclo di sviluppo (SDLC) si prefigge di ottimizzare l’iterazione tra la stesura del codice, la sua validazione e la successiva messa in produzione.</p>
+</div>
+<section id="S5.SS1" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.5.1</span> Containerizzazione e parità degli ambienti</h3>
+
+<div id="S5.SS1.p1" class="ltx_para">
+<p class="ltx_p">La distribuzione del codice tramite archivi compressi comporta limitazioni operative, quali la difficoltà di includere librerie pre-compilate e l’impossibilità di garantire l’identità tra l’ambiente di sviluppo e quello di esecuzione. L’adozione dello standard Docker permette di incapsulare l’applicativo, le librerie e il sistema operativo di base all’interno di un’immagine immutabile. Questo garantisce la parità degli ambienti, assicurando che il comportamento del software validato localmente dallo sviluppatore rimanga coerente una volta rilasciato nell’infrastruttura di produzione <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib38">38</a>]</cite>.</p>
+</div>
+</div>
+</section>
+<section id="S5.SS2" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.5.2</span> Emulazione Cloud per lo sviluppo locale: LocalStack</h3>
+
+<div id="S5.SS2.p1" class="ltx_para">
+<p class="ltx_p">Un ostacolo intrinseco allo sviluppo di applicazioni Cloud-Native è la latenza introdotta dalla necessità di distribuire ogni singola modifica sull’infrastruttura remota per poterne verificare il funzionamento. Questa dipendenza dilata i tempi del ciclo di iterazione locale, definito come la sequenza di scrittura, compilazione e test del codice <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib39">39</a>]</cite>.
+Per ripristinare un ciclo di sviluppo rapido, viene impiegato LocalStack, un emulatore che espone API compatibili con i principali servizi AWS. L’esecuzione di LocalStack tramite container permette di simulare l’interazione tra componenti come Lambda, DynamoDB e S3 direttamente sulla postazione di lavoro, abilitando il collaudo del software in assenza di connettività verso il cloud e abbattendo i tempi di attesa <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib40">40</a>]</cite>.</p>
+</div>
+</div>
+</section>
+<section id="S5.SS3" class="ltx_subsection normal">
+<div class="section level3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection header-section-number">2.5.3</span> Continuous Integration e Delivery (CI/CD)</h3>
+
+<div id="S5.SS3.p1" class="ltx_para">
+<p class="ltx_p">Le pratiche di Continuous Integration e Continuous Delivery automatizzano le fasi di test e rilascio. Tramite piattaforme come GitHub Actions, il caricamento di nuovo codice sorgente innesca l’esecuzione sequenziale di test unitari, la compilazione delle immagini Docker e il caricamento sul registro ECR. Questo flusso di lavoro automatizzato esclude le operazioni manuali dai processi di deployment, garantendo la riproducibilità tecnica dei rilasci <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib41">41</a>]</cite>.</p>
+</div>
+</div>
+</section>
+</div>
+</section>
+<section id="S6" class="ltx_section normal">
+<div class="section level2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section header-section-number">2.6</span> Evoluzione dell’Automazione: LLM e Model Context Protocol</h2>
+
+<div id="S6.p1" class="ltx_para">
+<p class="ltx_p">La recente diffusione dei Large Language Models (LLM) ha introdotto nuovi paradigmi nell’ambito dell’ingegneria del software, estendendo le capacità di automazione oltre la generazione statica di codice <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib44">44</a>]</cite>. Tuttavia, l’efficacia di tali modelli in contesti aziendali è storicamente limitata dal loro isolamento rispetto agli ambienti di esecuzione locali e alle infrastrutture proprietarie.</p>
+</div>
+<div id="S6.p2" class="ltx_para">
+<p class="ltx_p">Per superare tale limitazione, la letteratura tecnica ha formalizzato il concetto di <span class="ltx_text ltx_font_italic">Tool Use</span> (o <span class="ltx_text ltx_font_italic">Function Calling</span>), ovvero la capacità di un modello di delegare l’esecuzione di calcoli deterministici o l’interazione con sistemi esterni a script predefiniti <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib45">45</a>]</cite>.
+In questo contesto si inserisce il Model Context Protocol (MCP), uno standard aperto introdotto per uniformare la comunicazione tra le applicazioni di intelligenza artificiale (Client) e le sorgenti di dati o gli strumenti operativi (Server) <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib43">43</a>]</cite>.</p>
+</div>
+<div id="S6.p3" class="ltx_para">
+<p class="ltx_p">Il protocollo MCP adotta un’architettura client-server standardizzata, definendo un insieme rigoroso di primitive per l’esposizione di risorse, prompt e strumenti (Tools). Tale astrazione permette agli ambienti di sviluppo integrati (IDE) dotati di agenti conversazionali di interrogare un server MCP locale o remoto per scoprire quali operazioni infrastrutturali siano disponibili, ottenendo in risposta il relativo schema JSON dei parametri richiesti.
+Al fine di accelerare lo sviluppo di server compatibili con tale standard, l’ecosistema Python mette a disposizione librerie come FastMCP <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib46">46</a>]</cite>. Questi framework astraggono la complessità del trasporto a basso livello (gestito tipicamente tramite stdio o Server-Sent Events), consentendo all’ingegnere di mappare le funzioni Python direttamente sulle interfacce del protocollo tramite l’impiego di decoratori sintattici, garantendo la validazione automatica dei tipi in ingresso e in uscita.</p>
+</div>
+<figure id="F6" class="ltx_figure"><div class="bml-overflow-wrapper"><img class="figura" src="/appunti/tesi-magistrale/figure/images-mcp.webp" width="1600" height="528" loading="lazy" alt="Schema con al centro il riquadro MCP, protocollo standardizzato. A sinistra, applicazioni AI: Chat interface (Claude Desktop, LibreChat), IDEs and code editors (Claude Code, Goose), Other AI applications (5ire, Superinterface). A destra, fonti dati e strumenti: Data and file systems (PostgreSQL, SQLite, GDrive), Development tools (Git, Sentry, ecc.), Productivity tools (Slack, Google Maps, ecc.). Tutti i collegamenti sono frecce bidirezionali."></div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure"><span class="ltx_text">Figura 6</span>: </span><span class="ltx_text">MCP come protocollo di comunicazione standard tra LLM e tools [Fonte: modelcontextprotocol.io <cite class="ltx_cite ltx_citemacro_cite">[<a title="" class="ltx_ref" href="/appunti/tesi-magistrale/bibliografia/#bib43">43</a>]</cite>]</span></figcaption>
+</figure>
+</div>
+</section>
+</div>

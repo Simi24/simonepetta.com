@@ -1,0 +1,9 @@
+# -*- mode: Perl -*-
+# Stand-in for colorprofiles, used by the conversion only: it embeds ICC profiles in the PDF/A
+# (see pdfx.sty.ltxml), which has no meaning in HTML.
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+1;

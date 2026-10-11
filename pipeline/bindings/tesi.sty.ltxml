@@ -1,0 +1,31 @@
+# -*- mode: Perl -*-
+# Stand-in for the thesis class extension tesi.sty, used by the conversion only (never by the
+# PDF build). The page geometry, spacing and footnote tweaks are print layout and are dropped.
+# What is kept is the content it produces: the front matter macros, a title page with only the
+# title, the author, the degree programme and the academic year, and the numbering of figures and
+# tables through the whole thesis rather than per chapter.
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+RequirePackage('chngcntr');
+
+foreach my $field (qw(dept relatore correlatore anno)) {
+  DefMacro("\\$field\{}", "\\gdef\\\@$field\{#1}");
+}
+
+# Figures, tables and equations are numbered through the whole thesis, as in the PDF.
+DefMacro('\tesi@continuous', '\counterwithout{figure}{chapter}\counterwithout{table}{chapter}\counterwithout{equation}{chapter}');
+
+DefMacro('\titlep',
+  '\begin{titlepage}\begin{center}'
+  . 'Universit\`a degli Studi di Milano\par Facolt\`a di Scienze e Tecnologie\par \@dept\par'
+  . '\vskip 1em {\Large\@title}\par \vskip 1em \@author\par Anno Accademico \@anno'
+  . '\end{center}\end{titlepage}');
+
+DefMacro('\beforepreface', '\tesi@continuous\titlep');
+DefMacro('\afterpreface', '');
+DefMacro('\prefacesection{}', '\chapter*{#1}');
+
+1;

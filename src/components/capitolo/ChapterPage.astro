@@ -17,6 +17,7 @@ interface Props {
 }
 
 const { corso, corsoSlug, capitolo, previous, next, fragment } = Astro.props;
+const notice = corsoNotice(corso);
 ---
 
 <article class="capitolo" data-pagefind-body>
@@ -25,7 +26,7 @@ const { corso, corsoSlug, capitolo, previous, next, fragment } = Astro.props;
       <a href="/appunti/">Appunti</a> / <a href={`/appunti/${corsoSlug}/`}>{corso.titolo}</a>
     </p>
     <h1>{capitolo.titolo}</h1>
-    <p class="notice" data-pagefind-ignore>{corsoNotice(corso)}</p>
+    {notice !== undefined && <p class="notice" data-pagefind-ignore>{notice}</p>}
   </header>
   <ChapterToc capitolo={capitolo} />
   <div class="prose">

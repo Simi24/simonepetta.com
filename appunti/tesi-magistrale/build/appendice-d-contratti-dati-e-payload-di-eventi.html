@@ -1,0 +1,47 @@
+<div class="section level1">
+
+
+<div id="p1" class="ltx_para">
+<p class="ltx_p">Il Listato <span class="ltx_ref ltx_ref_self"><span class="ltx_text ltx_ref_tag">D</span></span> esemplifica la struttura del payload JSON generato nativamente dal servizio Amazon S3. Questo documento costituisce il contratto dati asincrono che innesca la fase di trasformazione della pipeline ETL, trasportando le coordinate spaziali (identificativo del bucket e chiave dell’oggetto) dell’artefatto appena archiviato.</p>
+</div>
+<div id="p2" class="ltx_para">
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">{</span>
+<span class="ltx_listingline">"Records": [</span>
+<span class="ltx_listingline">    {</span>
+<span class="ltx_listingline">    "eventVersion": "2.1",</span>
+<span class="ltx_listingline">    "eventSource": "aws:s3",</span>
+<span class="ltx_listingline">    "awsRegion": "eu-west-1",</span>
+<span class="ltx_listingline">    "eventTime": "2026-01-27T09:48:38.935Z",</span>
+<span class="ltx_listingline">    "eventName": "ObjectCreated:Put",</span>
+<span class="ltx_listingline">    "userIdentity": {</span>
+<span class="ltx_listingline">        "principalId": "&lt;principal-id&gt;"</span>
+<span class="ltx_listingline">    },</span>
+<span class="ltx_listingline">    "requestParameters": {</span>
+<span class="ltx_listingline">        "sourceIPAddress": "&lt;indirizzo IP&gt;"</span>
+<span class="ltx_listingline">    },</span>
+<span class="ltx_listingline">    "responseElements": {</span>
+<span class="ltx_listingline">        "x-amz-request-id": "&lt;request-id&gt;",</span>
+<span class="ltx_listingline">        "x-amz-id-2": "&lt;id&gt;"</span>
+<span class="ltx_listingline">    },</span>
+<span class="ltx_listingline">    "s3": {</span>
+<span class="ltx_listingline">        "s3SchemaVersion": "1.0",</span>
+<span class="ltx_listingline">        "configurationId": "&lt;configuration-id&gt;",</span>
+<span class="ltx_listingline">        "bucket": {</span>
+<span class="ltx_listingline">        "name": "&lt;bucket&gt;",</span>
+<span class="ltx_listingline">        "ownerIdentity": {</span>
+<span class="ltx_listingline">            "principalId": "&lt;principal-id&gt;"</span>
+<span class="ltx_listingline">        },</span>
+<span class="ltx_listingline">        "arn": "arn:aws:s3:::&lt;bucket&gt;"</span>
+<span class="ltx_listingline">        },</span>
+<span class="ltx_listingline">        "object": {</span>
+<span class="ltx_listingline">        "key": "/raw/adrequest/&lt;data&gt;/&lt;id&gt;/&lt;id&gt;.gzip",</span>
+<span class="ltx_listingline">        "size": 0,</span>
+<span class="ltx_listingline">        "eTag": "d41d8cd98f00b204e9800998ecf8427e",</span>
+<span class="ltx_listingline">        "sequencer": "00676E77F6E5C5BF59"</span>
+<span class="ltx_listingline">        }</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline">    }</span>
+<span class="ltx_listingline">]</span>
+<span class="ltx_listingline">}</span></code></pre></div>
+</div>
+</div>

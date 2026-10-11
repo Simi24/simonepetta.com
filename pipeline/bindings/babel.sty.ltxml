@@ -1,0 +1,28 @@
+# -*- mode: Perl -*-
+# Stand-in for babel, used by the conversion only (never by the PDF build). LaTeXML 0.8.8 loads
+# the raw babel of the installed TeX Live, which needs \ProvideDocumentEnvironment and expl3
+# machinery it does not have. Hyphenation and shorthands are print concerns; what HTML needs is
+# the Italian names babel sets (Figura, Tabella, Capitolo, ...). The language option is read
+# only to know whether to apply them.
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Babel sets the names when the document begins (\captionsitalian), after packages such as
+# appendix have defined their English ones.
+DeclareOption('italian', sub {
+  AtBeginDocument(join('', map { "\\def$_->[0]\{$_->[1]}" } (
+    ['\\contentsname', 'Indice'], ['\\listfigurename', 'Elenco delle figure'], ['\\listtablename', 'Elenco delle tabelle'],
+    ['\\bibname', 'Bibliografia'], ['\\chaptername', 'Capitolo'], ['\\appendixname', 'Appendice'],
+    ['\\figurename', 'Figura'], ['\\tablename', 'Tabella'], ['\\partname', 'Parte'],
+    ['\\abstractname', 'Sommario'], ['\\indexname', 'Indice analitico'], ['\\pagename', 'Pag.'])));
+});
+DeclareOption(undef, sub { });
+ProcessOptions();
+
+DefMacro('\selectlanguage{}', '');
+DefMacro('\foreignlanguage{}{}', '#2');
+DefMacro('\babeltags{}', '');
+
+1;

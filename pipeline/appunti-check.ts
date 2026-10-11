@@ -54,6 +54,8 @@ function checkBuild(courseDir: string, slug: string): string[] {
     source: readSources(srcDir),
     chapters: capitoli.map((capitolo) => ({
       numero: capitolo.numero,
+      etichetta: capitolo.etichetta,
+      bibliografia: capitolo.bibliografia,
       titolo: capitolo.titolo,
       html: readFileSync(join(buildDir, `${capitolo.slug}.html`), 'utf8'),
     })),

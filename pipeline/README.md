@@ -18,6 +18,10 @@ One ticket per course, always the same steps (needs Docker; Node from `.nvmrc`):
 6. **Math review**, outside the ticket and before publication (SPEC.md §1.3): the reviewer reads the preview of the chapters with the most math and compares them with the PDF. Fixes go into the `.tex` and the conversion runs again.
 7. **Publish**: merging the ticket's PR is the publication. The course page moves from `pdf` to `html` by itself (a valid `build/` exists); the URL does not change and the PDF stays downloadable.
 
+## Books with more than chapters
+
+A source with unnumbered front matter (`\chapter*`, the thesis' `\prefacesection`), a bibliography or appendices converts too: each becomes a page next to the chapters (`ringraziamenti`, `bibliografia`, `appendice-a-<title>`), in the book's order. The detector counts them against the source, with every `\bibitem` and every `lstlisting`, and each listing, which must come out whole: listings are compared as a set of (lines, characters), since the source files are not in book order, with blanks and quotes left out of the character count. A `\begin{lstlisting}` with no `\end{lstlisting}` fails the run. A reference to a listing ("Listato 4.1") is renumbered per chapter like its caption. A source that must be published is redacted *before* it enters `src/`: git history is public.
+
 ## What a run changes
 
 A run replaces three things in `appunti/<slug>/` **together**: `build/` (chapter fragments and `figure/`, the re-encoded images), `<slug>.pdf` and `meta.json`. Everything that can fail (LaTeXML, the leak detector, the page count via `pdfinfo`) happens before the first write. A failure or a leak leaves the course exactly as it was.
@@ -42,5 +46,5 @@ Raster images are re-encoded to WebP (at most 1600 px wide) and TikZ pictures co
 ## Files
 
 - `Dockerfile`: TeX Live (pinned by digest; its `dvisvgm` compiles TikZ) + LaTeXML + BookML (pinned, checksummed) + ImageMagick and `webp` (image re-encoding).
-- `bindings/`: LaTeXML stand-ins used by the conversion only (`tcolorbox`: content and `title=` kept, styling dropped).
+- `bindings/`: LaTeXML stand-ins used by the conversion only (`tcolorbox`: content and `title=` kept, styling dropped; `babel`: the Italian names only; `tesi` (the thesis class extension): front matter macros, a title page with title, author, degree and year, continuous figure numbering; `pdfx` and `colorprofiles`: accepted and ignored, they only make the PDF archival).
 - `appunti-convert.ts`: the command. `appunti-build.ts` / `latexml-chapter.ts` / `chapter-slugs.ts`: LaTeXML output to fragments. `leak-detector.ts`: source against output. `appunti-install.ts` / `course-swap.ts`: the write phase. `appunti-meta.ts`: page count. `figures.sh` / `figures-docker.ts` / `figure-sources.ts` / `raster-plan.ts` / `alt-text.ts` / `figures.ts`: figures (container step, source scanning, naming, descriptions, HTML rewriting).
