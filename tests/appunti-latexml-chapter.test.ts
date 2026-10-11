@@ -178,6 +178,20 @@ test('a reference to a listing reads like its caption: 7.1, not the book-wide co
   assert.match(html, /href="#LST3"/);
 });
 
+test('the hover title of a listing reference carries the same number as its visible text', () => {
+  const ref = (n: number): string => `<a class="ltx_ref" href="#LST${n}" title="Listing ${n} ‣ 7.1 Esempi ‣ Capitolo 7"><span class="ltx_text ltx_ref_tag">${n}</span></a>`;
+  const page = fixture('gpu-Ch7-listing-caption.html')
+    .replace('id="LST1"', 'id="LST3"').replace('Listing 1:', 'Listing 3:')
+    .replace('id="LST2"', 'id="LST4"').replace('Listing 2:', 'Listing 4:')
+    .replace('<figure id="LST3"', `<div id="cita" class="ltx_para"><p class="ltx_p">Nel Listato ${ref(3)} e nel Listato ${ref(4)}.</p></div>\n<figure id="LST3"`);
+  const { html } = processChapter(page, LINKS);
+  const refs = [...html.matchAll(/<a ([^>]*href="#LST\d+"[^>]*)><span class="ltx_text ltx_ref_tag">([^<]*)<\/span><\/a>/g)].map((match) => [/title="([^"]*)"/.exec(match[1]!)?.[1], match[2]]);
+  assert.deepEqual(refs, [
+    ['Listing 7.1 ‣ 7.1 Esempi ‣ Capitolo 7', '7.1'],
+    ['Listing 7.2 ‣ 7.1 Esempi ‣ Capitolo 7', '7.2'],
+  ]);
+});
+
 test('a listing reference that points at no listing of its page is an error, not a wrong number', () => {
   const page = fixture('gpu-Ch7-listing-caption.html').replace(
     '<figure id="LST1"',

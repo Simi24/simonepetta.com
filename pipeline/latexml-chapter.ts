@@ -269,18 +269,25 @@ function numberListingsPerChapter(tokens: readonly Token[], chapter: string | un
     labels.set(figureId, label);
     return { ...token, raw: token.raw.replace(/^(Listing\s)\d+:/, `$1${label}:`) };
   });
+  const renumbered = [...out];
   let target: string | undefined;
-  return out.map((token, i): Token => {
+  let link = -1;
+  out.forEach((token, i) => {
     if (token.type === 'open' && token.name === 'a') {
       const href = attribute(token, 'href') ?? '';
       target = /^#LST\d+$/.test(href) ? href.slice(1) : undefined;
+      link = i;
     }
     const open = out[i - 1];
-    if (target === undefined || token.type !== 'text' || open?.type !== 'open' || !hasClass(open, 'ltx_ref_tag')) return token;
+    if (target === undefined || token.type !== 'text' || open?.type !== 'open' || !hasClass(open, 'ltx_ref_tag')) return;
     const label = labels.get(target);
     if (label === undefined) throw new Error(`the reference to listing "${target}" points at no listing of its page, so it cannot be numbered like the PDF`);
-    return { ...token, raw: label };
+    renumbered[i] = { ...token, raw: label };
+    // The hover title ("Listing 3 ‣ 4.2 ...") carries the book-wide number too.
+    const anchor = out[link]!;
+    renumbered[link] = { ...anchor, raw: anchor.raw.replace(/\btitle="Listing\s\d+/, `title="Listing ${label}`) };
   });
+  return renumbered;
 }
 
 /**
