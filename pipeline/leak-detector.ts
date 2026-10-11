@@ -113,10 +113,29 @@ function describeMismatch(label: string, expected: number, actual: number, relat
   return fine ? undefined : `the source has ${expected} ${label}, the output ${relation === 'exactly' ? 'has' : 'has only'} ${actual}`;
 }
 
-/** The lines of each `lstlisting` of the source, in order: the option block and the line holding `\\end` are not code. */
-function listingLinesInSource(source: string): number[] {
-  const lines: number[] = [];
+/**
+ * Not counted in a listing: blanks (listings expands a tab by its own tab size, wherever it is in the line, and LaTeXML
+ * drops trailing blanks) and quotes (LaTeXML curls them, the pipeline puts them back, and when a string is left open
+ * on a line it closes it with one more, which the PDF does not show).
+ */
+const UNCOUNTED = /[\s'\u2018\u2019`]/g;
+
+/** A listing's size: its lines and the characters on them that count, so a line cut short is seen too. */
+interface ListingSize {
+  lines: number;
+  characters: number;
+}
+
+/**
+ * The size of each `lstlisting` of the raw source (a `%` inside one is code, so comments are not stripped first),
+ * and how many are never closed: the option block and the line holding `\\end` are not code.
+ */
+function listingsInSource(source: string): { sizes: ListingSize[]; unclosed: number } {
+  const sizes: ListingSize[] = [];
+  let unclosed = 0;
   for (const match of source.matchAll(/\\begin\{lstlisting\}/g)) {
+    const lineStart = source.lastIndexOf('\n', match.index) + 1;
+    if (withoutComments(source.slice(lineStart, match.index)) !== source.slice(lineStart, match.index)) continue;
     let start = match.index + match[0].length;
     if (source[start] === '[') {
       let depth = 0;
@@ -127,17 +146,29 @@ function listingLinesInSource(source: string): number[] {
       }
       start++;
     }
-    const code = source.slice(start, source.indexOf('\\end{lstlisting}', start));
+    const end = source.indexOf('\\end{lstlisting}', start);
+    if (end < 0) {
+      unclosed++;
+      continue;
+    }
+    const code = source.slice(start, end);
     // The rest of the `\\begin` line is not code, and neither is the indentation before `\\end`.
     const body = code.includes('\n') ? code.slice(code.indexOf('\n') + 1).replace(/\n?[ \t]*$/, '') : '';
-    lines.push(body === '' ? 0 : body.split('\n').length);
+    const lines = body === '' ? [] : body.split('\n');
+    sizes.push({ lines: lines.length, characters: lines.reduce((total, line) => total + [...line.replace(UNCOUNTED, '')].length, 0) });
   }
-  return lines;
+  return { sizes, unclosed };
 }
 
-/** The lines of each code listing of the output (`<pre class="listing">`), in order. */
-function listingLinesInOutput(html: string): number[] {
-  return [...html.matchAll(/<pre class="listing"[^>]*>([\s\S]*?)<\/pre>/g)].map((match) => count(match[1]!, /class="ltx_listingline"/g));
+const unescapeHtml = (text: string): string =>
+  text.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0*39;/g, "'").replace(/&amp;/g, '&');
+
+/** The size of each code listing of the output (`<pre class="listing">`), in order. */
+function listingsInOutput(html: string): ListingSize[] {
+  return [...html.matchAll(/<pre class="listing"[^>]*>([\s\S]*?)<\/pre>/g)].map((match) => {
+    const lines = [...match[1]!.matchAll(/<span class="ltx_listingline">([^<]*)<\/span>/g)].map((line) => unescapeHtml(line[1]!));
+    return { lines: lines.length, characters: lines.reduce((total, line) => total + [...line.replace(UNCOUNTED, '')].length, 0) };
+  });
 }
 
 const lastSegment = (path: string): string => path.slice(path.lastIndexOf('/') + 1);
@@ -186,12 +217,16 @@ export function detectLeaks(report: ConversionReport): string[] {
 
   for (const file of report.extraOutputFiles) leaks.push(`LaTeXML wrote ${file}, which the pipeline does not convert`);
 
-  for (const chapter of report.chapters) {
-    if (chapter.html.length < MIN_CHAPTER_HTML_LENGTH) leaks.push(`chapter ${chapter.numero} "${chapter.titolo}" is empty`);
-  }
-
   const isBibliography = (chapter: ReportedChapter): boolean => chapter.bibliografia === true;
   const isUnnumbered = (chapter: ReportedChapter): boolean => !isBibliography(chapter) && chapter.numero === undefined && chapter.etichetta === undefined;
+  const nameOf = (chapter: ReportedChapter): string => {
+    if (isBibliography(chapter)) return `bibliography "${chapter.titolo}"`;
+    if (chapter.etichetta !== undefined) return `appendix "${chapter.etichetta}: ${chapter.titolo}"`;
+    return chapter.numero === undefined ? `unnumbered page "${chapter.titolo}"` : `chapter ${chapter.numero} "${chapter.titolo}"`;
+  };
+  for (const chapter of report.chapters) {
+    if (chapter.html.length < MIN_CHAPTER_HTML_LENGTH) leaks.push(`${nameOf(chapter)} is empty`);
+  }
   check(describeMismatch('chapter(s)', count(source, /\\chapter\s*[{[]/g), report.chapters.filter((c) => !isBibliography(c) && !isUnnumbered(c)).length, 'exactly'));
   check(
     describeMismatch('unnumbered page(s) (\\chapter*, \\prefacesection)', count(source, /\\(?:chapter\*|prefacesection)\s*\{/g), report.chapters.filter(isUnnumbered).length, 'exactly'),
@@ -201,14 +236,18 @@ export function detectLeaks(report: ConversionReport): string[] {
   );
   check(describeMismatch('bibliography entry(ies) (\\bibitem)', count(source, /\\bibitem\b/g), count(output, /class="ltx_bibitem"/g), 'exactly'));
 
-  const sourceListings = listingLinesInSource(source);
-  const outputListings = report.chapters.flatMap((chapter) => listingLinesInOutput(chapter.html));
+  const { sizes: sourceListings, unclosed } = listingsInSource(report.source);
+  if (unclosed > 0) leaks.push(`the source has ${unclosed} \\begin{lstlisting} with no \\end{lstlisting}: its listings cannot be checked`);
+  const outputListings = report.chapters.flatMap((chapter) => listingsInOutput(chapter.html));
   check(describeMismatch('code listing(s) (lstlisting)', sourceListings.length, outputListings.length, 'exactly'));
-  // The source files are not in book order, so each listing length is compared as a count, not by position.
-  for (const lines of new Set([...sourceListings, ...outputListings])) {
-    const expected = sourceListings.filter((n) => n === lines).length;
-    const produced = outputListings.filter((n) => n === lines).length;
-    if (expected !== produced) leaks.push(`the source has ${expected} code listing(s) of ${lines} line(s), the output has ${produced}`);
+  // The source files are not in book order, so listings are compared as a multiset of (lines, characters), not by position.
+  const sizeKey = (size: ListingSize): string => `${size.lines} line(s) and ${size.characters} character(s)`;
+  const sourceKeys = sourceListings.map(sizeKey);
+  const outputKeys = outputListings.map(sizeKey);
+  for (const key of new Set([...sourceKeys, ...outputKeys])) {
+    const expected = sourceKeys.filter((k) => k === key).length;
+    const produced = outputKeys.filter((k) => k === key).length;
+    if (expected !== produced) leaks.push(`the source has ${expected} code listing(s) of ${key}, the output has ${produced}`);
   }
 
   const figures = figureLeaks(report.chapters, report.figureFiles);

@@ -20,7 +20,7 @@ One ticket per course, always the same steps (needs Docker; Node from `.nvmrc`):
 
 ## Books with more than chapters
 
-A source with unnumbered front matter (`\chapter*`, the thesis' `\prefacesection`), a bibliography or appendices converts too: each becomes a page next to the chapters (`ringraziamenti`, `bibliografia`, `appendice-a-<title>`), in the book's order. The detector counts them against the source, with every `\bibitem` and every `lstlisting`, and the lines of each listing, which must come out whole (listings are compared by length as a set, since the source files are not in book order). A source that must be published is redacted *before* it enters `src/`: git history is public.
+A source with unnumbered front matter (`\chapter*`, the thesis' `\prefacesection`), a bibliography or appendices converts too: each becomes a page next to the chapters (`ringraziamenti`, `bibliografia`, `appendice-a-<title>`), in the book's order. The detector counts them against the source, with every `\bibitem` and every `lstlisting`, and each listing, which must come out whole: listings are compared as a set of (lines, characters), since the source files are not in book order, with blanks and quotes left out of the character count. A `\begin{lstlisting}` with no `\end{lstlisting}` fails the run. A reference to a listing ("Listato 4.1") is renumbered per chapter like its caption. A source that must be published is redacted *before* it enters `src/`: git history is public.
 
 ## What a run changes
 

@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import { buildFromLatexml } from '../pipeline/appunti-build.ts';
 import { checkCourses } from '../pipeline/appunti-check.ts';
 import { gpuCh1Source } from './support/gpu-ch1-source.ts';
+import { thesisA4Code } from './support/thesis-a4-code.ts';
 import { makeTempDir } from './support/temp-root.ts';
 
 const LATEXML = new URL('./fixtures/latexml/', import.meta.url).pathname;
@@ -142,7 +143,7 @@ test('a committed book build with acknowledgements, bibliography and an appendix
   for (const [from, to] of [['thesis-Chx1.html', 'Chx1.html'], ['thesis-bib.html', 'bib.html'], ['thesis-A4.html', 'A4.html']] as const) {
     cpSync(join(LATEXML, from), join(htmlDir, to));
   }
-  const code = Array.from({ length: 38 }, (_, i) => `riga ${i + 1}`).join('\n');
+  const code = thesisA4Code();
   const source = `\\prefacesection{Ringraziamenti}\n\\begin{thebibliography}{0}\n\\bibitem{a} A\n\\bibitem{b} B\n\\bibitem{c} C\n\\end{thebibliography}\n\\chapter{Appendice}\n\\begin{lstlisting}\n${code}\n\\end{lstlisting}\n`;
   writeFileSync(join(courseDir, 'src/main.tex'), source);
   writeFileSync(join(courseDir, 'corso.yaml'), MANIFEST + 'pubblicato: true\n');

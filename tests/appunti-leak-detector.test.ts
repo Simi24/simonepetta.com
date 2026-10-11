@@ -119,7 +119,17 @@ test('an output file the pipeline does not know is a leak, not silently dropped'
 
 test('an empty chapter is a leak', () => {
   const empty = { numero: 1, titolo: 'Uno', html: '' };
-  assert.match(detectLeaks(report({ chapters: [empty] })).join('\n'), /empty/);
+  assert.match(detectLeaks(report({ chapters: [empty] })).join('\n'), /chapter 1 "Uno" is empty/);
+});
+
+test('an empty page that is not a numbered chapter is named for what it is', () => {
+  const leaks = detectLeaks(
+    report({ chapters: [{ titolo: 'Ringraziamenti', html: '' }, { etichetta: 'Appendice A', titolo: 'Config', html: '' }, { titolo: 'Bibliografia', bibliografia: true, html: '' }] }),
+  ).join('\n');
+  assert.match(leaks, /unnumbered page "Ringraziamenti" is empty/);
+  assert.match(leaks, /appendix "Appendice A: Config" is empty/);
+  assert.match(leaks, /bibliography "Bibliografia" is empty/);
+  assert.doesNotMatch(leaks, /undefined/);
 });
 
 test('an aligned group counts as one display equation, however many rows it has', () => {
@@ -184,8 +194,35 @@ test('a lost code listing is a leak, and so is an extra one', () => {
 
 test('a listing that lost lines is a leak, even when the total number of lines still matches', () => {
   const leaks = detectLeaks(report({ source: SOURCE_WITH_LISTINGS, chapters: [chapter(LISTING('primo', 'terzo') + LISTING('solo', 'extra'))] })).join('\n');
-  assert.match(leaks, /source has 1 code listing\(s\) of 3 line\(s\), the output has 0/);
-  assert.match(leaks, /source has 0 code listing\(s\) of 2 line\(s\), the output has 2/);
+  assert.match(leaks, /source has 1 code listing\(s\) of 3 line\(s\) and 10 character\(s\), the output has 0/);
+  assert.match(leaks, /source has 0 code listing\(s\) of 2 line\(s\) and 10 character\(s\), the output has 1/);
+  assert.match(leaks, /source has 0 code listing\(s\) of 2 line\(s\) and 9 character\(s\), the output has 1/);
+});
+
+test('a listing truncated inside a line is a leak: same lines, fewer characters', () => {
+  const html = LISTING('primo', '', '  ter') + LISTING('solo');
+  assert.match(detectLeaks(report({ source: SOURCE_WITH_LISTINGS, chapters: [chapter(html)] })).join('\n'), /1 code listing\(s\) of 3 line\(s\) and 10 character\(s\), the output has 0/);
+});
+
+test('escaped characters in a listing count once, like the character they stand for', () => {
+  const source = '\\chapter{Uno}\n\\begin{lstlisting}\na < b && c\n\\end{lstlisting}\n';
+  assert.deepEqual(detectLeaks(report({ source, chapters: [chapter(LISTING('a &lt; b &amp;&amp; c'))] })), []);
+});
+
+test('a percent sign inside a listing is code, not a comment: its characters are all counted', () => {
+  const source = '\\chapter{Uno}\n\\begin{lstlisting}\nif (x % 2 == 0) {\n\\end{lstlisting}\n';
+  assert.deepEqual(detectLeaks(report({ source, chapters: [chapter(LISTING('if (x % 2 == 0) {'))] })), []);
+  assert.match(detectLeaks(report({ source, chapters: [chapter(LISTING('if (x '))] })).join('\n'), /1 line\(s\) and 11 character\(s\)/);
+});
+
+test('quotes and blanks do not change what a listing weighs: LaTeXML curls the first and loses the second', () => {
+  const source = "\\chapter{Uno}\n\\begin{lstlisting}\nx = 'a'   \n\\end{lstlisting}\n";
+  assert.deepEqual(detectLeaks(report({ source, chapters: [chapter(LISTING('x = ‘a’'))] })), []);
+});
+
+test('a lstlisting that is never closed fails loudly instead of being measured against the rest of the file', () => {
+  const source = '\\chapter{Uno}\n\\begin{lstlisting}\nprimo\n';
+  assert.match(detectLeaks(report({ source, chapters: [chapter(LISTING('primo'))] })).join('\n'), /no \\end\{lstlisting\}/);
 });
 
 test('listings are compared however the source files are ordered: the book order is not the file order', () => {

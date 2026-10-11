@@ -198,7 +198,7 @@ function replaceElements(tokens: readonly Token[], predicate: (token: Token) => 
  * A `lstlisting` becomes plain preformatted text: LaTeXML wraps every token in a colored,
  * inline-styled span (colors that ignore the theme) and adds copy/download buttons that run
  * JS and carry the code a second time as a data URI. Only the code text is kept, with the
- * apostrophes LaTeXML curled into quotes put back. The block
+ * quotes LaTeXML curled put back: ’ was an apostrophe, ‘ a backtick. The block
  * scrolls sideways, so it takes focus: a keyboard user can scroll it (WCAG 2.1.1).
  */
 function flattenCodeListings(tokens: readonly Token[]): Token[] {
@@ -217,7 +217,7 @@ function flattenCodeListings(tokens: readonly Token[]): Token[] {
       const lineEnd = elementEnd(tokens, j);
       const code = findOpen(tokens, j, (t) => t.type === 'open' && t.name === 'code');
       const codeEnd = code >= 0 && code < lineEnd ? elementEnd(tokens, code) : -1;
-      lines.push(codeEnd < 0 ? '' : textOf(tokens, code, codeEnd).replace(/\r?\n/g, '').replace(/[\u2018\u2019]/g, "'"));
+      lines.push(codeEnd < 0 ? '' : textOf(tokens, code, codeEnd).replace(/\r?\n/g, '').replace(/\u2019/g, "'").replace(/\u2018/g, '`'));
       j = lineEnd;
     }
     const body = lines.map((line) => `<span class="ltx_listingline">${line}</span>`).join('\n');
@@ -251,14 +251,35 @@ function renumberAlgorithmLines(tokens: readonly Token[]): Token[] {
   return out;
 }
 
-/** Listing captions say "Listing 3: "; the PDF numbers them per chapter, "Listing 7.3: " ("Listing A.1: " in an appendix). */
+/**
+ * LaTeXML numbers listings across the book: the caption says "Listing 3: " and a reference "3".
+ * The PDF numbers them per chapter, "Listing 7.3: " ("Listing A.1: " in an appendix), and so must
+ * the references to them ("Listato 7.3"), which are matched to their caption by the listing's id.
+ */
 function numberListingsPerChapter(tokens: readonly Token[], chapter: string | undefined): Token[] {
   if (chapter === undefined) return [...tokens];
   let count = 0;
-  return tokens.map((token, i): Token => {
+  let figureId = '';
+  const labels = new Map<string, string>();
+  const out = tokens.map((token, i): Token => {
+    if (token.type === 'open' && token.name === 'figure' && hasClass(token, 'ltx_lstlisting')) figureId = attribute(token, 'id') ?? '';
     const open = tokens[i - 1];
     if (token.type !== 'text' || open?.type !== 'open' || !hasClass(open, 'ltx_tag_float') || !/^Listing\s\d+:/.test(token.raw)) return token;
-    return { ...token, raw: token.raw.replace(/^(Listing\s)\d+:/, `$1${chapter}.${++count}:`) };
+    const label = `${chapter}.${++count}`;
+    labels.set(figureId, label);
+    return { ...token, raw: token.raw.replace(/^(Listing\s)\d+:/, `$1${label}:`) };
+  });
+  let target: string | undefined;
+  return out.map((token, i): Token => {
+    if (token.type === 'open' && token.name === 'a') {
+      const href = attribute(token, 'href') ?? '';
+      target = /^#LST\d+$/.test(href) ? href.slice(1) : undefined;
+    }
+    const open = out[i - 1];
+    if (target === undefined || token.type !== 'text' || open?.type !== 'open' || !hasClass(open, 'ltx_ref_tag')) return token;
+    const label = labels.get(target);
+    if (label === undefined) throw new Error(`the reference to listing "${target}" points at no listing of its page, so it cannot be numbered like the PDF`);
+    return { ...token, raw: label };
   });
 }
 

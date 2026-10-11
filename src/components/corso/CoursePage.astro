@@ -17,6 +17,7 @@ interface Props {
 }
 
 const { corso, stato, meta, pdfHref, capitoli, slug } = Astro.props;
+const notice = corsoNotice(corso);
 const annoLabel = corso.tipo === 'tesi' ? 'Anno di discussione' : 'Anno accademico';
 const pdfLinkText = meta ? `Scarica il PDF (${meta.pagine} pagine)` : 'Scarica il PDF';
 const fonti = corso.fonti ?? [];
@@ -32,7 +33,7 @@ const fonti = corso.fonti ?? [];
 <div class="corso" data-pagefind-body>
   <header class="corso-head">
     <h1>{corso.titolo}</h1>
-    <p class="notice">{corsoNotice(corso)}</p>
+    {notice !== undefined && <p class="notice">{notice}</p>}
   </header>
   <dl class="facts">
     <div>

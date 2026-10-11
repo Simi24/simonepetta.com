@@ -34,6 +34,12 @@ test('quotes in a code listing come out straight: LaTeXML curls them, the code n
   assert.doesNotMatch(/<pre class="listing"[\s\S]*?<\/pre>/.exec(html)![0], /[’‘]/);
 });
 
+test('an opening quote in a code listing is the backtick it was typed as, not an apostrophe', () => {
+  const page = fixture('thesis-A4.html').replace('eventVersion', 'eventVersion = ‘uname’ `x`');
+  const { html } = processChapter(page, { corso: 'tesi', chapterSlugs: {} });
+  assert.match(html, /eventVersion = `uname' `x`/);
+});
+
 test('throws on a page with no chapter rather than guessing one', () => {
   assert.throws(() => readChapterHead('<html><body><p>niente</p></body></html>'));
 });
@@ -156,6 +162,28 @@ test('listing captions are numbered per chapter like the PDF: Listing 7.1, 7.2',
   const { html } = processChapter(fixture('gpu-Ch7-listing-caption.html'), LINKS);
   const captions = [...html.matchAll(/<span class="ltx_tag ltx_tag_float">([^<]*)<\/span>/g)].map((match) => match[1]);
   assert.deepEqual(captions, ['Listing\u00a07.1: ', 'Listing\u00a07.2: ']);
+});
+
+test('a reference to a listing reads like its caption: 7.1, not the book-wide count LaTeXML keeps', () => {
+  // The chapter's listings are the 3rd and 4th of the book; the prose cites both, and the second one twice.
+  const ref = (n: number): string => `<a class="ltx_ref" href="#LST${n}"><span class="ltx_text ltx_ref_tag">${n}</span></a>`;
+  const page = fixture('gpu-Ch7-listing-caption.html')
+    .replace('id="LST1"', 'id="LST3"').replace('Listing 1:', 'Listing 3:')
+    .replace('id="LST2"', 'id="LST4"').replace('Listing 2:', 'Listing 4:')
+    .replace('<figure id="LST3"', `<div id="cita" class="ltx_para"><p class="ltx_p">Nel Listato ${ref(3)} e nel Listato ${ref(4)}, ancora ${ref(4)}.</p></div>\n<figure id="LST3"`);
+  assert.match(page, /id="cita"/);
+  const { html } = processChapter(page, LINKS);
+  const refs = [...html.matchAll(/<a [^>]*href="#LST\d+"[^>]*><span class="ltx_text ltx_ref_tag">([^<]*)<\/span><\/a>/g)].map((match) => match[1]);
+  assert.deepEqual(refs, ['7.1', '7.2', '7.2']);
+  assert.match(html, /href="#LST3"/);
+});
+
+test('a listing reference that points at no listing of its page is an error, not a wrong number', () => {
+  const page = fixture('gpu-Ch7-listing-caption.html').replace(
+    '<figure id="LST1"',
+    '<div id="cita" class="ltx_para"><p class="ltx_p"><a class="ltx_ref" href="#LST99"><span class="ltx_text ltx_ref_tag">99</span></a></p></div>\n<figure id="LST1"',
+  );
+  assert.throws(() => processChapter(page, LINKS), /LST99/);
 });
 
 test('a tabular inside a paragraph keeps its line without nesting tables in a <p>', () => {

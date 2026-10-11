@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { buildFromLatexml, LeakError, parseLatexmlErrors, parseLatexmlPostErrors } from '../pipeline/appunti-build.ts';
 import { gpuCh1Source } from './support/gpu-ch1-source.ts';
+import { thesisA4Code } from './support/thesis-a4-code.ts';
 import { makeTempDir } from './support/temp-root.ts';
 
 const FIXTURES = new URL('./fixtures/latexml/', import.meta.url).pathname;
@@ -118,7 +119,7 @@ function setupBook(): { htmlDir: string; courseDir: string; source: string } {
   for (const [from, to] of [['thesis-Chx1.html', 'Chx1.html'], ['thesis-bib.html', 'bib.html'], ['thesis-A4.html', 'A4.html']] as const) {
     cpSync(join(FIXTURES, from), join(htmlDir, to));
   }
-  const code = Array.from({ length: 38 }, (_, i) => `riga ${i + 1}`).join('\n');
+  const code = thesisA4Code();
   const source = [
     '\\prefacesection{Ringraziamenti}',
     '\\begin{thebibliography}{00}\n\\bibitem{a} A.\n\\bibitem{b} B.\n\\bibitem{c} C.\n\\end{thebibliography}',
@@ -159,7 +160,7 @@ test('a bibliography link in a chapter points at the bibliography page, and a lo
   assert.match(readFileSync(join(courseDir, 'build/ringraziamenti.html'), 'utf8'), /href="\/appunti\/tesi\/bibliografia\/#bib2"/);
 
   assert.throws(
-    () => buildFromLatexml({ htmlDir, courseDir, corso: 'tesi', source: source.replace('riga 38', 'riga 38\nriga 39'), latexmlErrors: 0 }),
+    () => buildFromLatexml({ htmlDir, courseDir, corso: 'tesi', source: source.replace(/x+\n(?=\\end\{lstlisting\})/, 'x\nxx\n'), latexmlErrors: 0 }),
     (error) => error instanceof LeakError && error.leaks.some((leak) => /source has 1 code listing\(s\) of 39 line/.test(leak)),
   );
 });

@@ -18,8 +18,7 @@ export function corsoDescription(corso: Corso): string {
   return `${subject} ${degreeProgramme(corso.livello)}, ${site.appunti.university}, anno accademico ${corso.aa}.`;
 }
 
-/** The student-notes notice at the top of a course page (SPEC.md §5.4, §7.3), worded for a course or a thesis. */
-export function corsoNotice(corso: Corso): string {
-  const target = corso.tipo === 'tesi' ? 'della tesi' : 'del corso';
-  return `Appunti di uno studente, non materiale ufficiale ${target}. Possono contenere errori.`;
+/** The student-notes notice at the top of a course page (SPEC.md §5.4, §7.3). A thesis is the author's own work: it has none. */
+export function corsoNotice(corso: Corso): string | undefined {
+  return corso.tipo === 'tesi' ? undefined : 'Appunti di uno studente, non materiale ufficiale del corso. Possono contenere errori.';
 }

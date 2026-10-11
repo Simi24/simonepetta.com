@@ -39,10 +39,10 @@ test('corsoDescription names a tesi as "Tesi", not "Corso"', () => {
 });
 
 test('corsoNotice mentions the course for a corso', () => {
-  assert.match(corsoNotice(corso), /del corso/);
+  assert.match(corsoNotice(corso) ?? '', /del corso/);
 });
 
-test('corsoNotice mentions the thesis for a tesi', () => {
+test('corsoNotice is absent for a tesi: the thesis is the author\'s own work, not student notes', () => {
   const tesi: Corso = { ...corso, tipo: 'tesi', anno: undefined, aa: '2022' };
-  assert.match(corsoNotice(tesi), /della tesi/);
+  assert.equal(corsoNotice(tesi), undefined);
 });

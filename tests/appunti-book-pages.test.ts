@@ -28,3 +28,11 @@ test('previous and next links name an appendix by its letter', () => {
   assert.match(read(dist, 'appunti/libro/bibliografia/index.html'), /href="\/appunti\/libro\/appendice-a-configurazioni\/"[^>]*>[\s\S]*?Appendice A Configurazioni/);
   assert.match(read(dist, 'appunti/libro/1-introduzione/index.html'), /href="\/appunti\/libro\/ringraziamenti\/"[^>]*>[\s\S]*?Ringraziamenti/);
 });
+
+test('a thesis shows no student-notes notice, on its page or on a chapter', () => {
+  const dist = buildSite(BOOK);
+  for (const path of ['appunti/libro/index.html', 'appunti/libro/1-introduzione/index.html', 'appunti/libro/appendice-a-configurazioni/index.html']) {
+    const html = read(dist, path);
+    assert.doesNotMatch(html, /non materiale ufficiale|Possono contenere errori|class="notice/, path);
+  }
+});
