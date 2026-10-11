@@ -341,7 +341,7 @@
 <span class="ltx_listingline">def register_strategy(strategy_name: str):</span>
 <span class="ltx_listingline">    def decorator(cls):</span>
 <span class="ltx_listingline">        if strategy_name in STRATEGY_REGISTRY:</span>
-<span class="ltx_listingline">            raise ValueError(f"Strategia ’{strategy_name}’ gia’ registrata")</span>
+<span class="ltx_listingline">            raise ValueError(f"Strategia '{strategy_name}' gia' registrata")</span>
 <span class="ltx_listingline">        STRATEGY_REGISTRY[strategy_name] = cls</span>
 <span class="ltx_listingline">        return cls</span>
 <span class="ltx_listingline">    return decorator</span>
@@ -350,7 +350,7 @@
 <span class="ltx_listingline">    strategy_name = get_strategy_from_config(config_key)</span>
 <span class="ltx_listingline">    transformer_cls = STRATEGY_REGISTRY.get(strategy_name)</span>
 <span class="ltx_listingline">    if not transformer_cls:</span>
-<span class="ltx_listingline">        raise ValueError(f"Strategia ’{strategy_name}’ non trovata")</span>
+<span class="ltx_listingline">        raise ValueError(f"Strategia '{strategy_name}' non trovata")</span>
 <span class="ltx_listingline">    return transformer_cls(payload)</span></code></pre></div>
 <figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.5: </span>Registrazione delle strategie di trasformazione e risoluzione dinamica tramite pattern Factory</figcaption>
 </figure>
@@ -374,14 +374,14 @@
 <div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">UNLOAD (</span>
 <span class="ltx_listingline">    SELECT *</span>
 <span class="ltx_listingline">    FROM &lt;table_name&gt;_raw</span>
-<span class="ltx_listingline">    WHERE date_parse(year || ’-’ || month || ’-’ || day, ’%Y-%m-%d’)</span>
-<span class="ltx_listingline">        BETWEEN DATE ’&lt;date_start&gt;’ AND DATE ’&lt;date_end&gt;’</span>
-<span class="ltx_listingline">        AND iterator = ’&lt;iterator&gt;’</span>
+<span class="ltx_listingline">    WHERE date_parse(year || '-' || month || '-' || day, '%Y-%m-%d')</span>
+<span class="ltx_listingline">        BETWEEN DATE '&lt;date_start&gt;' AND DATE '&lt;date_end&gt;'</span>
+<span class="ltx_listingline">        AND iterator = '&lt;iterator&gt;'</span>
 <span class="ltx_listingline">)</span>
-<span class="ltx_listingline">TO ’s3://&lt;bucket&gt;/athena-results/&lt;table_name&gt;/year=&lt;YYYY&gt;/month=&lt;MM&gt;/day=&lt;DD&gt;/’</span>
+<span class="ltx_listingline">TO 's3://&lt;bucket&gt;/athena-results/&lt;table_name&gt;/year=&lt;YYYY&gt;/month=&lt;MM&gt;/day=&lt;DD&gt;/'</span>
 <span class="ltx_listingline">WITH (</span>
-<span class="ltx_listingline">    format = ’PARQUET’,</span>
-<span class="ltx_listingline">    compression = ’SNAPPY’</span>
+<span class="ltx_listingline">    format = 'PARQUET',</span>
+<span class="ltx_listingline">    compression = 'SNAPPY'</span>
 <span class="ltx_listingline">);</span></code></pre></div>
 <figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.6: </span>Materializzazione dei risultati partizionati tramite UNLOAD in fase di esecuzione ETL</figcaption>
 </figure>
@@ -427,7 +427,7 @@
 <span class="ltx_listingline">    GROUP BY 1, 2, 3, 4, 5, 6</span>
 <span class="ltx_listingline">)</span>
 <span class="ltx_listingline">SELECT</span>
-<span class="ltx_listingline">    DATE(i.year || ’-’ || i.month || ’-’ || i.day) AS date,</span>
+<span class="ltx_listingline">    DATE(i.year || '-' || i.month || '-' || i.day) AS date,</span>
 <span class="ltx_listingline">    c.name AS campaign,</span>
 <span class="ltx_listingline">    p.name AS line_item,</span>
 <span class="ltx_listingline">    b.name AS creative,</span>
@@ -470,8 +470,8 @@
 <span class="ltx_listingline">        COUNT(*) AS impressions</span>
 <span class="ltx_listingline">    FROM "adform-prod"."impression"</span>
 <span class="ltx_listingline">    WHERE is_robot = false</span>
-<span class="ltx_listingline">        AND year = ’2024’</span>
-<span class="ltx_listingline">        AND month = ’02’</span>
+<span class="ltx_listingline">        AND year = '2024'</span>
+<span class="ltx_listingline">        AND month = '02'</span>
 <span class="ltx_listingline">    GROUP BY campaign_id</span>
 <span class="ltx_listingline">),</span>
 <span class="ltx_listingline">clk AS (</span>
@@ -480,8 +480,8 @@
 <span class="ltx_listingline">        COUNT(*) AS clicks</span>
 <span class="ltx_listingline">    FROM "adform-prod"."click"</span>
 <span class="ltx_listingline">    WHERE is_robot = false</span>
-<span class="ltx_listingline">        AND year = ’2024’</span>
-<span class="ltx_listingline">        AND month = ’02’</span>
+<span class="ltx_listingline">        AND year = '2024'</span>
+<span class="ltx_listingline">        AND month = '02'</span>
 <span class="ltx_listingline">    GROUP BY campaign_id</span>
 <span class="ltx_listingline">)</span>
 <span class="ltx_listingline">SELECT</span>
@@ -552,9 +552,9 @@
 <span class="ltx_listingline">        name = data.get("name")</span>
 <span class="ltx_listingline">        if name:</span>
 <span class="ltx_listingline">            # Normalizzazione Unicode e rimozione spazi</span>
-<span class="ltx_listingline">            normalized = unicodedata.normalize(’NFC’, name).casefold().strip()</span>
+<span class="ltx_listingline">            normalized = unicodedata.normalize('NFC', name).casefold().strip()</span>
 <span class="ltx_listingline">            # Sostituzione spazi con underscore per slug/ID</span>
-<span class="ltx_listingline">            data[’normalized_name’] = re.sub(r’\s+’, ’_’, normalized)</span>
+<span class="ltx_listingline">            data['normalized_name'] = re.sub(r'\s+', '_', normalized)</span>
 <span class="ltx_listingline">        return data</span></code></pre></div>
 <figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.11: </span>Validazione avanzata e trasformazione dei dati tramite i validatori di modello Pydantic</figcaption>
 </figure>
@@ -579,7 +579,7 @@
 <span class="ltx_listingline">app.include_router(primary_router.router, prefix="/v1/primary")</span>
 <span class="ltx_listingline">app.include_router(secondary_router.router, prefix="/v1/secondary")</span>
 <span class="ltx_listingline"></span>
-<span class="ltx_listingline"># Handler per convertire l’evento API Gateway in richiesta ASGI</span>
+<span class="ltx_listingline"># Handler per convertire l'evento API Gateway in richiesta ASGI</span>
 <span class="ltx_listingline">lambda_handler = Mangum(app)</span></code></pre></div>
 <figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.12: </span>Involucro dell’applicazione FastAPI tramite l’adattatore Mangum per l’esecuzione serverless</figcaption>
 </figure>
@@ -606,7 +606,7 @@
 <span class="ltx_listingline">    normalized_name = UnicodeAttribute(hash_key=True)</span>
 <span class="ltx_listingline">    entity_type = UnicodeAttribute(range_key=True)</span>
 <span class="ltx_listingline"></span>
-<span class="ltx_listingline">class SpecificEntityModel(BaseEntityModel, discriminator=’specific_type’):</span>
+<span class="ltx_listingline">class SpecificEntityModel(BaseEntityModel, discriminator='specific_type'):</span>
 <span class="ltx_listingline">    external_provider_id = UnicodeAttribute()</span>
 <span class="ltx_listingline">    configuration_flags = NumberAttribute(default=0)</span></code></pre></div>
 <figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.13: </span>Definizione dei modelli ODM in PynamoDB per l’implementazione del Single Table Design e del polimorfismo</figcaption>
@@ -665,7 +665,7 @@
 <span class="ltx_listingline">        AttributeName=adsquare_config_id,AttributeType=S \</span>
 <span class="ltx_listingline">    --key-schema \</span>
 <span class="ltx_listingline">        AttributeName=normalized_campaign_name,KeyType=HASH \</span>
-<span class="ltx_listingline">    --global-secondary-indexes ’[</span>
+<span class="ltx_listingline">    --global-secondary-indexes '[</span>
 <span class="ltx_listingline">        {</span>
 <span class="ltx_listingline">            "IndexName": "timeline-index",</span>
 <span class="ltx_listingline">            "KeySchema": [</span>
@@ -683,7 +683,7 @@
 <span class="ltx_listingline">            "Projection": {"ProjectionType": "ALL"},</span>
 <span class="ltx_listingline">            "ProvisionedThroughput": {"ReadCapacityUnits": 5, "WriteCapacityUnits": 5}</span>
 <span class="ltx_listingline">        }</span>
-<span class="ltx_listingline">    ]’</span></code></pre></div>
+<span class="ltx_listingline">    ]'</span></code></pre></div>
 <figcaption class="ltx_caption bml_background-color_FAFAFA"><span class="ltx_tag ltx_tag_float">Listing 4.15: </span>Script bash di avvio per la creazione automatizzata della tabella DynamoDB emulata</figcaption>
 </figure>
 <div id="S3.SS4.p5" class="ltx_para">
@@ -748,7 +748,7 @@
 <span class="ltx_listingline">    inputs:</span>
 <span class="ltx_listingline">      environment:</span>
 <span class="ltx_listingline">        type: choice</span>
-<span class="ltx_listingline">        description: ’Ambiente di destinazione’</span>
+<span class="ltx_listingline">        description: 'Ambiente di destinazione'</span>
 <span class="ltx_listingline">        options: [dev, prod]</span>
 <span class="ltx_listingline"></span>
 <span class="ltx_listingline">jobs:</span>
@@ -756,13 +756,13 @@
 <span class="ltx_listingline">    runs-on: ubuntu-latest</span>
 <span class="ltx_listingline">    steps:</span>
 <span class="ltx_listingline">      - name: Update Lambda Image (Dev)</span>
-<span class="ltx_listingline">        if: github.event.inputs.environment == ’dev’</span>
+<span class="ltx_listingline">        if: github.event.inputs.environment == 'dev'</span>
 <span class="ltx_listingline">        uses: Company/gha-lambda-image-upload@main</span>
 <span class="ltx_listingline">        with:</span>
 <span class="ltx_listingline">          image-tag: ${{ env.RELEASE_VERSION }}</span>
 <span class="ltx_listingline"></span>
 <span class="ltx_listingline">      - name: Update Lambda Image (Prod)</span>
-<span class="ltx_listingline">        if: github.event.inputs.environment == ’prod’</span>
+<span class="ltx_listingline">        if: github.event.inputs.environment == 'prod'</span>
 <span class="ltx_listingline">        uses: Company/gha-lambda-image-upload@main</span>
 <span class="ltx_listingline">        with:</span>
 <span class="ltx_listingline">          image-tag: ${{ env.RELEASE_VERSION }}</span></code></pre></div>

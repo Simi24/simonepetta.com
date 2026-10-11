@@ -9,6 +9,7 @@ const capitoloSchema = z.object({
   /** A numbered chapter. An appendix has `etichetta` instead; the acknowledgements and bibliography neither. */
   numero: z.number().int().positive().optional(),
   etichetta: z.string().min(1).optional(),
+  bibliografia: z.literal(true).optional(),
   slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/),
   titolo: z.string().min(1),
   sezioni: z.array(sezioneSchema),

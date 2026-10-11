@@ -213,7 +213,7 @@ Contract: [`docs/prototype/scrivania.html`](https://github.com/Simi24/simonepett
 
 ### 7.1 Corpus and publication policy ([#5](https://github.com/Simi24/simonepetta.com-archive/issues/5), [#14](https://github.com/Simi24/simonepetta.com-archive/issues/14))
 **All sources are already off Overleaf** (export of 2026-09-29) in the private archive repo [`Simi24/appunti-sorgenti`](https://github.com/Simi24/appunti-sorgenti): **30 course projects (13 magistrale, 17 triennale) + 2 theses** (`tesi-magistrale`, `tesi` for the triennale), with Overleaf-compiled PDFs for 29 of them. Also: `GPUcomputing` and `Social_Mining` on GitHub (built PDFs); `LinguaggiTraduttori` on GitHub is the complete version of an Overleaf stub; `Elaborazione Segnali` exists both on Overleaf and as a scan. Six Overleaf projects are barely started (3 to 5 pages); publishing them is the author's call per course in S6.
-- **All published as PDF; HTML stops at two courses.** `gpucomputing` and `elaborazione-segnali` are converted (S8, S9). On 2026-10-01 the author stopped further conversions: whoever studies from the notes downloads the PDF, and a conversion costs hours of agent work per course. The pipeline stays, for the two converted courses. No curation by quality: elementary is not wrong, and the year label gives context.
+- **All published as PDF; HTML stops at two courses and the master's thesis.** `gpucomputing` and `elaborazione-segnali` are converted (S8, S9); so is `tesi-magistrale`, the one exception to the stop, with its acknowledgements, bibliography and appendices as pages next to the chapters (confirmed by the author, 2026-10-11). On 2026-10-01 the author stopped further conversions: whoever studies from the notes downloads the PDF, and a conversion costs hours of agent work per course. The pipeline stays, for the two converted courses. No curation by quality: elementary is not wrong, and the year label gives context.
 - **Third-party material is published as it is, with attribution and removal on request** (author's decision, 2026-09-30). Many courses embed figures from lecturer slides or textbooks; each course page names its sources (manifest field `fonti`) and shows a removal contact. A course or figure comes down when its rights holder asks, or when the author chooses. The hand-drawn figures in the notes are the author's own.
 - **The PDF stays downloadable in every state.** Converting a course adds HTML next to the PDF, never instead of it.
 - **PDFs are built locally** with TeX Live in Docker, the same toolchain as the pipeline: Overleaf's free plan times out on the large projects. Overleaf is not used anymore.
@@ -472,7 +472,7 @@ Docker (LaTeXML via BookML), `make appunti CORSO=<slug>`, chapter pages with TOC
 *AC*: one course is readable as HTML with the detector green, and its PDF is still downloadable; a deliberately broken input (a dropped figure) is caught and `build/` is not updated; the site deploy does not depend on the workflow.
 
 **S9 Incremental conversions**
-Repeatable per-course conversion; the math review is delegated to the orchestrating agent (§1.3). Closed with the second course ([#39](https://github.com/Simi24/simonepetta.com-archive/issues/39)): no further conversions (§7.1).
+Repeatable per-course conversion; the math review is delegated to the orchestrating agent (§1.3). Closed with the second course ([#39](https://github.com/Simi24/simonepetta.com-archive/issues/39)): no further conversions (§7.1), except the master's thesis (confirmed by the author, 2026-10-11).
 *AC*: each converted course switches from PDF to HTML state with no URL change and keeps its PDF download.
 
 ### v2: chat
@@ -545,6 +545,9 @@ Found while writing this document and by the cold read (an agent with no context
 27. **Red accent on interaction**: one `--red` token, used only for the hovered link underline, the focus outline and the current nav item underline; "No accent color" is replaced (§5.1, [#88](https://github.com/Simi24/simonepetta.com-archive/issues/88)).
 
 28. **About texts from approved drafts**: the author approved the agent's drafts for the about pages and section ledes ("vanno bene, comincia a fare tu delle scelte"); reading reactions stay his alone. The colophon's writing line drops any claim about where the texts come from, at the author's request (§1.2, §8, [#93](https://github.com/Simi24/simonepetta.com-archive/issues/93)).
+
+**Confirmed by the author (2026-10-11)**
+29. **The two theses are the exception to "HTML stops at two courses"**: `tesi-magistrale` is converted, from sources redacted exactly as its published PDF is (§7.1, S9).
 
 **Applied by default**
 4. **Theme toggle vs JS budget**: one inline theme script ≤ 1 KB is a declared budget exception (§5.1, §12.2).

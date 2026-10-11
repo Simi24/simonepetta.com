@@ -89,8 +89,8 @@
 <p class="ltx_p">Il Listato <a title="B.2 Azione Composita per la Pubblicazione su Amazon ECR ‣ Appendice B Automazione del Rilascio (CI/CD) ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#S2"><span class="ltx_text ltx_ref_tag">B.2</span></a> espone l’azione GitHub composita richiamata dalla pipeline principale. Il codice astrae la logica di autenticazione al provider cloud tramite ruoli IAM, gestisce l’istanziazione condizionale del registro contenitori qualora non sia presente, e orchestra l’effettiva compilazione e pubblicazione dell’immagine, garantendo la standardizzazione del processo di build aziendale.</p>
 </div>
 <div id="S2.p2" class="ltx_para">
-<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">name: ’gha-build-and-push-on-ecr’</span>
-<span class="ltx_listingline">description: ’Automates the process of building, tagging, and pushing a Docker image to Amazon ECR.’</span>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">name: 'gha-build-and-push-on-ecr'</span>
+<span class="ltx_listingline">description: 'Automates the process of building, tagging, and pushing a Docker image to Amazon ECR.'</span>
 <span class="ltx_listingline"></span>
 <span class="ltx_listingline">inputs:</span>
 <span class="ltx_listingline">  aws-role-to-assume:</span>
@@ -101,7 +101,7 @@
 <span class="ltx_listingline">    default: "eu-west-1"</span>
 <span class="ltx_listingline">    required: true</span>
 <span class="ltx_listingline">  ecr-repository:</span>
-<span class="ltx_listingline">    description: ’Registry Domain’</span>
+<span class="ltx_listingline">    description: 'Registry Domain'</span>
 <span class="ltx_listingline">    required: true</span>
 <span class="ltx_listingline">  build-platform:</span>
 <span class="ltx_listingline">    description: "Build Platform"</span>
@@ -144,7 +144,7 @@
 <span class="ltx_listingline">    - name: Apply ECR Repository Policy</span>
 <span class="ltx_listingline">      shell: bash</span>
 <span class="ltx_listingline">      run: |</span>
-<span class="ltx_listingline">        CURRENT_POLICY=$(aws ecr get-repository-policy --repository-name ${{ inputs.ecr-repository }} --query ’policyText’ --output text 2&gt;/dev/null || echo "")</span>
+<span class="ltx_listingline">        CURRENT_POLICY=$(aws ecr get-repository-policy --repository-name ${{ inputs.ecr-repository }} --query 'policyText' --output text 2&gt;/dev/null || echo "")</span>
 <span class="ltx_listingline">        LOCAL_POLICY=$(cat ${{ github.action_path }}/ecr-policy.json)</span>
 <span class="ltx_listingline"></span>
 <span class="ltx_listingline">        if [ "$(echo "$CURRENT_POLICY" | jq -S .)" == "$(echo "$LOCAL_POLICY" | jq -S .)" ]; then</span>
@@ -187,13 +187,13 @@
 <span class="ltx_listingline">  workflow_dispatch:</span>
 <span class="ltx_listingline">    inputs:</span>
 <span class="ltx_listingline">      environment:</span>
-<span class="ltx_listingline">        description: ’The environment to deploy to’</span>
+<span class="ltx_listingline">        description: 'The environment to deploy to'</span>
 <span class="ltx_listingline">        required: true</span>
 <span class="ltx_listingline">        type: choice</span>
 <span class="ltx_listingline">        options:</span>
 <span class="ltx_listingline">        - dev</span>
 <span class="ltx_listingline">        - prod</span>
-<span class="ltx_listingline">        default: ’dev’</span>
+<span class="ltx_listingline">        default: 'dev'</span>
 <span class="ltx_listingline"></span>
 <span class="ltx_listingline">permissions:</span>
 <span class="ltx_listingline">  id-token: write</span>
@@ -233,7 +233,7 @@
 <span class="ltx_listingline">            echo "LAMBDA_FUNCTION_NAME=$LAMBDA_NAME" &gt;&gt; $GITHUB_ENV</span>
 <span class="ltx_listingline"></span>
 <span class="ltx_listingline">      - name: Update Lambda Image (Dev)</span>
-<span class="ltx_listingline">        if: github.event.inputs.environment == ’dev’</span>
+<span class="ltx_listingline">        if: github.event.inputs.environment == 'dev'</span>
 <span class="ltx_listingline">        uses: Company/gha-lambda-image-upload@main</span>
 <span class="ltx_listingline">        with:</span>
 <span class="ltx_listingline">          lambda-function-name: ${{ env.LAMBDA_FUNCTION_NAME }}</span>
@@ -243,7 +243,7 @@
 <span class="ltx_listingline">          aws-region: ${{ vars.AWS_REGION }}</span>
 <span class="ltx_listingline"></span>
 <span class="ltx_listingline">      - name: Update Lambda Image (Prod)</span>
-<span class="ltx_listingline">        if: github.event.inputs.environment == ’prod’</span>
+<span class="ltx_listingline">        if: github.event.inputs.environment == 'prod'</span>
 <span class="ltx_listingline">        uses: Company/gha-lambda-image-upload@main</span>
 <span class="ltx_listingline">        with:</span>
 <span class="ltx_listingline">          lambda-function-name: ${{ env.LAMBDA_FUNCTION_NAME }}</span>
@@ -263,8 +263,8 @@
 <p class="ltx_p">Il Listato <a title="B.4 Azione Composita per l’aggiornamento dell’immagine ECR ‣ Appendice B Automazione del Rilascio (CI/CD) ‣ PROGETTAZIONE E AUTOMAZIONE DI UNA FARM DI MICROSERVIZI SU AWS: UN CASO DI STUDIO CON TERRAFORM E CI/CD" class="ltx_ref" href="#S4"><span class="ltx_text ltx_ref_tag">B.4</span></a> espone l’azione GitHub composita responsabile dell’aggiornamento del codice applicativo. Il modulo automatizza l’invocazione delle interfacce a riga di comando (CLI) del provider cloud, istruendo l’infrastruttura ad agganciare il nuovo identificativo di versione dell’immagine container e implementando un meccanismo di attesa sincrona per validare l’effettivo completamento del rilascio.</p>
 </div>
 <div id="S4.p2" class="ltx_para">
-<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">name: ’Update Lambda ECR Image’</span>
-<span class="ltx_listingline">description: ’Updates an AWS Lambda function to use a new ECR image tag.’</span>
+<div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">name: 'Update Lambda ECR Image'</span>
+<span class="ltx_listingline">description: 'Updates an AWS Lambda function to use a new ECR image tag.'</span>
 <span class="ltx_listingline"></span>
 <span class="ltx_listingline">inputs:</span>
 <span class="ltx_listingline">  lambda-function-name:</span>
@@ -311,7 +311,7 @@
 <span class="ltx_listingline">      run: |</span>
 <span class="ltx_listingline">        echo "Waiting for the update to complete..."</span>
 <span class="ltx_listingline">        aws lambda wait function-updated-v2 --function-name ${{ inputs.lambda-function-name }}</span>
-<span class="ltx_listingline">        echo "Update for ’${{ inputs.lambda-function-name }}’ completed successfully."</span></code></pre></div>
+<span class="ltx_listingline">        echo "Update for '${{ inputs.lambda-function-name }}' completed successfully."</span></code></pre></div>
 </div>
 </div>
 </section>

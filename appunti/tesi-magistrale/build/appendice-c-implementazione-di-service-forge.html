@@ -32,7 +32,7 @@
 <span class="ltx_listingline">)</span>
 <span class="ltx_listingline"></span>
 <span class="ltx_listingline"># ==========================================================</span>
-<span class="ltx_listingline"># Resources - Dati in sola lettura ispezionabili dall’LLM</span>
+<span class="ltx_listingline"># Resources - Dati in sola lettura ispezionabili dall'LLM</span>
 <span class="ltx_listingline"># ==========================================================</span>
 <span class="ltx_listingline"></span>
 <span class="ltx_listingline">@mcp.resource("forge://profiles")</span>
@@ -48,7 +48,7 @@
 <span class="ltx_listingline">    pass</span>
 <span class="ltx_listingline"></span>
 <span class="ltx_listingline"># ==========================================================</span>
-<span class="ltx_listingline"># Tools - Azioni invocabili dall’agente LLM</span>
+<span class="ltx_listingline"># Tools - Azioni invocabili dall'agente LLM</span>
 <span class="ltx_listingline"># ==========================================================</span>
 <span class="ltx_listingline"></span>
 <span class="ltx_listingline">@mcp.tool()</span>
@@ -170,9 +170,9 @@
 <span class="ltx_listingline">    ports:</span>
 <span class="ltx_listingline">      - {{ service_port }}:8080</span>
 <span class="ltx_listingline">      - 5678:5678</span>
-<span class="ltx_listingline">    {% if profile == ’service’ -%}</span>
+<span class="ltx_listingline">    {% if profile == 'service' -%}</span>
 <span class="ltx_listingline">    command:</span>
-<span class="ltx_listingline">      sh -c "echo ’Please run the debugger to proceed (F5)’ &amp;&amp; python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m uvicorn main:app --host 0.0.0.0 --port 8080 --reload --log-level debug"</span>
+<span class="ltx_listingline">      sh -c "echo 'Please run the debugger to proceed (F5)' &amp;&amp; python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m uvicorn main:app --host 0.0.0.0 --port 8080 --reload --log-level debug"</span>
 <span class="ltx_listingline">    {%- endif  %}</span>
 <span class="ltx_listingline"></span>
 <span class="ltx_listingline">{% if use_localstack %}</span>

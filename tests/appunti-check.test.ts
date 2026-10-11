@@ -131,3 +131,27 @@ test('a manifest the course schema rejects is reported, not skipped, even if the
   assert.match(problems.join('\n'), /gpu: corso\.yaml is invalid.*pubblicato/);
   assert.deepEqual(checked, []);
 });
+
+test('a committed book build with acknowledgements, bibliography and an appendix checks clean, and a lost bibliography entry is caught', () => {
+  const root = makeTempDir('appunti-check-book-');
+  const contentDir = join(root, 'appunti');
+  const courseDir = join(contentDir, 'tesi');
+  const htmlDir = join(root, 'html');
+  mkdirSync(join(courseDir, 'src'), { recursive: true });
+  mkdirSync(htmlDir);
+  for (const [from, to] of [['thesis-Chx1.html', 'Chx1.html'], ['thesis-bib.html', 'bib.html'], ['thesis-A4.html', 'A4.html']] as const) {
+    cpSync(join(LATEXML, from), join(htmlDir, to));
+  }
+  const code = Array.from({ length: 38 }, (_, i) => `riga ${i + 1}`).join('\n');
+  const source = `\\prefacesection{Ringraziamenti}\n\\begin{thebibliography}{0}\n\\bibitem{a} A\n\\bibitem{b} B\n\\bibitem{c} C\n\\end{thebibliography}\n\\chapter{Appendice}\n\\begin{lstlisting}\n${code}\n\\end{lstlisting}\n`;
+  writeFileSync(join(courseDir, 'src/main.tex'), source);
+  writeFileSync(join(courseDir, 'corso.yaml'), MANIFEST + 'pubblicato: true\n');
+  writeFileSync(join(courseDir, 'tesi.pdf'), 'not read');
+  writeFileSync(join(courseDir, 'meta.json'), '{\n  "pagine": 12\n}\n');
+  buildFromLatexml({ htmlDir, courseDir, corso: 'tesi', source, latexmlErrors: 0 });
+
+  assert.deepEqual(checkCourses(contentDir, { pageCount: pages(12) }).problems, []);
+
+  writeFileSync(join(courseDir, 'src/main.tex'), `${source}\\bibitem{d} D\n`);
+  assert.match(checkCourses(contentDir, { pageCount: pages(12) }).problems.join('\n'), /4 bibliography entr.*3/);
+});

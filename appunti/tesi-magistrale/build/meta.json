@@ -506,6 +506,7 @@
       "math": true
     },
     {
+      "bibliografia": true,
       "slug": "bibliografia",
       "titolo": "Bibliografia",
       "sezioni": [],

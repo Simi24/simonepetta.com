@@ -97,8 +97,8 @@ Come delineato in Figura <a title="Figura 9 ‣ 3.3.1 Decomposizione Event-Drive
 <div id="S3.SS2.p3" class="ltx_para">
 <div class="bml_listing"><pre class="listing" tabindex="0"><code><span class="ltx_listingline">SELECT campaign_id, SUM(impressions) AS total_impressions</span>
 <span class="ltx_listingline">FROM impressions_table</span>
-<span class="ltx_listingline">WHERE campaign_id = ’ABC-123’</span>
-<span class="ltx_listingline">  AND year = ’2024’ AND month = ’10’ AND day = ’25’;</span></code></pre></div>
+<span class="ltx_listingline">WHERE campaign_id = 'ABC-123'</span>
+<span class="ltx_listingline">  AND year = '2024' AND month = '10' AND day = '25';</span></code></pre></div>
 </div>
 <div id="S3.SS2.p4" class="ltx_para">
 <p class="ltx_p">In un Data Lake privo di partizionamento logico, il motore di query distribuito è costretto a leggere sequenzialmente l’intero volume di dati archiviato nel bucket Amazon S3 per individuare i record. Assumendo un volume di 1 Terabyte (TB) di dati storici, l’operazione comporta la scansione dell’intero Terabyte, incorrendo nel costo fisso per TB associato ad Athena.</p>

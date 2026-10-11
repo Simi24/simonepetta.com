@@ -12,6 +12,8 @@ export interface CapitoloRecord {
   numero?: number | undefined;
   /** A lettered appendix ("Appendice A"). */
   etichetta?: string | undefined;
+  /** The bibliography page, which the leak detector counts apart from the chapters. */
+  bibliografia?: true;
   slug: string;
   titolo: string;
   sezioni: Sezione[];
@@ -159,6 +161,7 @@ export function prepareBuild(input: BuildInput): PreparedBuild {
     capitoli: chapters.map((chapter, i) => ({
       ...(chapter.numero === undefined ? {} : { numero: chapter.numero }),
       ...(chapter.etichetta === undefined ? {} : { etichetta: chapter.etichetta }),
+      ...(chapter.bibliografia === true ? { bibliografia: true as const } : {}),
       slug: slugs[i]!,
       titolo: chapter.titolo,
       sezioni: chapter.sezioni,
