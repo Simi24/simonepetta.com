@@ -37,5 +37,20 @@ resource "cloudflare_ruleset" "www_to_apex" {
         }
       }
     }
+    }, {
+    # Plain http on the apex answered with the page itself: send it to https, so only one copy exists.
+    description = "Redirect http to https on the apex, keeping path and query"
+    action      = "redirect"
+    expression  = "(http.host eq \"${var.zone_name}\" and not ssl)"
+    enabled     = true
+    action_parameters = {
+      from_value = {
+        status_code           = 301
+        preserve_query_string = true
+        target_url = {
+          expression = "concat(\"https://${var.zone_name}\", http.request.uri.path)"
+        }
+      }
+    }
   }]
 }
