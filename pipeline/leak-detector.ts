@@ -40,6 +40,29 @@ const withoutComments = (source: string): string => source.replace(/(^|[^\\])%.*
 
 const count = (text: string, pattern: RegExp): number => text.match(pattern)?.length ?? 0;
 
+/** The source without the bodies of `\\newenvironment`: `\\begin{theorem}` inside one is a definition, not a use. */
+function withoutEnvironmentDefinitions(source: string): string {
+  let out = '';
+  let from = 0;
+  for (const match of source.matchAll(/\\(?:re)?newenvironment\*?\s*\{[^}]*\}(?:\s*\[[^\]]*\])*/g)) {
+    if (match.index < from) continue;
+    let end = match.index + match[0].length;
+    for (let groups = 0; groups < 2; groups++) {
+      while (/\s/.test(source[end] ?? '')) end++;
+      if (source[end] !== '{') break;
+      let depth = 0;
+      do {
+        if (source[end] === '{') depth++;
+        else if (source[end] === '}') depth--;
+        end++;
+      } while (depth > 0 && end < source.length);
+    }
+    out += source.slice(from, match.index);
+    from = end;
+  }
+  return out + source.slice(from);
+}
+
 function theoremNames(source: string): string[] {
   return [...source.matchAll(/\\newtheorem\*?\{([^}]+)\}/g)].map((match) => match[1]!);
 }
@@ -152,7 +175,7 @@ function figureLeaks(chapters: readonly ReportedChapter[], figureFiles: readonly
 }
 
 export function detectLeaks(report: ConversionReport): string[] {
-  const source = withoutComments(report.source);
+  const source = withoutEnvironmentDefinitions(withoutComments(report.source));
   const output = report.chapters.map((chapter) => chapter.html).join('\n');
   const leaks: string[] = [];
   const check = (message: string | undefined): void => {
@@ -181,10 +204,12 @@ export function detectLeaks(report: ConversionReport): string[] {
   const sourceListings = listingLinesInSource(source);
   const outputListings = report.chapters.flatMap((chapter) => listingLinesInOutput(chapter.html));
   check(describeMismatch('code listing(s) (lstlisting)', sourceListings.length, outputListings.length, 'exactly'));
-  sourceListings.forEach((lines, i) => {
-    const produced = outputListings[i];
-    if (produced !== undefined && produced !== lines) leaks.push(`code listing ${i + 1} has ${lines} line(s) in the source and ${produced} in the output`);
-  });
+  // The source files are not in book order, so each listing length is compared as a count, not by position.
+  for (const lines of new Set([...sourceListings, ...outputListings])) {
+    const expected = sourceListings.filter((n) => n === lines).length;
+    const produced = outputListings.filter((n) => n === lines).length;
+    if (expected !== produced) leaks.push(`the source has ${expected} code listing(s) of ${lines} line(s), the output has ${produced}`);
+  }
 
   const figures = figureLeaks(report.chapters, report.figureFiles);
   check(describeMismatch('image(s) (\\includegraphics)', count(source, /\\includegraphics\b/g), figures.images, 'exactly'));

@@ -182,10 +182,15 @@ test('a lost code listing is a leak, and so is an extra one', () => {
   assert.match(detectLeaks(report({ source: SOURCE_WITH_LISTINGS, chapters: [chapter(LISTING('primo', '', '  terzo') + LISTING('solo') + LISTING('x'))] })).join('\n'), /2 code listing.*3/);
 });
 
-test('a listing that lost lines is a leak that says which listing, even when the total still matches', () => {
+test('a listing that lost lines is a leak, even when the total number of lines still matches', () => {
   const leaks = detectLeaks(report({ source: SOURCE_WITH_LISTINGS, chapters: [chapter(LISTING('primo', 'terzo') + LISTING('solo', 'extra'))] })).join('\n');
-  assert.match(leaks, /code listing 1 .*3 line.*2/);
-  assert.match(leaks, /code listing 2 .*1 line.*2/);
+  assert.match(leaks, /source has 1 code listing\(s\) of 3 line\(s\), the output has 0/);
+  assert.match(leaks, /source has 0 code listing\(s\) of 2 line\(s\), the output has 2/);
+});
+
+test('listings are compared however the source files are ordered: the book order is not the file order', () => {
+  const html = LISTING('solo') + LISTING('primo', '', '  terzo');
+  assert.deepEqual(detectLeaks(report({ source: SOURCE_WITH_LISTINGS, chapters: [chapter(html)] })), []);
 });
 
 test('commented-out listings are not counted, and a listing with no code has no lines', () => {
@@ -218,4 +223,11 @@ test('acknowledgements, chapters, bibliography and appendices are each counted a
 test('every \\bibitem of the source must come out as an entry of the bibliography', () => {
   const lost = BOOK.map((p) => (p.bibliografia ? { ...p, html: p.html.replace('<li class="ltx_bibitem">B.</li>', '') } : p));
   assert.match(detectLeaks(report({ source: BOOK_SOURCE, chapters: lost })).join('\n'), /2 bibliography entr.*1/);
+});
+
+test('a theorem environment that is only defined, never used, is not expected in the output', () => {
+  const source = '\\newtheorem{myteor}{Teorema}[section]\n\\newenvironment{teor}{\\begin{myteor}\\sl}{\\end{myteor}}\n\\chapter{Uno}\nTesto.\n';
+  assert.deepEqual(detectLeaks(report({ source })), []);
+  const used = `${source}\\begin{myteor}Vero.\\end{myteor}\n`;
+  assert.match(detectLeaks(report({ source: used })).join('\n'), /1 theorem-like.*0/);
 });
