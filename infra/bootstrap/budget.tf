@@ -5,6 +5,13 @@ resource "aws_budgets_budget" "monthly" {
   limit_unit   = "USD"
   time_unit    = "MONTHLY"
 
+  # The account is the management account of an Organization (studio-condominio's dev and
+  # prod accounts): without this filter the budget would count their costs too.
+  cost_filter {
+    name   = "LinkedAccount"
+    values = ["209556027092"]
+  }
+
   dynamic "notification" {
     for_each = {
       actual_50    = { threshold = 50, type = "ACTUAL" }
