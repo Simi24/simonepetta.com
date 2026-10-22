@@ -50,6 +50,10 @@
 
 .spine__author {
   font-weight: 400;
+  /* The surname names the book at a glance: it never shrinks, a long title gives way instead. */
+  flex: none;
+  white-space: nowrap;
+  margin-block-start: 0.4rem;
 }
 
 .spine--in-corso::after {
