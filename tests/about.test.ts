@@ -40,6 +40,8 @@ test('the home page (/) carries the IT about texts, with no placeholder left', (
     assert.match(openSource, new RegExp(`<a href="https://github\\.com/Simi24/${name}">${name}</a>`));
   }
   assert.match(openSource, /un ORM per DynamoDB in Python, tipizzato con Pydantic v2/);
+  assert.match(openSource, /<a href="https:\/\/github\.com\/Simi24\/FoosbalLeague">FoosRank<\/a>/);
+  assert.match(openSource, /esempio reale di dynantic/);
 });
 
 test('the EN page carries the EN about texts, with no placeholder left', () => {
@@ -57,6 +59,8 @@ test('the EN page carries the EN about texts, with no placeholder left', () => {
     assert.match(openSource, new RegExp(`<a href="https://github\\.com/Simi24/${name}">${name}</a>`));
   }
   assert.match(openSource, /a typed DynamoDB ORM for Python built on Pydantic v2/);
+  assert.match(openSource, /<a href="https:\/\/github\.com\/Simi24\/FoosbalLeague">FoosRank<\/a>/);
+  assert.match(openSource, /real-world example of dynantic/);
 });
 
 test('Percorso is a timeline (an ol with a when column), not a plain paragraph (SPEC.md §8)', () => {

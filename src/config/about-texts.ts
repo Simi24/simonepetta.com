@@ -66,7 +66,7 @@ export const path: Record<Lang, readonly PathEntry[]> = {
 
 /**
  * Project descriptions by project name, one per language. The Quits text was approved verbatim by
- * the author on 2026-10-05 (Quits issue #13, SPEC.md §13).
+ * the author on 2026-10-05 (Quits issue #13, SPEC.md §13); the FoosRank text on 2026-10-30.
  */
 export const projectDescriptions: Record<
   Lang,
@@ -77,6 +77,8 @@ export const projectDescriptions: Record<
       "un'app per dividere le spese di un viaggio con gli amici, anche senza rete. Come Splitwise, ma senza limiti a pagamento.",
     dynantic:
       "un ORM per DynamoDB in Python, tipizzato con Pydantic v2: query, indici secondari, transazioni. Pubblicato su PyPI.",
+    FoosRank:
+      "un'app per leghe di calcio balilla con classifica ELO, in produzione su foosrank.app. È un esempio reale di dynantic su una sola tabella DynamoDB.",
     "ralph-gh":
       "un orchestratore che fa lavorare agenti di Claude Code sulle issue di GitHub, una alla volta, con una review automatica prima di ogni merge.",
     rideIt:
@@ -91,6 +93,8 @@ export const projectDescriptions: Record<
       "an app for splitting trip expenses with friends, even offline. Like Splitwise, without the paywall.",
     dynantic:
       "a typed DynamoDB ORM for Python built on Pydantic v2, with queries, secondary indexes and transactions. Published on PyPI.",
+    FoosRank:
+      "a foosball league app with ELO ratings, live at foosrank.app. A real-world example of dynantic on a single DynamoDB table.",
     "ralph-gh":
       "an orchestrator that runs Claude Code agents on GitHub issues one at a time, with an automated review gate before every merge.",
     rideIt:
